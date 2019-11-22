@@ -79,7 +79,7 @@ _user_install()
 	mkdir -p ~/'.local/bin'
 	mv "/tmp/up_$USER/storecli" ~/'.local/bin/storecli-amd64'
 	rm -rf "/tmp/up_$USER/storecli" 2> /dev/null
-	chomd -R a+x ~/'.local/bin/storecli-amd64'
+	chmod -R a+x ~/'.local/bin/storecli-amd64'
 	ln -sf ~/'.local/bin/storecli-amd64/storecli.sh' ~/'.local/bin/storecli'
 }
 
