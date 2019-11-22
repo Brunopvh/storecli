@@ -23,7 +23,7 @@ if [[ "$1" == '--help' ]]; then _usage; exit; fi
 [[ ! -x $(command -v bash 2> /dev/null) ]] && { _c 31; echo ">> Instale o shell [bash]"; _c; exit 1; }
 
 G='https://github.com'
-R="$G/storecli.git"
+R="$G/Brunopvh/storecli.git"
 [[ -d "/tmp/up_$USER" ]] && { cd /tmp && rm -rf "up_$USER"; }
 
 _gitclone()
