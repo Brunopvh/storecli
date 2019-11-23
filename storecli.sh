@@ -8,6 +8,8 @@ VERSION='2019-11-22 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #
+# https://github.com/Brunopvh/storecli.git 
+#
 #clear
 
 function cl() { 
@@ -50,6 +52,7 @@ export appsutils="$StoreCli_Path/$(basename $0)"
 export Script_TorBrowser="$StoreCli_Path_Scripts/TorBrowser.sh"
 export Script_UnPack="$StoreCli_Path_Scripts/UnPack.sh"
 export Script_PackTargz="$StoreCli_Path_Scripts/PackTargz.sh"
+export Script_Papirus="$StoreCli_Path_Scripts/papirus.sh"
 
 #========================================================#
 # Libs
@@ -83,7 +86,7 @@ source "$Lib_ShaSum"
 if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
 	sysname=$(echo "$sysname" | sed 's/[0-9]\+//g')
 fi
-esp='-----------------'
+esp='---------------'
 
 #========================================================#
 function _space_msg()
@@ -214,9 +217,7 @@ echo "$(cl 31)==> $(cl)Programa indisponível para o seu sistema."
 }
 
 #-----------------------------------------------------#
-_info_msgs 'Sistema'
-echo -e "==> $os_type $sysname"
-
+_info_msgs "Sistema: $os_type $sysname"
 
 if [[ ! -z $1 ]]; then
 
