@@ -121,13 +121,13 @@ else
 
 	_path_bash || { 
 		echo "$(_c 31)$(_msgs Erro escreva a linha a seguir no arquivo ~/.bashrc manualmente:) $(_c)"; 
-		echo "export PATH=$HOME/.local/bin:$PATH >> ~/.bashrc"
+		echo "export PATH=$HOME/.local/bin:$PATH"
 		exit 1
 		}
 
 	_path_zsh || { 
 		echo "$(_c 31)$(_msgs Erro escreva a linha a seguir no arquivo ~/.zshrc manualmente:) $(_c)"; 
-		echo "export PATH=$HOME/.local/bin:$PATH >> ~/.zshrc"
+		echo "export PATH=$HOME/.local/bin:$PATH"
 		exit 1
 		}
 fi

@@ -141,7 +141,7 @@ fi
 if [[ $? == '0' ]]; then
 	echo "==> [OK] função $(cl 32)_install_requeriments $(cl)foi executada com sucesso"
 	echo 'requeriments false' > "$Config_File"
-
+	return 0
 else
 	echo "==> Função $(cl 31)_install_requeriments $(cl)retornou [erro]" 
 	return 1

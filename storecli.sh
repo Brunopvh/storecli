@@ -57,15 +57,20 @@ export Script_Papirus="$StoreCli_Path_Scripts/papirus.sh"
 # Libs
 #========================================================#
 export Lib_array="$StoreCli_Path_Lib/array.sh"
-export Lib_platform="$StoreCli_Path_Lib/platform.sh"
+export Lib_platform="$StoreCli_Path_Lib/platform.sh" # Detecta o sistema.
 export Lib_Info="$StoreCli_Path_Lib/info.sh"
 export Lib_SysUtils="$StoreCli_Path_Lib/SysUtils.sh"
 export Lib_HttpsTransfer="$StoreCli_Path_Lib/HttpsTransfer.sh"
-export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh"
-export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"
+export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh" # Gerencia instalação.
+export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"   # Gerencia remoção.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
-export Lib_Internet="$StoreCli_Path_Lib/Internet.sh"
+
+# Categorias.
+export Lib_Acessorios="$StoreCli_Path_Lib/Acessorios.sh"
 export Lib_Dev="$StoreCli_Path_Lib/Dev.sh"
+export Lib_Internet="$StoreCli_Path_Lib/Internet.sh"
+export Lib_Sistema="$StoreCli_Path_Lib/Sistema.sh"
+export Lib_Preferencias="$StoreCli_Path_Lib/Preferencias.sh"
 
 #========================================================#
 # Config.
@@ -139,12 +144,10 @@ done
 function _configure_system()
 {
 while ! _install_requeriments; do
-		echo "$(cl 31)==> $(cl)Função $(cl 31)_install_requeriments $(cl) retornou erro."
-		echo "pressione $(cl 32)c$(cl) para repetir ou $(cl 31)e$(cl) para sair: "
+		echo -ne "pressione $(cl 32)c$(cl) para repetir ou $(cl 31)e$(cl) para sair: "
 		read -n 1 _input
 		echo ' '
-		if [[ "${_input,,}" == 'c' ]]; then continue; else exit 1; break; fi
-		
+		if [[ "${_input,,}" == 'c' ]]; then continue; else return 1; break; fi		
 done
 }
 
@@ -164,7 +167,7 @@ elif [[ "$1" == '--logo' ]]; then
 
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
-	_configure_system # -> _install_requeriments
+	_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"
 	exit "$?"
 fi 
 
@@ -191,7 +194,7 @@ if ! grep -q 'requeriments false' "$Config_File"; then
 
 	read _input
 	if [[ "${_input,,}" == 's' ]]; then
-		_configure_system
+		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"
 	else
 		echo "Execute manualmente: $(cl 32)$(basename $0) --configure$(cl)"
 		exit 0
