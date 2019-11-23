@@ -65,6 +65,15 @@ export array_root_dirs=(
 # Arrays dirs programs
 #==================================================#
 
+# Papirus
+array_papirus_dirs=(
+"$HOME/.icons/Papirus-Dark" 
+"$HOME/.icons/Papirus" 
+"$HOME/.icons/Papirus-Light" 
+"$HOME/.icons/ePapirus"
+)
+
+# Pycharm
 array_pycharm_dirs=( 
 "$dir_user_applications/pycharm.desktop" # Lançador .desktop.
 "$dir_user_icons/pycharm.png" # Icone png.
@@ -112,6 +121,7 @@ array_vscode_dirs=(
 
 # Acessórios
 array_acessorios=(
+'gnome-disk'
 'veracrypt'
 )
 
