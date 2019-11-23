@@ -4,13 +4,12 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-11-22 - (dev)'
+VERSION='2019-11-23 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #
 # https://github.com/Brunopvh/storecli.git 
 #
-#clear
 
 function cl() { 
 if [[ -z $2 ]]; then
