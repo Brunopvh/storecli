@@ -26,8 +26,8 @@ _uninstall_user()
 	[ -d ~/'.local/bin/storecli-amd64' ] && {
 		echo "$(_c 31)$(_msgs Desinstalando: ~/'.local/bin/storecli-amd64') $(_c)"
 		rm -rf ~/'.local/bin/storecli-amd64'
-		rm ~/'.local/bin/storecli' 2> /dev/null
 	}
+	rm ~/'.local/bin/storecli' 2> /dev/null
 }
 
 #---------------------------------------------------#
@@ -41,6 +41,7 @@ _uninstall_root()
 	}
 
 	[ -L '/usr/local/bin/storecli' ] && sudo rm '/usr/local/bin/storecli'
+	command -v storecli 2> /dev/null && sudo rm $(command -v storecli 2> /dev/null)
 }
 
 #---------------------------------------------------#
