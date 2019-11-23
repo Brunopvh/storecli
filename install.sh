@@ -1,99 +1,133 @@
-#!/usr/bin/env bash
+#!/bin/sh
 #
 #
+#
+
 
 _c()
 {
-	[[ -z $2 ]] || echo -e "\033[$2;$1m"
-	[[ ! -z $2 ]] || echo -e "\033[1;$1m"
+	[ -z $1 ] && { printf "\033[m"; return 0; }
+	[ -z $2 ] && { printf "\033[1;${1}m"; return 0; }
+	[ ! -z $2 ] && { printf "\033[${2};${1}m"; return 0; }
 }
 
-_usage()
+#---------------------------------------------------#
+_msgs()
 {
-cat <<EOF
-  Use: 
-     sudo $(basename $0)     Para instalar no sistema em /opt.
-     $(basename $0)          Para instalar na HOME em ~/.local/bin.
-     $(basename $0)           Exibe ajuda.
-EOF
+	echo "==> $@"
 }
 
-if [[ "$1" == '--help' ]]; then _usage; exit; fi
+#---------------------------------------------------#
+# Remove
+#---------------------------------------------------#
 
-[[ ! -x $(command -v bash 2> /dev/null) ]] && { _c 31; echo ">> Instale o shell [bash]"; _c; exit 1; }
-
-G='https://github.com'
-R="$G/Brunopvh/storecli.git"
-[[ -d "/tmp/up_$USER" ]] && { cd /tmp && rm -rf "up_$USER"; }
-
-_gitclone()
+_uninstall_user()
 {
-mkdir -p "/tmp/up_$USER"; cd "/tmp/up_$USER"
+	[ -d ~/'.local/bin/storecli-amd64' ] && {
+		echo "$(_c 31)$(_msgs Desinstalando: ~/'.local/bin/storecli-amd64') $(_c)"
+		rm -rf ~/'.local/bin/storecli-amd64'
+		rm ~/'.local/bin/storecli' 2> /dev/null
+	}
+}
 
-	if git clone "$R"; then
+#---------------------------------------------------#
+
+_uninstall_root()
+{
+	[ -d '/opt/storecli-amd64' ] && {
+		echo "$(_c 31)$(_msgs Desinstalando: /opt/storecli-amd64) $(_c)"
+		sudo rm -rf '/opt/storecli-amd64'
+		sudo rm '/usr/local/bin/storecli' 2> /dev/null
+	}
+}
+
+#---------------------------------------------------#
+# Install
+#---------------------------------------------------#
+_install_user()
+{
+	echo "$(_c 32 0)$(_msgs Instalando: ~/'.local/bin/storecli-amd64') $(_c)"
+	mkdir -p ~/'.local/bin'
+	mv "/tmp/up_$USER/storecli" ~/'.local/bin/storecli-amd64'
+	chmod -R u+x ~/'.local/bin/storecli-amd64'
+	ln -sf ~/'.local/bin/storecli-amd64/storecli.sh' ~/'.local/bin/storecli'
+}
+
+#---------------------------------------------------#
+
+_install_root()
+{
+	echo "$(_c 32 0)$(_msgs Instalando: /opt/storecli-amd64) $(_c)"
+	sudo mkdir -p /opt
+	mv "/tmp/up_$USER/storecli" '/opt/storecli-amd64'
+	ln -sf '/opt/storecli-amd64/storecli.sh' '/usr/local/bin/storecli'
+	sudo chmod -R a+x '/opt/storecli-amd64'
+	sudo chmod a+x '/usr/local/bin/storecli'
+}
+
+#---------------------------------------------------#
+
+_git_clone()
+{
+	repo='https://github.com/Brunopvh/storecli.git'
+	mkdir -p "/tmp/up_$USER"
+	cd "/tmp/up_$USER" && rm -rf * 2> /dev/null
+
+	if git clone "$repo"; then
 		return 0
 	else
 		return 1
 	fi
 }
 
-# ~/.bashrc
-_conf_path_bash()
+#---------------------------------------------------#
+
+_path_zsh()
 {
-if ! grep "^export PATH.*$HOME/.local/bin.*" ~/.bashrc 1> /dev/null; then
-	echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.bashrc] $(_c)"
-	echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
-
-else
-	echo "$(_c 32 0)$PATH$(_c)"
-
-fi
-}
-
-# ~/.zshrc
-_conf_path_zsh()
-{
-	[[ -x $(command -v zsh 2> /dev/null) ]] || return 0
-
-	if ! grep "^export PATH.*$HOME/.local/bin.*" ~/.zshrc 1> /dev/null; then
-		echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.zshrc] $(_c)"
+	command -v zsh 2> /dev/null || return 0
+	if ! grep "^export PATH=$HOME./local/bin.*" ~/'.zshrc'; then
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
-	else
-		echo "$(_c 32 0)$PATH$(_c)"
 	fi
+
+	zsh ~/'.zshrc'
 }
 
-_root_install()
+#---------------------------------------------------#
+
+_path_bash()
 {
-	[[ -d '/opt/storecli-amd64' ]] && rm -rf '/opt/storecli-amd64'
-	mv "/tmp/up_$USER/storecli" '/opt/storecli-amd64'
-	rm -rf "/tmp/up_$USER/storecli" 2> /dev/null
-	chomd -R a+x '/opt/storecli-amd64'
-	ln -sf '/opt/storecli-amd64/storecli.sh' '/usr/local/bin/storecli'
-	return "$?"
+	if ! grep "^export PATH=$HOME./local/bin.*" ~/'.bashrc'; then
+		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
+	fi
+
+	bash ~/'.bashrc'
 }
 
-_user_install()
-{
-	[[ -d ~/'.local/bin/storecli-amd64' ]] && rm -rf ~/'.local/bin/storecli-amd64'
-	mkdir -p ~/'.local/bin'
-	mv "/tmp/up_$USER/storecli" ~/'.local/bin/storecli-amd64'
-	rm -rf "/tmp/up_$USER/storecli" 2> /dev/null
-	chmod -R a+x ~/'.local/bin/storecli-amd64'
-	ln -sf ~/'.local/bin/storecli-amd64/storecli.sh' ~/'.local/bin/storecli'
-}
+#---------------------------------------------------#
+command -v bash 2> /dev/null || { echo "$(_c 31)Erro instale o shell [bash] $(_c)"; exit 1; }
 
-#------------------------------------#
-# Install
-#------------------------------------#
-_gitclone "$R" || { echo "$(_c 31)>> Erro [_gitclone] $(_c)"; exit 0; }
+_git_clone || { echo "$(_c 31)$(_msgs Falha: função _git_clone retornou erro) $(_c)"; exit 1; }
+_uninstall_user
+_uninstall_root
 
-echo "$(_c 32 0)>> Instalando $(_c)"
+if [ $(id -u) -eq '0' ]; then
+	_install_root
 
-if [[ $(id -u) == '0' ]]; then
-	_root_install
 else
-	_user_install; _conf_path_bash; _conf_path_zsh
+	_install_user
+
+	_path_bash || { 
+		echo "$(_c 31)$(_msgs Erro escreva a linha a seguir no arquivo ~/.bashrc manualmente:) $(_c)"; 
+		echo "export PATH=$HOME/.local/bin:$PATH >> ~/.bashrc"
+		exit 1
+		}
+
+	_path_zsh || { 
+		echo "$(_c 31)$(_msgs Erro escreva a linha a seguir no arquivo ~/.zshrc manualmente:) $(_c)"; 
+		echo "export PATH=$HOME/.local/bin:$PATH >> ~/.zshrc"
+		exit 1
+		}
 fi
 
-exit
+
+exit "$?"
