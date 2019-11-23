@@ -75,13 +75,14 @@ function _packremove()
 {
 while [[ $1 ]]; do
 	case "$1" in
+		icones-papirus) _delete_all "${array_papirus_dirs[@]}";;
+		peazip) _remove_peazip;;
 		pycharm) _remove_pycharm;;
 		sublime-text) "$Script_PackTargz" remove sublime-text;;
 		vscode) _remove_vscode;;
 		telegram) _remove_telegram;;
 		tixati) _delete_all "${array_tixati_dirs[@]}";;
 		torbrowser) "$Script_TorBrowser" --remove;;
-		peazip) _remove_peazip;;
 		veracrypt) _remove_veracrypt;;
 		remove) echo -ne "\r";;
 		*) echo "==> Não e possível remover o pacote: $1";;
