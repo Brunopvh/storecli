@@ -41,7 +41,7 @@ Comandos:
    install <pacote>       Instala um ou mais pacote(s) 
                             Ex: ./$(basename "$appsutils") vlc google-chrome icones-papirus
                                   
-   remove <pacote>        Remove um ou mais pacotes.
+   remove <pacote>        Remove um ou mais pacotes se possível.
    
 Opições:
    -d|--downloadonly      Somente baixa o(s) pacote(s) se disponível.
