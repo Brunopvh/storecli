@@ -46,6 +46,19 @@ echo -e "\n$(cl 33)[OK]$(cl)"
 #-----------------------------------------------------#
 
 #=====================================================#
+# Gnome-Disk
+#=====================================================#
+function _gnome_disk()
+{
+	case "$sysname" in
+		debian10) sudo apt install gnome-disk-utility;;
+		*) _prog_not_found; return 1;;
+	esac
+}
+
+#-----------------------------------------------------#
+
+#=====================================================#
 # Veracrypt
 #=====================================================#
 function _veracrypt()
@@ -225,8 +238,6 @@ fi
 #=====================================================#
 function _google_chrome_debian()
 {
-[[ -x $(command -v google-chrome) ]] && { _msg_pack_instaled 'google-chrome'; return 0; }
-
 local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
 local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
 echo "==> Adicionando key"
@@ -276,7 +287,13 @@ case "$sysname" in
 	*) _prog_not_found; return 1;;
 esac	
 
-if [[ $? == '0' ]]; then _info_msgs 'google-chrome instalado com sucesso'; fi
+if [[ $? == '0' ]]; then 
+	_info_msgs 'google-chrome instalado com sucesso'
+	return 0
+else
+	echo "==> Função $(_c 31)_google_chrome $(_c) retornou [erro]"
+	return 1
+fi
 }
 
 #=====================================================#
@@ -284,7 +301,7 @@ if [[ $? == '0' ]]; then _info_msgs 'google-chrome instalado com sucesso'; fi
 #=====================================================#
 function _megasync_suse_tumbleweed()
 {
-# sudo zypper in https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/x86_64/megasync-openSUSE_Tumbleweed.x86_64.rpm
+# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
 
 echo "$(_c 32 0)==> $(_c)Adicionando key e repo"
 sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key
@@ -300,17 +317,37 @@ else
 fi
 }
 
+#-----------------------------------------------------#
+
+function _megasync_debian10()
+{
+local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
+local mega_file="/etc/apt/sources.list.d/megasync.list"
+
+	echo "$(_c 32)==> $(_c)Adicionando repositório e chaves agurade..."
+	echo "$mega_repos" | sudo tee "$mega_file"
+
+	sudo sh -c 'wget https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key -O - | apt-key add -'
+	sudo sh -c 'apt update; apt install -y megasync'
+}
+
+
+#-----------------------------------------------------#
+
 function _megasync()
 {
-# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
-# 
+ 
 case "$sysname" in
 	opensuse-tumbleweed) _megasync_suse_tumbleweed;;
+	debian10) _megasync_debian10;;
 	*) _prog_not_found; return 1;;
 
 esac
 
-if [[ "$?" != '0' ]]; then
+if [[ $? == '0' ]]; then 
+	_info_msgs 'megasync instalado com sucesso'
+	return 0
+else
 	echo "==> Função $(_c 31)_megasync$(_c) retornou [erro]"
 	return 1
 fi
@@ -323,8 +360,6 @@ fi
 #=====================================================#
 function _opera_stable_debian()
 {
-[[ -x $(command -v google-chrome) ]] && { _msg_pack_instaled 'opera-stable'; return 0; }
-
 local opera_repo='deb [arch=amd64] https://deb.opera.com/opera-stable/ stable non-free'
 local opera_file='/etc/apt/sources.list.d/opera-stable.list'
 echo "$(cl 32)==> $(cl)Adicionando chaves agurade..."
@@ -349,7 +384,17 @@ function _opera_stable()
 {
 case "$sysname" in
 	debian10) _opera_stable_debian;;
+	*) _prog_not_found; return 1;;
 esac	
+
+
+if [[ $? == '0' ]]; then 
+	_info_msgs 'opera-stable instalado com sucesso'
+
+else
+	echo "==> Função $(_c 31)_opera_stable $(_c) retornou [erro]"
+	return 1
+fi
 }
 
 #=====================================================#
@@ -388,7 +433,7 @@ elif [[ -x $(command -v apt 2> /dev/null) ]]; then
 	sudo apt install -y qbittorrent
 
 fi
-
+return "$?"
 }
 
 #=====================================================#
@@ -417,6 +462,14 @@ cd "$dir_temp" && mv -v $(ls -d Telegra*) "$dir_user_bin/telegram-amd64" 1> /dev
 chmod -R 755 "$dir_user_bin/telegram-amd64"
 ln -sf "$dir_user_bin/telegram-amd64/Telegram" "$dir_user_bin/telegram"
 telegram
+
+if [[ -x $(command -v telegram 2> /dev/null) ]]; then
+	_info_msgs 'telegram instalado com sucesso'
+	return 0
+else
+	echo "==> Função $(_c 31)_telegram $(_c) retornou [erro]"
+	return 1
+fi
 }
 
 #=====================================================#
@@ -441,6 +494,8 @@ sudo mv "$dir_temp"/tixati-amd64 "${array_tixati_dirs[3]}" # dir.
 _info_msgs 'tixati instalado'
 tixati &	
 }
+
+#-----------------------------------------------------#
 
 function _tixati()
 {
@@ -487,6 +542,8 @@ function _torbrowser()
 	fi
 }
 
+#-----------------------------------------------------#
+
 #=====================================================#
 # Uget
 #=====================================================#
@@ -507,6 +564,7 @@ elif [[ -x $(which pkg 2> /dev/null) ]]; then # Freebsd.
 fi
 }
 
+#-----------------------------------------------------#
 
 #=====================================================#
 # Midia
@@ -539,6 +597,8 @@ else
 fi
 }
 
+#-----------------------------------------------------#
+
 # Codecs
 function _codecs()
 {
@@ -561,11 +621,106 @@ case "$sysname" in
 esac
 }
 
+#-----------------------------------------------------#
+
+#=====================================================#
+# Parole
+#=====================================================#
+function _parole()
+{
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in -y parole
+
+	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+		sudo dnf install -y parole
+
+	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+		sudo apt install -y parole
+
+	else
+		_prog_not_found; return 1
+
+	fi
+
+}
+
+#-----------------------------------------------------#
+
+#=====================================================#
+# Gnome mpv
+#=====================================================#
+function _gnome_mpv()
+{
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in -y gnome-mpv
+
+	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+		sudo dnf install -y gnome-mpv smplayer-themes
+
+	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+		sudo apt install -y gnome-mpv
+
+	else
+		_prog_not_found; return 1
+
+	fi
+
+}
+
+
+#-----------------------------------------------------#
+
+#=====================================================#
+# Smplayer
+#=====================================================#
+function _smplayer()
+{
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in -y smplayer
+
+	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+		sudo dnf install -y smplayer
+
+	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+		sudo apt install -y smplayer
+
+	else
+		_prog_not_found; return 1
+
+	fi
+
+}
+
+#-----------------------------------------------------#
 
 #=====================================================#
 # Sistema
 #=====================================================#
+
+#=====================================================#
+# Gparted
+#=====================================================#
+function _gparted()
+{
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in -y gparted
+
+	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+		sudo dnf install -y gparted
+
+	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+		sudo apt install -y gparted
+
+	else
+		_prog_not_found; return 1
+
+	fi
+
+}
+
+#=====================================================#
 # PeaZip
+#=====================================================#
 function _peazip()
 {
 peazip_server='https://osdn.net/dl/peazip'
@@ -608,6 +763,25 @@ else
 fi
 }
 
+#-----------------------------------------------------#
+
+#=====================================================#
+# Preferencias.
+#=====================================================#
+function _papirus()
+{
+# Está função NÃO está em uso no momento.
+#
+local url_papirus='https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/install.sh'
+local path_arq="$dir_user_cache/papirus.run"
+
+	_dow "$url_papirus" "$path_arq" --wget
+
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	chmod +x "$path_arq"
+	"$path_arq"
+}
 
 
 #=====================================================#
@@ -618,14 +792,13 @@ function _packmanager_install()
 for arg in "$@"; do
 	if [[ "$arg" == '--downloadonly' ]] || [[ "$arg" == '-d' ]]; then
 		export download_only='on'
-	else
-		echo -ne "$arg "
 	fi
 done
-echo ' '
+
 while [[ "$1" ]]; do
 	case "$1" in
 #-------------------- desenvolvimento -------------------#
+		gnome-disk) _gnome_disk;;
 		veracrypt) _veracrypt;;
 
 #-------------------- desenvolvimento -------------------#
@@ -647,10 +820,16 @@ while [[ "$1" ]]; do
 #-------------------- midia --------------------------#
 		codecs) _codecs;;
 		vlc) _vlc;;
+		parole) _parole;;
+		gnome-mpv) _gnome_mpv;;
+		smplayer) _smplayer;;
 
 #-------------------- sistema ---------------------------#
+		gparted) _gparted;;
 		peazip) _peazip;;
 
+#-------------------- preferencias ---------------------------#
+		icones-papirus) "$Script_Papirus";;
 
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;
