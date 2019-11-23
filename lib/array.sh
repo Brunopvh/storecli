@@ -129,6 +129,7 @@ array_acessorios=(
 array_dev=(
 'pycharm'
 'sublime-text'
+'vim'
 'vscode'
 )
 
@@ -148,11 +149,21 @@ array_internet=(
 # Midia
 array_midia=(
 'codecs'
+'gnome-mpv'
+'parole'
+'smplayer'
 'vlc'
 )
 
 # Sistema
 array_sistema=(
+'gnome-disk'
 'peazip'
+)
+
+# Preferencias
+array_preferencias=(
+'icones-papirus'
+'ohmybash'
 )
 

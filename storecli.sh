@@ -64,6 +64,8 @@ export Lib_HttpsTransfer="$StoreCli_Path_Lib/HttpsTransfer.sh"
 export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh"
 export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
+export Lib_Internet="$StoreCli_Path_Lib/Internet.sh"
+export Lib_Dev="$StoreCli_Path_Lib/Dev.sh"
 
 #========================================================#
 # Config.
@@ -83,9 +85,9 @@ source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 
 if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
-	sysname=$(echo "$sysname" | sed 's/[0-9]\+//g')
+	sysname=$(echo "$sysname" | sed 's/[0-9]\+//g') # Remover números do final.
 fi
-esp='---------------'
+esp='--------------'
 
 #========================================================#
 function _space_msg()

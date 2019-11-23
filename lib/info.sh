@@ -3,6 +3,8 @@
 #
 #
 
+github_storecli='https://github.com/Brunopvh/storecli.git'
+
 source "$Lib_array"
 
 function _c() { 
@@ -60,7 +62,7 @@ function _logo()
 echo "$(_c 34 1)**********************************************************$(_c)"
 echo "$(_c 31)  Autor: Bruno Da Silva Chaves"
 echo "$(_c 31)  Versão: $VERSION"
-echo "$(_c 31)  Github: None"
+echo "$(_c 31)  Github: $github_storecli"
 echo "$(_c 34)  StoreCli $(_c 32 0)sua loja de aplicativos via linha de comando."
 echo "$(_c 34 1)**********************************************************$(_c)"
 echo -n "$(_c)"
@@ -90,7 +92,11 @@ echo ' '
 
 echo "Sistema: "
 for a in "${array_sistema[@]}"; do echo "     $a"; done
-	
+echo ' '
+
+echo "Preferências: "
+for a in "${array_preferencias[@]}"; do echo "     $a"; done
+
 }
 
 
