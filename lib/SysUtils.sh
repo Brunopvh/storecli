@@ -149,7 +149,6 @@ else
 fi
 }
 
-
 #===============================================#
 # Config dirs
 #===============================================#
@@ -171,13 +170,9 @@ function _create_dirs_user()
 # ~/.bashrc
 function _conf_path_bash()
 {
-if ! grep "^export PATH.*$HOME/.local/bin.*" ~/.bashrc 1> /dev/null; then
+if ! grep -q "^export PATH.*$HOME/.local/bin.*" ~/.bashrc; then
 	echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.bashrc] $(_c)"
 	echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
-
-else
-	echo "$(_c 32 0)$PATH$(_c)"
-
 fi
 }
 
@@ -186,10 +181,8 @@ function _conf_path_zsh()
 {
 	[[ -x $(command -v zsh 2> /dev/null) ]] || return 0
 
-	if ! grep "^export PATH.*$HOME/.local/bin.*" ~/.zshrc 1> /dev/null; then
+	if ! -q grep "^export PATH.*$HOME/.local/bin.*" ~/.zshrc; then
 		echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.zshrc] $(_c)"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
-	else
-		echo "$(_c 32 0)$PATH$(_c)"
 	fi
 }
