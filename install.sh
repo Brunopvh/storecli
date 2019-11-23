@@ -39,6 +39,8 @@ _uninstall_root()
 		sudo rm -rf '/opt/storecli-amd64'
 		sudo rm '/usr/local/bin/storecli' 2> /dev/null
 	}
+
+	[ -L '/usr/local/bin/storecli' ] && sudo rm '/usr/local/bin/storecli'
 }
 
 #---------------------------------------------------#
