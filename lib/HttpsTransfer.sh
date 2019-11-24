@@ -14,7 +14,7 @@
 
 function cor() { echo -e "\e[1;$1m"; }
 
-dir_default=~/.cache/downloads
+dir_default=~/'.cache/downloads'
 log_w="$dir_default/wget-log"
 _tmp=$(mktemp)
 
@@ -44,7 +44,7 @@ while [[ ! $(grep '99%' "$log_w") && ! $(grep 'Done' "$_tmp") ]]; do
 	    let n=n+1
 	fi
 done
-echo -en "$(cor 31) [ | ]$(cor 35) $_porcentagem $(cor 34)$_velocidade $(cor)"
+echo -e "$(cor 31) [ | ]$(cor 35) $_porcentagem $(cor 34)$_velocidade $(cor)"
 echo -e "Done" > "$_tmp"
 }
 
@@ -60,19 +60,18 @@ function _Wget()
 local url="$1"
 local path_arq="$2"
 
+cd "$dir_default"
 [[ $(pidof wget) ]] && kill -9 $(pidof wget)
 [[ -f "$log_w" ]] && rm "$log_w"
 
 echo -e "==> Baixando: [$url]"
-if [[ -z $2 ]]; then 
-	#wget -c "$url" 
+if [[ -z $2 ]]; then  
 	while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" | sed '/Continuando\|escrita/d'; do
 		_progress;
 	done
 
 elif [[ -d $(dirname "$2") ]]; then
 	echo -e "==> Destino: [$path_arq]"
-	#wget -c "$url" -O "$path_arq"
 	while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" -O "$path_arq" | sed '/Continuando\|escrita/d'; do
 		_progress;
 	done

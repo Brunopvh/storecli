@@ -370,6 +370,24 @@ function _twodict_github()
 }
 
 #--------------------------------------------------------#
+function _youtube_dl_gui_tumbleweed()
+{
+# https://software.opensuse.org/download/package?package=youtube-dl-gui&project=openSUSE%3AFactory
+url_opensuse_repo='https://download.opensuse.org/repositories'
+url_youtube_dlg_tumbleweed="$url_opensuse_repo/openSUSE:/Factory/standard/noarch/youtube-dl-gui-0.4-1.7.noarch.rpm"
+local path_arq="$dir_user_cache/$(basename $url_youtube_dlg_tumbleweed)"
+
+	wget "$url_youtube_dlg_tumbleweed" -O "$path_arq" 
+	if sudo zypper in "$path_arq"; then
+		echo "$(_c 32 0)youtube-dl-gui instalado $(_c)"
+		return 0
+	else
+		echo "$(_c 31)Falha youtube-dl-gui $(_c)"
+		return 1
+	fi
+}
+
+#--------------------------------------------------------#
 
 function _youtube_dl_gui_github()
 {
@@ -383,6 +401,7 @@ case "$sysname" in
 	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
 	fedora30) sudo dnf install -y python2-wxpython; _twodict_github;;
 	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
+	opensuse-tumbleweed) _youtube_dl_gui_tumbleweed; return 0;;
 	*) _prog_not_found; return 1;;
 esac
 

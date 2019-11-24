@@ -202,6 +202,8 @@ _virtualbox_extpack
 
 #-----------------------------------------------------#
 
+#-----------------------------------------------------#
+
 function _virtualbox_bionic()
 {
 local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib"
@@ -284,8 +286,7 @@ function _virtualbox()
 
 	case "$sysname" in
 		debian10) _virtualbox_buster;;
-		thirty|thirty_one) _virtualbox_fedora;;
-		leap) _virtualbox_leap;;
-		*) _prog_ind;;	
+		thirty|thirty_one) _virtualbox_fedora;;	
+		*) _prog_not_found;;	
 	esac
 }
