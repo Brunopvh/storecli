@@ -97,6 +97,7 @@ while [[ "$1" ]]; do
 		firmware-*) _firmware "$1";;
 		gparted) _gparted;;
 		peazip) _peazip;;
+		virtualbox) _virtualbox;;
 
 #-------------------- preferencias ---------------------------#
 		icones-papirus) "$Script_Papirus";;

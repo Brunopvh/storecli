@@ -122,3 +122,170 @@ fi
 }
 
 #-----------------------------------------------------#
+
+#=====================================================#
+# Vitualbox
+#=====================================================#
+
+function _virtualbox_downloads()
+{
+local vbox_pag_linux='https://www.virtualbox.org/wiki/Linux_Downloads'
+local vbox_html_linux=$(wget -q -O- "$vbox_pag_linux" | egrep '(amd64.deb|x86_64.rpm|amd64.run)')
+
+local vbox_url_buster=$(echo "$vbox_html_linux" | egrep -m 1 'buster' | sed 's/.*href=\"//g;s/\".*//g') # Deb10
+local vbox_url_bionic=$(echo "$vbox_html_linux" | egrep -m 1 'bionic' | sed 's/.*href=\"//g;s/\".*//g') # Ubu18.04
+local vbox_url_f29=$(echo "$vbox_html_linux" | egrep -m 1 'fedora29' | sed 's/.*href=\"//g;s/\".*//g') # F29
+local vbox_url_run=$(echo "$vbox_html_linux" | egrep -m 1 'amd64.run' | sed 's/.*href=\"//g;s/\".*//g') # .run
+
+local path_arq_buster="$dir_user_cache/$(basename $vbox_url_buster)"
+local path_arq_bionic="$dir_user_cache/$(basename $vbox_url_bionic)"
+local path_arq_f29="$dir_user_cache/$(basename $vbox_url_f29)"
+local path_arq_run="$dir_user_cache/$(basename $vbox_url_run)"
+
+	_dow "$vbox_url_buster" "$path_arq_buster" --curl
+	_dow "$vbox_url_bionic" "$path_arq_bionic" --curl
+	_dow "$vbox_url_f29" "$path_arq_f29" --curl
+	_dow "$vbox_url_run" "$path_arq_run" --curl
+}
+
+#-----------------------------------------------------#
+
+function _virtualbox_extpack()
+{
+local vbox_pag="https://www.virtualbox.org/wiki/Downloads"
+local vbox_html=$(wget -q -O- "$vbox_pag" | grep -m 1 "Oracle.*Ext.*vbox.*") # Html filtrado.
+local url_extpack=$(echo "$vbox_html" | sed 's/.*href=\"//g;s/\".*//g') # Url filtrado.
+local path_arq="$dir_user_cache/$(basename $url_extpack)" # Destion/Arquivo.
+
+	_dow "$url_extpack" "$path_arq" --curl || { 
+		echo "$(_c 31)==> Falha  ao tentar baixar ExtensionPackc$(_c)"; return 1; 
+	}	
+
+# --downloadonly
+[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+
+# Instalação
+echo "$(_c 32)==> $(_c)Instalando Extension Pack"
+sudo VBoxManage extpack install --replace "$arq_extpack"
+
+echo -ne "$(cor 32)==> $(cor)Deseja adicionar $USER ao grupo vboxusers ? $(cor 33)[s/n]$(cor) : " 
+read acao 
+
+	[[ "${acao,,}" == 's' ]] && { 
+		sudo gpasswd -a $USER vboxusers  
+		# sudo usermod -a -G vboxusers $USER
+		read -p 'OK: pressione enter : ' enter
+	}
+}
+
+#-----------------------------------------------------#
+
+function _virtualbox_fedora()
+{
+local lista_vbox_fedora=(
+'libgomp' 'glibc-headers' 'glibc-devel' 'kernel-headers' 'dkms' 'qt5-qtx11extras' 
+'libxkbcommon' 'kernel-devel' 'binutils' 'gcc' 'make' 'patch'
+)
+
+sudo sh -c 'wget http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo -O /etc/yum.repos.d/virtualbox.repo'
+sudo dnf update
+sudo dnf install -y "${lista_vbox_fedora[@]}"
+sudo dnf install -y $(rpm -qa kernel | sort -V |tail -n 1)
+sudo yum install -y kernel-devel-$(uname -r) 
+sudo dnf install -y VirtualBox-6.0
+
+# Módulos
+sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
+sudo sh -c '/sbin/vboxconfig'
+_virtualbox_extpack
+}
+
+#-----------------------------------------------------#
+
+function _virtualbox_bionic()
+{
+local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib"
+local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
+
+	# Limpar o cache antes de adicionar as chaves (recomendado).
+	read -p "$(_c 32)==> $(_c)Deseja limpar o cache do $(_c 35)apt$(_c) [s/n] ?: " input
+	if [[ "${input,,}" == 's' ]]; then
+		sudo apt-get clean
+		sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+		sudo apt update
+	fi
+	
+find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian bionic contrib$" 2> /dev/null
+if [[ "$?" == '0' ]]; then # Pular
+	echo "$(_c 32 0)==> $(_c)Repositório já disponível $(_c 32 0)'pulando'$(_c)"
+
+else
+	echo "$(_c 32)==> $(_c)Adicionando chaves e repositório"
+	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -'
+	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -'
+	echo "$vbox_repo" | sudo tee "$vbox_file" # Repositório.
+fi
+	sudo apt update
+	
+	# Dependências
+	echo "$(cor 32)==> $(cor)Instalando dependências"
+	sudo sh -c 'apt install -y module-assistant build-essential dkms; apt install -y linux-headers-$(uname -r)'
+	
+	# Virtualbox 6.0
+	echo "$(_c 32)==> $(_c)Instalando virtualbox"
+	sudo apt install -y virtualbox-6.0
+	_virtualbox_extpack
+}
+
+#-----------------------------------------------------#
+
+function _virtualbox_buster()
+{
+local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
+local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
+
+	# Limpar o cache antes de adicionar as chaves (recomendado).
+	read -p "$(_c 32)==> $(_c)Deseja limpar o cache do $(_c 35)apt$(_c) [s/n] ?: " input
+	if [[ "${input,,}" == 's' ]]; then
+		sudo apt-get clean
+		sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+		sudo apt update
+	fi
+	
+find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
+if [[ "$?" == '0' ]]; then # Pular
+	echo "$(_c 32 0)==> $(_c)Repositório já disponível $(_c 32 0)'pulando'$(_c)"
+
+else
+	echo "$(_c 32)==> $(_c)Adicionando chaves e repositório"
+	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -'
+	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -'
+	echo "$vbox_repo" | sudo tee "$vbox_file" # Repositório.
+fi
+	sudo apt update
+	
+	# Dependências
+	echo "$(cor 32)==> $(cor)Instalando dependências"
+	sudo sh -c 'apt install -y module-assistant build-essential dkms; apt install -y linux-headers-$(uname -r)'
+	
+	# Virtualbox 6.0
+	echo "$(_c 32)==> $(_c)Instalando virtualbox"
+	sudo apt install -y virtualbox-6.0
+	_virtualbox_extpack
+}
+
+
+#-----------------------------------------------------#
+
+function _virtualbox()
+{
+	# --downloadonly -> Baixar e sair.
+	[[ "$download_only" == 'on' ]] && { _virtualbox_downloads; _virtualbox_extpack; return "$?"; }
+
+	case "$sysname" in
+		debian10) _virtualbox_buster;;
+		thirty|thirty_one) _virtualbox_fedora;;
+		leap) _virtualbox_leap;;
+		*) _prog_ind;;	
+	esac
+}

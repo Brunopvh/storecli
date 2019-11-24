@@ -31,7 +31,7 @@ echo "#!/usr/bin/env bash" > "${array_pycharm_dirs[2]}"
 echo -e "\ncd ${array_pycharm_dirs[3]}/bin/ && ./pycharm.sh" >> "${array_pycharm_dirs[2]}"
 chmod +x "${array_pycharm_dirs[2]}"
 
-	touch "${array_pycharm_dirs[0]}"
+	touch "${array_pycharm_dirs[0]}" # .desktop
 	echo "[Desktop Entry]" > "${array_pycharm_dirs[0]}"
     {
         echo "Name=Pycharm Community"
@@ -50,6 +50,7 @@ cp -u "${array_pycharm_dirs[0]}" ~/Desktop/ 2> /dev/null
 if [[ -x $(which pycharm 2> /dev/null) ]]; then
 	_info_msgs 'pycharm instalado com sucesso'
 	#pycharm
+	return 0
 
 else
 	echo "==> Função $(cl 31)_pycharm$(cl) retornou [erro]"

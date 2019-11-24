@@ -97,7 +97,8 @@ if [[ -z $2 ]]; then
 
 elif [[ -d $(dirname "$2") ]]; then
 	echo -e "==> Destino: [$path_arq]"
-	curl -# -C - -o "$path_arq" -O "$url"
+	#curl -# -C - -o "$path_arq" -O "$url"
+	curl -C - -o "$path_arq" -O "$url"
 
 fi
 }

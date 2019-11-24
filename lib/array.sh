@@ -165,6 +165,7 @@ array_sistema=(
 'firmware-realtek'
 'gnome-disk'
 'peazip'
+'virtualbox'
 )
 
 # Preferencias
