@@ -83,6 +83,7 @@ while [[ "$1" ]]; do
 		tixati) _tixati;;
 		torbrowser) _torbrowser;;
 		uget) _uget;;
+		youtube-dl-gui) _youtube_dl_gui_github;;
 
 #-------------------- midia --------------------------#
 		codecs) _codecs;;

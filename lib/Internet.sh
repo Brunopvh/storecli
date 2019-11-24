@@ -2,6 +2,7 @@
 #
 #
 
+source "$Lib_GitClone"
 
 #=====================================================#
 # Google chrome
@@ -248,21 +249,29 @@ fi
 function _tixat_tar()
 {
 local path_arq="$1"
-"$Script_UnPack" "$path_arq" "$dir_temp"
-[[ $? == '0' ]] || { echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
 
-echo "$(cor 32)==> $(cor)Instalando"
+	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
+		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+	}
 
-cd "$dir_temp" && mv $(ls -d tixati*) "$dir_temp/tixati-amd64" 1> /dev/null
-chmod -R a+x "$dir_temp/tixati-amd64"
+	echo "$(cor 32)==> $(cor)Instalando"
 
-sudo mv "$dir_temp"/tixati-amd64/tixati.desktop "${array_tixati_dirs[0]}" # .desktop
-sudo mv "$dir_temp"/tixati-amd64/tixati.png "${array_tixati_dirs[1]}" # PNG.
-sudo mv "$dir_temp"/tixati-amd64/tixati "${array_tixati_dirs[2]}" # binario.
-sudo mv "$dir_temp"/tixati-amd64 "${array_tixati_dirs[3]}" # dir.
+	cd "$dir_temp" && mv $(ls -d tixati*) "$dir_temp/tixati-amd64" 1> /dev/null
+	chmod -R a+x "$dir_temp/tixati-amd64"
+
+	sudo mv "$dir_temp"/tixati-amd64/tixati.desktop "${array_tixati_dirs[0]}" # .desktop
+	sudo mv "$dir_temp"/tixati-amd64/tixati.png "${array_tixati_dirs[1]}" # PNG.
+	sudo mv "$dir_temp"/tixati-amd64/tixati "${array_tixati_dirs[2]}" # binario.
+	sudo mv "$dir_temp"/tixati-amd64 "${array_tixati_dirs[3]}" # dir /opt.
 	
-_info_msgs 'tixati instalado'
-tixati &	
+	if [[ -x $(command -v tixati 2> /dev/null) ]]; then
+		_info_msgs 'tixati instalado'; tixati & 
+		return 0
+
+	else
+		echo "$(_c 31)==> Falha: tixati$(_c)"; return 1
+	
+	fi
 }
 
 #-----------------------------------------------------#
@@ -275,7 +284,7 @@ local url_deb=$(echo "$html" | grep -m 1 'amd64.deb' | sed 's/amd64.deb\".*/amd6
 local url_rpm=$(echo "$html" | grep -m 1 'x86_64.rpm' | sed 's/x86_64.rpm\".*/x86_64.rpm/g;s/.*\"//g') # .rpm
 local url_tar=$(echo "$html" | grep -m 1 '.tar.gz' | sed 's/.tar.gz\".*/.tar.gz/g;s/.*\"//g') # .tar.gz
 
-# Atribuir path_arq tar.gz
+# path_arq tar.gz
 path_arq="$dir_user_cache/$(basename $url_tar)"
 
 _dow "$url_tar" "$path_arq" --curl # baixar somente .tar.gz - (qualquer linux)
@@ -296,7 +305,7 @@ elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
 
 fi
 
-_tixat_tar "$path_arq"
+_tixat_tar "$path_arq" # Instalar o pacote baixado .tar.gz
 }
 
 #=====================================================#
@@ -335,3 +344,86 @@ fi
 }
 
 
+#=====================================================#
+# Youtube-Dl-Gui
+#=====================================================#
+function _twodict_github()
+{
+	[[ -d "$dir_temp/twodict" ]] && sudo rm -rf "$dir_temp/twodict"
+
+	github_twodict="https://github.com/MrS0m30n3/twodict.git"
+	_gitclone "$github_twodict" || { echo "$(_c 31)Função _gitclone retornou [erro]$(_c)"; return 1; }
+
+	echo "$(_c 32 0)==> $(_c)Instalando: twodict"
+
+	cd "$dir_temp/twodict" && {
+		if [[ -x $(command -v python2 2> /dev/null) ]]; then
+			sudo python2 setup.py install
+
+		elif [[ -x $(command -v python2 2> /dev/null) ]]; then
+			sudo python2.7 setup.py install
+
+		fi
+
+		[[ $? == '0' ]] || { echo "$(_c 31)==> Falha: twodict$(_c)"; return 1; }
+	}
+}
+
+#--------------------------------------------------------#
+
+function _youtube_dl_gui_github()
+{
+	[[ -x $(command -v youtube-dl-gui 2> /dev/null) ]] && {
+		echo "$(_c 32 0)==> $(_c 35)já$(_c) instalado, deseja reinstalar novamente $(_c 32 0)[s/n]$(_c) ?: "
+		read sn
+		[[ "${sn,,}" == 's' ]] || { return 0; }
+	}
+
+case "$sysname" in
+	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
+	fedora30) sudo dnf install -y python2-wxpython; _twodict_github;;
+	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
+	*) _prog_not_found; return 1;;
+esac
+
+	github_youtube_dl_gui="https://github.com/MrS0m30n3/youtube-dl-gui.git"
+	_gitclone "$github_youtube_dl_gui" || { echo "$(_c 31)Função _gitclone retornou [erro]$(_c)"; return 1; }
+
+	cd "$dir_temp/youtube-dl-gui" && {
+		if [[ -x $(command -v python2 2> /dev/null) ]]; then # Linux
+			sudo python2 setup.py install
+
+		elif [[ -x $(command -v python2.7 2> /dev/null) ]]; then # FreeBSD
+			sudo python2.7 setup.py install
+		fi
+		}
+
+	sudo rm -rf "$dir_temp/youtube-dl-gui" 2> /dev/null
+
+	if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
+
+		arq_ytdl='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
+
+		echo '[Desktop Entry]' | sudo tee "$arq_ytdl"
+		{
+			echo "Encoding=UTF-8"
+			echo "Name=Youtube-Dl-Gui"
+			echo "Exec=youtube-dl-gui"
+			echo "Version=1.0"
+			echo "Terminal=false"
+			echo "Icon=youtube-dl-gui"
+			echo "Type=Application"
+			echo "Categories=Internet;Network;"
+		} | sudo tee -a "$arq_ytdl"
+
+		cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
+		cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
+		cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
+		echo -e "$(_c 32 0)==> [Feito]$(_c)"
+
+	else
+		# Falhou.
+		echo "$(_c 31)==> $(_c)[-] A instalação de youtube-dl-gui falhou"
+		return 1
+	fi
+}

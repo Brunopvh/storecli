@@ -144,6 +144,7 @@ array_internet=(
 'tixati'
 'torbrowser'
 'uget'
+'youtube-dl-gui'
 )
 
 # Midia

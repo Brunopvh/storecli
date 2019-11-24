@@ -64,6 +64,7 @@ export Lib_HttpsTransfer="$StoreCli_Path_Lib/HttpsTransfer.sh"
 export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh" # Gerencia instalação.
 export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"   # Gerencia remoção.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
+export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 
 # Categorias.
 export Lib_Acessorios="$StoreCli_Path_Lib/Acessorios.sh"

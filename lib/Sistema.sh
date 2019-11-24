@@ -40,7 +40,7 @@ function _bluetooth()
 			2) sudo apt install bluedevil;;
 			3) sudo apt install blueman;;
 			*) 
-			echo "$(_c 31)==> Erro inválida, você pode $(_c 32)repetir$(_c) ou $(_c 32)cancelar$(_c) (r/c): " 
+			echo "$(_c 31)==> Opição inválida, você pode $(_c 32)repetir$(_c) ou $(_c 32)cancelar$(_c) (r/c): " 
 			read -n 1 input; echo ' '
 			if [[ "${input,,}" == 'r' ]]; then
 				continue
