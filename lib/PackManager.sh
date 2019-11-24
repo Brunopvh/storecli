@@ -92,6 +92,8 @@ while [[ "$1" ]]; do
 		smplayer) _smplayer;;
 
 #-------------------- sistema ---------------------------#
+		bluetooth) _bluetooth;;
+		firmware-*) _firmware "$1";;
 		gparted) _gparted;;
 		peazip) _peazip;;
 

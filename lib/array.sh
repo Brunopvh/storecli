@@ -157,6 +157,11 @@ array_midia=(
 
 # Sistema
 array_sistema=(
+'bluetooth'
+'firmware-atheros'
+'firmware-linux-nonfree'
+'firmware-ralink'
+'firmware-realtek'
 'gnome-disk'
 'peazip'
 )

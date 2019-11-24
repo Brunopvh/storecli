@@ -3,6 +3,57 @@
 #
 #
 
+#=====================================================#
+# Debian Firmwares
+#=====================================================#
+function _firmware()
+{
+	[[ "$os_id" == 'debian' ]] || { _prog_not_found; return 1; }
+
+	case "$1" in
+		firmware-ralink) sudo apt install firmware-ralink -y;;
+		firmware-atheros) sudo apt install firmware-atheros -y;;
+		firmware-realtek) sudo apt install firmware-realtek -y;;
+		firmware-linux-nonfree) sudo apt install firmware-linux-nonfree -y;;
+	esac
+}
+
+#=====================================================#
+# Debian Bluetooth
+#=====================================================#
+function _bluetooth()
+{
+	[[ "$os_id" == 'debian' ]] || { _prog_not_found; return 1; }
+
+	sudo apt install -y bluez bluez-firmware bluez-hcidump
+	_info_msgs 'INFO'
+	echo "==> 1 - $(_c 32 0)G$(_c)NOME"
+	echo "==> 2 - $(_c 32 0)K$(_c)DE"
+	echo "==> 3 - $(_c 32 0)L$(_c)XDE/$(_c 32 0)X$(_c)FCE/$(_c 32 0)L$(_c)XQT/$(_c 32 0)M$(_c)ATE"
+	
+	while true; do
+
+		echo "==> Selecione a sua interface gráfica: $(_c 32 0)(1 / 2 / 3): $(_c)" 
+		read -n 1 input; echo ' '
+		case "${input,,}" in
+			1) sudo apt install gnome-bluetooth;;
+			2) sudo apt install bluedevil;;
+			3) sudo apt install blueman;;
+			*) 
+			echo "$(_c 31)==> Erro inválida, você pode $(_c 32)repetir$(_c) ou $(_c 32)cancelar$(_c) (r/c): " 
+			read -n 1 input; echo ' '
+			if [[ "${input,,}" == 'r' ]]; then
+				continue
+			elif [[ "${input,,}" == 'c' ]]; then
+				return 0; break
+			else
+				continue
+			fi		
+			;;
+		esac	
+		break	
+	done
+}
 
 #=====================================================#
 # Gparted
