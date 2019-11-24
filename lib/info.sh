@@ -26,10 +26,10 @@ clear
 
 cat <<EOF
 
-   Use: $(basename "$appsutils") --configure|--upgrade|--help|--downloadonly|--version
+   Use: $(basename $0) --configure|--upgrade|--help|--downloadonly|--version
                                  install <pacote>|remove <pacote>
 
-   $(basename "$appsutils"): V$VERSION
+   $(basename $0): V$VERSION
 
 Comandos:
    --configure            Instala programas necessários (dependências).
@@ -41,14 +41,15 @@ Comandos:
    --logo                 Exibe logo e sai.
    
    install <pacote>       Instala um ou mais pacote(s) 
-                            Ex: ./$(basename "$appsutils") vlc google-chrome icones-papirus
+                            Ex: $(basename $0) vlc google-chrome icones-papirus
                                   
    remove <pacote>        Remove um ou mais pacotes se possível.
+                            Ex: $(basename $0) remove torbrowser vscode
    
-Opições:
+Opções:
    -d|--downloadonly      Somente baixa o(s) pacote(s) se disponível.
                           se não for possivel o pacote será instalado.
-                          Ex: $(basename $appsutils) -d <pacote>
+                          Ex: $(basename $0) -d <pacote>
                           
 EOF
 }
