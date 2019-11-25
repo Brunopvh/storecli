@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-11-24 - (dev)'
+VERSION='2019-11-25 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #
@@ -52,6 +52,7 @@ export Script_TorBrowser="$StoreCli_Path_Scripts/TorBrowser.sh"
 export Script_UnPack="$StoreCli_Path_Scripts/UnPack.sh"
 export Script_PackTargz="$StoreCli_Path_Scripts/PackTargz.sh"
 export Script_Papirus="$StoreCli_Path_Scripts/papirus.sh"
+export Script_AddRepo="$StoreCli_Path_Scripts/AddRepo.sh"
 
 #========================================================#
 # Libs
@@ -69,6 +70,7 @@ export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 # Categorias.
 export Lib_Acessorios="$StoreCli_Path_Lib/Acessorios.sh"
 export Lib_Dev="$StoreCli_Path_Lib/Dev.sh"
+export Lib_Midia="$StoreCli_Path_Lib/Midia.sh"
 export Lib_Internet="$StoreCli_Path_Lib/Internet.sh"
 export Lib_Sistema="$StoreCli_Path_Lib/Sistema.sh"
 export Lib_Preferencias="$StoreCli_Path_Lib/Preferencias.sh"

@@ -40,23 +40,55 @@ fi
 
 #-----------------------------------------------------#
 
+# Fedora
+function _codecs_fedora()
+{
+	# Add repo fusion non free
+	"$Script_AddRepo" --fedora-repos
+
+local lista_codecs=(
+'gstreamer1' 'gstreamer1-plugins-base' 'gstreamer-ffmpeg' 
+'x264' 'x264-libs' 'xvidcore' 'libmpeg3'
+)
+
+	echo "$(_c 32)==> $(_c)Instalando: ffmpeg ffmpegthumbnailer"
+	sudo dnf install -y ffmpeg ffmpegthumbnailer.x86_64
+
+	echo "$(_c 32)==> $(_c)Instalando: ${lista_codecs[@]}"
+	sudo dnf install -y "${lista_codecs[@]}" 
+}
+
+#-----------------------------------------------------#
+
 # Codecs
 function _codecs()
 {
 case "$sysname" in
 	freebsd12.0-release) sudo pkg install -y ffmpeg ffmpegthumbnailer gstreamer-ffmpeg;;
 	debian10) _codecs_debian;;
+	fedora30|fedora31) _codecs_fedora;;
 	opensuse-tumbleweed) _codecs_tumbleweed;;
 	*) _prog_not_found;;
 
 esac
 }
 
+function _vlc_fedora()
+{
+	# Add repo fusion non free
+	"$Script_AddRepo" --fedora-repos
+	echo "$(_c 32 0)==> $(_c)Instalando vlc: "
+	sudo dnf install vlc python-vlc
+}
+
+#-----------------------------------------------------#
+
 # Vlc
 function _vlc()
 {
 case "$sysname" in
 	debian10) sudo apt install -y vlc;;
+	fedora30|fedora31) _vlc_fedora;;
 	freebsd12.0-release) sudo pkg install -y vlc;;
 	*) _prog_not_found;;
 

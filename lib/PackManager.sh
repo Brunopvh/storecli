@@ -6,6 +6,7 @@
 source "$Lib_array"
 source "$Lib_Acessorios"
 source "$Lib_Dev"
+source "$Lib_Midia"
 source "$Lib_Internet"
 source "$Lib_Sistema"
 source "$Lib_Preferencias"

@@ -367,6 +367,8 @@ function _twodict_github()
 
 		[[ $? == '0' ]] || { echo "$(_c 31)==> Falha: twodict$(_c)"; return 1; }
 	}
+
+if [[ -d "$dir_temp/twodict" ]]; then cd "$dir_temp" && sudo rm -rf twodict; fi
 }
 
 #--------------------------------------------------------#
@@ -399,7 +401,7 @@ function _youtube_dl_gui_github()
 
 case "$sysname" in
 	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
-	fedora30) sudo dnf install -y python2-wxpython; _twodict_github;;
+	fedora30|fedora31) sudo dnf install -y python2-wxpython; _twodict_github;;
 	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
 	opensuse-tumbleweed) _youtube_dl_gui_tumbleweed; return 0;;
 	*) _prog_not_found; return 1;;
