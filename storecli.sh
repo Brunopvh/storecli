@@ -158,7 +158,7 @@ _info_msgs 'instalando requerimentos cli'
 #requeriments python
 _info_msgs 'Instalando requerimentos python'
 	while ! _python_requeriments; do
-		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou$(_c 32)repetir $(_c)[c/r]: "
+		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
 		read -n 1 cr
 		echo ' '
 
@@ -183,8 +183,9 @@ elif [[ "$1" == '--logo' ]]; then
 
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
-	_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"
-	exit "$?"
+	_configure_system 
+	[[ "$?" == '0' ]] || { echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1; }
+
 fi 
 
 
@@ -210,7 +211,7 @@ if ! grep -q 'requeriments false' "$Config_File"; then
 
 	read _input
 	if [[ "${_input,,}" == 's' ]]; then
-		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"
+		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1
 	else
 		echo "Execute manualmente: $(cl 32)$(basename $0) --configure$(cl)"
 		exit 0

@@ -27,6 +27,25 @@ fi
 }
 
 #===============================================#
+# Install cli ubuntu
+#===============================================#
+function _install_cli_ubuntu()
+{
+echo "==> Instalando dependências"
+sudo apt install -y 'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip' 'python3' 'python'
+sudo apt install -y "${array_cli_debian[@]}"
+
+if [[ $? == '0' ]]; then 
+	return 0
+
+else
+	# Error apt install
+	echo "==> O gerenciador de pacotes $(cl 31)apt $(cl) retornou [erro]"
+	return 1
+fi
+}
+
+#===============================================#
 # Install cli suse
 #===============================================#
 function _install_cli_suse()
@@ -85,6 +104,16 @@ fi
 
 
 #===============================================#
+# Install python requeriments debian
+#===============================================#
+function _python_requeriments_debian()
+{
+	echo "$(_c 32)==> Instalando python requeriments $(_c)"
+	sudo apt install -y 'python3' 'python' 'python3-pip' 'python-pip' 'python3-setuptools' 'python-setuptools'
+	[[ "$?" == '0' ]] || { echo "$(_c 31)Função _python_requeriments_debian retornou erro"; return 1; }
+}
+
+#===============================================#
 # Install python requeriments linux
 #===============================================#
 function _python_requeriments_linux()
@@ -93,10 +122,6 @@ echo "$(cl 32)==> $(cl)Instalando: ${array_python_linux[@]}"
 
 if [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
 	sudo zypper in "${array_python_linux[@]}"
-	[[ $? == '0' ]] || { return 1; }
-
-elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian
-	sudo apt install -y "${array_python_linux[@]}"
 	[[ $? == '0' ]] || { return 1; }
 
 elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
@@ -135,8 +160,11 @@ pip-3.6 install wget bash --user
 #===============================================#
 function _install_requeriments()
 {
-if [[ "$sysname" == 'debian10' ]]; then
+if [[ "$os_id" == 'debian' ]]; then 
 	 _install_cli_debian 
+
+elif [[ "$os_id" == "linuxmint"  ]] || [[  "$os_id" == 'ubuntu' ]]; then
+	_install_cli_ubuntu
 
 elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
 	_install_cli_freebsd
@@ -168,8 +196,8 @@ fi
 #===============================================#
 function _python_requeriments()
 {
-if [[ "$sysname" == 'debian10' ]]; then
-	 _python_requeriments_linux
+if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'linuxmint' ]] || [[ "$os_id" == 'ubuntu' ]]; then
+	 _python_requeriments_debian
 
 elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
 	_python_requeriments_freebsd
