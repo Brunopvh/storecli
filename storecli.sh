@@ -144,12 +144,25 @@ done
 #=====================================================#
 function _configure_system()
 {
-while ! _install_requeriments; do
-		echo -ne "pressione $(cl 32)c$(cl) para repetir ou $(cl 31)e$(cl) para sair: "
+# requeriments cli
+_info_msgs 'instalando requerimentos cli'
+	while ! _install_requeriments; do
+		echo -ne "[Erro] pressione $(cl 32)c$(cl) para repetir ou $(cl 31)e$(cl) para sair: "
 		read -n 1 _input
 		echo ' '
 		if [[ "${_input,,}" == 'c' ]]; then continue; else return 1; break; fi		
-done
+	done
+
+#requeriments python
+_info_msgs 'Instalando requerimentos python'
+	while ! _python_requeriments; do
+		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou$(_c 32)repetir $(_c)[c/r]: "
+		read -n 1 cr
+		echo ' '
+
+		if [[ "${cr,,}" == 'r' ]]; then continue; else return 1; break; fi		
+	done
+
 }
 
 #-----------------------------------------------------#

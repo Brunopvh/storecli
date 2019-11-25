@@ -17,16 +17,13 @@ echo "$(cl 32)==> $(cl)Instalando: ${array_cli_requeriments[@]} ${array_cli_debi
 sudo apt install -y "${array_cli_requeriments[@]}" "${array_cli_debian[@]}"
 
 if [[ $? == '0' ]]; then 
-	_python_requeriments_linux
+	return 0
 
 else
 	# Error apt install
 	echo "==> O gerenciador de pacotes $(cl 31)apt $(cl) retornou [erro]"
 	return 1
 fi
-
-# Error _python_requeriments_linux
-[[ $? == '0' ]] || { echo "$(cl 31)==> $(cl)Função $(cl 31)_python_requeriments_linux $(cl) retornou erro"; }
 }
 
 #===============================================#
@@ -38,17 +35,34 @@ echo "$(cl 32)==> $(cl)Instalando: ${array_cli_requeriments[@]}"
 sudo zypper in "${array_cli_requeriments[@]}"
 
 if [[ $? == '0' ]]; then 
-	_python_requeriments_linux
+	return 0
 
 else
 	# Error zypper install
 	echo "==> O gerenciador de pacotes $(cl 31)zypper $(cl) retornou [erro]"
 	return 1
 fi
-
-# Error _python_requeriments_linux
-[[ $? == '0' ]] || { echo "$(cl 31)==> $(cl)Função $(cl 31)_python_requeriments_linux $(cl) retornou erro"; }
 }
+
+#===============================================#
+# Install cli suse
+#===============================================#
+function _install_cli_fedora()
+{
+	echo "$(_c 32 0)Instalando: ${array_cli_requeriments[@]} $(_c)"
+	sudo dnf install "${array_cli_requeriments[@]}"
+
+	if [[ $? == '0' ]]; then
+		return 0
+
+	else
+		
+		echo "$(_c 31)O gerenciador de pacotes dnf retornou erro $(_c)"
+		return 1
+
+	fi
+}
+
 
 #===============================================#
 # Install cli freebsd
@@ -59,7 +73,7 @@ echo "$(cl 32)==> $(cl)Instalando: ${array_cli_freebsd[@]} ${_python_requeriment
 sudo pkg install -y "${array_cli_freebsd[@]}"
 
 if [[ "$?" == '0' ]]; then
-	_python_requeriments_freebsd
+	return 0
 
 else
 	# Error pkg install
@@ -67,9 +81,6 @@ else
 	return 1
 
 fi
-
-# Error _python_requeriments_freebsd
-[[ $? == '0' ]] || { echo "$(cl 31)==> $(cl)Função $(cl 31)_python_requeriments_freebsd $(cl) retornou erro"; }
 }
 
 
@@ -133,8 +144,11 @@ elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
 elif [[ "$sysname" == 'opensuse-tumbleweed' ]]; then
 	_install_cli_suse
 
+elif [[ "$sysname" == 'fedora31' ]]; then
+	_install_cli_fedora
+
 else
-	return 1
+	echo "$(_c 31)Sistema não suportado $(_c)"; return 1
 fi
 
 
@@ -149,6 +163,39 @@ else
 fi
 }
 
+#===============================================#
+# Configure/Install python requeriments
+#===============================================#
+function _python_requeriments()
+{
+if [[ "$sysname" == 'debian10' ]]; then
+	 _python_requeriments_linux
+
+elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
+	_python_requeriments_freebsd
+	
+elif [[ "$sysname" == 'opensuse-tumbleweed' ]]; then
+	_python_requeriments_linux
+
+elif [[ "$sysname" == 'fedora31' ]]; then
+	_python_requeriments_linux
+
+else
+	echo "$(_c 31)Sistema não suportado $(_c)"; return 1
+
+fi
+
+
+if [[ $? == '0' ]]; then
+	echo "$(_c 32 0)==> função_python_requeriments foi executada com sucesso $(_c)"
+	#echo 'python_requeriments false' >> "$Config_File"
+	return 0
+else
+	echo "$(_c 31)==> Função_python_requeriments retornou [erro] $(_c)" 
+	return 1
+
+fi
+}
 #===============================================#
 # Config dirs
 #===============================================#
