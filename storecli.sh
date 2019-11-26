@@ -92,9 +92,17 @@ source "$Lib_PackManager"
 source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 
+#--------------------------------------------------------#
 if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
 	sysname=$(echo "$sysname" | sed 's/[0-9]\+//g') # Remover números do final.
 fi
+
+# linuxmint 19
+if [[ "$os_id" == 'linuxmint' ]] && [[ $(echo "$os_version" | cut -c -2) -ge 19 ]]; then
+	sysname="${os_id}$(echo $os_version | cut -c -2)"
+
+fi
+
 esp='--------------'
 
 #========================================================#

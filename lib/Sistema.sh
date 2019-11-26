@@ -142,10 +142,12 @@ local path_arq_bionic="$dir_user_cache/$(basename $vbox_url_bionic)"
 local path_arq_f29="$dir_user_cache/$(basename $vbox_url_f29)"
 local path_arq_run="$dir_user_cache/$(basename $vbox_url_run)"
 
-	_dow "$vbox_url_buster" "$path_arq_buster" --curl
-	_dow "$vbox_url_bionic" "$path_arq_bionic" --curl
-	_dow "$vbox_url_f29" "$path_arq_f29" --curl
-	_dow "$vbox_url_run" "$path_arq_run" --curl
+	case "$sysname" in 
+		debian10) _dow "$vbox_url_buster" "$path_arq_buster" --curl;;
+		linuxmint19) _dow "$vbox_url_bionic" "$path_arq_bionic" --wget;;
+		fedora30|fedora31) _dow "$vbox_url_f29" "$path_arq_f29" --curl;;
+		*) _dow "$vbox_url_run" "$path_arq_run" --curl;;
+	esac
 }
 
 #-----------------------------------------------------#
@@ -286,6 +288,7 @@ function _virtualbox()
 
 	case "$sysname" in
 		debian10) _virtualbox_buster;;
+		linuxmint19) _virtualbox_bionic;;
 		thirty|thirty_one) _virtualbox_fedora;;	
 		*) _prog_not_found;;	
 	esac

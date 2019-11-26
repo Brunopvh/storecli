@@ -64,17 +64,19 @@ cd "$dir_default"
 [[ $(pidof wget) ]] && kill -9 $(pidof wget)
 [[ -f "$log_w" ]] && rm "$log_w"
 
-echo -e "==> Baixando: [$url]"
+echo -e "$(cor 32)==> $(cor)Baixando: [$url]"
 if [[ -z $2 ]]; then  
-	while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" | sed '/Continuando\|escrita/d'; do
-		_progress;
-	done
+	#while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" | sed '/Continuando\|escrita/d'; do
+	#	_progress;
+	#done
+	wget -c "$url"
 
 elif [[ -d $(dirname "$2") ]]; then
-	echo -e "==> Destino: [$path_arq]"
-	while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" -O "$path_arq" | sed '/Continuando\|escrita/d'; do
-		_progress;
-	done
+	echo -e "$(cor 32)==> $(cor)Destino: [$path_arq]"
+	#while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" -O "$path_arq" | sed '/Continuando\|escrita/d'; do
+	#	_progress;
+	#done
+	wget -c "$url" -O "$path_arq"
 
 fi
 }

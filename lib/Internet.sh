@@ -53,7 +53,7 @@ fi
 function _google_chrome()
 {
 case "$sysname" in
-	debian10) _google_chrome_debian;;
+	debian10|linuxmint19) _google_chrome_debian;;
 	opensuse-tumbleweed) _google_chrome_tumbleweed;;
 	*) _prog_not_found; return 1;;
 esac	
@@ -391,6 +391,49 @@ local path_arq="$dir_user_cache/$(basename $url_youtube_dlg_tumbleweed)"
 
 #--------------------------------------------------------#
 
+function _youtube_dl_gui_pip() 
+{
+
+# ppa ubuntu.
+# sudo sh -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
+# sudo apt install youtube-dlg --yes
+#
+
+# dependências.
+sudo apt install python-wxgtk3.0 gettext python-pip python-twodict
+pip install youtube-dlg 
+
+# Prosseguir se a ação anterior não falhar.
+if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
+
+	arq_ytdl=~/.local/share/applications/youtube-dl-gui.desktop
+
+	echo '[Desktop Entry]' | tee "$arq_ytdl"
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=Youtube dl Gui"
+		echo "Exec=youtube-dl-gui"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Icon=youtube-dl-gui"
+		echo "Type=Application"
+		echo "Categories=Internet;Network;"
+	} | tee -a "$arq_ytdl"
+
+	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
+	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
+	echo -e "$(_c 32 0)==> [Feito]$(_c)"; return 0	
+	
+else
+	echo "$(cor 31)==> $(cor)[-] A instalação de youtube-dl-gui falhou"
+	return 1
+
+fi
+} 
+
+#--------------------------------------------------------#
+
 function _youtube_dl_gui_github()
 {
 	[[ -x $(command -v youtube-dl-gui 2> /dev/null) ]] && {
@@ -401,6 +444,7 @@ function _youtube_dl_gui_github()
 
 case "$sysname" in
 	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
+	linuxmint19) _youtube_dl_gui_pip; return 0;;
 	fedora30|fedora31) sudo dnf install -y python2-wxpython; _twodict_github;;
 	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
 	opensuse-tumbleweed) _youtube_dl_gui_tumbleweed; return 0;;
@@ -448,3 +492,4 @@ esac
 		return 1
 	fi
 }
+
