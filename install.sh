@@ -133,4 +133,5 @@ else
 fi
 
 
+command -v storecli 1> /dev/null 2>&1  && storecli --logo 2> /dev/null
 exit "$?"
