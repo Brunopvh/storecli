@@ -11,10 +11,19 @@
 #=====================================================#
 function _gnome_disk()
 {
-	case "$sysname" in
-		debian10) sudo apt install gnome-disk-utility;;
-		*) _prog_not_found; return 1;;
-	esac
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in gnome-disk-utility
+
+	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+		sudo dnf install gnome-disk-utility
+
+	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+		sudo apt install gnome-disk-utility
+
+	else
+		_prog_not_found; return 1
+
+	fi
 }
 
 #-----------------------------------------------------#

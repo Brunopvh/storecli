@@ -95,13 +95,42 @@ function _megasync_debian10()
 local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
 local mega_file="/etc/apt/sources.list.d/megasync.list"
 
-	echo "$(_c 32)==> $(_c)Adicionando repositório e chaves agurade..."
+find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
+if [[ $? == '0' ]]; then # Pular 
+	echo "==> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
+
+else
+	echo "$(_c 32)==> $(_c)Adicionando repositório"
 	echo "$mega_repos" | sudo tee "$mega_file"
+
+fi
 
 	sudo sh -c 'wget https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key -O - | apt-key add -'
 	sudo sh -c 'apt update; apt install -y megasync'
 }
 
+
+#-----------------------------------------------------#
+
+function _megasync_ubuntu18()
+{
+local mega_repos_ubuntu18="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
+local mega_file="/etc/apt/sources.list.d/megasync.list"
+
+find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.*Ubuntu_18\.04" 2> /dev/null
+if [[ $? == '0' ]]; then
+	echo "==> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
+
+else
+	echo "$(_c 32)==> $(_c)Adicionando repositório"
+	echo "$mega_repos_ubuntu18" | sudo tee "$mega_file"
+
+fi
+
+	echo "$(_c 32)==> $(_c)Agurade..."	
+	sudo sh -c 'wget -c https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key -O- | apt-key add -'
+	sudo sh -c 'apt update; apt install -y megasync'
+}
 
 #-----------------------------------------------------#
 
@@ -111,6 +140,7 @@ function _megasync()
 case "$sysname" in
 	opensuse-tumbleweed) _megasync_suse_tumbleweed;;
 	debian10) _megasync_debian10;;
+	linuxmint19) _megasync_ubuntu18;;
 	*) _prog_not_found; return 1;;
 
 esac
@@ -263,6 +293,11 @@ local path_arq="$1"
 	sudo mv "$dir_temp"/tixati-amd64/tixati.png "${array_tixati_dirs[1]}" # PNG.
 	sudo mv "$dir_temp"/tixati-amd64/tixati "${array_tixati_dirs[2]}" # binario.
 	sudo mv "$dir_temp"/tixati-amd64 "${array_tixati_dirs[3]}" # dir /opt.
+
+	# Atalho desktop
+	cp -u "${array_tixati_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${array_tixati_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${array_tixati_dirs[0]}" ~/Desktop/ 2> /dev/null
 	
 	if [[ -x $(command -v tixati 2> /dev/null) ]]; then
 		_info_msgs 'tixati instalado'; tixati & 

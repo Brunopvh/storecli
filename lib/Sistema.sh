@@ -110,6 +110,11 @@ sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.png "${array_pea
 sudo mv "$dir_temp"/peazip-amd64/peazip "${array_peazip_dirs[2]}" # binario.
 sudo mv "$dir_temp"/peazip-amd64 "${array_peazip_dirs[3]}" # dir.
 
+	# Atalho desktop
+	cp -u "${array_peazip_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${array_peazip_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
+
 if [[ -x $(which peazip 2> /dev/null) ]]; then
 	_info_msgs; echo "==> peazip instalado com sucesso."
 	return 0
