@@ -173,7 +173,7 @@ local path_arq="$dir_user_cache/$(basename $url_extpack)" # Destion/Arquivo.
 
 # Instalação
 echo "$(_c 32)==> $(_c)Instalando Extension Pack"
-sudo VBoxManage extpack install --replace "$arq_extpack"
+sudo VBoxManage extpack install --replace "$path_arq"
 
 echo -ne "$(cor 32)==> $(cor)Deseja adicionar $USER ao grupo vboxusers ? $(cor 33)[s/n]$(cor) : " 
 read acao 

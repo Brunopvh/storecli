@@ -103,6 +103,7 @@ while [[ "$1" ]]; do
 #-------------------- preferencias ---------------------------#
 		icones-papirus) "$Script_Papirus";;
 		ohmybash) _ohmybash;;
+		ohmyzsh) _ohmyzsh;;
 
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;
