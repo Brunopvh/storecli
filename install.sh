@@ -88,7 +88,8 @@ _git_clone()
 _path_zsh()
 {
 	command -v zsh 2> /dev/null || return 0
-	if ! grep "^export PATH=$HOME./local/bin.*" ~/'.zshrc'; then
+	if ! grep -q "^export PATH=$HOME/.local/bin.*" ~/.zshrc; then
+		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
 	fi
 
@@ -99,7 +100,8 @@ _path_zsh()
 
 _path_bash()
 {
-	if ! grep "^export PATH=$HOME./local/bin.*" ~/'.bashrc'; then
+	if ! grep -q "^export PATH=$HOME/.local/bin.*" ~/.bashrc; then
+		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
 	fi
 
@@ -107,11 +109,16 @@ _path_bash()
 }
 
 #---------------------------------------------------#
-command -v bash 2> /dev/null || { echo "$(_c 31)Erro instale o shell [bash] $(_c)"; exit 1; }
+# Run
+#---------------------------------------------------#
+
+command -v bash 1> /dev/null 2>&1 || { echo "$(_c 31)Erro instale o shell [bash] $(_c)"; exit 1; }
 
 _git_clone || { echo "$(_c 31)$(_msgs Falha: função _git_clone retornou erro) $(_c)"; exit 1; }
 _uninstall_user
 _uninstall_root
+
+#---------------------------------------------------#
 
 if [ $(id -u) -eq '0' ]; then
 	_install_root
@@ -132,6 +139,7 @@ else
 		}
 fi
 
+#---------------------------------------------------#
 
 command -v storecli 1> /dev/null 2>&1  && storecli --logo 2> /dev/null
 exit "$?"
