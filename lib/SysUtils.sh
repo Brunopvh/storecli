@@ -256,7 +256,7 @@ function _conf_path_zsh()
 {
 	[[ -x $(command -v zsh 2> /dev/null) ]] || return 0
 
-	if ! -q grep "^export PATH.*$HOME/.local/bin.*" ~/.zshrc; then
+	if ! grep -q "^export PATH.*$HOME/.local/bin.*" ~/.zshrc; then
 		echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.zshrc] $(_c)"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
 	fi
