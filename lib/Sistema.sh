@@ -4,21 +4,6 @@
 #
 
 #=====================================================#
-# Debian Firmwares
-#=====================================================#
-function _firmware()
-{
-	[[ "$os_id" == 'debian' ]] || { _prog_not_found; return 1; }
-
-	case "$1" in
-		firmware-ralink) sudo apt install firmware-ralink -y;;
-		firmware-atheros) sudo apt install firmware-atheros -y;;
-		firmware-realtek) sudo apt install firmware-realtek -y;;
-		firmware-linux-nonfree) sudo apt install firmware-linux-nonfree -y;;
-	esac
-}
-
-#=====================================================#
 # Debian Bluetooth
 #=====================================================#
 function _bluetooth()
@@ -54,6 +39,57 @@ function _bluetooth()
 		break	
 	done
 }
+
+#=====================================================#
+#
+#=====================================================#
+function _compactadores()
+{
+
+local compactadores_debian=(
+'p7zip-full' 'p7zip' 'p7zip-rar' 
+'cabextract' 'unzip' 'xz-utils'
+'lhasa' 'unace' 'arc' 'arj' 
+'lzma' 'rar' 'unrar-free'
+'zip' 'ncompress'
+)
+
+local compactadores_fedora=(
+'zip' 'ncompress' 'xarchiver'
+'arj' 'cabextract' 'unzip' 
+'p7zip' 'lzma' 'arc' 
+)
+
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in "${compactadores_fedora[@]}"
+
+	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+		sudo dnf install "${compactadores_fedora[@]}"
+
+	elif [[ -x $(command -v apt) ]]; then
+		sudo apt install "${compactadores_debian[@]}"
+
+	else
+		_prog_not_found; return 1
+
+	fi
+}
+
+#=====================================================#
+# Debian Firmwares
+#=====================================================#
+function _firmware()
+{
+	[[ "$os_id" == 'debian' ]] || { _prog_not_found; return 1; }
+
+	case "$1" in
+		firmware-ralink) sudo apt install firmware-ralink -y;;
+		firmware-atheros) sudo apt install firmware-atheros -y;;
+		firmware-realtek) sudo apt install firmware-realtek -y;;
+		firmware-linux-nonfree) sudo apt install firmware-linux-nonfree -y;;
+	esac
+}
+
 
 #=====================================================#
 # Gparted

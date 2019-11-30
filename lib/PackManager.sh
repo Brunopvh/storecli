@@ -95,6 +95,7 @@ while [[ "$1" ]]; do
 
 #-------------------- sistema ---------------------------#
 		bluetooth) _bluetooth;;
+		compactadores) _compactadores;;
 		firmware-*) _firmware "$1";;
 		gparted) _gparted;;
 		peazip) _peazip;;

@@ -2,7 +2,7 @@
 # 
 # Tor Browser install
 #
-VER='2019-11-21'
+VER='2019-11-30'
 #
 
 #clear
@@ -33,12 +33,14 @@ array_tor=(
 function _usage_tor()
 {
 cat <<EOF
-Use: $(basename $0) --install|--remove|--downloadonly|--help
-	--install          Instala Tor Browser em ~/.local/bin
-	--remove           Desinstalar Tor Browser.
-	--help             Exibe este menu e sai.
-	--version          Exibe Versão e sai.
-	--downloadonly     Somente baixa a ultima versão do Tor Browser
+Use: 
+   $(basename $0) --install|--remove|--downloadonly|--help
+
+   --install          Instala Tor Browser em ~/.local/bin
+   --remove           Desinstalar Tor Browser.
+   --help             Exibe este menu e sai.
+   --version          Exibe Versão e sai.
+   --downloadonly     Somente baixa a ultima versão do Tor Browser
 	                   Ex: $(basename $0) --install --downloadonly
 EOF
 
@@ -63,7 +65,7 @@ done
 #=============================================#
 # Path User
 #=============================================#
-function _conf_paht_zsh()
+function _conf_path_zsh()
 {
 if [[ ! $(grep "^export PATH.*$HOME/.local/bin.*" ~/.zshrc) ]]; then
 	echo "==> Adicionando $(cor 32)~/.local/bin$(cor) em PATH [~/.bashrc]"
@@ -102,7 +104,7 @@ export tor_path_file="$dir_default/$tor_name"
 }
 
 #=============================================#
-# Informações/Progresso de download
+# Informações/Progresso de download com wget
 #=============================================#
 _progress(){
 n=1
@@ -154,8 +156,8 @@ if [[ -f "$tor_path_file" ]]; then
 	return 0
 
 else
-	_wget "$tor_url_dow" "$tor_path_file" 
-
+	# _wget "$tor_url_dow" "$tor_path_file" # Download com wget
+	curl -L -C - -O "$tor_url_dow" -o "$tor_path_file" # Download com curl
 fi
 }
 
@@ -202,7 +204,7 @@ _get_info_tor
 _download_tor	
 
 if [[ "$2" == '--downloadonly' ]]; then
-	echo "$(cor 35)==> $(cor)$(basename $0): Feito somente download."
+	echo "$(cor 32)==> $(cor)$(basename $0): Feito somente download."
 	return 0
 fi
 
@@ -225,9 +227,9 @@ cd "${array_tor[0]}"; ./start-tor-browser.desktop --register-app # Gerar arquivo
 
 # Gerar script para chamada via linha de comando.
 touch "${array_tor[2]}"
-echo '#!/usr/bin/env bash' > "${array_tor[2]}"
-echo -e "\ncd ${array_tor[0]}"  >> "${array_tor[2]}"
-echo './start-tor-browser.desktop' >> "${array_tor[2]}"
+	echo '#!/usr/bin/env bash' > "${array_tor[2]}" # array_tor[2] = ~/.local/bin/torbrowser
+	echo -e "\ncd ${array_tor[0]}"  >> "${array_tor[2]}"
+	echo './start-tor-browser.desktop' >> "${array_tor[2]}"
 
 chmod +x "${array_tor[2]}"
 cp -u "${array_tor[1]}" ~/Desktop/ 2> /dev/null
@@ -271,7 +273,7 @@ while [[ $1 ]]; do
 		--remove) _remove_tor_browser;;
 		--help) _usage_tor; exit 0;;
 		--version) echo -e "$(basename $0) V$VER";;
-		--downloadonly) echo -ne "\r";;
+		--downloadonly) echo -ne " \r";;
 		*) _usage_tor; exit 1;;
 
 	esac

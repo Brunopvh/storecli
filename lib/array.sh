@@ -159,6 +159,7 @@ array_midia=(
 # Sistema
 array_sistema=(
 'bluetooth'
+'compactadores'
 'firmware-atheros'
 'firmware-linux-nonfree'
 'firmware-ralink'
