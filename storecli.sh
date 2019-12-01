@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-11-30 - (dev)'
+VERSION='2019-12-01 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #

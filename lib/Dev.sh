@@ -43,6 +43,7 @@ local path_arq="$dir_user_cache/$(basename $url)"
 _dow "$url" "$path_arq" --wget
 # --download-only
 [[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ -x $(command -v studio 2> /dev/null) ]] && { _msg_pack_instaled 'android-studio'; return 0; }
 
 	 # Lib ShaSum.sh
 	_check_sum "$path_arq" "$soma" || { 
@@ -56,9 +57,9 @@ _dow "$url" "$path_arq" --wget
 
 echo "$(_c 32)==> $(_c)Instalando android studio em ~/.local/bin"
 
-cd "$dir_temp" && mv -v $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null
-cp -vu "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}"
-chmod -R +x "${array_android_studio_dirs[3]}" 
+cd "$dir_temp" && mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # Dir
+cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
+chmod -R +x "${array_android_studio_dirs[3]}" # Dir
 
 	# .desktop
 	echo '[Desktop Entry]' > "${array_android_studio_dirs[0]}"
@@ -75,7 +76,7 @@ chmod -R +x "${array_android_studio_dirs[3]}"
 	} >> "${array_android_studio_dirs[0]}"
 
 	# Atalho para linha de comando.
-	echo '#!/bin/sh' > "${array_android_studio_dirs[2]}"
+	echo '#!/bin/sh' > "${array_android_studio_dirs[2]}" # ~/.local/bin/studio
 	echo "cd ${array_android_studio_dirs[3]}/bin && ./studio.sh" >> "${array_android_studio_dirs[2]}"
 
 	# Permissão.
