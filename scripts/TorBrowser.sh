@@ -157,7 +157,7 @@ if [[ -f "$tor_path_file" ]]; then
 
 else
 	# _wget "$tor_url_dow" "$tor_path_file" # Download com wget
-	curl -L -C - -O "$tor_url_dow" -o "$tor_path_file" # Download com curl
+	curl -LS -C - -O "$tor_url_dow" -o "$tor_path_file" # Download com curl
 fi
 }
 

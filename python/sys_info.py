@@ -1,7 +1,13 @@
 #!/usr/bin/env python3
 #
+# Use:
+# >>> import sys_info
+# >>> nome_sistema = sys_info._sys_name(' ') 
+# >>> versao_sistema = sys_info._sys_version(' ') 
+# >>> codinome_sistema = sys_info._sys_codiname(' ')
 #
-VER = '2019-11-13'
+#
+VER = '2019-12-01'
 #
 
 import os, platform, re
