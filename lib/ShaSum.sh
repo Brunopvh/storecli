@@ -3,7 +3,7 @@
 #
 # Compara hash de um arquivo com uma hash recebida como argumento
 # Uso:
-# _check_sum <path/arquivo> <soma> --> Se a soma for igual irá retornar OK.
+# _check_sum <path/arquivo> <soma> --> Se a soma for igual irá retornar OK se não ira retornar 1.
 #
 
 function _c()

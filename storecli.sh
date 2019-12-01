@@ -33,7 +33,7 @@ fi
 }
 
 [[ $(id -u) == '0' ]] && { 
-	echo "$(cl 31)==> $(cl)Falha o usuário não pode ser o $(cl 31)[root]$(cl)"
+	echo "$(_c 31)==> $(_c)Falha o usuário não pode ser o $(_c 31)[root]$(_c)"
 	exit 1
 }
 
@@ -138,11 +138,11 @@ function _check_executable_cli()
 {
 while [[ $1 ]]; do
 	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		#echo "$(cl 32)==> $(cl)$1 $(_space_msg ${#1}) [OK]"
+		#echo "$(_c 32)==> $(_c)$1 $(_space_msg ${#1}) [OK]"
 		echo -ne "\r"
 
 	else
-		echo "$(cl 31)==> $(cl)$1 $(_space_msg ${#1}) [ERROR]"
+		echo "$(_c 31)==> $(_c)$1 $(_space_msg ${#1}) [ERROR]"
 		return 1; break
 	fi
 	shift; #sleep 0.05
@@ -157,7 +157,7 @@ function _configure_system()
 # requeriments cli
 _info_msgs 'instalando requerimentos cli'
 	while ! _install_requeriments; do
-		echo -ne "[Erro] pressione $(cl 32)c$(cl) para repetir ou $(cl 31)e$(cl) para sair: "
+		echo -ne "[Erro] pressione $(_c 32)c$(_c) para repetir ou $(_c 31)e$(_c) para sair: "
 		read -n 1 _input
 		echo ' '
 		if [[ "${_input,,}" == 'c' ]]; then continue; else return 1; break; fi		
@@ -203,8 +203,8 @@ fi
 # Cli
 _check_executable_cli "${array_cli_requeriments[@]}" 
 if [[ $? != '0' ]]; then 
-	echo "$(cl 31)==> $(cl)Falha: função $(cl 31)_check_executable_cli $(cl) retornou [erro]" 
-	echo "$(cl 31)==> Execute:$(cl) $(basename $0) --configure para resolver este erro"
+	echo "$(_c 31)==> $(_c)Falha: função $(_c 31)_check_executable_cli $(_c) retornou [erro]" 
+	echo "$(_c 31)==> Execute:$(_c) $(basename $0) --configure para resolver este erro"
 	exit 1 
 fi
 
@@ -212,16 +212,16 @@ fi
 [[ ! -f "$Config_File" ]] && echo ' ' > "$Config_File"
 
 if ! grep -q 'requeriments false' "$Config_File"; then
-	echo -e "$esp $(cl 32)[INFO]$(cl) $esp"
+	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
 
-	echo "==> Necessário executar a opção $(cl 32 0)--configure$(cl) pela primeira vez em seu sistema."
-	echo -ne "==> Deseja executar esta ação agora $(cl 35)[s/n]$(cl) ?: "
+	echo "==> Necessário executar a opção $(_c 32 0)--configure$(_c) pela primeira vez em seu sistema."
+	echo -ne "==> Deseja executar esta ação agora $(_c 35)[s/n]$(_c) ?: "
 
 	read _input
 	if [[ "${_input,,}" == 's' ]]; then
 		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1
 	else
-		echo "Execute manualmente: $(cl 32)$(basename $0) --configure$(cl)"
+		echo "Execute manualmente: $(_c 32)$(basename $0) --configure$(_c)"
 		exit 0
 	fi
 	
@@ -236,13 +236,9 @@ _conf_path_zsh
 #------------------ End check system -----------------#
 #=====================================================#
 
-
-#=====================================================#
-# Instalação dos programas.
-#=====================================================#
 function _prog_not_found()
 {
-echo "$(cl 31)==> $(cl)Programa indisponível para o seu sistema."
+echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema."
 }
 
 #-----------------------------------------------------#

@@ -53,7 +53,7 @@ fi
 function _google_chrome()
 {
 case "$sysname" in
-	debian10|linuxmint19) _google_chrome_debian;;
+	debian10|linuxmint19|ubuntu18.04) _google_chrome_debian;;
 	opensuse-tumbleweed) _google_chrome_tumbleweed;;
 	*) _prog_not_found; return 1;;
 esac	
@@ -140,7 +140,7 @@ function _megasync()
 case "$sysname" in
 	opensuse-tumbleweed) _megasync_suse_tumbleweed;;
 	debian10) _megasync_debian10;;
-	linuxmint19) _megasync_ubuntu18;;
+	linuxmint19|ubuntu18.04) _megasync_ubuntu18;;
 	*) _prog_not_found; return 1;;
 
 esac
@@ -181,10 +181,58 @@ sudo sh -c 'apt update; apt install opera-stable -y'
 
 #-----------------------------------------------------#
 
+function _opera_stable_fedora()
+{
+# https://www.blogopcaolinux.com.br/2017/07/Instalando-o-Opera-no-openSUSE-e-no-Fedora.html
+# https://rpm.opera.com/manual.html
+
+	sudo rpm --import https://rpm.opera.com/rpmrepo.key
+
+	echo '[opera]' | sudo tee /etc/yum.repos.d/opera.repo
+	{
+		echo "name=Opera packages"
+		echo "type=rpm-md"
+		echo "baseurl=https://rpm.opera.com/rpm"
+		echo "gpgcheck=1"	
+		echo "gpgkey=https://rpm.opera.com/rpmrepo.key"
+		echo "enabled=1"
+	} | sudo tee -a /etc/yum.repos.d/opera.repo
+
+sudo dnf install opera-stable
+}
+
+#-----------------------------------------------------#
+
+function _opera_stable_suse()
+{
+# https://www.blogopcaolinux.com.br/2017/07/Instalando-o-Opera-no-openSUSE-e-no-Fedora.html
+
+	sudo zypper ref && sudo zypper up
+	sudo rpm --import https://rpm.opera.com/rpmrepo.key
+
+	echo '[opera]' | sudo tee /etc/zypp/repos.d/opera.repo
+	{
+		echo "name=Opera packages"
+		echo "type=rpm-md"
+		echo "baseurl=https://rpm.opera.com/rpm"
+		echo "gpgcheck=1"
+		echo "gpgkey=https://rpm.opera.com/rpmrepo.key"
+		echo "enabled=1"
+		echo "autorefresh=1"
+		echo "keeppackages=0"
+	} | sudo tee -a /etc/zypp/repos.d/opera.repo
+
+	sudo zypper ref && sudo zypper in opera-stable 
+}
+
+#-----------------------------------------------------#
+
 function _opera_stable()
 {
 case "$sysname" in
-	debian10) _opera_stable_debian;;
+	debian10|linuxmint19|ubuntu18.04) _opera_stable_debian;;
+	fedora30|fedora31) _opera_stable_fedora;;
+	opensuse-tumbleweed) _opera_stable_suse;;
 	*) _prog_not_found; return 1;;
 esac	
 
@@ -235,6 +283,42 @@ elif [[ -x $(command -v apt 2> /dev/null) ]]; then
 
 fi
 return "$?"
+}
+
+#=====================================================#
+# TeamViwer
+#=====================================================#
+
+function _install_teamviwer_debian()
+{
+# wget -O- https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc | sudo apt-key add -
+# echo 'deb http://linux.teamviewer.com/deb stable main' > /etc/apt/sources.list.d/teamviewer.list
+# echo 'deb http://linux.teamviewer.com/deb preview main' >> /etc/apt/sources.list.d/teamviewer.list
+# sudo apt update; sudo apt install teamviewer
+#
+local url='https://download.teamviewer.com/download/linux/teamviewer_amd64.deb'
+local path_arq="$dir_user_cache/teamviewer_amd64.deb"
+
+	_dow "$url" "$path_arq" --wget
+
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+
+	echo "$(_c 32)==> $(_c)Instalando"
+	sudo dpkg --install "$path_arq"
+	_quebrado # Remover pacotes quebrados.
+}
+
+#-----------------------------------------------------#
+
+function _teamviwer()
+{
+# https://www.blogopcaolinux.com.br/2018/04/Instalando-o-TeamViewer-no-Debian-Ubuntu-e-Linux-Mint.html
+	
+	case "$sysname" in
+		debian10|linuxmint19|ubuntu18.04) _install_teamviwer_debian;;
+		*) _prog_not_found; return 1;;
+	esac
 }
 
 #=====================================================#
@@ -479,7 +563,7 @@ function _youtube_dl_gui_github()
 
 case "$sysname" in
 	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
-	linuxmint19) _youtube_dl_gui_pip; return 0;;
+	linuxmint19|ubuntu18.04) _youtube_dl_gui_pip; return 0;;
 	fedora30|fedora31) sudo dnf install -y python2-wxpython; _twodict_github;;
 	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
 	opensuse-tumbleweed) _youtube_dl_gui_tumbleweed; return 0;;

@@ -414,27 +414,9 @@ function _Wget()
 # $2 = path_arq
 local url="$1"
 local path_arq="$2"
-
-[[ $(pidof wget) ]] && kill -9 $(pidof wget)
-[[ -f "$log_w" ]] && rm "$log_w"
-
-echo -e "==> Baixando: [$url]"
-if [[ -z $2 ]]; then 
-	#wget -c "$url" 
-	while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" | sed '/Continuando\|escrita/d'; do
-		_progress;
-	done
-
-elif [[ -d $(dirname "$2") ]]; then
-	echo -e "==> Destino: [$path_arq]"
-	#wget -c "$url" -O "$path_arq"
-	while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$url" -O "$path_arq" | sed '/Continuando\|escrita/d'; do
-		_progress;
-	done
-
-fi
+cd "$dir_downloads"
+wget -c "$url" -O "$path_arq"
 }
-
 
 #==================================#
 # Curl

@@ -35,11 +35,21 @@ done
 #=====================================================#
 # Remove
 #=====================================================#
+function _remove_android_studio()
+{
+[[ ! -x $(command -v studio 2> /dev/null) ]] && { echo "==> android studio $(cl 31)não$(cl) está instalado"; return 0; }
+_delete_all "${array_android_studio_dirs[@]}"
+}
+
+#-----------------------------------------------------#
+
 function _remove_pycharm()
 {
 [[ ! -x $(which pycharm 2> /dev/null) ]] && { echo "==> pycharm $(cl 31)não$(cl) está instalado"; return 0; }
 _delete_all "${array_pycharm_dirs[@]}"
 }
+
+#-----------------------------------------------------#
 
 function _remove_vscode()
 {
@@ -47,21 +57,24 @@ function _remove_vscode()
 _delete_all "${array_vscode_dirs[@]}"
 }
 
-# Peazip
+#-----------------------------------------------------#
+
 function _remove_peazip()
 {
 [[ ! -x $(which peazip 2> /dev/null) ]] && { echo "==> peazip $(cl 31)não$(cl) está instalado"; return 0; }
 _delete_all "${array_peazip_dirs[@]}"
 }
 
-# Telegram
+#-----------------------------------------------------#
+
 function _remove_telegram()
 {
 [[ ! -x $(which telegram 2> /dev/null) ]] && { echo "==> telegram $(cl 31)não$(cl) está instalado"; return 0; }
 _delete_all "${array_telegram_dirs[@]}"
 }
 
-# Veracrypt
+#-----------------------------------------------------#
+
 function _remove_veracrypt()
 {
 [[ ! -x $(which veracrypt 2> /dev/null) ]] && { echo "==> veracrypt $(cl 31)não$(cl) está instalado"; return 0; }
@@ -75,6 +88,7 @@ function _packremove()
 {
 while [[ $1 ]]; do
 	case "$1" in
+		android-studio) _remove_android_studio;;
 		icones-papirus) _delete_all "${array_papirus_dirs[@]}";;
 		peazip) _remove_peazip;;
 		pycharm) _remove_pycharm;;

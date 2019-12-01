@@ -65,6 +65,14 @@ export array_root_dirs=(
 # Arrays dirs programs
 #==================================================#
 
+# Android studio.
+array_android_studio_dirs=(
+"$dir_user_applications/jetbrains-studio.desktop" # .desktop
+"$dir_user_icons/studio.png"
+"$dir_user_bin/studio" # Link
+"$dir_user_bin/android-studio" # Dir
+)
+
 # Papirus
 array_papirus_dirs=(
 "$HOME/.icons/Papirus-Dark" 
@@ -127,6 +135,7 @@ array_acessorios=(
 
 # Desenvolvimento
 array_dev=(
+'android-studio'
 'pycharm'
 'sublime-text'
 'vim'

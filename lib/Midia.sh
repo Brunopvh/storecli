@@ -15,6 +15,16 @@ function _codecs_tumbleweed()
 	sudo zypper install -f smplayer x264 x265 ogmtools libavcodec58
 }
 
+#-----------------------------------------------------#
+
+function _codecs_ubuntu()
+{
+	sudo apt install -y --install-recommends ffmpeg ffmpegthumbnailer
+	sudo apt install ubuntu-restricted-extras
+}
+
+#-----------------------------------------------------#
+
 function _codecs_debian()
 {
 local deb_multimidia='http://www.deb-multimedia.org'
@@ -66,6 +76,7 @@ function _codecs()
 case "$sysname" in
 	freebsd12.0-release) sudo pkg install -y ffmpeg ffmpegthumbnailer gstreamer-ffmpeg;;
 	debian10) _codecs_debian;;
+	linuxmint19|ubuntu18.04) _codecs_ubuntu;;
 	fedora30|fedora31) _codecs_fedora;;
 	opensuse-tumbleweed) _codecs_tumbleweed;;
 	*) _prog_not_found;;

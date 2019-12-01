@@ -69,6 +69,7 @@ while [[ "$1" ]]; do
 		veracrypt) _veracrypt;;
 
 #-------------------- desenvolvimento -------------------#
+		android-studio) _android_studio;;
 		pycharm) _pycharm;;
 		sublime-text) _sublime_text;;
 		vim) _vim;;
@@ -80,6 +81,7 @@ while [[ "$1" ]]; do
 		opera-stable) _opera_stable;;
 		proxychains) _proxychains;;
 		qbittorrent) _qbittorrent;;
+		teamviwer) _teamviwer;;
 		telegram) _telegram;;
 		tixati) _tixati;;
 		torbrowser) _torbrowser;;
