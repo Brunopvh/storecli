@@ -104,9 +104,11 @@ while [[ "$1" ]]; do
 		virtualbox) _virtualbox;;
 
 #-------------------- preferencias ---------------------------#
+		hacking-parrot) _hacking_parrot;;
 		icones-papirus) "$Script_Papirus";;
 		ohmybash) _ohmybash;;
 		ohmyzsh) _ohmyzsh;;
+		sierra) _sierra;;
 
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;

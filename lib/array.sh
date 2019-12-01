@@ -180,7 +180,10 @@ array_sistema=(
 
 # Preferencias
 array_preferencias=(
+'hacking-parrot'
 'icones-papirus'
 'ohmybash'
+'ohmyzsh'
+'sierra'
 )
 
