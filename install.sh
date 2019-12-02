@@ -88,24 +88,25 @@ _git_clone()
 _path_zsh()
 {
 	command -v zsh 2> /dev/null || return 0
-	if ! grep -q "^export PATH=$HOME/.local/bin.*" ~/.zshrc; then
+	
+	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
 		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
-	fi
-
+	
 	zsh ~/'.zshrc'
+	}
 }
 
 #---------------------------------------------------#
 
 _path_bash()
 {
-	if ! grep -q "^export PATH=$HOME/.local/bin.*" ~/.bashrc; then
+	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
 		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
-	fi
-
+	
 	bash ~/'.bashrc'
+	}
 }
 
 #---------------------------------------------------#
@@ -126,17 +127,9 @@ if [ $(id -u) -eq '0' ]; then
 else
 	_install_user
 
-	_path_bash || { 
-		echo "$(_c 31)$(_msgs Erro escreva a linha a seguir no arquivo ~/.bashrc manualmente:) $(_c)"; 
-		echo "export PATH=$HOME/.local/bin:$PATH"
-		exit 1
-		}
+	! echo "$PATH" | grep -q "$HOME/.local/bin" && { _path_bash; }
 
-	_path_zsh || { 
-		echo "$(_c 31)$(_msgs Erro escreva a linha a seguir no arquivo ~/.zshrc manualmente:) $(_c)"; 
-		echo "export PATH=$HOME/.local/bin:$PATH"
-		exit 1
-		}
+	! echo "$PATH" | grep -q "$HOME/.local/bin" && { _path_zsh; }
 fi
 
 #---------------------------------------------------#

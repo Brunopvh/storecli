@@ -66,6 +66,7 @@ export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh" # Gerencia instalaç�
 export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"   # Gerencia remoção.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
+export Lib_CheckUpdate="$StoreCli_Path_Lib/CheckUpdate.sh"
 
 # Categorias.
 export Lib_Acessorios="$StoreCli_Path_Lib/Acessorios.sh"
@@ -92,6 +93,7 @@ source "$Lib_HttpsTransfer"
 source "$Lib_PackManager"
 source "$Lib_PackRemove"
 source "$Lib_ShaSum"
+source "$Lib_CheckUpdate"
 
 #--------------------------------------------------------#
 if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
@@ -244,6 +246,10 @@ echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
 
 #-----------------------------------------------------#
 _info_msgs "Sistema: $os_type $sysname"
+
+#_chekupdate
+#echo "Versão atual: $VERSION"
+#echo "Versão disponível: $NEW_VERSION"
 
 if [[ ! -z $1 ]]; then
 

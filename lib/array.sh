@@ -150,6 +150,7 @@ array_dev=(
 
 # Escritório
 array_escritorio=(
+'atril'
 'fontes-ms'
 'libreoffice'
 'libreoffice-appimage'

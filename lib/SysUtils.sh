@@ -265,10 +265,12 @@ function _create_dirs_user()
 # ~/.bashrc
 function _conf_path_bash()
 {
-if ! grep -q "^export PATH.*$HOME/.local/bin.*" ~/.bashrc; then
-	echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.bashrc] $(_c)"
-	echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
-fi
+	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
+		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
+		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
+	
+	bash ~/'.bashrc'
+	}
 }
 
 #---------------------------------------------------#
@@ -276,10 +278,12 @@ fi
 # ~/.zshrc
 function _conf_path_zsh()
 {
-	[[ -x $(command -v zsh 2> /dev/null) ]] || return 0
-
-	if ! grep -q "^export PATH.*$HOME/.local/bin.*" ~/.zshrc 2> /dev/null; then
-		echo "$(_c 32)==> Adicionando: ~/.local/bin em PATH [~/.zshrc] $(_c)"
+	command -v zsh 2> /dev/null || return 0
+	
+	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
+		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
-	fi
+	
+	zsh ~/'.zshrc'
+	}
 }
