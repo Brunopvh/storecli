@@ -8,7 +8,7 @@
 # cli requeriments.
 #==================================================#
 array_cli_requeriments=(
-'sudo' 'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip' 'python3' 'python2'
+'sudo' 'git' 'curl' 'wget' 'xterm' 'gawk' 'xterm' 'unzip' 'python3' 'python2'
 )
 
 array_cli_freebsd=(
@@ -16,7 +16,7 @@ array_cli_freebsd=(
 )
 
 array_cli_debian=(
-'aptitude' 'gdebi' 'dirmngr'  'apt-transport-https' 'gnupg' 'gpgv2' 'gpgv' 'xz-utils'
+'aptitude' 'gdebi' 'dirmngr'  'apt-transport-https' 'gnupg' 'gpgv2' 'gpgv' 'xz-utils' 'xterm'
 )
 
 array_python_linux=( 
@@ -71,6 +71,12 @@ array_android_studio_dirs=(
 "$dir_user_icons/studio.png"
 "$dir_user_bin/studio" # Link
 "$dir_user_bin/android-studio" # Dir
+)
+
+# Libreoffice AppImage.
+array_libreoffice_dirs=(
+"$dir_user_applications/libreoffice.desktop" # .desktop
+"$dir_user_bin/libreoffice-amd64.AppImage" # .AppImage
 )
 
 # Papirus
@@ -140,6 +146,13 @@ array_dev=(
 'sublime-text'
 'vim'
 'vscode'
+)
+
+# Escritório
+array_escritorio=(
+'fontes-ms'
+'libreoffice'
+'libreoffice-appimage'
 )
 
 # Internet

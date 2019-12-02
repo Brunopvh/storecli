@@ -3,11 +3,13 @@
 #    
 #
 
+# Importar categorias para utilizar as funções que instalam os programas.
 source "$Lib_array"
 source "$Lib_Acessorios"
 source "$Lib_Dev"
-source "$Lib_Midia"
+source "$Lib_Escritorio"
 source "$Lib_Internet"
+source "$Lib_Midia"
 source "$Lib_Sistema"
 source "$Lib_Preferencias"
 
@@ -64,7 +66,7 @@ done
 
 while [[ "$1" ]]; do
 	case "$1" in
-#-------------------- Acessórios -------------------#
+#-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;
 		veracrypt) _veracrypt;;
 
@@ -74,6 +76,12 @@ while [[ "$1" ]]; do
 		sublime-text) _sublime_text;;
 		vim) _vim;;
 		vscode) _vscode;;
+
+#-------------------- Escritório ------------------------#
+		atril) _atril;;
+		fontes-ms) _fontes_microsoft;;
+		libreoffice) _libreoffice;;
+		libreoffice-appimage) _libreoffice_appimage;;
 
 #-------------------- internet --------------------------#
 		google-chrome) _google_chrome;;
@@ -88,7 +96,7 @@ while [[ "$1" ]]; do
 		uget) _uget;;
 		youtube-dl-gui) _youtube_dl_gui_github;;
 
-#-------------------- midia --------------------------#
+#-------------------- midia ----------------------------#
 		codecs) _codecs;;
 		vlc) _vlc;;
 		parole) _parole;;

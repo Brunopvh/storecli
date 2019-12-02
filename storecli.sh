@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-12-01 - (dev)'
+VERSION='2019-12-02 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #
@@ -70,8 +70,9 @@ export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 # Categorias.
 export Lib_Acessorios="$StoreCli_Path_Lib/Acessorios.sh"
 export Lib_Dev="$StoreCli_Path_Lib/Dev.sh"
-export Lib_Midia="$StoreCli_Path_Lib/Midia.sh"
+export Lib_Escritorio="$StoreCli_Path_Lib/Escritorio.sh"
 export Lib_Internet="$StoreCli_Path_Lib/Internet.sh"
+export Lib_Midia="$StoreCli_Path_Lib/Midia.sh"
 export Lib_Sistema="$StoreCli_Path_Lib/Sistema.sh"
 export Lib_Preferencias="$StoreCli_Path_Lib/Preferencias.sh"
 
@@ -238,7 +239,7 @@ _conf_path_zsh
 
 function _prog_not_found()
 {
-echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema."
+echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
 }
 
 #-----------------------------------------------------#

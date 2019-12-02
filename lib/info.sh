@@ -83,6 +83,10 @@ echo "Desenvolvimento: "
 for a in "${array_dev[@]}"; do echo "     $a"; done
 echo ' '
 
+echo "Escritorio: "
+for a in "${array_escritorio[@]}"; do echo "     $a"; done
+echo ' '
+
 echo "Internet: "
 for a in "${array_internet[@]}"; do echo "     $a"; done
 echo ' '

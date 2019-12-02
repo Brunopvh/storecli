@@ -5,9 +5,20 @@
 
 source "$Lib_array"
 
+function _c()
+{
+if [[ -z $2 ]]; then
+	echo -e "\033[1;$1m"
+	
+elif [[ $2 ]]; then
+	echo -e "\033[$2;$1m"
+
+fi
+}
+
 function _msg_pack_not_instaled()
 {
-echo -e "==> $(cl 31)$1 $(cl)não está instalado"
+echo -e "==> $(_c 31)$1 $(_c)não está instalado"
 return 0	
 }
 
@@ -19,13 +30,13 @@ function _delete_all()
 {
 while [[ $1 ]]; do
 	if [[ -d "$1" ]] || [[ -L "$1" ]] || [[ -f "$1" ]]; then
-		echo "$(cl 32)==> $(cl)Removendo: $1"
+		echo "$(_c 32)==> $(_c)Removendo: $1"
 
 		# Precisa ser o [root] ?
 		if [[ $(echo $1 | grep "$HOME") ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
 
 	else
-		echo "$(cl 31)==> $(cl)Não encontrado: $1"
+		echo "$(_c 31)==> $(_c)Não encontrado: $1"
 
 	fi
 	shift
@@ -37,15 +48,25 @@ done
 #=====================================================#
 function _remove_android_studio()
 {
-[[ ! -x $(command -v studio 2> /dev/null) ]] && { echo "==> android studio $(cl 31)não$(cl) está instalado"; return 0; }
+[[ ! -x $(command -v studio 2> /dev/null) ]] && { echo "==> android studio $(_c 31)não$(_c) está instalado"; return 0; }
 _delete_all "${array_android_studio_dirs[@]}"
+}
+
+#-----------------------------------------------------#
+
+function _remove_libreoffice_appimage()
+{
+	command -v "${array_libreoffice_dirs[1]}" 1> /dev/null 2>&1 || { 
+		echo "==> LibreOfficeAppImage $(_c 31)não$(_c) está instalado"; return 0; 
+	}
+_delete_all "${array_libreoffice_dirs[@]}"
 }
 
 #-----------------------------------------------------#
 
 function _remove_pycharm()
 {
-[[ ! -x $(which pycharm 2> /dev/null) ]] && { echo "==> pycharm $(cl 31)não$(cl) está instalado"; return 0; }
+[[ ! -x $(which pycharm 2> /dev/null) ]] && { echo "==> pycharm $(_c 31)não$(_c) está instalado"; return 0; }
 _delete_all "${array_pycharm_dirs[@]}"
 }
 
@@ -53,7 +74,7 @@ _delete_all "${array_pycharm_dirs[@]}"
 
 function _remove_vscode()
 {
-[[ ! -x $(which code 2> /dev/null) ]] && { echo "==> vscode $(cl 31)não$(cl) está instalado"; return 0; }
+[[ ! -x $(which code 2> /dev/null) ]] && { echo "==> vscode $(_c 31)não$(_c) está instalado"; return 0; }
 _delete_all "${array_vscode_dirs[@]}"
 }
 
@@ -61,7 +82,7 @@ _delete_all "${array_vscode_dirs[@]}"
 
 function _remove_peazip()
 {
-[[ ! -x $(which peazip 2> /dev/null) ]] && { echo "==> peazip $(cl 31)não$(cl) está instalado"; return 0; }
+[[ ! -x $(which peazip 2> /dev/null) ]] && { echo "==> peazip $(_c 31)não$(_c) está instalado"; return 0; }
 _delete_all "${array_peazip_dirs[@]}"
 }
 
@@ -69,7 +90,7 @@ _delete_all "${array_peazip_dirs[@]}"
 
 function _remove_telegram()
 {
-[[ ! -x $(which telegram 2> /dev/null) ]] && { echo "==> telegram $(cl 31)não$(cl) está instalado"; return 0; }
+[[ ! -x $(which telegram 2> /dev/null) ]] && { echo "==> telegram $(_c 31)não$(_c) está instalado"; return 0; }
 _delete_all "${array_telegram_dirs[@]}"
 }
 
@@ -77,7 +98,7 @@ _delete_all "${array_telegram_dirs[@]}"
 
 function _remove_veracrypt()
 {
-[[ ! -x $(which veracrypt 2> /dev/null) ]] && { echo "==> veracrypt $(cl 31)não$(cl) está instalado"; return 0; }
+[[ ! -x $(which veracrypt 2> /dev/null) ]] && { echo "==> veracrypt $(_c 31)não$(_c) está instalado"; return 0; }
 sudo "/usr/bin/veracrypt-uninstall.sh"	
 }
 
@@ -90,6 +111,7 @@ while [[ $1 ]]; do
 	case "$1" in
 		android-studio) _remove_android_studio;;
 		icones-papirus) _delete_all "${array_papirus_dirs[@]}";;
+		libreoffice-appimage) _remove_libreoffice_appimage;;
 		peazip) _remove_peazip;;
 		pycharm) _remove_pycharm;;
 		sublime-text) "$Script_PackTargz" remove sublime-text;;

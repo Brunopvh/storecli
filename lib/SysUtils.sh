@@ -6,14 +6,23 @@
 source "$Lib_platform"
 source "$Lib_array"
 
-function cl() { echo -e "\033[1;${1}m"; }
+function _c()
+{
+if [[ -z $2 ]]; then
+	echo -e "\033[1;$1m"
+	
+elif [[ $2 ]]; then
+	echo -e "\033[$2;$1m"
+
+fi
+}
 
 #===============================================#
 # Install cli debian
 #===============================================#
 function _install_cli_debian()
 {
-echo "$(cl 32)==> $(cl)Instalando: ${array_cli_requeriments[@]} ${array_cli_debian[@]}"
+echo "$(_c 32)==> $(_c)Instalando: ${array_cli_requeriments[@]} ${array_cli_debian[@]}"
 sudo apt install -y "${array_cli_requeriments[@]}" "${array_cli_debian[@]}"
 
 if [[ $? == '0' ]]; then 
@@ -21,7 +30,7 @@ if [[ $? == '0' ]]; then
 
 else
 	# Error apt install
-	echo "==> O gerenciador de pacotes $(cl 31)apt $(cl) retornou [erro]"
+	echo "==> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
 	return 1
 fi
 }
@@ -40,7 +49,7 @@ if [[ $? == '0' ]]; then
 
 else
 	# Error apt install
-	echo "==> O gerenciador de pacotes $(cl 31)apt $(cl) retornou [erro]"
+	echo "==> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
 	return 1
 fi
 }
@@ -50,7 +59,7 @@ fi
 #===============================================#
 function _install_cli_suse()
 {
-echo "$(cl 32)==> $(cl)Instalando: ${array_cli_requeriments[@]}"
+echo "$(_c 32)==> $(_c)Instalando: ${array_cli_requeriments[@]}"
 sudo zypper in "${array_cli_requeriments[@]}"
 
 if [[ $? == '0' ]]; then 
@@ -58,7 +67,7 @@ if [[ $? == '0' ]]; then
 
 else
 	# Error zypper install
-	echo "==> O gerenciador de pacotes $(cl 31)zypper $(cl) retornou [erro]"
+	echo "==> O gerenciador de pacotes $(_c 31)zypper $(_c) retornou [erro]"
 	return 1
 fi
 }
@@ -75,7 +84,6 @@ function _install_cli_fedora()
 		return 0
 
 	else
-		
 		echo "$(_c 31)O gerenciador de pacotes dnf retornou erro $(_c)"
 		return 1
 
@@ -88,7 +96,7 @@ function _install_cli_fedora()
 #===============================================#
 function _install_cli_freebsd()
 {
-echo "$(cl 32)==> $(cl)Instalando: ${array_cli_freebsd[@]} ${_python_requeriments_freebsd[@]}"
+echo "$(_c 32)==> $(_c)Instalando: ${array_cli_freebsd[@]} ${_python_requeriments_freebsd[@]}"
 sudo pkg install -y "${array_cli_freebsd[@]}"
 
 if [[ "$?" == '0' ]]; then
@@ -96,7 +104,7 @@ if [[ "$?" == '0' ]]; then
 
 else
 	# Error pkg install
-	echo "==> O gerenciador de pacotes $(cl 31)pkg $(cl) retornou [erro]"
+	echo "==> O gerenciador de pacotes $(_c 31)pkg $(_c) retornou [erro]"
 	return 1
 
 fi
@@ -118,7 +126,7 @@ function _python_requeriments_debian()
 #===============================================#
 function _python_requeriments_linux()
 {
-echo "$(cl 32)==> $(cl)Instalando: ${array_python_linux[@]}"
+echo "$(_c 32)==> $(_c)Instalando: ${array_python_linux[@]}"
 
 if [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
 	sudo zypper in "${array_python_linux[@]}"
@@ -129,7 +137,7 @@ elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
 	[[ $? == '0' ]] || { return 1; }
 
 else
-	echo "$(cl 31)==> $(cl)[Erro] seu sistema não e suportado."
+	echo "$(_c 31)==> $(_c)[Erro] seu sistema não e suportado."
 	return 1
 
 fi
@@ -144,7 +152,7 @@ pip3 install wget bash --user
 #===============================================#
 function _python_requeriments_freebsd()
 {
-echo "$(cl 32)==> $(cl)Instalando: ${array_python_freebsd[@]}"
+echo "$(_c 32)==> $(_c)Instalando: ${array_python_freebsd[@]}"
 
 if [[ -x $(which pkg 2> /dev/null) ]]; then
 	sudo pkg install -y "${array_python_freebsd[@]}"
@@ -154,10 +162,12 @@ pip-3.6 install wget bash --user
 [[ $? == '0' ]] || { return 1; }
 }
 
-
+#===============================================#
 #===============================================#
 # Configure/Install requeriments
 #===============================================#
+#===============================================#
+
 function _install_requeriments()
 {
 if [[ "$os_id" == 'debian' ]]; then 
@@ -181,19 +191,23 @@ fi
 
 
 if [[ $? == '0' ]]; then
-	echo "==> [OK] função $(cl 32)_install_requeriments $(cl)foi executada com sucesso"
-	echo 'requeriments false' > "$Config_File"
+	echo "==> [OK] função $(_c 32)_install_requeriments $(_c)foi executada com sucesso"
+	#echo 'requeriments false' > "$Config_File"
 	return 0
+
 else
-	echo "==> Função $(cl 31)_install_requeriments $(cl)retornou [erro]" 
+	echo "==> Função $(_c 31)_install_requeriments $(_c)retornou [erro]" 
 	return 1
 
 fi
 }
 
 #===============================================#
+#===============================================#
 # Configure/Install python requeriments
 #===============================================#
+#===============================================#
+
 function _python_requeriments()
 {
 if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'linuxmint' ]] || [[ "$os_id" == 'ubuntu' ]]; then
@@ -216,14 +230,16 @@ fi
 
 if [[ $? == '0' ]]; then
 	echo "$(_c 32 0)==> função_python_requeriments foi executada com sucesso $(_c)"
-	#echo 'python_requeriments false' >> "$Config_File"
+	echo 'requeriments false' > "$Config_File"
 	return 0
+
 else
 	echo "$(_c 31)==> Função_python_requeriments retornou [erro] $(_c)" 
 	return 1
 
 fi
 }
+
 #===============================================#
 # Config dirs
 #===============================================#
@@ -235,12 +251,16 @@ function _create_dirs_user()
 	for i in "${array_user_dirs[@]}"; do	
 		if [[ ! -d "$i" ]]; then 
 			echo "$i"; return 1 # Não encontrado sair.
+
 		else
 			echo -ne " \r" # Encontrado, echoar nada.
+		
 		fi
 	done
 }
 
+
+#---------------------------------------------------#
 
 # ~/.bashrc
 function _conf_path_bash()
@@ -250,6 +270,8 @@ if ! grep -q "^export PATH.*$HOME/.local/bin.*" ~/.bashrc; then
 	echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
 fi
 }
+
+#---------------------------------------------------#
 
 # ~/.zshrc
 function _conf_path_zsh()
