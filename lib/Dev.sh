@@ -125,7 +125,7 @@ local path_arq="$dir_user_cache/pycharm-community-2019.1.2.tar.gz"
 _dow "$url_pycharm" "$path_arq" --wget
 
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v pycharm 2> /dev/null) ]] && { _msg_pack_instaled 'pycharm'; return 0; }
 
 "$Script_UnPack" "$path_arq" "$dir_temp"
@@ -164,12 +164,10 @@ if [[ -x $(which pycharm 2> /dev/null) ]]; then
 	return 0
 
 else
-	echo "==> Função $(cl 31)_pycharm$(cl) retornou [erro]"
+	echo "==> Função $(_c 31)_pycharm $(_c)retornou [erro]"
 	return 1	
 fi
 }
-
-#-----------------------------------------------------#
 
 #=====================================================#
 # Sublime-text
@@ -179,7 +177,6 @@ function _sublime_text()
 "$Script_PackTargz" install sublime-text
 }
 
-#-----------------------------------------------------#
 
 #=====================================================#
 # Vim
@@ -201,8 +198,6 @@ else
 fi	
 }
 
-#-----------------------------------------------------#
-
 #=====================================================#
 # Vscode.
 #=====================================================#
@@ -213,11 +208,10 @@ local path_arq="$dir_user_cache/vscode-amd64.deb"
 _dow "$url_code_debian" "$path_arq" --wget
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 	[[ -x $(command -v code) ]] && { _msg_pack_instaled 'code'; return 0; }
 
-sudo dpkg --install "$path_arq"
-
+sudo dpkg --install "$path_arq" # .deb
 }
 
 #-----------------------------------------------------#
@@ -230,7 +224,7 @@ local path_arq="$dir_user_cache/vscode.tar.gz"
 _dow "$url_vscode_tar" "$path_arq" --wget
 
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v code) ]] && { _msg_pack_instaled 'code'; return 0; }
 
 "$Script_UnPack" "$path_arq" "$dir_temp"
@@ -267,7 +261,7 @@ if [[ -x "$(which code 2> /dev/null)" ]]; then
 	_info_msgs 'code instalado'
 	code
 else
-	echo "==> Função $(cl 31)_vscode$(cl) retornou [erro]"
+	echo "==> Função $(_c 31)_vscode$(_c) retornou [erro]"
 	return 1
 fi 
 

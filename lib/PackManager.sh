@@ -13,11 +13,6 @@ source "$Lib_Midia"
 source "$Lib_Sistema"
 source "$Lib_Preferencias"
 
-function _msg_pack_instaled()
-{
-echo "==> já instalado para remove-lo use $( basename $0) $(_c 32)r$(_c)emove $1"
-}
-
 #-----------------------------------------------------#
 
 function _c()
@@ -31,6 +26,13 @@ elif [[ $2 ]]; then
 fi
 }
 
+#-----------------------------------------------------#
+
+function _msg_pack_instaled()
+{
+	echo "==> já instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
+}
+
 #=====================================================#
 # Quebrado
 #=====================================================#
@@ -38,31 +40,29 @@ function _quebrado()
 {
 [[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
 
-echo "$(cl 32)==> $(cl)Limpando cache aguarde..."
+echo "$(_c 32)==> $(_c)Limpando cache aguarde..."
 sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
 
-echo "$(cl 32)==> $(cl)Executando dpkg --configure -a"
+echo "$(_c 32)==> $(_c)Executando dpkg --configure -a"
 sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
 
-echo "$(cl 32)==> $(cl)Executando apt update"
+echo "$(_c 32)==> $(_c)Executando apt update"
 sudo apt update 
 #sudo apt-get install --yes --force-yes -f 
 
-echo -e "\n$(cl 33)[OK]$(cl)"
+echo -e "$(_c 33)[OK]$(_c)"
 }
-
-#-----------------------------------------------------#
 
 #=====================================================#
 # packmanager install
 #=====================================================#
 function _packmanager_install()
 {
-for arg in "$@"; do
-	if [[ "$arg" == '--downloadonly' ]] || [[ "$arg" == '-d' ]]; then
-		export download_only='on'
-	fi
-done
+	for arg in "$@"; do
+		if [[ "$arg" == '--downloadonly' ]] || [[ "$arg" == '-d' ]]; then
+			export download_only='on'
+		fi
+	done
 
 while [[ "$1" ]]; do
 	case "$1" in
@@ -121,7 +121,7 @@ while [[ "$1" ]]; do
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;
 		install) echo -ne "\r";;
-		*) echo "==> Programa indisponível: $(cl 31)$1 $(cl)";;
+		*) echo "==> Programa indisponível: $(_c 31)$1 $(_c)";;
 	esac
 	shift
 done

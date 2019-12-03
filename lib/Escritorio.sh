@@ -30,7 +30,7 @@ function _atril()
 function _fontes_microsoft()
 {
 	case "$os_id" in
-		debian10|linuxmint19|ubuntu18.04) sudo apt install -y msttcorefonts ttf-mscorefonts-installer;;
+		debian|linuxmint|ubuntu) sudo apt install -y msttcorefonts ttf-mscorefonts-installer;;
 		*) _prog_not_found;;
 	esac
 }

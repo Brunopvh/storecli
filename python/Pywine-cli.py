@@ -122,7 +122,7 @@ lista_apps = [
 '7zip', 
 'burnaware', 
 'formatfactory', 
-'office2007'
+'office2007',
 'peazip', 
 'q4wine', 
 'vlc', 

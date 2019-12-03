@@ -31,22 +31,23 @@ function _codecs_debian()
 local deb_multimidia='http://www.deb-multimedia.org'
 local url_wcodecs="$deb_multimidia/pool/non-free/w/w64codecs/w64codecs_20071007-dmo2_amd64.deb"
 local soma_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
-local path_arq="$dir_user_cache/w64codecs_amd64.deb"
+local path_arq="$dir_user_cache/$(basename $url_wcodecs)"
 
 _dow "$url_wcodecs" "$path_arq" --curl
-	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+# --download-only
+[[ "$download_only" == 'on' ]] && { echo "$$(_c 32)==> $$(_c)Feito somente download."; return 0; }
 
-_check_sum "$path_arq" "$soma_wcodecs"
-if [[ $? == '0' ]]; then
-	sudo apt install -y --install-recommends ffmpeg ffmpegthumbnailer
-	sudo apt install lame
-	sudo dpkg --install "$path_arq"
+sudo apt install -y --install-recommends ffmpeg ffmpegthumbnailer
+sudo apt install lame
 
-else
-	echo "$(cl 31)==> $(cl)Abortando a instalação"; exit 1
+	_check_sum "$path_arq" "$soma_wcodecs" # w64codecs.
+	if [[ $? == '0' ]]; then	
+		sudo dpkg --install "$path_arq"
 
-fi
+	else
+		echo "$(_c 31)==> $(_c)Abortando a instalação de $path_arq"; exit 1
+
+	fi
 }
 
 #-----------------------------------------------------#
@@ -58,8 +59,9 @@ function _codecs_fedora()
 	"$Script_AddRepo" --fedora-repos
 
 local lista_codecs=(
-'gstreamer1' 'gstreamer1-plugins-base' 'gstreamer-ffmpeg' 
-'x264' 'x264-libs' 'xvidcore' 'libmpeg3'
+'gstreamer1' 'gstreamer1-plugins-base' 
+'gstreamer-ffmpeg' 'libmpeg3'
+'x264' 'x264-libs' 'xvidcore' 
 )
 
 	echo "$(_c 32)==> $(_c)Instalando: ffmpeg ffmpegthumbnailer"
