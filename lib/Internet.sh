@@ -30,6 +30,15 @@ sudo sh -c 'aptitude update; aptitude install google-chrome-stable -y'
 
 #-----------------------------------------------------#
 
+function _google_chrome_fedora()
+{
+	sudo dnf install fedora-workstation-repositories
+	sudo dnf config-manager --set-enabled google-chrome
+	sudo dnf install -y google-chrome-stable
+}
+
+#-----------------------------------------------------#
+
 function _google_chrome_tumbleweed()
 {
 #wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
@@ -55,6 +64,7 @@ function _google_chrome()
 case "$sysname" in
 	debian10|linuxmint19|ubuntu18.04) _google_chrome_debian;;
 	opensuse-tumbleweed) _google_chrome_tumbleweed;;
+	fedora30|fedora31) _google_chrome_fedora;;
 	*) _prog_not_found; return 1;;
 esac	
 
@@ -134,6 +144,25 @@ fi
 
 #-----------------------------------------------------#
 
+function _megasync_fedora()
+{
+sudo rpm --import https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key
+
+	echo '[MEGAsync]' | sudo tee /etc/yum.repos.d/megasync.repo
+	{
+		echo "name=MEGAsync"
+		echo "type=rpm-md"
+		echo "baseurl=http://mega.nz/linux/MEGAsync/Fedora_30/"
+		echo "gpgcheck=1"	
+		echo "enabled=1"
+		echo "gpgkey=https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"	
+	} | sudo tee -a /etc/yum.repos.d/megasync.repo
+
+sudo dnf install megasync
+}
+
+#-----------------------------------------------------#
+
 function _megasync()
 {
  
@@ -141,6 +170,7 @@ case "$sysname" in
 	opensuse-tumbleweed) _megasync_suse_tumbleweed;;
 	debian10) _megasync_debian10;;
 	linuxmint19|ubuntu18.04) _megasync_ubuntu18;;
+	fedora30|fedora31) _megasync_fedora;;
 	*) _prog_not_found; return 1;;
 
 esac
