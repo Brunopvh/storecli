@@ -557,18 +557,19 @@ if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
 
 	arq_ytdl=~/.local/share/applications/youtube-dl-gui.desktop
 
-	echo '[Desktop Entry]' | tee "$arq_ytdl"
+	echo '[Desktop Entry]' > tee "$arq_ytdl"
 	{
 		echo "Encoding=UTF-8"
-		echo "Name=Youtube dl Gui"
+		echo "Name=Youtube-Dl-Gui"
 		echo "Exec=youtube-dl-gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | tee -a "$arq_ytdl"
+	} >> "$arq_ytdl"
 
+	chmod u+x "$arq_ytdl"
 	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
