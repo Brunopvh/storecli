@@ -327,7 +327,9 @@ def _install_wine_debian(): # Debian/Ubuntu/LinuxMint
 	_msgs(f'Adicionando repositório em: {wine_file}', G)
 	os.system(f"echo {wine_repo} | sudo tee {wine_file}")
 	os.system(f"sudo sh -c 'wget -q https://dl.winehq.org/wine-builds/winehq.key -O- | apt-key add -'")
-		
+	
+	_msgs(f'Adicionando suporte arch i386', G)
+	os.system("sudo sh -c 'dpkg --add-architecture i386; apt update'")
 
 	_install_wine_requeriments_debian()
 

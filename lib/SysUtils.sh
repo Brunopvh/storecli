@@ -211,7 +211,7 @@ fi
 function _python_requeriments()
 {
 if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'linuxmint' ]] || [[ "$os_id" == 'ubuntu' ]]; then
-	 _python_requeriments_debian; pip3 install wget bash --user
+	 _python_requeriments_debian && pip3 install wget bash --user
 
 elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
 	_python_requeriments_freebsd

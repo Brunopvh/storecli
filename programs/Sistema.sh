@@ -117,13 +117,19 @@ function _gparted()
 #=====================================================#
 function _peazip()
 {
-peazip_server='https://osdn.net/dl/peazip'
-peazip_pag='https://osdn.net/projects/peazip/downloads'
+# Devido a um bug na versão 7.0 do programa peazip
+# será ultilizado url de download fixo na versão 6.8
 
-peazip_html=$(wget -q "$peazip_pag" -O- | grep -m 1 "portable.*tar.gz" | awk '{print $6}')
-peazip_pacote=$(echo "$peazip_html" | sed 's/.*peazip_portable/peazip_portable/g;s/\/\".*//g')
-peazip_url_download="$peazip_server/$peazip_pacote"
-local path_arq="$dir_user_cache/$peazip_pacote"
+#peazip_server='https://osdn.net/dl/peazip'
+#peazip_pag='https://osdn.net/projects/peazip/downloads'
+
+#peazip_html=$(wget -q "$peazip_pag" -O- | grep -m 1 "portable.*tar.gz" | awk '{print $6}')
+#peazip_pacote=$(echo "$peazip_html" | sed 's/.*peazip_portable/peazip_portable/g;s/\/\".*//g')
+#peazip_url_download="$peazip_server/$peazip_pacote" # Ultima versão
+
+# Url fixo versão 6.8
+local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
 
 _dow "$peazip_url_download" "$path_arq" --curl #--wget
 

@@ -102,6 +102,7 @@ function _vlc()
 {
 case "$sysname" in
 	debian10) sudo apt install -y vlc;;
+	linuxmint19|ubuntu18.04) sudo apt install -y vlc;;
 	fedora30|fedora31) _vlc_fedora;;
 	freebsd12.0-release) sudo pkg install -y vlc;;
 	*) _prog_not_found;;
