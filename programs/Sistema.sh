@@ -125,7 +125,7 @@ peazip_pacote=$(echo "$peazip_html" | sed 's/.*peazip_portable/peazip_portable/g
 peazip_url_download="$peazip_server/$peazip_pacote"
 local path_arq="$dir_user_cache/$peazip_pacote"
 
-_dow "$peazip_url_download" "$path_arq" --wget
+_dow "$peazip_url_download" "$path_arq" --curl #--wget
 
 	# --download-only
 	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }

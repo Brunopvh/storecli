@@ -13,7 +13,6 @@
 # >>> import PyWine
 # >>>> PyWine.menu_pywine()
 # 
-#----------------------------------------------------#
 # Uso:
 # Para iniciar em modo menu interativo e escolher qual opção usar, use ./Pywine.py
 # desta maneira o programa iniciará com um menu de opções.
@@ -24,9 +23,8 @@
 # ./Pywine.py list
 # ./Pywine.py install wine
 # ./Pywine.py install winrar
-#----------------------------------------------------#
 #
-VERSAO = '2019-12-01'
+VERSAO = '2019-11-15'
 #
 github_pywine = 'https://github.com/Brunopvh/apps-buster'
 #
@@ -38,6 +36,7 @@ from time import sleep
 
 # path no disco
 dir_root = os.path.dirname(os.path.realpath(__file__))
+#dir_root = os.path.dirname(__file__)
 dir_run = os.getcwd() 
 os.chdir(dir_root)
 

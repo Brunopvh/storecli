@@ -65,6 +65,7 @@ function _packmanager_install()
 	done
 
 while [[ "$1" ]]; do
+	echo "==> Instalando: $1"
 	case "$1" in
 #-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;

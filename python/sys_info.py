@@ -1,13 +1,7 @@
 #!/usr/bin/env python3
 #
-# Use:
-# >>> import sys_info
-# >>> nome_sistema = sys_info._sys_name(' ') 
-# >>> versao_sistema = sys_info._sys_version(' ') 
-# >>> codinome_sistema = sys_info._sys_codiname(' ')
 #
-#
-VER = '2019-12-01'
+VER = '2019-11-13'
 #
 
 import os, platform, re
@@ -64,6 +58,7 @@ platform.uname()
 
 os_type = str(platform.system())
 
+#-------------------------------------------------#
 
 if os.path.isfile('/usr/lib/os-release') == True:
 	arq_release = '/usr/lib/os-release'
@@ -73,7 +68,7 @@ elif os.path.isfile('/etc/os-release') == True:
 	arq_release = '/etc/os-release'
 	rel = open(arq_release, 'r')
 
-
+#-------------------------------------------------#
 # Name/ID
 def _sys_name(sys_name=' '):
 
@@ -91,8 +86,7 @@ def _sys_name(sys_name=' '):
 
 	return sys_name
 
-
-
+#-------------------------------------------------#
 # system version
 def _sys_version(sys_version=' '):
 	
@@ -112,16 +106,20 @@ def _sys_version(sys_version=' '):
 	
 	return sys_version
 		
-
-
+#-------------------------------------------------#
 # Codiname
 def _sys_codiname(sys_codiname=' '):
 
 	if os_type == 'Linux':
 		cont_rel = rel.readlines()
 
-		if sys_name == 'debian':
+		if (sys_name == 'debian'):
 			sys_codiname = cont_rel[4].replace('\n', '').replace('VERSION_CODENAME=', '')
+
+		elif (sys_name == 'ubuntu') or (sys_name == 'linuxmint'):
+			for num in range(0, len(cont_rel)):
+				if 'VERSION_CODENAME=' in cont_rel[num]:
+					sys_codiname = cont_rel[num].replace('VERSION_CODENAME=', '').replace('\n', '')
 
 		elif sys_name == 'fedora':
 			sys_codiname = cont_rel[1].replace('\n', '').replace('VERSION=', '').replace('"', '').lower().strip()			
@@ -141,6 +139,7 @@ def _sys_codiname(sys_codiname=' '):
 
 	return sys_codiname
 
+#-------------------------------------------------#
 # Run
 sys_name = _sys_name(' ') 
 sys_version = _sys_version(' ') 

@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-12-02 - (dev)'
+VERSION='2019-12-03 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #
@@ -38,11 +38,12 @@ fi
 }
 
 #========================================================#
-# local path dir.
+# local path dirs.
 #========================================================#
 export readonly StoreCli_Path=$(dirname $(readlink -f "$0")) 
 export readlink StoreCli_Path_Lib="$StoreCli_Path/lib"
 export readlink StoreCli_Path_Scripts="$StoreCli_Path/scripts"
+export readlink StroreCli_Path_Programs="$StoreCli_Path/programs"
 
 #========================================================#
 # Scripts
@@ -68,14 +69,16 @@ export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 export Lib_CheckUpdate="$StoreCli_Path_Lib/CheckUpdate.sh"
 
-# Categorias.
-export Lib_Acessorios="$StoreCli_Path_Lib/Acessorios.sh"
-export Lib_Dev="$StoreCli_Path_Lib/Dev.sh"
-export Lib_Escritorio="$StoreCli_Path_Lib/Escritorio.sh"
-export Lib_Internet="$StoreCli_Path_Lib/Internet.sh"
-export Lib_Midia="$StoreCli_Path_Lib/Midia.sh"
-export Lib_Sistema="$StoreCli_Path_Lib/Sistema.sh"
-export Lib_Preferencias="$StoreCli_Path_Lib/Preferencias.sh"
+#========================================================#
+# Programs.
+#========================================================#
+export Lib_Acessorios="$StroreCli_Path_Programs/Acessorios.sh"
+export Lib_Dev="$StroreCli_Path_Programs/Dev.sh"
+export Lib_Escritorio="$StroreCli_Path_Programs/Escritorio.sh"
+export Lib_Internet="$StroreCli_Path_Programs/Internet.sh"
+export Lib_Midia="$StroreCli_Path_Programs/Midia.sh"
+export Lib_Sistema="$StroreCli_Path_Programs/Sistema.sh"
+export Lib_Preferencias="$StroreCli_Path_Programs/Preferencias.sh"
 
 #========================================================#
 # Config.
@@ -106,7 +109,7 @@ if [[ "$os_id" == 'linuxmint' ]] && [[ $(echo "$os_version" | cut -c -2) -ge 19 
 
 fi
 
-esp='--------------'
+esp='----------'
 
 #========================================================#
 function _space_msg()
@@ -131,7 +134,7 @@ elif [[ $1 ]]; then
 	local msg="$1"
 fi
 
-echo -e "$esp[ $(_c 32 0)${msg}$(_c) ]$esp"
+echo -e "==> | $(_c 33)${msg}$(_c) |"
 }
 
 #========================================================#
@@ -252,7 +255,7 @@ _info_msgs "Sistema: $os_type $sysname"
 #echo "Versão disponível: $NEW_VERSION"
 
 if [[ ! -z $1 ]]; then
-
+	#_logo
 while [[ $1 ]]; do
 	case "$1" in
 		install) shift; _packmanager_install "$@";; # PackManager.sh
@@ -269,6 +272,7 @@ done
 
 else
 	_logo
+
 fi
 
 exit "$?"
