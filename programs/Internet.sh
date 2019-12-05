@@ -527,7 +527,8 @@ local soma_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb
 	}
 
 	echo "==> Instalando youtube-dl em ~/.local/bin"
-	cp -u "$path_arq" "$dir_user_bin"
+	cp -u "$path_arq" "$dir_user_bin"/youtube-dl
+	chmod +x "$dir_user_bin"/youtube-dl
 
 	if [[ -x $(command -v youtube-dl 2> /dev/null) ]]; then
 		echo "$(_c 32)==> $(_c)youtube-dl instalado"; return 0
