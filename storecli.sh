@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-12-04 - (dev)'
+VERSION='2019-12-05 - (dev)'
 #
 # https://github.com/helmuthdu/aui
 #
@@ -103,7 +103,7 @@ if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
 	sysname=$(echo "$sysname" | sed 's/[0-9]\+//g') # Remover números do final.
 fi
 
-# linuxmint 19
+# linuxmint 19.x
 if [[ "$os_id" == 'linuxmint' ]] && [[ $(echo "$os_version" | cut -c -2) -ge 19 ]]; then
 	sysname="${os_id}$(echo $os_version | cut -c -2)"
 
@@ -114,13 +114,12 @@ esp='----------'
 #========================================================#
 function _space_msg()
 {
-n=40
-num="$((30-$1))"
+	num="$((35-$1))"
 
-while [[ "$num" != '0' ]]; do
-	echo -ne "-"
-	num="$(($num-1))"
-done
+	while [[ "$num" != '0' ]]; do
+		echo -ne "-"
+		num="$(($num-1))"
+	done
 }
 
 #========================================================#
@@ -128,13 +127,15 @@ done
 #========================================================#
 function _info_msgs()
 {
-if [[ -z $1 ]]; then
-	local msg='INFO'
-elif [[ $1 ]]; then
-	local msg="$1"
-fi
+	if [[ -z $1 ]]; then
+		local msg='INFO'
 
-echo -e "==> | $(_c 33)${msg}$(_c) |"
+	elif [[ $1 ]]; then
+		local msg="$1"
+
+	fi
+
+	echo -e "==> | $(_c 33)${msg}$(_c) |"
 }
 
 #========================================================#
@@ -144,14 +145,14 @@ function _check_executable_cli()
 {
 while [[ $1 ]]; do
 	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		#echo "$(_c 32)==> $(_c)$1 $(_space_msg ${#1}) [OK]"
+		#echo "==> $1 $(_space_msg ${#1}) [OK]"
 		echo -ne "\r"
 
 	else
 		echo "$(_c 31)==> $(_c)$1 $(_space_msg ${#1}) [ERROR]"
 		return 1; break
 	fi
-	shift; #sleep 0.05
+	shift; # sleep 0.02
 done
 }
 
@@ -162,6 +163,7 @@ function _configure_system()
 {
 # requeriments cli
 _info_msgs 'instalando requerimentos cli'
+
 	while ! _install_requeriments; do
 		echo -ne "[Erro] pressione $(_c 32)c$(_c) para repetir ou $(_c 31)e$(_c) para sair: "
 		read -n 1 _input
@@ -197,8 +199,7 @@ elif [[ "$1" == '--logo' ]]; then
 
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
-	_configure_system 
-	[[ "$?" == '0' ]] || { echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1; }
+	_configure_system || { echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1; }
 
 fi 
 

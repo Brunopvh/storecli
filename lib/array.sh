@@ -8,15 +8,11 @@
 # cli requeriments.
 #==================================================#
 array_cli_requeriments=(
-'sudo' 'git' 'curl' 'wget' 'xterm' 'gawk' 'xterm' 'unzip' 'python3' 'python2'
+'sudo' 'git' 'curl' 'wget' 'gawk' 'xterm' 'unzip' 'python3' 'python2'
 )
 
 array_cli_freebsd=(
 'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip'
-)
-
-array_cli_debian=(
-'aptitude' 'gdebi' 'dirmngr'  'apt-transport-https' 'gnupg' 'gpgv2' 'gpgv' 'xz-utils' 'xterm'
 )
 
 array_python_linux=( 

@@ -17,22 +17,57 @@ elif [[ $2 ]]; then
 fi
 }
 
+
+#==================================================#
+# cli requeriments.
+#==================================================#
+# Unix.
+array_cli_requeriments=(
+'sudo' 'git' 'curl' 'wget' 'xterm' 'gawk' 'xterm' 'unzip' 'python3' 'python2'
+)
+
+# FreeBSD
+array_cli_freebsd=(
+'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip'
+)
+
+# Python Linux
+array_python_linux=( 
+'python3' 'python2' 'python3-pip' 'python-pip' 'python3-setuptools' 'python-setuptools'
+)
+
+# Python FreeBSD
+array_python_freebsd=(
+'python3' 'python36' 'py36-pip-19.1.1' 'py27-pip-19.1.1' 
+'py36-pip-tools-4.1.0' 'py27-pip-tools-4.1.0'
+)
+
+# Debian Cli
+array_cli_debian=(
+'aptitude' 'gdebi' 'dirmngr'  'apt-transport-https' 'gnupg' 'gpgv2' 'gpgv' 'xz-utils'
+)
+
+# Ubuntu Cli
+array_cli_ubuntu=(
+'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip' 'python3' 'python'
+)
+
 #===============================================#
 # Install cli debian
 #===============================================#
 function _install_cli_debian()
 {
-echo "$(_c 32)==> $(_c)Instalando: ${array_cli_requeriments[@]} ${array_cli_debian[@]}"
-sudo apt install -y "${array_cli_requeriments[@]}" "${array_cli_debian[@]}"
+	echo "$(_c 32)==> $(_c)Instalando: ${array_cli_requeriments[@]} ${array_cli_debian[@]}"
+	sudo apt install -y "${array_cli_requeriments[@]}" "${array_cli_debian[@]}"
 
-if [[ $? == '0' ]]; then 
-	return 0
+	if [[ $? == '0' ]]; then 
+		return 0
 
-else
-	# Error apt install
-	echo "==> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
-	return 1
-fi
+	else
+		# Error apt install
+		echo "==> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
+		return 1
+	fi
 }
 
 #===============================================#
@@ -40,18 +75,17 @@ fi
 #===============================================#
 function _install_cli_ubuntu()
 {
-echo "==> Instalando dependências"
-sudo apt install -y 'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip' 'python3' 'python'
-sudo apt install -y "${array_cli_debian[@]}"
+	echo "==> Instalando: ${array_cli_debian[@]} ${array_cli_ubuntu[@]}"
+	sudo apt install -y "${array_cli_debian[@]}" "${array_cli_ubuntu[@]}"
 
-if [[ $? == '0' ]]; then 
-	return 0
+	if [[ $? == '0' ]]; then 
+		return 0
 
-else
-	# Error apt install
-	echo "==> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
-	return 1
-fi
+	else
+		# Error apt install
+		echo "==> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
+		return 1
+	fi
 }
 
 #===============================================#
@@ -73,7 +107,7 @@ fi
 }
 
 #===============================================#
-# Install cli suse
+# Install cli fedora
 #===============================================#
 function _install_cli_fedora()
 {
@@ -96,23 +130,23 @@ function _install_cli_fedora()
 #===============================================#
 function _install_cli_freebsd()
 {
-echo "$(_c 32)==> $(_c)Instalando: ${array_cli_freebsd[@]} ${_python_requeriments_freebsd[@]}"
-sudo pkg install -y "${array_cli_freebsd[@]}"
+	echo "$(_c 32)==> $(_c)Instalando: ${array_cli_freebsd[@]} ${_python_requeriments_freebsd[@]}"
+	sudo pkg install -y "${array_cli_freebsd[@]}"
 
-if [[ "$?" == '0' ]]; then
-	return 0
+	if [[ "$?" == '0' ]]; then
+		return 0
 
-else
-	# Error pkg install
-	echo "==> O gerenciador de pacotes $(_c 31)pkg $(_c) retornou [erro]"
-	return 1
+	else
+		# Error pkg install
+		echo "==> O gerenciador de pacotes $(_c 31)pkg $(_c) retornou [erro]"
+		return 1
 
-fi
+	fi
 }
 
 
 #===============================================#
-# Install python requeriments debian
+# Install python requeriments debian/Ubuntu
 #===============================================#
 function _python_requeriments_debian()
 {
@@ -122,28 +156,28 @@ function _python_requeriments_debian()
 }
 
 #===============================================#
-# Install python requeriments linux
+# Install python requeriments linux, Suse/Fedora
 #===============================================#
 function _python_requeriments_linux()
 {
-echo "$(_c 32)==> $(_c)Instalando: ${array_python_linux[@]}"
+	echo "$(_c 32)==> $(_c)Instalando: ${array_python_linux[@]}"
 
-if [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
-	sudo zypper in "${array_python_linux[@]}"
-	[[ $? == '0' ]] || { return 1; }
+	if [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
+		sudo zypper in "${array_python_linux[@]}"
+		[[ $? == '0' ]] || { return 1; }
 
-elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
-	sudo dnf install -y "${array_python_linux[@]}"
-	[[ $? == '0' ]] || { return 1; }
+	elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
+		sudo dnf install -y "${array_python_linux[@]}"
+		[[ $? == '0' ]] || { return 1; }
 
-else
-	echo "$(_c 31)==> $(_c)[Erro] seu sistema não e suportado."
-	return 1
+	else
+		echo "$(_c 31)==> $(_c)[Erro] seu sistema não e suportado."
+		return 1
 
-fi
+	fi
 
-pip3 install wget bash --user
-[[ $? == '0' ]] || { return 1; }
+		pip3 install wget bash --user
+		[[ $? == '0' ]] || { return 1; }
 }
 
 
@@ -152,14 +186,18 @@ pip3 install wget bash --user
 #===============================================#
 function _python_requeriments_freebsd()
 {
-echo "$(_c 32)==> $(_c)Instalando: ${array_python_freebsd[@]}"
+	echo "$(_c 32)==> $(_c)Instalando: ${array_python_freebsd[@]}"
 
-if [[ -x $(which pkg 2> /dev/null) ]]; then
-	sudo pkg install -y "${array_python_freebsd[@]}"
-fi
+	if [[ -x $(which pkg 2> /dev/null) ]]; then
+		sudo pkg install -y "${array_python_freebsd[@]}"
 
-pip-3.6 install wget bash --user
-[[ $? == '0' ]] || { return 1; }
+	else
+		return 1
+
+	fi
+
+		pip-3.6 install wget bash --user
+		[[ $? == '0' ]] || { return 1; }
 }
 
 #===============================================#
@@ -170,29 +208,28 @@ pip-3.6 install wget bash --user
 
 function _install_requeriments()
 {
-if [[ "$os_id" == 'debian' ]]; then 
-	 _install_cli_debian 
+	if [[ "$os_id" == 'debian' ]]; then 
+		 _install_cli_debian 
 
-elif [[ "$os_id" == "linuxmint"  ]] || [[  "$os_id" == 'ubuntu' ]]; then
-	_install_cli_ubuntu
+	elif [[ "$os_id" == "linuxmint"  ]] || [[  "$os_id" == 'ubuntu' ]]; then
+		_install_cli_ubuntu
 
-elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
-	_install_cli_freebsd
-	
-elif [[ "$sysname" == 'opensuse-tumbleweed' ]]; then
-	_install_cli_suse
+	elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
+		_install_cli_freebsd
+		
+	elif [[ "$sysname" == 'opensuse-tumbleweed' ]]; then
+		_install_cli_suse
 
-elif [[ "$sysname" == 'fedora31' ]]; then
-	_install_cli_fedora
+	elif [[ "$sysname" == 'fedora31' ]]; then
+		_install_cli_fedora
 
-else
-	echo "$(_c 31)Sistema não suportado $(_c)"; return 1
-fi
+	else
+		echo "$(_c 31)Sistema não suportado $(_c)"; return 1
+	fi
 
 
 if [[ $? == '0' ]]; then
 	echo "==> [OK] função $(_c 32)_install_requeriments $(_c)foi executada com sucesso"
-	#echo 'requeriments false' > "$Config_File"
 	return 0
 
 else
@@ -210,22 +247,22 @@ fi
 
 function _python_requeriments()
 {
-if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'linuxmint' ]] || [[ "$os_id" == 'ubuntu' ]]; then
-	 _python_requeriments_debian && pip3 install wget bash --user
+	if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'linuxmint' ]] || [[ "$os_id" == 'ubuntu' ]]; then
+		 _python_requeriments_debian && pip3 install wget bash --user
 
-elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
-	_python_requeriments_freebsd
-	
-elif [[ "$sysname" == 'opensuse-tumbleweed' ]]; then
-	_python_requeriments_linux
+	elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
+		_python_requeriments_freebsd
+		
+	elif [[ "$sysname" == 'opensuse-tumbleweed' ]]; then
+		_python_requeriments_linux
 
-elif [[ "$sysname" == 'fedora31' ]]; then
-	_python_requeriments_linux
+	elif [[ "$sysname" == 'fedora31' ]]; then
+		_python_requeriments_linux
 
-else
-	echo "$(_c 31)Sistema não suportado $(_c)"; return 1
+	else
+		echo "$(_c 31)Sistema não suportado $(_c)"; return 1
 
-fi
+	fi
 
 
 if [[ $? == '0' ]]; then
@@ -253,8 +290,7 @@ function _create_dirs_user()
 			echo "$i"; return 1 # Não encontrado sair.
 
 		else
-			echo -ne " \r" # Encontrado, echoar nada.
-		
+			echo -ne " \r" # Encontrado.
 		fi
 	done
 }
