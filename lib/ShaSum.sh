@@ -28,8 +28,10 @@ local sum="$2"
 echo -e "$(cl 32)==> $(cl)Gerando soma do arquivo [$path_arq]"	
 get_new_sum=$(sha256sum "$path_arq" | awk '{print $1}')
 
-echo "[$sum]<->[$get_new_sum]"
-echo -ne "$(cl 32)==> $(cl)Comparando os valores: "
+echo "[$sum] -> Soma informada"
+echo "[$get_new_sum] -> Arquivo no disco"
+
+echo -ne "==> Comparando os valores: "
 
 if [[ "$sum" == "$get_new_sum" ]]; then
 	echo "$(_c 32 7)[OK]$(_c)"; return 0

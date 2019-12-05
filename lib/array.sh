@@ -163,6 +163,7 @@ array_internet=(
 'tixati'
 'torbrowser'
 'uget'
+'youtube-dl'
 'youtube-dl-gui'
 )
 

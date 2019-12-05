@@ -68,6 +68,7 @@ export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"   # Gerencia remoção.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 export Lib_CheckUpdate="$StoreCli_Path_Lib/CheckUpdate.sh"
+export Lib_Gpg="$StoreCli_Path_Lib/Gpg.sh"
 
 #========================================================#
 # Programs.
@@ -97,6 +98,7 @@ source "$Lib_PackManager"
 source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 source "$Lib_CheckUpdate"
+source "$Lib_Gpg"
 
 #--------------------------------------------------------#
 if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then

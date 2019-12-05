@@ -492,6 +492,52 @@ elif [[ -x $(which pkg 2> /dev/null) ]]; then # Freebsd.
 fi
 }
 
+#=====================================================#
+# Youtube-dl
+#=====================================================#
+function _youtube_dl()
+{
+# https://youtube-dl.org/
+# http://ytdl-org.github.io/youtube-dl/download.html
+# https://youtube-dl.org/downloads/latest/youtube-dl-2019.11.28.tar.gz
+# https://github.com/ytdl-org/youtube-dl/releases/download/2019.11.28/youtube-dl-2019.11.28.tar.gz.sig
+# https://yt-dl.org/downloads/latest/youtube-dl
+
+local url_ytdl_test='https://yt-dl.org/downloads/latest/youtube-dl'
+local url_ytdl_sig='https://yt-dl.org/downloads/latest/youtube-dl.sig'
+local url_ytdl_asc_philipp='https://phihag.de/keys/A4826A18.asc'
+local url_ytdl_asc_sergey='https://dstftw.github.io/keys/18A9236D.asc'
+
+local path_arq_sig="$dir_user_cache/youtube-dl.sig"
+local path_arq="$dir_user_cache/youtube-dl"   # Path+Nome.
+local soma_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
+	
+	_dow "$url_ytdl_test" "$path_arq" --curl && _dow "$url_ytdl_sig" "$path_arq_sig" --curl
+	
+	# Asc
+	echo "==> Importando chaves."
+	curl -# -LS "$url_ytdl_asc_philipp" -o- | gpg --import -
+	curl -# -LS "$url_ytdl_asc_sergey" -o- | gpg --import -
+
+	# Gpg
+	_verify_sig "$path_arq_sig" "$path_arq" || { 
+		echo "$(_c 31)Falha gpg --verify $(_c)"; return 1;
+		rm "$path_arq" 2> /dev/nul
+		rm "$path_arq_sig" 2> /dev/nul 
+	}
+
+	echo "==> Instalando youtube-dl em ~/.local/bin"
+	cp -u "$path_arq" "$dir_user_bin"
+
+	if [[ -x $(command -v youtube-dl 2> /dev/null) ]]; then
+		echo "$(_c 32)==> $(_c)youtube-dl instalado"; return 0
+
+	else
+		echo "$(_c 31)==> $(_c)Falha: youtube-dl"; return 1
+
+	fi
+
+}
 
 #=====================================================#
 # Youtube-Dl-Gui
