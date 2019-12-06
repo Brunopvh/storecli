@@ -2,10 +2,9 @@
 # 
 # Tor Browser install
 #
-VER='2019-11-30'
+VER='2019-12-05'
 #
 
-#clear
 
 function _c()
 {
@@ -26,12 +25,13 @@ dir_space_tor="/tmp/space_tor_$USER" # Temp
 log_w="$dir_default/wget-log"
 arq_dow=$(basename "$0")
 _tmp=$(mktemp)
-esp='-------------'
+
+esp='------------'
 
 mkdir -p "$dir_default" "$dir_space_tor" ~/.local/bin ~/.local/share/applications
 cd "$dir_default"
 
-requeriments_cli=('curl' 'tar')
+requeriments_cli=('curl' 'tar' 'gpgv' 'gpg')
 
 array_tor=(
 ~/'.local/bin/torbrowser-amd64' # Dir
@@ -56,6 +56,8 @@ EOF
 exit 0
 }
 
+#-------------------------------------------#
+
 function _exist_executable()
 {
 while [[ $1 ]]; do
@@ -72,6 +74,12 @@ while [[ $1 ]]; do
 done
 
 }
+
+#-------------------------------------------#
+
+_exist_executable "${requeriments_cli[@]}"
+
+#-------------------------------------------#
 
 #=============================================#
 # Path User
@@ -118,51 +126,10 @@ tor_html=$(wget -q "$tor_page" -O- | grep -m 1 'torbrowser.*linux.*64.*tar')
 export tor_name=$(echo "$tor_html" | sed 's|.*\/||g;s|\".*||g')
 export tor_version=$(echo "$tor_name" | sed 's/tor-browser-linux64-//g;s/_en-US.tar.xz//g')
 export tor_url_dow="$tor_domain/$tor_version/$tor_name"
+export tor_url_asc="$tor_domain/$tor_version/${tor_name}.asc"
 export tor_path_file="$dir_default/$tor_name"
+export tor_path_file_asc="$dir_default/${tor_name}.asc"
 }
-
-#=============================================#
-# Informações/Progresso de download com wget
-#=============================================#
-_progress(){
-n=1
-while [[ ! $(grep '99%' "$log_w") && ! $(grep 'Done' "$_tmp") ]]; do
-	_porcentagem=$(awk '{print $7}' "$log_w" | tail -n 2 | sed -n 1p)
-	_velocidade=$(awk '{print $8}' "$log_w" | tail -n 2 | sed -n 1p)
-	case "$n" in
-	1) echo -en "$(_c 31) [ | ]$(_c 32) $_porcentagem $(_c 33)$_velocidade$(_c) \r\r";;
-	2) echo -en "$(_c 31) [ / ]$(_c 32) $_porcentagem $(_c 33)$_velocidade$(_c) \r\r";;
-	3) echo -en "$(_c 31) [ - ]$(_c 32) $_porcentagem $(_c 33)$_velocidade$(_c) \r\r";;
-	4) echo -en "$(_c 31) [ \ ]$(_c 32) $_porcentagem $(_c 33)$_velocidade$(_c) \r\r";;
-	esac
-
-	if [[ "$n" == "4" ]]; then
-	    sleep 0.1
-	    n=1
-	else
-	    sleep 0.1
-	    let n=n+1
-	fi
-done
-echo -en "$(_c 31) [ | ]$(_c 35) $_porcentagem $(_c 34)$_velocidade $(_c)"
-echo "Done" > $_tmp
-}
-
-
-#=============================================#
-# Download via wget
-#=============================================#
-function _wget()
-{
-# $1 = url
-# $2 = arquivo.
-echo -e "$(_c 32)==> $(_c)Baixando: $1"
-echo -e "$(_c 32)==> $(_c)Destino: $2"
-
-while [[ ! $(grep 'Done' "$_tmp") ]] && wget -c -b "$1" -O "$2" | sed '/Continuando\|escrita/d'; do
-	_progress;
-done
-}	
 
 #=============================================#
 # Download via curl
@@ -171,17 +138,18 @@ function _curl()
 {
 # $1 = url
 # $2 = arquivo.
-echo -e "$(_c 32)==> $(_c)Baixando: $1"
-echo -e "$(_c 32)==> $(_c)Destino: $2"
+	echo -e "$(_c 32)==> $(_c)Baixando: $1"
+	echo -e "$(_c 32)==> $(_c)Destino: $2"
 	curl -LS -C - "$1" -o "$2" || return 1
 }
 
 #=============================================#
 function _download_tor()
 {
-[[ $(pidof wget) ]] && kill -9 $(pidof wget)
-[[ -f "$log_w" ]] && rm "$log_w"
+# asc
+if [[ ! -f "$tor_path_file_asc" ]]; then _curl "$tor_url_asc" "$tor_path_file_asc"; fi
 
+# tar.xz
 if [[ -f "$tor_path_file" ]]; then
 	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
 	echo "==> O arquivo $(_c 35)já$(_c) existe em $tor_path_file"
@@ -189,8 +157,7 @@ if [[ -f "$tor_path_file" ]]; then
 	return 0
 
 else
-	# _wget "$tor_url_dow" "$tor_path_file" # Download com wget
-	_curl "$tor_url_dow" "$tor_path_file" # Download com curl
+	_curl "$tor_url_dow" "$tor_path_file" 
 
 fi
 }
@@ -228,6 +195,30 @@ fi
 }
 
 #=============================================#
+# Gpg 
+#=============================================#
+function _check_sig_tor()
+{
+# https://support.torproject.org/tbb/how-to-verify-signature/
+# gpg --auto-key-locate nodefault,wkd --locate-keys torbrowser@torproject.org
+# gpg --output ./tor.keyring --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290
+local url_asc_tor='https://openpgpkey.torproject.org/.well-known/openpgpkey/torproject.org/hu/kounek7zrdx745qydx6p59t9mqjpuhdf'
+local path_keyring="$dir_space_tor/tor.keyring"
+
+if [[ -f "$path_keyring" ]]; then rm "$path_keyring"; fi
+
+	echo "==> Importando chaves"
+	curl -LSs "$url_asc_tor" -o- | gpg --import -
+
+	echo "==> Gerando arquivo de verificação"	
+	gpg --output "$path_keyring" --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290
+
+	echo "==> Checando assinatura do arquivo [$tor_path_file]"
+	gpgv --keyring "$path_keyring" "$tor_path_file_asc" "$tor_path_file" || return 1
+
+}
+
+#=============================================#
 # Install
 #=============================================#
 function _install_tor_browser()
@@ -244,35 +235,36 @@ _download_tor
 	}
 
 
-if [[ -x $(command -v torbrowser 2> /dev/null) ]]; then
-	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
-	echo "Tor Browser $(_c 35)já$(_c) instalado."
-	return 0
-fi
+	if [[ -x $(command -v torbrowser 2> /dev/null) ]]; then
+		echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
+		echo "Tor Browser $(_c 35)já$(_c) instalado."
+		return 0
+	fi
 
-_unpack_tor_browser "$tor_path_file" "$dir_space_tor"
-if [[ $? != '0' ]]; then 
-	echo "==> Função $(_c 31)_unpack_tor_browser$(_c) retornou [erro]"
-	exit 1
-fi
+	_check_sig_tor || { echo "$(_c 31)==> Falha arquivo não confiavél [$tor_path_file]$(_c)"; exit 1; }
+
+	_unpack_tor_browser "$tor_path_file" "$dir_space_tor" || {
+		echo "==> Função $(_c 31)_unpack_tor_browser$(_c) retornou [erro]"
+		exit 1
+	}
 
 echo "$(_c 32)==> $(_c)Instalando"
 cd "$dir_space_tor"; mv $(ls -d tor-browser*) "${array_tor[0]}" # Mover para ~/.local/bin
 chmod -R +x "${array_tor[0]}" # Permissão de execução.
 cd "${array_tor[0]}"; ./start-tor-browser.desktop --register-app # Gerar arquivo .desktop
 
-# Gerar script para chamada via linha de comando.
-touch "${array_tor[2]}"
+	# Gerar script para chamada via linha de comando.
+	touch "${array_tor[2]}"
 	echo '#!/usr/bin/env bash' > "${array_tor[2]}" # array_tor[2] = ~/.local/bin/torbrowser
 	echo -e "\ncd ${array_tor[0]}"  >> "${array_tor[2]}"
 	echo './start-tor-browser.desktop' >> "${array_tor[2]}"
 
-chmod +x "${array_tor[2]}"
-cp -u "${array_tor[1]}" ~/Desktop/ 2> /dev/null
-cp -u "${array_tor[1]}" ~/'Área de trabalho'/ 2> /dev/null
-cp -u "${array_tor[1]}" ~/'Área de Trabalho'/ 2> /dev/null
+	chmod +x "${array_tor[2]}"
+	cp -u "${array_tor[1]}" ~/Desktop/ 2> /dev/null
+	cp -u "${array_tor[1]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${array_tor[1]}" ~/'Área de Trabalho'/ 2> /dev/null
 
-torbrowser
+torbrowser # Abrir o navegador.
 }
 
 #=============================================#
@@ -299,8 +291,6 @@ fi
 }
 
 #-------------------------------------------#
-
-_exist_executable "${requeriments_cli[@]}"
 
 if [[ -z $1 ]]; then _usage_tor; exit 1; fi
 

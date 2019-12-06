@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
 #
+# Use: 
+# source Gpg.sh
+# _verify_sig <sig> <file>
 #
 #
 

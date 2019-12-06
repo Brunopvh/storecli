@@ -253,7 +253,7 @@ echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
 #-----------------------------------------------------#
 _info_msgs "$os_type $os_id $os_version"
 
-#_chekupdate
+#_chekupdate	
 #echo "Versão atual: $VERSION"
 #echo "Versão disponível: $NEW_VERSION"
 
