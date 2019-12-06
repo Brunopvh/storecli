@@ -277,6 +277,30 @@ fi
 }
 
 #=====================================================#
+# tor
+#=====================================================#
+function _tor_debian()
+{
+local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
+local tor_arq='/etc/apt/sources.list.d/torproject.list'
+
+if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tina' ]]; then
+	local tor_repos='deb https://deb.torproject.org/torproject.org bionic main'
+
+elif [[ "$os_codename" == 'buster' ]]; then
+	local tor_repos='deb https://deb.torproject.org/torproject.org buster main'
+
+fi
+
+echo "==> Adicionando chaves key e repositório"
+echo "$tor_repos" | sudo tee "$tor_arq"
+sudo sh -c 'curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import'
+sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'
+sudo sh -c 'apt update; apt install -y tor deb.torproject.org-keyring'
+}
+
+
+#=====================================================#
 # proxychains
 #=====================================================#
 function _proxychains()
@@ -288,7 +312,7 @@ elif [[ -x $(command -v dnf 2>/dev/null) ]]; then
 	sudo dnf install proxychains
 
 elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-	sudo apt install -y proxychains
+	sudo apt install -y proxychains && _tor_debian
 
 else
 	_prog_not_found; return 1

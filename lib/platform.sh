@@ -75,8 +75,8 @@ fi
 #=============================================#
 # Codename
 #=============================================#
-if [[ "$file_release" ]] && [[ $( grep '^VERSION_CODENAME=' "$file_release") ]]; then
-	os_codiname=$(grep -m 1 '^VERSION_CODENAME=' "$file_release" | sed 's/.*VERSION_CODENAME=//g')
+if [[ "$file_release" ]] && [[ $(grep '^VERSION_CODENAME=' "$file_release") ]]; then
+	os_codename=$(grep -m 1 '^VERSION_CODENAME=' "$file_release" | sed 's/.*VERSION_CODENAME=//g')
 fi
 
 #=============================================#
