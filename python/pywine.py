@@ -6,7 +6,7 @@
 # Use: --help
 # git clone https://github.com/Brunopvh/storecli.git
 #
-VERSION = '2019-12-01'
+VERSION = '2019-12-07'
 #
 #
 
@@ -19,14 +19,6 @@ dir_root = os.path.dirname(os.path.realpath(__file__))
 dir_run = os.getcwd() 
 dir_home = Path.home()
 dir_dow = (f'{dir_home}/.cache/downloads')
-
-#os.system('clear')
-
-os_type = str(platform.system())
-
-if os.path.isfile('/etc/os-release'): 
-	file_release = '/etc/os-release'
-	cont_file = open(file_release, 'rt').readlines()
 	
 #-----------------------------------------------#
 
@@ -36,82 +28,112 @@ Y='\033[1;33m'
 RS='\033[m'
 
 #-----------------------------------------------#
-# os_id
+# Id/Codename/Version/Release
+#-----------------------------------------------#
 
-def _os_id():
-	if  os_type == 'Linux':
-		for c in cont_file:
-			if c[0:3] == 'ID=':
-				os_id = c.replace('\n', '').replace('ID=', '').replace('"', '')
+os_type = str(platform.system())
+
+if platform.system() == 'Linux':
+	file_release = '/etc/os-release'
+
+elif platform.system() == 'FreeBSD':
+	file_release = '/usr/local/etc/os-release'
+
+else:
+	print('Sistema incompatível saindo...')
+	exit()
+
+if os.path.isfile(file_release) == True:
+	lines_release = open(file_release, 'rt').readlines()
+
+else:
+	print('Arquivo os-release não encontrado saindo...')
+	exit()
+
+class SysInfo:
+	"""Retornar informações do sistma"""
+
+	# ID
+	def get_id(self):
+		for i in lines_release:
+			if i[0:3] == 'ID=':
+				os_id = i.replace('\n', '').replace('"', '').replace('ID=', '')
 				break
-	os_id = os_id			
-	return os_id
 
-#-----------------------------------------------#
-# os_version
-
-def _os_version():
-	if os_type == 'Linux':
-		for c in cont_file:
-			if c[0:11] == 'VERSION_ID=':
-				os_version = c.replace('"', '').replace('\n', '').replace('VERSION_ID=', '')
-
-	return os_version
-
-#-----------------------------------------------#
-
-def _os_release():
-	os_release = ' '
-	if os_type == 'Linux':
-		for c in cont_file:
-			if c[0:8] == 'VERSION=':
-				os_release = c.replace('"', '').replace('\n', '').replace('VERSION=', '')
-
-	del_lis = ['.', '_', '(', ')']
-	del_num = re.findall(r'\d', os_release)
-	for n in del_num:
-		if n in os_release: os_release = os_release.replace(n, '')
+		self.os_id = os_id
+		return self.os_id
 		
-	for c in del_lis:
-		os_release = os_release.replace(c, '').strip()
-
-
-	return os_release
-
-#-----------------------------------------------#
-
-def _os_codename():
-	os_codename = ' '
-	if os_type == 'Linux':
-		for c in cont_file:
-			if c[0:17] == 'VERSION_CODENAME=':
-				os_codename = c.replace('"', '').replace('\n', '').replace('VERSION_CODENAME=', '')
+	# Id Like
+	def get_id_like(self):
+		os_id_like = 'NoNe'
+		for i in lines_release:
+			if i[0:8] == 'ID_LIKE=':
+				i = i.replace('\n', '').replace('"', '').replace('ID_LIKE=', '')
+				os_id_like = i.replace(' ', '_')
 				break
-			else:
-				os_codename = ' '
 
-	return os_codename
+		self.os_id_like = os_id_like
+		return self.os_id_like
 
+	# Version Id
+	def get_version_id(self):
+		os_version_id = 'NoNe'
+		for i in lines_release:
+			if i[0:11] == 'VERSION_ID=':
+				os_version_id = i.replace('\n', '').replace('"', '').replace('VERSION_ID=', '')
+				break
+
+		self.os_version_id = os_version_id
+		return self.os_version_id
+
+	# Version
+	def get_version(self):
+		os_version = 'NoNe'
+		for i in lines_release:
+			if i[0:8] == 'VERSION=':
+				i = i.replace('\n', '').replace('"', '').replace('VERSION=', '')
+				os_version = i.replace('(', '').replace(')', '').replace(' ', '_')
+				break
+
+		self.os_version = os_version
+		return os_version
+
+	# Codename
+	def get_codename(self):
+		os_codename = 'NoNe'
+		for i in lines_release:
+			if i[0:17] == 'VERSION_CODENAME=':
+				os_codename = i.replace('\n', '').replace('"', '').replace('VERSION_CODENAME=', '')
+				break
+
+		self.os_codename = os_codename
+		return self.os_codename
 
 #-----------------------------------------------#
 
-try:
-	os_id = _os_id() # ID
-	os_version = _os_version() # Version
-	os_release = _os_release() # Release
-	os_codename = _os_codename() # Codename
-	sysname = (f'{os_id}{os_version}') # Sys
+info = SysInfo()
 
-except:
-	print('=' * 40); print(f'{R}[Falha ao tentar detectar o sistema]{RS}'); print('=' * 40)
-	sys.exit()
+os_id = info.get_id()
+os_version = info.get_version()
+os_version_id = info.get_version_id()
+os_id_like = info.get_id_like()
+os_codename = info.get_codename()
+sysname = (f'{os_id}{os_version}') 
+
+"""
+print(f'Id -> {os_id}')
+print(f'Version Id -> {os_version_id}')
+print(f'Version -> {os_version}')
+print(f'Id Like {os_id_like}')
+print(f'Codename -> {os_codename}')
+
+exit()
+"""
+
 
 #-----------------------------------------------#
 # Se for Debian ou derivado checar (BASE)
 #-----------------------------------------------#
-
-if (os_id == 'debian') or (os_id == 'linuxmint') or (os_id == 'ubuntu'):
-	debian_base = subprocess.getstatusoutput('cat /etc/debian_version') # 'buster/sid'
 
 #-----------------------------------------------#
 
@@ -148,7 +170,7 @@ def usage():
                             EX {sys.argv[0]} download peazip vlc winrar
 		""")
 
-	sys.exit()
+	exit()
 
 #-----------------------------------------------#
 
@@ -159,21 +181,23 @@ def list_apps():
 if len(sys.argv) < 2: usage(); exit() 
 
 if sys.argv[1] == '--help':
-	usage()
+	usage(); exit()
+
 elif sys.argv[1] == '--version':
 	print(f'{os.path.basename(sys.argv[0])} V{VERSION}'); exit()
+
 elif sys.argv[1] == '--list':
-	list_apps()
+	list_apps(); exit()
 
 
 #-----------------------------------------------#
 
 def _msgs(msg, c=''):
+	""" c = Cor """
 	print(c, end=''); print(f'-> {msg}', end=''); print(RS)
 
 #-----------------------------------------------#
 
-_msgs(f'{os_id} {os_version}', g)
 
 #-----------------------------------------------#
 
@@ -206,7 +230,7 @@ def sys_status(comando):
 	"""
 	Executar o comando e retornar o status de saída
 	seguido da saída no terminal texto/erros/mensagens/etc.
-	Será retornado uma lista.
+	Será retornada uma lista.
 	"""
 	status, output = subprocess.getstatusoutput(comando)
 
@@ -385,6 +409,10 @@ def _install_wine():
 	if (os_id == 'debian') or (os_id == 'linuxmint') or (os_id == 'ubuntu'):
 		_install_wine_debian() # Debian/Ubuntu/Mint
 
+	else:
+		_msgs(f'Não foi possível instalar o wine, tente manualmente.', R)
+		exit()
+
 #-----------------------------------------------#
 
 #===============================================#
@@ -414,10 +442,39 @@ def office2007():
 		return '1'
 
 	_msgs('Necessário o CD de instalação volume OFFICE12', G)
-	_sn = input('Deseja prosseguir [s/n] ? : ').lower().strip()
 
-	if _sn == 's':
-		os.system('winetricks office2007pro WINEARCH=win32')
+	num = int('0')
+	while True:
+		_sn = input('Deseja prosseguir [s/n] ? : ').lower().strip()
+
+		if _sn == 's':
+			break
+		elif _sn == 'n':
+			print('Abortando...')
+			return '0'; break
+
+		else:
+			_msgs(f'Opção inválida, digite (s) ou (n) [{num}].', R)
+
+			num += 1
+			if num == int('3'):
+				_msgs('Máximo de tentativas atingido, saindo...', R)
+				exit(); break
+			
+			continue
+	
+	# Volume está montado ?
+	shell_cmd = subprocess.getstatusoutput('grep "OFFICE12" /proc/mounts')
+	sys_exit = int(shell_cmd[0])
+	sys_out = str(shell_cmd[1]).split() # Segundo item, ponto de montagem
+
+	if sys_exit != int('0'): # Não montado
+		print('Volume OFFICE12 não está montado'); return int('1')
+
+	elif sys_exit == int('0'): # Montado
+		print(f'Volume OFFICE12 montado em: {sys_out[1]}')
+
+	os.system('winetricks office2007pro WINEARCH=win32')
 
 #-----------------------------------------------#
 
@@ -440,6 +497,21 @@ def winrar():
 #-----------------------------------------------#
 
 def _install():
+
+	# Wine está instalado ?
+	wine_check = subprocess.getstatusoutput('command -v wine 2> /dev/null')
+
+	if int(wine_check[0]) != int('0'):
+		_msgs(f'Wine não está instalado, use: {os.path.basename(sys.argv[0])} install wine', R)
+		exit()
+
+	# Winetricks está instalado ?
+	winetricks_check = subprocess.getstatusoutput('command -v winetricks 2> /dev/null')
+
+	if int(winetricks_check[0]) != int('0'):
+		_msgs(f'Winetricks não está instalado, use: {os.path.basename(sys.argv[0])} install winetricks', R)
+		exit()
+
 	args = sys.argv[2:]
 	for num in range(0, len(args)):
 		if args[num] == 'wine': # Wine
@@ -473,6 +545,8 @@ def _install():
 			_msgs(f'Programa não encontrado: {args[num]}', R)
 
 #-----------------------------------------------#
+
+_msgs(f'{os_id} {os_version}', g)
 
 if sys.argv[1] == 'install': # Instalação.
 	_install() 

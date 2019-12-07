@@ -438,7 +438,8 @@ local path_arq="$1"
 	cp -u "${array_tixati_dirs[0]}" ~/Desktop/ 2> /dev/null
 	
 	if [[ -x $(command -v tixati 2> /dev/null) ]]; then
-		_info_msgs 'tixati instalado'; tixati & 
+		_info_msgs 'tixati instalado' 
+		tixati & 
 		return 0
 
 	else
@@ -451,16 +452,21 @@ local path_arq="$1"
 
 function _tixati()
 {
+# https://support.tixati.com/Release%20Verification
+
 pag_tixati='https://www.tixati.com/download/linux.html' # Pagina de download do programa.
 local html=$(wget -q "$pag_tixati" -O- | egrep '(amd64.deb|x86_64.rpm|tar.gz)') # Html
+
 local url_deb=$(echo "$html" | grep -m 1 'amd64.deb' | sed 's/amd64.deb\".*/amd64.deb/g;s/.*\"//g') # .deb
 local url_rpm=$(echo "$html" | grep -m 1 'x86_64.rpm' | sed 's/x86_64.rpm\".*/x86_64.rpm/g;s/.*\"//g') # .rpm
 local url_tar=$(echo "$html" | grep -m 1 '.tar.gz' | sed 's/.tar.gz\".*/.tar.gz/g;s/.*\"//g') # .tar.gz
+local url_tar_asc="${url_tar}.asc" # Arquivo .tar.gz.asc
 
-# path_arq tar.gz
-path_arq="$dir_user_cache/$(basename $url_tar)"
+local path_arq="$dir_user_cache/$(basename $url_tar)" # path_arq tar.gz
+local path_arq_asc="$dir_user_cache/$(basename $url_tar_asc)"
 
 _dow "$url_tar" "$path_arq" --curl # baixar somente .tar.gz - (qualquer linux)
+_dow "$url_tar_asc" "$path_arq_asc" --curl # Arquivo de verificação .asc
 
 # --downloadonly
 [[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
@@ -478,7 +484,18 @@ elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
 
 fi
 
-_tixat_tar "$path_arq" # Instalar o pacote baixado .tar.gz
+	echo "==> Importando key tixati"
+	curl -# -LS https://www.tixati.com/tixati.key -o- | gpg --import 
+
+	# Gpg
+	_verify_sig "$path_arq_asc" "$path_arq" || { 
+		echo "$(_c 31)Falha gpg --verify $(_c)"
+		rm "$path_arq" 2> /dev/nul
+		rm "$path_arq_asc" 2> /dev/nul 
+		return 1
+	} 
+
+	_tixat_tar "$path_arq" # Instalar o pacote baixado .tar.gz
 }
 
 #=====================================================#
@@ -545,9 +562,10 @@ local soma_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb
 
 	# Gpg
 	_verify_sig "$path_arq_sig" "$path_arq" || { 
-		echo "$(_c 31)Falha gpg --verify $(_c)"; return 1;
+		echo "$(_c 31)Falha gpg --verify $(_c)";
 		rm "$path_arq" 2> /dev/nul
 		rm "$path_arq_sig" 2> /dev/nul 
+		return 1
 	}
 
 	echo "==> Instalando youtube-dl em ~/.local/bin"
