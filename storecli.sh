@@ -295,8 +295,6 @@ if [[ "$current_day" != "$old_day" ]]; then
 	
 fi
 
-exit
-
 if [[ ! -z $1 ]]; then
 	#_logo
 while [[ $1 ]]; do
