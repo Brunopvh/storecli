@@ -3,7 +3,7 @@
 #
 #
 
-function _chekupdate()
+function _checkupdate()
 {
 
 local REPO='https://github.com/Brunopvh/storecli.git'
@@ -13,6 +13,7 @@ local DESTINATION="/tmp/Storecli_Up_$USER"
 local DESTINATION_FILE="$DESTINATION/storecli.sh"
 
 	mkdir -p "$DESTINATION"
+	[[ -f "$DESTINATION_FILE" ]] && rm "$DESTINATION_FILE"
 
 	echo "==> Verificando atualização no [github] aguarde..."
 	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"

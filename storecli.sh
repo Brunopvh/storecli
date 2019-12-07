@@ -251,11 +251,51 @@ echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
 }
 
 #-----------------------------------------------------#
+# Verificar e/ou instalar atualização.
+#-----------------------------------------------------#
+function _day_update()
+{
+
+	_checkupdate	
+
+	CURRENT_VERSION=$(echo "$VERSION" | sed 's/.*V//g')
+
+	if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
+		echo -ne "Nova versão disponível: "
+		echo "$NEW_VERSION"
+
+		echo "Instalando ultima versão: $NEW_VERSION"
+		"$StoreCli_Path/install.sh" || return 1
+
+	else
+		echo "Ultima versão já instalada."
+
+	fi
+
+	# Deletar linha que contém o dia da ultima verificação.
+	sed -i '/^check_day/d' "$Config_File"
+
+	# Gravar o dia atual no arquivo de configuração.
+	echo "check_day $(date | awk '{print $3}')" >> "$Config_File"
+}
+
+
+#-----------------------------------------------------#
+# Verificar nova versão uma vez por dia.
+#-----------------------------------------------------#
 _info_msgs "$os_type $os_id $os_version"
 
-#_chekupdate	
-#echo "Versão atual: $VERSION"
-#echo "Versão disponível: $NEW_VERSION"
+current_day=$(date | awk '{print $3}') # Dia atual
+old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}' 2> /dev/null) # Dia da ultima verificação.
+
+if [[ "$current_day" != "$old_day" ]]; then 
+	_day_update || { 
+		echo "==> Falha ao tentar instalar atualização. Execute $(_c 31)$(basename $0) --upgrade $(_c)"
+	}
+	
+fi
+
+exit
 
 if [[ ! -z $1 ]]; then
 	#_logo
