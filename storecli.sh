@@ -268,7 +268,7 @@ local DESTINATION_FILE="$DESTINATION/storecli.sh"
 	echo "==> Verificando atualização no [github] aguarde..."
 	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"
 
-	NEW_VERSION=$(grep 'VERSION=' "$DESTINATION_FILE" | sed 's/.*=//g')	
+	NEW_VERSION=$(grep -m 1 'VERSION=' "$DESTINATION_FILE" | sed 's/.*=//g')	
 	CURRENT_VERSION="$VERSION"
 
 	if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
