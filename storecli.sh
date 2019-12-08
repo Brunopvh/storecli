@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian, Fedora, OpenSuse)
 #
-VERSION='2019-12-07'
+VERSION='2019-12-08'
 #
 # https://github.com/helmuthdu/aui
 #
@@ -256,15 +256,25 @@ echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
 function _day_update()
 {
 
-	_checkupdate	
+local REPO='https://github.com/Brunopvh/storecli.git'
+local RAWREPO="https://raw.githubusercontent.com/Brunopvh/storecli/master/storecli.sh"
 
+local DESTINATION="/tmp/Storecli_Up_$USER"
+local DESTINATION_FILE="$DESTINATION/storecli.sh"
+
+	mkdir -p "$DESTINATION"
+	[[ -f "$DESTINATION_FILE" ]] && rm "$DESTINATION_FILE"
+
+	echo "==> Verificando atualização no [github] aguarde..."
+	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"
+
+	NEW_VERSION=$(grep 'VERSION=' "$DESTINATION_FILE" | sed "s/.*=//g;s/'//g" | awk '{print $1}')	
 	CURRENT_VERSION=$(echo "$VERSION" | sed 's/.*V//g')
 
 	if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
-		echo -ne "Nova versão disponível: "
-		echo "$NEW_VERSION"
 
-		echo "Instalando ultima versão: $NEW_VERSION"
+		echo -e "Nova versão disponível: $NEW_VERSION"
+		echo -e "Instalando ultima versão: $NEW_VERSION"
 		"$StoreCli_Path/install.sh" || return 1
 
 	else
@@ -285,6 +295,8 @@ function _day_update()
 #-----------------------------------------------------#
 _info_msgs "$os_type $os_id $os_version"
 
+grep 'check_day' "$Config_File" || _day_update
+
 current_day=$(date | awk '{print $3}') # Dia atual
 old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}' 2> /dev/null) # Dia da ultima verificação.
 
@@ -294,6 +306,7 @@ if [[ "$current_day" != "$old_day" ]]; then
 	}
 	
 fi
+
 
 if [[ ! -z $1 ]]; then
 	#_logo
