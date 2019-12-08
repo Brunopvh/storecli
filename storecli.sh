@@ -268,8 +268,8 @@ local DESTINATION_FILE="$DESTINATION/storecli.sh"
 	echo "==> Verificando atualização no [github] aguarde..."
 	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"
 
-	NEW_VERSION=$(grep 'VERSION=' "$DESTINATION_FILE" | sed "s/.*=//g;s/'//g" | awk '{print $1}')	
-	CURRENT_VERSION=$(echo "$VERSION" | sed 's/.*V//g')
+	NEW_VERSION=$(grep 'VERSION=' "$DESTINATION_FILE" | sed 's/.*=//g')	
+	CURRENT_VERSION="$VERSION"
 
 	if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
 
@@ -283,10 +283,10 @@ local DESTINATION_FILE="$DESTINATION/storecli.sh"
 	fi
 
 	# Deletar linha que contém o dia da ultima verificação.
-	sed -i '/^check_day/d' "$Config_File"
+	grep 'check_day' "$Config_File" 1> /dev/null 2>&1 && sed -i '/^check_day/d' "$Config_File"
 
 	# Gravar o dia atual no arquivo de configuração.
-	echo "check_day $(date | awk '{print $3}')" >> "$Config_File"
+	echo -e "check_day $(date | awk '{print $3}')" >> "$Config_File"
 }
 
 
@@ -295,7 +295,7 @@ local DESTINATION_FILE="$DESTINATION/storecli.sh"
 #-----------------------------------------------------#
 _info_msgs "$os_type $os_id $os_version"
 
-grep 'check_day' "$Config_File" || _day_update
+grep 'check_day' "$Config_File" 1> /dev/null 2>&1 || _day_update
 
 current_day=$(date | awk '{print $3}') # Dia atual
 old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}' 2> /dev/null) # Dia da ultima verificação.
