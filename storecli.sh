@@ -161,8 +161,6 @@ done
 function _configure_system()
 {
 # requeriments cli
-_info_msgs 'instalando requerimentos cli'
-
 	while ! _install_requeriments; do
 		echo -ne "[Erro] pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: "
 		read -n 1 _input
@@ -171,8 +169,6 @@ _info_msgs 'instalando requerimentos cli'
 	done
 
 # requeriments python/python3
-_info_msgs 'Instalando requerimentos python'
-
 	while ! _python_requeriments; do
 		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
 		read -n 1 cr
