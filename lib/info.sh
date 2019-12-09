@@ -34,11 +34,11 @@ cat <<EOF
 Comandos:
    --configure            Instala programas necessários (dependências).
    --help                 Mostra esse menu e sai.
-   --upgrade              Instala a ultima versão deste script em: ~/.local/bin
-   --quebrado             Remove pacotes quebrados.                 
-   --version              Mostra versão e sai.
    --list                 Lista aplicativos disponíveis para instalação.
    --logo                 Exibe logo e sai.
+   --quebrado             Remove pacotes quebrados.
+   --upgrade              Instala a ultima versão deste script em: ~/.local/bin            
+   --version              Mostra versão e sai. 
    
    install <pacote>       Instala um ou mais pacote(s) 
                             Ex: $(basename $0) vlc google-chrome icones-papirus

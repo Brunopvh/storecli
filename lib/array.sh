@@ -5,23 +5,20 @@
 #
 
 #==================================================#
-# cli requeriments.
+#
 #==================================================#
-array_cli_requeriments=(
-'sudo' 'git' 'curl' 'wget' 'gawk' 'xterm' 'unzip' 'python3' 'python2'
-)
-
-array_cli_freebsd=(
-'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip'
-)
-
-array_python_linux=( 
-'python3' 'python2' 'python3-pip' 'python-pip' 'python3-setuptools' 'python-setuptools'
-)
-
-array_python_freebsd=(
-'python3' 'python36' 'py36-pip-19.1.1' 'py27-pip-19.1.1' 
-'py36-pip-tools-4.1.0' 'py27-pip-tools-4.1.0'
+array_commands=(
+'--configure'
+'--downloadonly'
+'-d'
+'--help'
+'--list'
+'--logo'
+'--quebrado'
+'--upgrade'
+'--version'
+'install'
+'remove'
 )
 
 

@@ -107,7 +107,7 @@ fi
 
 # linuxmint 19.x
 if [[ "$os_id" == 'linuxmint' ]] && [[ $(echo "$os_version" | cut -c -2) -ge 19 ]]; then
-	sysname="${os_id}$(echo $os_version | cut -c -2)"
+	sysname="${os_id}$(echo $os_version | cut -c -2)" # Usar apenas o número 19.
 
 fi
 
@@ -146,15 +146,12 @@ function _info_msgs()
 function _check_executable_cli()
 {
 while [[ $1 ]]; do
-	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		#echo "==> $1 $(_space_msg ${#1}) [OK]"
-		echo -ne "\r"
 
-	else
+	if [[ ! -x $(which "$1" 2> /dev/null) ]]; then	
 		echo "$(_c 31)==> $(_c)$1 $(_space_msg ${#1}) [ERROR]"
 		return 1; break
 	fi
-	shift; # sleep 0.02
+	shift
 done
 }
 
@@ -167,14 +164,15 @@ function _configure_system()
 _info_msgs 'instalando requerimentos cli'
 
 	while ! _install_requeriments; do
-		echo -ne "[Erro] pressione $(_c 32)c$(_c) para repetir ou $(_c 31)e$(_c) para sair: "
+		echo -ne "[Erro] pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: "
 		read -n 1 _input
 		echo ' '
-		if [[ "${_input,,}" == 'c' ]]; then continue; else return 1; break; fi		
+		if [[ "${_input,,}" == 'r' ]]; then continue; else return 1; break; fi		
 	done
 
-#requeriments python
+# requeriments python/python3
 _info_msgs 'Instalando requerimentos python'
+
 	while ! _python_requeriments; do
 		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
 		read -n 1 cr
@@ -184,8 +182,6 @@ _info_msgs 'Instalando requerimentos python'
 	done
 
 }
-
-#-----------------------------------------------------#
 
 #=====================================================#
 # Args
@@ -210,12 +206,12 @@ fi
 # Check system
 #=====================================================#
 # Cli
-_check_executable_cli "${array_cli_requeriments[@]}" 
-if [[ $? != '0' ]]; then 
-	echo "$(_c 31)==> $(_c)Falha: função $(_c 31)_check_executable_cli $(_c) retornou [erro]" 
-	echo "$(_c 31)==> Execute:$(_c) $(basename $0) --configure para resolver este erro"
+_check_executable_cli "${array_cli_requeriments[@]}" || {
+
+	echo "==> Falha: função $(_c 31)_check_executable_cli $(_c) retornou [erro]" 
+	echo "==> Execute:$(_c 31) $(basename $0) --configure $(_c) para resolver este erro"
 	exit 1 
-fi
+}
 
 # Config_File
 [[ ! -f "$Config_File" ]] && echo ' ' > "$Config_File"
@@ -224,14 +220,16 @@ if ! grep -q 'requeriments false' "$Config_File"; then
 	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
 
 	echo "==> Necessário executar a opção $(_c 32 0)--configure$(_c) pela primeira vez em seu sistema."
-	echo -ne "==> Deseja executar esta ação agora $(_c 35)[s/n]$(_c) ?: "
+	echo -ne "==> Deseja executar esta ação agora $(_c 32)[s/n]$(_c)? : "
 
 	read _input
 	if [[ "${_input,,}" == 's' ]]; then
 		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1
+
 	else
 		echo "Execute manualmente: $(_c 32)$(basename $0) --configure$(_c)"
 		exit 0
+
 	fi
 	
 fi
@@ -251,39 +249,41 @@ echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
 }
 
 #-----------------------------------------------------#
-# Verificar e/ou instalar atualização.
+# Verificar e instalar atualização se disponível.
 #-----------------------------------------------------#
 function _day_update()
 {
 
 local REPO='https://github.com/Brunopvh/storecli.git'
 local RAWREPO="https://raw.githubusercontent.com/Brunopvh/storecli/master/storecli.sh"
+local DESTINATION_FILE="$dir_temp/storecli.sh"
 
-local DESTINATION="/tmp/Storecli_Up_$USER"
-local DESTINATION_FILE="$DESTINATION/storecli.sh"
-
-	mkdir -p "$DESTINATION"
+	mkdir -p "$dir_temp"
 	[[ -f "$DESTINATION_FILE" ]] && rm "$DESTINATION_FILE"
 
 	echo "==> Verificando atualização no [github] aguarde..."
 	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"
 
-	NEW_VERSION=$(grep -m 1 'VERSION=' "$DESTINATION_FILE" | sed 's/.*=//g')	
+	NEW_VERSION=$(grep -m 1 'VERSION=' "$DESTINATION_FILE" | sed "s/.*=//g;s/'//g")	
 	CURRENT_VERSION="$VERSION"
 
 	if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
 
+		echo "${esp}$esp"
 		echo -e "Nova versão disponível: $NEW_VERSION"
-		echo -e "Instalando ultima versão: $NEW_VERSION"
+		echo -e "Instalando atualização"
+		echo "${esp}$esp"
 		"$StoreCli_Path/install.sh" || return 1
 
 	else
+		echo "${esp}$esp"
 		echo "Ultima versão já instalada."
+		echo "${esp}$esp"
 
 	fi
 
 	# Deletar linha que contém o dia da ultima verificação.
-	grep 'check_day' "$Config_File" 1> /dev/null 2>&1 && sed -i '/^check_day/d' "$Config_File"
+	sed -i '/^check_day/d' "$Config_File"
 
 	# Gravar o dia atual no arquivo de configuração.
 	echo -e "check_day $(date | awk '{print $3}')" >> "$Config_File"
@@ -295,10 +295,10 @@ local DESTINATION_FILE="$DESTINATION/storecli.sh"
 #-----------------------------------------------------#
 _info_msgs "$os_type $os_id $os_version"
 
-grep 'check_day' "$Config_File" 1> /dev/null 2>&1 || _day_update
+grep 'check_day' "$Config_File" 1> /dev/null || _day_update
 
 current_day=$(date | awk '{print $3}') # Dia atual
-old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}' 2> /dev/null) # Dia da ultima verificação.
+old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}') # Dia da ultima verificação.
 
 if [[ "$current_day" != "$old_day" ]]; then 
 	_day_update || { 
@@ -312,14 +312,12 @@ if [[ ! -z $1 ]]; then
 	#_logo
 while [[ $1 ]]; do
 	case "$1" in
-		install) shift; _packmanager_install "$@";; # PackManager.sh
-		remove)  _packremove "$@";; # PackRemove.sh
-		--list) _list_applications;;
-		--downloadonly) echo -en "\r";;
-		-d) echo -en "\r";;
-		--quebrado) _quebrado;;
-		--upgrade) "$StoreCli_Path/install.sh";;
-		*) echo -en "\r";;
+		install) shift; _packmanager_install "$@"; exit "$?";; # PackManager.sh
+		remove)  _packremove "$@"; exit "$?";; # PackRemove.sh
+		--list) _list_applications; exit "$?";;
+		--quebrado) _quebrado; exit "$?";;
+		--upgrade) "$StoreCli_Path/install.sh"; exit "$?";;
+		*) echo "$(_c 31)Comando não encontrado: $1 $(_c)"
 	esac
 	shift
 done
