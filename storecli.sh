@@ -97,7 +97,7 @@ source "$Lib_HttpsTransfer"
 source "$Lib_PackManager"
 source "$Lib_PackRemove"
 source "$Lib_ShaSum"
-source "$Lib_CheckUpdate"
+#source "$Lib_CheckUpdate"
 source "$Lib_Gpg"
 
 #--------------------------------------------------------#

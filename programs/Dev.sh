@@ -20,16 +20,15 @@ function _android_studio_debian()
 {
 	sudo apt install openjdk-8-jdk
 
-	if [[ "$os_id" == 'debian' ]]; then
-		sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system
+	case "$os_id" in
+		debian) sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system;;
+		ubuntu|linuxmint) sudo apt install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils;;
+		*) return 1;;
+	esac
 
-	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		sudo apt install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
-
-	fi
 
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	echo "$(_c 32)==> $(_c)Adicionando $USER aos grupos: $(_c 32)libvirt libvirt-qemu$(_c)" 
+	echo "==> Adicionando $USER aos grupos: $(_c 32)libvirt libvirt-qemu$(_c)" 
 	sudo adduser "$USER" libvirt
 	sudo adduser "$USER" libvirt-qemu
 
@@ -40,26 +39,28 @@ local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-stud
 local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
 local path_arq="$dir_user_cache/$(basename $url)"
 
-_dow "$url" "$path_arq" --wget
+_dow "$url" "$path_arq" --curl
 # --download-only
 [[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v studio 2> /dev/null) ]] && { _msg_pack_instaled 'android-studio'; return 0; }
 
 	 # Lib ShaSum.sh
 	_check_sum "$path_arq" "$soma" || { 
-		echo "$(_c 31)==> $(_c)Erro função $(_c 31)_check_sum $(_c)retornou erro"
+		echo "Erro função $(_c 31)_check_sum $(_c)retornou erro"
 		echo "$(_c 31)==> Arquivo não confialvél: $path_arq $(_c)" 
 		return 1 
 	}
 
-"$Script_UnPack" "$path_arq" "$dir_temp"
-[[ $? == '0' ]] || { echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+
+	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
+		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+	}
 
 echo "$(_c 32)==> $(_c)Instalando android studio em ~/.local/bin"
 
-cd "$dir_temp" && mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # Dir
+cd "$dir_temp" && mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
 cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
-chmod -R +x "${array_android_studio_dirs[3]}" # Dir
+chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
 
 	# .desktop
 	echo '[Desktop Entry]' > "${array_android_studio_dirs[0]}"

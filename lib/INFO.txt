@@ -1,0 +1,13 @@
+Referências.
+
+Dica rápida: Como buscar recursivamente usando o grep
+https://terminalroot.com.br/2017/01/como-buscar-recursivamente-usando-o-grep.html
+
+20 EXEMPLOS DO COMANDO FIND
+https://terminalroot.com.br/2015/07/20-exemplos-do-comando-find.html
+
+30 exemplos do comando sed - com regex
+https://terminalroot.com.br/2015/07/30-exemplos-do-comando-sed-com-regex.html
+
+Como iterar em um intervalo de números definido por variáveis ​​no Bash?
+https://stackoverflow.com/questions/169511/how-do-i-iterate-over-a-range-of-numbers-defined-by-variables-in-bash
