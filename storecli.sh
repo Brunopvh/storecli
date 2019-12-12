@@ -8,7 +8,14 @@ VERSION='2019-12-10'
 #
 # https://github.com/helmuthdu/aui
 #
+#-----------------------------------------------------#
+# REPOSITÓRIO.
 # https://github.com/Brunopvh/storecli.git 
+#
+# Instalação.
+# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)" 
+# sh -c "$(wget -q https://raw.github.com/Brunopvh/storecli/master/install.sh -O-)"
+#
 #
 
 function cl() { 
