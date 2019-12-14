@@ -503,14 +503,14 @@ def _install():
 
 	if int(wine_check[0]) != int('0'):
 		_msgs(f'Wine não está instalado, use: {os.path.basename(sys.argv[0])} install wine', R)
-		exit()
+		info = input('Pressione enter: ')
 
 	# Winetricks está instalado ?
 	winetricks_check = subprocess.getstatusoutput('command -v winetricks 2> /dev/null')
 
 	if int(winetricks_check[0]) != int('0'):
 		_msgs(f'Winetricks não está instalado, use: {os.path.basename(sys.argv[0])} install winetricks', R)
-		exit()
+		info = input('Pressione enter: ')
 
 	args = sys.argv[2:]
 	for num in range(0, len(args)):
