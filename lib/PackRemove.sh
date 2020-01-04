@@ -33,7 +33,8 @@ while [[ $1 ]]; do
 		echo "$(_c 32)==> $(_c)Removendo: $1"
 
 		# Precisa ser o [root] ?
-		if [[ $(echo $1 | grep "$HOME") ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
+		#if [[ $(echo $1 | grep "$HOME") ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
+		if [[ -w "$1" ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
 
 	else
 		echo "$(_c 31)==> $(_c)Não encontrado: $1"
@@ -72,18 +73,22 @@ _delete_all "${array_pycharm_dirs[@]}"
 
 #-----------------------------------------------------#
 
-function _remove_vscode()
-{
-[[ ! -x $(which code 2> /dev/null) ]] && { echo "==> vscode $(_c 31)não$(_c) está instalado"; return 0; }
-_delete_all "${array_vscode_dirs[@]}"
-}
-
-#-----------------------------------------------------#
-
 function _remove_peazip()
 {
 [[ ! -x $(which peazip 2> /dev/null) ]] && { echo "==> peazip $(_c 31)não$(_c) está instalado"; return 0; }
 _delete_all "${array_peazip_dirs[@]}"
+}
+
+#-----------------------------------------------------#
+
+function _remove_teamviewer()
+{
+[[ ! -x $(command -v teamviewer 2> /dev/null) ]] && { echo "==> teamviewer $(_c 31)não$(_c) está instalado"; return 0; }
+
+	case "$sysname" in
+		debian10|linuxmint19|ubuntu18.04) sudo apt remove teamviewer --auto-remove;;
+		*) _delete_all "${array_teamviewer_dirs[@]}";;
+	esac	
 }
 
 #-----------------------------------------------------#
@@ -102,6 +107,16 @@ function _remove_veracrypt()
 sudo "/usr/bin/veracrypt-uninstall.sh"	
 }
 
+#-----------------------------------------------------#
+
+function _remove_vscode()
+{
+[[ ! -x $(which code 2> /dev/null) ]] && { echo "==> vscode $(_c 31)não$(_c) está instalado"; return 0; }
+_delete_all "${array_vscode_dirs[@]}"
+}
+
+#-----------------------------------------------------#
+
 #=====================================================#
 # _packmanager_remove
 #=====================================================#
@@ -115,11 +130,12 @@ while [[ $1 ]]; do
 		peazip) _remove_peazip;;
 		pycharm) _remove_pycharm;;
 		sublime-text) "$Script_PackTargz" remove sublime-text;;
-		vscode) _remove_vscode;;
+		teamviewer) _remove_teamviewer;;
 		telegram) _remove_telegram;;
 		tixati) _delete_all "${array_tixati_dirs[@]}";;
 		torbrowser) "$Script_TorBrowser" --remove;;
 		veracrypt) _remove_veracrypt;;
+		vscode) _remove_vscode;;
 		remove) echo -ne "\r";;
 		*) echo "==> Não e possível remover o pacote: $1";;
 	esac

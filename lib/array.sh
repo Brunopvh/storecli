@@ -96,6 +96,23 @@ array_peazip_dirs=(
 '/opt/peazip-amd64' # Dir peazip
 )
 
+# Teamviewer
+array_teamviewer_dirs=(
+'/opt/teamviewer'
+'/usr/bin/teamviewer'
+"$dir_root_icons/16x16/apps/TeamViewer.png"
+"$dir_root_icons/20x20/apps/TeamViewer.png"
+"$dir_root_icons/24x24/apps/TeamViewer.png"
+"$dir_root_icons/32x32/apps/TeamViewer.png"
+"$dir_root_icons/48x48/apps/TeamViewer.png"
+"$dir_root_icons/256x256/apps/TeamViewer.png"
+"$dir_root_applications/com.teamviewer.TeamViewer.desktop"
+'/usr/share/dbus-1/services/com.teamviewer.TeamViewer.Desktop.service'
+'/usr/share/dbus-1/services/com.teamviewer.TeamViewer.service'
+'/usr/share/polkit-1/actions/com.teamviewer.TeamViewer.policy'
+'/etc/systemd/system/multi-user.target.wants/teamviewerd.service'
+)
+
 # Telegram
 array_telegram_dirs=(
 "$dir_user_applications/telegramdesktop.desktop" # .desktop
@@ -156,6 +173,7 @@ array_internet=(
 'opera-stable'
 'proxychains'
 'qbittorrent'
+'teamviewer'
 'telegram'
 'tixati'
 'torbrowser'

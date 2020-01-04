@@ -90,7 +90,7 @@ while [[ "$1" ]]; do
 		opera-stable) _opera_stable;;
 		proxychains) _proxychains;;
 		qbittorrent) _qbittorrent;;
-		teamviwer) _teamviwer;;
+		teamviewer) _teamviewer;;
 		telegram) _telegram;;
 		tixati) _tixati;;
 		torbrowser) _torbrowser;;

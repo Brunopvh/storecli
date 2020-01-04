@@ -343,37 +343,92 @@ return "$?"
 # TeamViwer
 #=====================================================#
 
-function _install_teamviwer_debian()
+function _install_teamviewer_debian()
 {
+# https://www.teamviewer.com/en/download/linux/
 # wget -O- https://download.teamviewer.com/download/linux/signature/TeamViewer2017.asc | sudo apt-key add -
 # echo 'deb http://linux.teamviewer.com/deb stable main' > /etc/apt/sources.list.d/teamviewer.list
 # echo 'deb http://linux.teamviewer.com/deb preview main' >> /etc/apt/sources.list.d/teamviewer.list
 # sudo apt update; sudo apt install teamviewer
 #
-local url='https://download.teamviewer.com/download/linux/teamviewer_amd64.deb'
-local path_arq="$dir_user_cache/teamviewer_amd64.deb"
+#local url='https://download.teamviewer.com/download/linux/teamviewer_amd64.deb'
 
-	_dow "$url" "$path_arq" --wget
+	local tw_pag='https://www.teamviewer.com/en/download/linux/'
+	local tw_html=$(wget -qO- "$tw_pag" | grep -m 1 'teamviewer.*amd64.deb')
+	local url=$(echo "$tw_html" | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
+	local path_arq="$dir_user_cache/$(basename $url)"
+	
+	_dow "$url" "$path_arq" --curl
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+	[[ -x $(command -v teamviewer 2> /dev/null) ]] && { _msg_pack_instaled 'teamviewer'; return 0; }
 
-	echo "$(_c 32)==> $(_c)Instalando"
+	echo "$(_c 32)==> $(_c)Instalando os seguintes pacotes: ${array_tw_requeriments[@]}"
+	echo ' '
+	read -p "Pressione enter: " enter
+	
+	sudo apt install -y "${array_tw_requeriments[@]}"
 	sudo dpkg --install "$path_arq"
 	_quebrado # Remover pacotes quebrados.
 }
 
 #-----------------------------------------------------#
 
-function _teamviwer()
+function _teamviewer_tar()
+{
+	local tw_pag='https://www.teamviewer.com/en/download/linux/'
+	local tw_html=$(wget -qO- "$tw_pag" | grep -m 1 'teamviewer.*amd64.tar')
+	local tw_url=$(echo "$tw_html" | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
+	local path_arq="$dir_user_cache/$(basename $tw_url)"
+
+	echo "==> Instale os pacotes a seguir manualmente: ${array_tw_requeriments[@]}"
+	echo " "
+	read -p "Pressione enter: " enter
+
+	_dow "$tw_url" "$path_arq" --curl
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+
+	[[ -x $(command -v teamviewer 2> /dev/null) ]] && { _msg_pack_instaled 'teamviewer'; return 0; }
+
+	"$Script_UnPack" "$path_arq" "$dir_temp" || {
+		echo "==> Falha: $(_c 31)[unpack]$(_c) retornou erro."; return 1; 
+	}
+
+	cd "$dir_temp" && cd teamviewer
+	chmod -R +x *
+	sudo ./tv-setup install
+}
+
+#-----------------------------------------------------#
+
+array_tw_requeriments=(
+	'libdbus-1-3' 
+	'libqt5gui5' 
+	'libqt5widgets5' 
+	'libqt5qml5' 
+	'libqt5quick5' 
+	'libqt5webkit5' 
+	'libqt5x11extras5' 
+	'qml-module-qtquick2' 
+	'qml-module-qtquick-controls' 
+	'qml-module-qtquick-dialogs' 
+	'qml-module-qtquick-window2' 
+	'qml-module-qtquick-layouts' 
+	)
+
+function _teamviewer()
 {
 # https://www.blogopcaolinux.com.br/2018/04/Instalando-o-TeamViewer-no-Debian-Ubuntu-e-Linux-Mint.html
 	
 	case "$sysname" in
-		debian10|linuxmint19|ubuntu18.04) _install_teamviwer_debian;;
-		*) _prog_not_found; return 1;;
+		debian10|linuxmint19|ubuntu18.04) _install_teamviewer_debian;;
+		*) _teamviewer_tar;;
 	esac
 }
+
+#-----------------------------------------------------#
 
 #=====================================================#
 # Telegram

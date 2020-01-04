@@ -1,17 +1,21 @@
 #!/bin/sh
 #
 #
+# Instalador do programa "storecli" via github.
+# necessário ter o "git" instalado.
 #
 
 
 _c()
 {
+# Cores.
 	[ -z $1 ] && { printf "\033[m"; return 0; }
 	[ -z $2 ] && { printf "\033[1;${1}m"; return 0; }
 	[ ! -z $2 ] && { printf "\033[${2};${1}m"; return 0; }
 }
 
 #---------------------------------------------------#
+
 _msgs()
 {
 	echo "==> $@"
