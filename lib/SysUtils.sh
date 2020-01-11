@@ -229,7 +229,7 @@ function _install_requeriments()
 
 
 if [[ $? == '0' ]]; then
-	echo "==> [OK] função $(_c 32)_install_requeriments $(_c)foi executada com sucesso"
+	echo "=> [OK] função $(_c 32)_install_requeriments $(_c)foi executada com sucesso"
 	return 0
 
 else
@@ -266,12 +266,12 @@ function _python_requeriments()
 
 
 if [[ $? == '0' ]]; then
-	echo "$(_c 32 0)==> função_python_requeriments foi executada com sucesso $(_c)"
+	echo "$(_c 32 0)=> função_python_requeriments foi executada com sucesso $(_c)"
 	echo 'requeriments false' > "$Config_File"
 	return 0
 
 else
-	echo "$(_c 31)==> Função_python_requeriments retornou [erro] $(_c)" 
+	echo "$(_c 31)=> Função_python_requeriments retornou [erro] $(_c)" 
 	return 1
 
 fi
@@ -288,9 +288,6 @@ function _create_dirs_user()
 	for i in "${array_user_dirs[@]}"; do	
 		if [[ ! -d "$i" ]]; then 
 			echo "$i"; return 1 # Não encontrado sair.
-
-		else
-			echo -ne " \r" # Encontrado.
 		fi
 	done
 }
@@ -301,6 +298,9 @@ function _create_dirs_user()
 # ~/.bashrc
 function _conf_path_bash()
 {
+	# Encerrar a função se '~/.local/bin' já existir na variável PATH.
+	if echo $PATH | grep -q "$HOME/.local/bin"; then return 0; fi
+
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
 		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
@@ -316,6 +316,9 @@ function _conf_path_zsh()
 {
 	command -v zsh 2> /dev/null || return 0
 	
+	# Encerrar a função se '~/.local/bin' já existir na variável PATH.
+	if echo $PATH | grep -q "$HOME/.local/bin"; then return 0; fi 
+
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
 		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc

@@ -172,11 +172,11 @@ fi
 function _unpack_tor_browser()
 {
 # $1 = arquivo a descomprimir.
-	local arq="$1"
+	local path_arq="$1"
 
 	# Limpar o conteúdo do diretório antes de descomprimir.
 	cd "$dir_space_tor" && rm -rf * 1> /dev/null 2>&1 
-	echo -e "$(_c 32)==> $(_c)Descompactando: [$arq]"
+	echo -e "$(_c 32)==> $(_c)Descompactando: [$path_arq]"
 	echo -e "$(_c 32)==> $(_c)Destino: [$dir_space_tor]"
 
 	# Detectar a extensão do arquivo.

@@ -13,7 +13,7 @@ function usage_platform()
 {
 clear
 cat <<EOF
-Use: $(basename $0)
+Use: source $0
 EOF
 }
 
@@ -47,7 +47,7 @@ if [[ $os_type == 'FreeBSD' ]]; then
 	os_id=$(uname -r)
 	
 elif [[ $os_type == 'Linux' ]]; then
-	os_id=$(grep '^ID=' "$file_release" | sed 's/.*=//g;s/\"//g')	
+	os_id=$(grep '^ID=' "$file_release" | sed 's/.*=//g;s/\"//g') # debian/ubuntu/linuxmint/fedora....
 
 fi
 
@@ -80,7 +80,7 @@ if [[ "$file_release" ]] && [[ $(grep '^VERSION_CODENAME=' "$file_release") ]]; 
 fi
 
 #=============================================#
-# Sysname id+version
+# Sysname = id+version
 #=============================================#
 if [[ "$os_type" == 'Linux' ]]; then
 	sysname="${os_id}${os_version}"

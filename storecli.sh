@@ -103,11 +103,10 @@ source "$Lib_platform"
 source "$Lib_Info"
 source "$Lib_SysUtils"
 source "$Lib_HttpsTransfer"
-#source "$Lib_PackManager" # esta "lib" atualmente não está em uso.
 source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 source "$Lib_Gpg"
-#source "$Lib_CheckUpdate"
+#source "$Lib_PackManager" # esta "lib" atualmente não está em uso.
 
 source "$Lib_Acessorios"
 source "$Lib_Dev"
@@ -209,7 +208,7 @@ elif [[ "$1" == '--logo' ]]; then
 
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
-	_configure_system || { echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1; }
+	_configure_system || { echo "$(_c 31)Encerrando com erro. $(_c)"; exit 1; }
 
 fi 
 
@@ -231,8 +230,8 @@ _check_executable_cli "${array_cli_requeriments[@]}" || {
 if ! grep -q 'requeriments false' "$Config_File"; then
 	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
 
-	echo "==> Necessário executar a opção $(_c 32 0)--configure$(_c) pela primeira vez em seu sistema."
-	echo -ne "==> Deseja executar esta ação agora $(_c 32)[s/n]$(_c)? : "
+	echo "=> Necessário executar a opção $(_c 32 0)--configure$(_c) pela primeira vez em seu sistema."
+	echo -ne "=> Deseja executar esta ação agora $(_c 32)[s/n]$(_c)? : "
 
 	read _input
 	if [[ "${_input,,}" == 's' ]]; then
