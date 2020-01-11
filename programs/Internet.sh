@@ -451,7 +451,6 @@ function _install_teamviewer_fedora()
 	[[ "$download_only" == 'on' ]] && { echo "==> Feito somente download."; return 0; }
 	[[ -x $(command -v teamviewer 2> /dev/null) ]] && { _msg_pack_instaled 'teamviewer'; return 0; }
 
-	echo "==> Instale os pacotes a seguir manualmente: ${array_tw_fedora[@]}"
 	echo " "
 	read -p "Pressione enter: " enter
 
@@ -561,7 +560,7 @@ local path_arq="$1"
 	
 	if [[ -x $(command -v tixati 2> /dev/null) ]]; then
 		_info_msgs 'tixati instalado' 
-		tixati & 
+		#tixati & 
 		return 0
 
 	else
@@ -606,7 +605,7 @@ elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
 
 fi
 
-	echo "==> Importando key tixati"
+	_info_msgs "Importando key tixati"
 	curl -# -LS https://www.tixati.com/tixati.key -o- | gpg --import 
 
 	# Gpg

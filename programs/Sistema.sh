@@ -131,7 +131,7 @@ function _peazip()
 local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
 local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
 
-_dow "$peazip_url_download" "$path_arq" --curl #--wget
+_dow "$peazip_url_download" "$path_arq" --curl
 
 	# --download-only
 	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
@@ -145,7 +145,8 @@ _dow "$peazip_url_download" "$path_arq" --curl #--wget
 echo "$(cor 32)==> $(cor)Instalando"
 
 cd "$dir_temp" && mv -v $(ls -d peazip*) "$dir_temp/peazip-amd64" 1> /dev/null
-chmod -R +x "$dir_temp/peazip-amd64"
+sudo chown -R root:root "$dir_temp/peazip-amd64" #1> /dev/null # root é o dono.
+sudo chmod -R a+x "$dir_temp/peazip-amd64"
 
 sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.desktop "${array_peazip_dirs[0]}" # .desktop
 sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.png "${array_peazip_dirs[1]}" # PNG.
@@ -335,7 +336,7 @@ function _virtualbox()
 
 	case "$sysname" in
 		debian10) _virtualbox_buster;;
-		linuxmint19) _virtualbox_bionic;;
+		linuxmint19|ubuntu18.04) _virtualbox_bionic;;
 		thirty|thirty_one) _virtualbox_fedora;;	
 		*) _prog_not_found;;	
 	esac

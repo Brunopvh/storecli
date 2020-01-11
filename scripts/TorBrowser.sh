@@ -20,8 +20,8 @@ function _c()
 if [[ $(id -u) == '0' ]]; then echo "==> [Erro] usuário não pode ser o $(_c 31)[root]$(_c)"; exit 1; fi
 
 
-dir_default=~/.cache/downloads # Downloads
-dir_space_tor="/tmp/space_tor_$USER" # Temp
+dir_default=~/.cache/downloads        # Downloads
+dir_space_tor="/tmp/space_tor_$USER"  # Temp
 log_w="$dir_default/wget-log"
 arq_dow=$(basename "$0")
 _tmp=$(mktemp)
@@ -34,9 +34,9 @@ cd "$dir_default"
 requeriments_cli=('curl' 'tar' 'gpgv' 'gpg')
 
 array_tor=(
-~/'.local/bin/torbrowser-amd64' # Dir
+~/'.local/bin/torbrowser-amd64'                         # Dir
 ~/'.local/share/applications/start-tor-browser.desktop' # .desktop
-~/'.local/bin/torbrowser' # Run.
+~/'.local/bin/torbrowser'                               # Run.
 )
 
 function _usage_tor()
@@ -62,15 +62,12 @@ function _exist_executable()
 {
 while [[ $1 ]]; do
 
-	if [[ -x $(command -v "$1" 2> /dev/null) ]]; then
-		echo -en "\r"
-
-	elif [[ ! -x $(command -v "$1" 2> /dev/null) ]]; then
-		echo "$(_c 31)==> $(_c)Erro: $1"
+	if [[ ! -x $(command -v "$1" 2> /dev/null) ]]; then
+		echo "$(_c 31)Erro: $1 $(_c)"
 		exit 1; break
 	fi
-	shift
 
+	shift
 done
 
 }
@@ -88,6 +85,8 @@ function _conf_path_zsh()
 {
 	command -v zsh 2> /dev/null || return 0
 	
+	if echo "$PATH" | grep -q "$HOME/.local/bin"; then return 0; fi
+
 	# ~/.zshrc
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
 		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
@@ -101,6 +100,9 @@ function _conf_path_zsh()
 
 function _conf_path_bash()
 {
+
+	if echo "$PATH" | grep -q "$HOME/.local/bin"; then return 0; fi
+
 	# ~/.bashrc
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
 		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
@@ -114,6 +116,7 @@ function _conf_path_bash()
 #=============================================#
 # Url
 #=============================================#
+
 function _get_info_tor()
 {
 # url = domain/version/name
@@ -165,38 +168,47 @@ fi
 #=============================================#
 # unpack
 #=============================================#
+
 function _unpack_tor_browser()
 {
 # $1 = arquivo a descomprimir.
-# $2 = destino da descompressão.
-local arq="$1"
-local dir_temp="$2"
+	local arq="$1"
 
-cd "$dir_temp" && rm -rf * 1> /dev/null 2>&1 
-mkdir -p "$dir_temp"
+	# Limpar o conteúdo do diretório antes de descomprimir.
+	cd "$dir_space_tor" && rm -rf * 1> /dev/null 2>&1 
+	echo -e "$(_c 32)==> $(_c)Descompactando: [$arq]"
+	echo -e "$(_c 32)==> $(_c)Destino: [$dir_space_tor]"
 
-	echo -e "$(_c 32)==> $(_c)Descompactando: ["$arq"]"
-	echo -e "$(_c 32)==> $(_c)Destino: ["$dir_temp"]"
+	# Detectar a extensão do arquivo.
+	if [[ "${path_arq: -6}" == 'tar.gz' ]]; then # tar.gz, 6 ultimos caracteres.
+		type_arq='tar.gz'
 
-if [[ $(echo "$arq" | grep 'tar.gz') ]]; then
-	tar -zxvf "$arq" -C "$dir_temp" 1> /dev/null	
+	elif [[ "${path_arq: -7}" == 'tar.bz2' ]]; then # tar.bz2
+		type_arq='tar.bz2'
 
-elif [[ $(echo "$arq" | grep 'tar.bz2') ]]; then
-	tar -jxvf "$arq" -C "$dir_temp" 1> /dev/null
+	elif [[ "${path_arq: -6}" == 'tar.xz' ]]; then # tar.xz
+		type_arq='tar.xz'
 
-elif [[ $(echo "$arq" | grep 'tar.xz') ]]; then
-	tar -Jxf "$arq" -C "$dir_temp" 1> /dev/null
+	else
+		echo "$(_c 31)Arquivo não suportado: [$path_arq] $(_c)"
+		return 1
 
-else
-	echo "$(_c 31)==> $(_c)Arquivo inválido: $arq"
-	return 1
-fi
+	fi
+
+	# Descomprimir.
+	case "$type_arq" in
+		'tar.gz') tar -zxvf "$path_arq" -C "$dir_space_tor" 1> /dev/null;;
+		'tar.bz2') tar -jxvf "$path_arq" -C "$dir_space_tor" 1> /dev/null;;
+		'tar.xz') tar -Jxf "$path_arq" -C "$dir_space_tor" 1> /dev/null;;
+		*) return 1;;
+	esac
 
 }
 
 #=============================================#
 # Gpg 
 #=============================================#
+
 function _check_sig_tor()
 {
 # https://support.torproject.org/tbb/how-to-verify-signature/
@@ -221,6 +233,7 @@ if [[ -f "$path_keyring" ]]; then rm "$path_keyring"; fi
 #=============================================#
 # Install
 #=============================================#
+
 function _install_tor_browser()
 {
 
@@ -234,7 +247,6 @@ _download_tor
 		return 0
 	}
 
-
 	if [[ -x $(command -v torbrowser 2> /dev/null) ]]; then
 		echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
 		echo "Tor Browser $(_c 35)já$(_c) instalado."
@@ -243,13 +255,14 @@ _download_tor
 
 	_check_sig_tor || { echo "$(_c 31)==> Falha arquivo não confiavél [$tor_path_file]$(_c)"; exit 1; }
 
-	_unpack_tor_browser "$tor_path_file" "$dir_space_tor" || {
-		echo "==> Função $(_c 31)_unpack_tor_browser$(_c) retornou [erro]"
+	_unpack_tor_browser "$tor_path_file" || {
+		echo "Função $(_c 31)_unpack_tor_browser$(_c) retornou [erro]"
 		exit 1
 	}
 
 echo "$(_c 32)==> $(_c)Instalando"
-cd "$dir_space_tor"; mv $(ls -d tor-browser*) "${array_tor[0]}" # Mover para ~/.local/bin
+cd "$dir_space_tor" 
+mv $(ls -d tor-browser*) "${array_tor[0]}" # Mover para ~/.local/bin
 chmod -R +x "${array_tor[0]}" # Permissão de execução.
 cd "${array_tor[0]}"; ./start-tor-browser.desktop --register-app # Gerar arquivo .desktop
 
@@ -270,6 +283,7 @@ torbrowser # Abrir o navegador.
 #=============================================#
 # Remove
 #=============================================#
+
 function _remove_tor_browser()
 {
 if [[ ! -x $(command -v torbrowser 2> /dev/null) ]]; then
@@ -279,7 +293,7 @@ if [[ ! -x $(command -v torbrowser 2> /dev/null) ]]; then
 
 elif [[ -x $(command -v torbrowser 2> /dev/null) ]]; then
 	for c in "${array_tor[@]}"; do
-		if [[ -f "$c" ]] || [[ -d "$c" ]]; then
+		if [[ -f "$c" ]] || [[ -d "$c" ]] || [[ -L "$c" ]]; then
 			echo -e "$(_c 32)==> $(_c)Removendo: $c"
 			rm -rf "$c"
 		else

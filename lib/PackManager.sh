@@ -30,7 +30,7 @@ fi
 
 function _msg_pack_instaled()
 {
-	echo "==> já instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
+	echo "=> já instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
 }
 
 #=====================================================#

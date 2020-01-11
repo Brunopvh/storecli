@@ -89,19 +89,19 @@ function _Curl()
 {
 # $1 = url
 # $2 = path_arq
-local url="$1"
-local path_arq="$2"
+	local url="$1"
+	local path_arq="$2"
 
-echo -e "==> Baixando: [$url]"
-if [[ -z $2 ]]; then 
-	curl -# -C - -O "$url" 
+	echo -e "==> Baixando: [$url]"
+	if [[ -z $2 ]]; then 
+		curl -# -C - -O "$url" 
 
-elif [[ -d $(dirname "$2") ]]; then
-	echo -e "==> Destino: [$path_arq]"
-	#curl -# -LS -C - "$url" -o "$path_arq" 
-	curl -LS -C - "$url" -o "$path_arq"
+	elif [[ -d $(dirname "$2") ]]; then
+		echo -e "==> Destino: [$path_arq]"
+		#curl -# -LS -C - "$url" -o "$path_arq" 
+		curl -LS -C - "$url" -o "$path_arq"
 
-fi
+	fi
 }
 
 
@@ -117,11 +117,9 @@ function _dow()
 	}
 
 if [[ "$3" == '--wget' ]]; then
-	echo "[wget]"
 	_Wget "$@"
 
 elif [[ "$3" == '--curl' ]]; then
-	echo "[curl]"
 	_Curl "$@"
 
 else

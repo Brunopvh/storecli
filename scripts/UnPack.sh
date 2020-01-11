@@ -19,42 +19,56 @@ fi
 mkdir -p "$DIR_TEMP"
 
 # Cor
-function cor() { echo -e "\e[1;${1}m"; }
+function _c() { echo -e "\e[1;${1}m"; }
+
 
 #==========================================================#
-#================= Descompressão dos programas ============#
+#================= Descompressão dos arquivos =============#
 #==========================================================#
+
 function _unpack()
 {
 # $1 = arquivo a descomprimir.
 
-local path_arq="$1"
+	local path_arq="$1"
 
-# Limpar o destino antes da descompressão.
-cd "$DIR_TEMP" && rm -rf * 2> /dev/null  
+	# Detectar a extensão do arquivo.
+	if [[ "${path_arq: -6}" == 'tar.gz' ]]; then # tar.gz - 6 ultimos caracteres.
+		type_arq='tar.gz'
 
-	echo -e "$(cor 32)==> $(cor)Descompactando: [$path_arq]"
-	echo -e "$(cor 32)==> $(cor)Destino: [$DIR_TEMP]"
+	elif [[ "${path_arq: -7}" == 'tar.bz2' ]]; then # tar.bz2
+		type_arq='tar.bz2'
 
-if [[ $(echo "$path_arq" | grep 'tar.gz') ]]; then
-	tar -zxvf "$path_arq" -C "$DIR_TEMP" 1> /dev/null	
+	elif [[ "${path_arq: -6}" == 'tar.xz' ]]; then # tar.xz
+		type_arq='tar.xz'
 
-elif [[ $(echo "$path_arq" | grep 'tar.bz2') ]]; then
-	tar -jxvf "$path_arq" -C "$DIR_TEMP" 1> /dev/null
+	else
+		echo "$(_c 31)Arquivo não suportado: [$path_arq] $(_c)"
+		return 1
 
-elif [[ $(echo "$path_arq" | grep 'tar.xz') ]]; then
-	tar -Jxf "$path_arq" -C "$DIR_TEMP" 1> /dev/null
+	fi
 
-else
-	echo "$(cor 31)==> $(cor)[Erro] arquivo não suportado: $path_arq"
-	return 1
-fi
+	# Limpar o destino antes da descompressão.
+	cd "$DIR_TEMP" && rm -rf * 2> /dev/null  
+
+		echo -e "$(_c 32)==> $(_c)Descompactando: [$path_arq]"
+		echo -e "$(_c 32)==> $(_c)Destino: [$DIR_TEMP]"
+
+	# Descomprimir.
+	case "$type_arq" in
+		'tar.gz') tar -zxvf "$path_arq" -C "$DIR_TEMP" 1> /dev/null;;
+		'tar.bz2') tar -jxvf "$path_arq" -C "$DIR_TEMP" 1> /dev/null;;
+		'tar.xz') tar -Jxf "$path_arq" -C "$DIR_TEMP" 1> /dev/null;;
+		*) return 1;;
+	esac
 }
 
-[[ ! -f "$1" ]] && { echo -e "$(cor 31)==> $(cor)Arquivo não encontrado: $1"; exit 1; }
-[[ ! -d "$DIR_TEMP" ]] && { echo -e "$(cor 31)==> $(cor)Erro: $DIR_TEMP"; exit 1; }
+#==========================================================#
 
-_unpack "$@" # Descomprimir.
+[[ ! -f "$1" ]] && { echo -e "$(_c 31)Arquivo não encontrado: $1 $(_c)"; exit 1; }
+
+# Run.
+_unpack "$@" 
 
 
 

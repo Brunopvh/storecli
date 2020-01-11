@@ -33,8 +33,8 @@ while [[ $1 ]]; do
 		echo "$(_c 32)==> $(_c)Removendo: $1"
 
 		# Precisa ser o [root] ?
-		#if [[ $(echo $1 | grep "$HOME") ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
-		if [[ -w "$1" ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
+		if [[ $(echo $1 | grep "$HOME") ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
+		#if [[ -w "$1" ]]; then rm -rf "$1"; else sudo rm -rf "$1"; fi
 
 	else
 		echo "$(_c 31)==> $(_c)Não encontrado: $1"
