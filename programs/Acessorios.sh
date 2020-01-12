@@ -50,11 +50,11 @@ _dow "$veracrypt_url_dow" "$path_arq" --curl
 _dow "$veracrypt_url_dow_sig" "$path_sig" --curl
 
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v veracrypt 2> /dev/null) ]] && { _msg_pack_instaled 'veracrypt'; return 0; }
 
 # Importar chaves públicas.
-echo "$(_c 32)==> $(_c)Importando chaves."
+echo "$(_c 32)=> $(_c)Importando chaves."
 curl -LsS https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc | gpg --import
 
 	# Gpg
@@ -67,10 +67,10 @@ curl -LsS https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc | gpg --im
 
 	# unpack
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1 
+		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1 
 	}
 
-echo "$(cor 32)==> $(cor)Instalando"
+echo "$(cor 32)=> $(cor)Instalando"
 
 cd "$dir_temp" && mv $(ls veracrypt*setup-gui-x64) "$dir_temp/veracryptx64" 1> /dev/null
 chmod +x "$dir_temp/veracryptx64"

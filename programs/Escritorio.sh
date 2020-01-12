@@ -46,13 +46,13 @@ local soma_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e8
 
 	_dow "$url" "$path_arq" --wget
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 
 	command -v "${array_libreoffice_dirs[1]}" 2> /dev/null && { _msg_pack_instaled 'libreoffice-appimage'; return 0; }
 
 	_check_sum "$path_arq" "$soma_libreoffice" || {
-		echo "$(_c 31)==> $(_c)Erro função $(_c 31)_check_sum $(_c)retornou erro"
-		echo "$(_c 31)==> Arquivo não confialvél: $path_arq $(_c)" 
+		echo "$(_c 31)=> $(_c)Erro função $(_c 31)_check_sum $(_c)retornou erro"
+		echo "$(_c 31)=> Arquivo não confialvél: $path_arq $(_c)" 
 		return 1 
 	}
 
@@ -83,7 +83,7 @@ chmod u+x "${array_libreoffice_dirs[0]}"
 		return 0
 
 	else
-		echo "==> Função $(_c 31)_libreoffice_appimage $(_c)retornou [erro]"
+		echo "=> Função $(_c 31)_libreoffice_appimage $(_c)retornou [erro]"
 		return 1	
 
 	fi

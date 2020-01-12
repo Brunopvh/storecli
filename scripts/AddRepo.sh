@@ -24,14 +24,14 @@ local repos_fusion_free='https://download1.rpmfusion.org/free/fedora/rpmfusion-f
 local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
 
 echo -e "$esp[ Adicionar os seguintes repositórios ]$esp"
-echo -e "==> rpmfusion-free-release-$(rpm -E %fedora)"
-echo -e "==> rpmfusion-nonfree-release-$(rpm -E %fedora)"
-echo -e "==> fedora-workstation-repositories"
-echo -ne "==> Prosseguir [s/n] ?: "
+echo -e "=> rpmfusion-free-release-$(rpm -E %fedora)"
+echo -e "=> rpmfusion-nonfree-release-$(rpm -E %fedora)"
+echo -e "=> fedora-workstation-repositories"
+echo -ne "=> Prosseguir [s/n] ?: "
 read adc
-[[ "${adc,,}" == 's' ]] || { echo "==> Abortando..."; return 0; }
+[[ "${adc,,}" == 's' ]] || { echo "=> Abortando..."; return 0; }
 
-echo -e "==> Aguarde..."
+echo -e "=> Aguarde..."
 sudo dnf install fedora-workstation-repositories
 sudo dnf install "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
 sudo dnf install "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm"

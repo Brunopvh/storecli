@@ -11,16 +11,16 @@ function _google_chrome_debian()
 {
 local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
 local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
-echo "==> Adicionando key"
+echo "=> Adicionando key"
 sudo sh -c 'wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | apt-key add -'
 
 find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
 
 if [[ $? == '0' ]]; then
-	echo "==> $(_c 33)R$(_c)epositório $(_c 35)já$(_c) está disponível 'pulando'"
+	echo "=> $(_c 33)R$(_c)epositório $(_c 35)já$(_c) está disponível 'pulando'"
 
 else
-	echo "$(_c 32)==> $(_c)Adicionando repositório"
+	echo "$(_c 32)=> $(_c)Adicionando repositório"
 	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
 
 fi
@@ -42,11 +42,11 @@ function _google_chrome_fedora()
 function _google_chrome_tumbleweed()
 {
 #wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
-echo "$(_c 32 0)==> $(_c)Adicionando key e repo"
+echo "$(_c 32 0)=> $(_c)Adicionando key e repo"
 sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub 
 sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google 
 
-echo "$(_c 32)==> $(_c)Instalando google-chrome"
+echo "$(_c 32)=> $(_c)Instalando google-chrome"
 
 
 if sudo zypper in google-chrome-stable; then
@@ -72,7 +72,7 @@ if [[ $? == '0' ]]; then
 	_info_msgs 'google-chrome instalado com sucesso'
 	return 0
 else
-	echo "==> Função $(_c 31)_google_chrome $(_c) retornou [erro]"
+	echo "=> Função $(_c 31)_google_chrome $(_c) retornou [erro]"
 	return 1
 fi
 }
@@ -84,12 +84,12 @@ function _megasync_suse_tumbleweed()
 {
 # https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
 
-echo "$(_c 32 0)==> $(_c)Adicionando key e repo"
+echo "$(_c 32 0)=> $(_c)Adicionando key e repo"
 sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key
 sudo zypper ar -f https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA
 sudo zypper ref
 
-echo "$(_c 32)==> $(_c)Instalando megasync"
+echo "$(_c 32)=> $(_c)Instalando megasync"
 if sudo zypper in megasync; then
 	return 0
 else
@@ -107,10 +107,10 @@ local mega_file="/etc/apt/sources.list.d/megasync.list"
 
 find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
 if [[ $? == '0' ]]; then # Pular 
-	echo "==> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
+	echo "=> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
 
 else
-	echo "$(_c 32)==> $(_c)Adicionando repositório"
+	echo "$(_c 32)=> $(_c)Adicionando repositório"
 	echo "$mega_repos" | sudo tee "$mega_file"
 
 fi
@@ -129,15 +129,15 @@ local mega_file="/etc/apt/sources.list.d/megasync.list"
 
 find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.*Ubuntu_18\.04" 2> /dev/null
 if [[ $? == '0' ]]; then
-	echo "==> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
+	echo "=> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
 
 else
-	echo "$(_c 32)==> $(_c)Adicionando repositório"
+	echo "$(_c 32)=> $(_c)Adicionando repositório"
 	echo "$mega_repos_ubuntu18" | sudo tee "$mega_file"
 
 fi
 
-	echo "$(_c 32)==> $(_c)Agurade..."	
+	echo "$(_c 32)=> $(_c)Agurade..."	
 	sudo sh -c 'wget -c https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key -O- | apt-key add -'
 	sudo sh -c 'apt update; apt install -y megasync'
 }
@@ -179,7 +179,7 @@ if [[ $? == '0' ]]; then
 	_info_msgs 'megasync instalado com sucesso'
 	return 0
 else
-	echo "==> Função $(_c 31)_megasync$(_c) retornou [erro]"
+	echo "=> Função $(_c 31)_megasync$(_c) retornou [erro]"
 	return 1
 fi
 }
@@ -193,13 +193,13 @@ function _opera_stable_debian()
 {
 local opera_repo='deb [arch=amd64] https://deb.opera.com/opera-stable/ stable non-free'
 local opera_file='/etc/apt/sources.list.d/opera-stable.list'
-echo "$(_c 32)==> $(_c)Adicionando chaves agurade..."
+echo "$(_c 32)=> $(_c)Adicionando chaves agurade..."
 sudo sh -c 'wget -q -O- http://deb.opera.com/archive.key | apt-key add -'
 
 find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
 
 if [[ $? == '0' ]]; then
-	echo "==> $(_c 33)R$(_c)epositório $(_c 35)já$(_c) está disponível 'pulando'"
+	echo "=> $(_c 33)R$(_c)epositório $(_c 35)já$(_c) está disponível 'pulando'"
 
 else
 	echo "$opera_repo" | sudo tee "$opera_file"
@@ -271,7 +271,7 @@ if [[ $? == '0' ]]; then
 	_info_msgs 'opera-stable instalado com sucesso'
 
 else
-	echo "==> Função $(_c 31)_opera_stable $(_c) retornou [erro]"
+	echo "=> Função $(_c 31)_opera_stable $(_c) retornou [erro]"
 	return 1
 fi
 }
@@ -292,7 +292,7 @@ elif [[ "$os_codename" == 'buster' ]]; then
 
 fi
 
-echo "==> Adicionando chaves key e repositório"
+echo "=> Adicionando chaves key e repositório"
 echo "$tor_repos" | sudo tee "$tor_arq"
 sudo sh -c 'curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import'
 sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'
@@ -428,10 +428,10 @@ function _install_teamviewer_debian()
 	_get_teamviewer || return 1 # Download do arquivo ".deb".
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "==> Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "=> Feito somente download."; return 0; }
 	[[ -x $(command -v teamviewer 2> /dev/null) ]] && { _msg_pack_instaled 'teamviewer'; return 0; }
 
-	echo "==> Instalando os seguintes pacotes: ${array_tw_debian[@]}"
+	echo "=> Instalando os seguintes pacotes: ${array_tw_debian[@]}"
 	echo ' '
 	read -p "Pressione enter: " enter
 	
@@ -448,7 +448,7 @@ function _install_teamviewer_fedora()
 	_get_teamviewer || return 1 # Download do arquivo ".rpm".
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "==> Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "=> Feito somente download."; return 0; }
 	[[ -x $(command -v teamviewer 2> /dev/null) ]] && { _msg_pack_instaled 'teamviewer'; return 0; }
 
 	echo " "
@@ -465,15 +465,15 @@ function _teamviewer_tar()
 	_get_teamviewer || return 1 # Download do arquivo ".tar.xz".
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "==> Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "=> Feito somente download."; return 0; }
 	[[ -x $(command -v teamviewer 2> /dev/null) ]] && { _msg_pack_instaled 'teamviewer'; return 0; }
 
-	echo "==> Instale os pacotes a seguir manualmente: ${array_tw_debian[@]}"
+	echo "=> Instale os pacotes a seguir manualmente: ${array_tw_debian[@]}"
 	echo " "
 	read -p "Pressione enter: " enter
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || {
-		echo "==> Falha: $(_c 31)[unpack]$(_c) retornou erro."; return 1; 
+		echo "=> Falha: $(_c 31)[unpack]$(_c) retornou erro."; return 1; 
 	}
 
 	cd "$dir_temp" && cd teamviewer
@@ -504,19 +504,31 @@ function _telegram()
 # https://desktop.telegram.org/
 # https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz
 
-local url_telegram='https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz'
-local path_arq="$dir_user_cache/telegramsetup.1.8.15.tar.xz"
+	# Instalar gconf2.
+	if [[ -x $(which zypper 2> /dev/null) ]]; then # Suse
+		sudo zypper in gconf2
+
+	elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
+		sudo dnf install GConf2
+
+	elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
+		sudo apt install -y gconf2
+
+	fi
+
+	local url_telegram='https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz'
+	local path_arq="$dir_user_cache/telegramsetup.1.8.15.tar.xz"
 
 	_dow "$url_telegram" "$path_arq" --wget
 
 	# --downloadonly
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 	[[ -x $(command -v telegram 2> /dev/null) ]] && { _msg_pack_instaled 'telegram'; return 0; }
 
 	"$Script_UnPack" "$path_arq" "$dir_temp"
-	[[ $? == '0' ]] || { echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+	[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
 
-	echo "$(cor 32)==> $(cor)Instalando"
+	echo "$(cor 32)=> $(cor)Instalando"
 
 	cd "$dir_temp" && mv -v $(ls -d Telegra*) "$dir_user_bin/telegram-amd64" 1> /dev/null
 	chmod -R 755 "$dir_user_bin/telegram-amd64"
@@ -527,7 +539,7 @@ local path_arq="$dir_user_cache/telegramsetup.1.8.15.tar.xz"
 		_info_msgs 'telegram instalado com sucesso'
 		return 0
 	else
-		echo "==> Função $(_c 31)_telegram $(_c) retornou [erro]"
+		echo "=> Função $(_c 31)_telegram $(_c) retornou [erro]"
 		return 1
 	fi
 }
@@ -540,10 +552,10 @@ function _tixat_tar()
 local path_arq="$1"
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
 	}
 
-	echo "$(cor 32)==> $(cor)Instalando"
+	echo "$(cor 32)=> $(cor)Instalando"
 
 	cd "$dir_temp" && mv $(ls -d tixati*) "$dir_temp/tixati-amd64" 1> /dev/null
 	chmod -R a+x "$dir_temp/tixati-amd64"
@@ -564,7 +576,7 @@ local path_arq="$1"
 		return 0
 
 	else
-		echo "$(_c 31)==> Falha: tixati$(_c)"; return 1
+		echo "$(_c 31)=> Falha: tixati$(_c)"; return 1
 	
 	fi
 }
@@ -590,7 +602,7 @@ _dow "$url_tar" "$path_arq" --curl # baixar somente .tar.gz - (qualquer linux)
 _dow "$url_tar_asc" "$path_arq_asc" --curl # Arquivo de verificação .asc
 
 # --downloadonly
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v tixati 2> /dev/null) ]] && { _msg_pack_instaled 'tixati'; return 0; }
 
 # Instalar gconf2.
@@ -677,7 +689,7 @@ local soma_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb
 	_dow "$url_ytdl_test" "$path_arq" --curl && _dow "$url_ytdl_sig" "$path_arq_sig" --curl
 	
 	# Asc
-	echo "==> Importando chaves."
+	echo "=> Importando chaves."
 	curl -# -LS "$url_ytdl_asc_philipp" -o- | gpg --import -
 	curl -# -LS "$url_ytdl_asc_sergey" -o- | gpg --import -
 
@@ -689,15 +701,15 @@ local soma_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb
 		return 1
 	}
 
-	echo "==> Instalando youtube-dl em ~/.local/bin"
+	echo "=> Instalando youtube-dl em ~/.local/bin"
 	cp -u "$path_arq" "$dir_user_bin"/youtube-dl
 	chmod +x "$dir_user_bin"/youtube-dl
 
 	if [[ -x $(command -v youtube-dl 2> /dev/null) ]]; then
-		echo "$(_c 32)==> $(_c)youtube-dl instalado"; return 0
+		echo "$(_c 32)=> $(_c)youtube-dl instalado"; return 0
 
 	else
-		echo "$(_c 31)==> $(_c)Falha: youtube-dl"; return 1
+		echo "$(_c 31)=> $(_c)Falha: youtube-dl"; return 1
 
 	fi
 
@@ -713,7 +725,7 @@ function _twodict_github()
 	github_twodict="https://github.com/MrS0m30n3/twodict.git"
 	_gitclone "$github_twodict" || { echo "$(_c 31)Função _gitclone retornou [erro]$(_c)"; return 1; }
 
-	echo "$(_c 32 0)==> $(_c)Instalando: twodict"
+	echo "$(_c 32 0)=> $(_c)Instalando: twodict"
 
 	cd "$dir_temp/twodict" && {
 		if [[ -x $(command -v python2 2> /dev/null) ]]; then
@@ -724,7 +736,7 @@ function _twodict_github()
 
 		fi
 
-		[[ $? == '0' ]] || { echo "$(_c 31)==> Falha: twodict$(_c)"; return 1; }
+		[[ $? == '0' ]] || { echo "$(_c 31)=> Falha: twodict$(_c)"; return 1; }
 	}
 
 if [[ -d "$dir_temp/twodict" ]]; then cd "$dir_temp" && sudo rm -rf twodict; fi
@@ -783,10 +795,10 @@ if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
 	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
-	echo -e "$(_c 32 0)==> [Feito]$(_c)"; return 0	
+	echo -e "$(_c 32 0)=> [Feito]$(_c)"; return 0	
 	
 else
-	echo "$(cor 31)==> $(cor)[-] A instalação de youtube-dl-gui falhou"
+	echo "$(cor 31)=> $(cor)[-] A instalação de youtube-dl-gui falhou"
 	return 1
 
 fi
@@ -797,7 +809,7 @@ fi
 function _youtube_dl_gui_github()
 {
 	[[ -x $(command -v youtube-dl-gui 2> /dev/null) ]] && {
-		echo "$(_c 32 0)==> $(_c 35)já$(_c) instalado, deseja reinstalar novamente $(_c 32 0)[s/n]$(_c) ?: "
+		echo "$(_c 32 0)=> $(_c 35)já$(_c) instalado, deseja reinstalar novamente $(_c 32 0)[s/n]$(_c) ?: "
 		read sn
 		[[ "${sn,,}" == 's' ]] || { return 0; }
 	}
@@ -844,11 +856,11 @@ esac
 		cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
 		cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
 		cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
-		echo -e "$(_c 32 0)==> [Feito]$(_c)"
+		echo -e "$(_c 32 0)=> [Feito]$(_c)"
 
 	else
 		# Falhou.
-		echo "$(_c 31)==> $(_c)[-] A instalação de youtube-dl-gui falhou"
+		echo "$(_c 31)=> $(_c)[-] A instalação de youtube-dl-gui falhou"
 		return 1
 	fi
 }

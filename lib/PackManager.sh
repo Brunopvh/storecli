@@ -40,13 +40,13 @@ function _quebrado()
 {
 [[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
 
-echo "$(_c 32)==> $(_c)Limpando cache aguarde..."
+echo "$(_c 32)=> $(_c)Limpando cache aguarde..."
 sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
 
-echo "$(_c 32)==> $(_c)Executando dpkg --configure -a"
+echo "$(_c 32)=> $(_c)Executando dpkg --configure -a"
 sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
 
-echo "$(_c 32)==> $(_c)Executando apt update"
+echo "$(_c 32)=> $(_c)Executando apt update"
 sudo apt update 
 #sudo apt-get install --yes --force-yes -f 
 
@@ -65,7 +65,7 @@ function _packmanager_install()
 	done
 
 while [[ "$1" ]]; do
-	echo "==> Instalando: $1"
+	echo "=> Instalando: $1"
 	case "$1" in
 #-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;
@@ -123,7 +123,7 @@ while [[ "$1" ]]; do
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;
 		install) echo -ne "\r";;
-		*) echo "==> Programa indisponível: $(_c 31)$1 $(_c)";;
+		*) echo "=> Programa indisponível: $(_c 31)$1 $(_c)";;
 	esac
 	shift
 done

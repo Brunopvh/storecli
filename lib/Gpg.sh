@@ -16,7 +16,7 @@ function _verify_sig()
 local esp='---------------'
 local esp2="${esp}${esp}"
 
-[[ ! -x $(command -v gpg 2> /dev/null) ]] && { echo "==> Instale o pacote gpg"; return 1; }
+[[ ! -x $(command -v gpg 2> /dev/null) ]] && { echo "=> Instale o pacote gpg"; return 1; }
 
 local msg='Use: _verify_sig <sig> <file>'
 

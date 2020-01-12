@@ -12,20 +12,20 @@ function _bluetooth()
 
 	sudo apt install -y bluez bluez-firmware bluez-hcidump
 	_info_msgs 'INFO'
-	echo "==> 1 - $(_c 32 0)G$(_c)NOME"
-	echo "==> 2 - $(_c 32 0)K$(_c)DE"
-	echo "==> 3 - $(_c 32 0)L$(_c)XDE/$(_c 32 0)X$(_c)FCE/$(_c 32 0)L$(_c)XQT/$(_c 32 0)M$(_c)ATE"
+	echo "=> 1 - $(_c 32 0)G$(_c)NOME"
+	echo "=> 2 - $(_c 32 0)K$(_c)DE"
+	echo "=> 3 - $(_c 32 0)L$(_c)XDE/$(_c 32 0)X$(_c)FCE/$(_c 32 0)L$(_c)XQT/$(_c 32 0)M$(_c)ATE"
 	
 	while true; do
 
-		echo "==> Selecione a sua interface gráfica: $(_c 32 0)(1 / 2 / 3): $(_c)" 
+		echo "=> Selecione a sua interface gráfica: $(_c 32 0)(1 / 2 / 3): $(_c)" 
 		read -n 1 input; echo ' '
 		case "${input,,}" in
 			1) sudo apt install gnome-bluetooth;;
 			2) sudo apt install bluedevil;;
 			3) sudo apt install blueman;;
 			*) 
-			echo "$(_c 31)==> Opição inválida, você pode $(_c 32)repetir$(_c) ou $(_c 32)cancelar$(_c) (r/c): " 
+			echo "$(_c 31)=> Opição inválida, você pode $(_c 32)repetir$(_c) ou $(_c 32)cancelar$(_c) (r/c): " 
 			read -n 1 input; echo ' '
 			if [[ "${input,,}" == 'r' ]]; then
 				continue
@@ -134,15 +134,15 @@ local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
 _dow "$peazip_url_download" "$path_arq" --curl
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 	
 	[[ -x $(command -v peazip 2> /dev/null) ]] && { _msg_pack_instaled 'peazip'; return 0; }
 
 "$Script_UnPack" "$path_arq" "$dir_temp"
 
-[[ $? == '0' ]] || { echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
 
-echo "$(cor 32)==> $(cor)Instalando"
+echo "$(cor 32)=> $(cor)Instalando"
 
 cd "$dir_temp" && mv -v $(ls -d peazip*) "$dir_temp/peazip-amd64" 1> /dev/null
 sudo chown -R root:root "$dir_temp/peazip-amd64" #1> /dev/null # root é o dono.
@@ -159,11 +159,11 @@ sudo mv "$dir_temp"/peazip-amd64 "${array_peazip_dirs[3]}" # dir.
 	cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
 
 if [[ -x $(which peazip 2> /dev/null) ]]; then
-	_info_msgs; echo "==> peazip instalado com sucesso."
+	_info_msgs; echo "=> peazip instalado com sucesso."
 	return 0
 
 else
-	echo "$(cor 31)==> $(cor)Falha"
+	echo "$(cor 31)=> $(cor)Falha"
 	return 1
 
 fi
@@ -208,17 +208,17 @@ local url_extpack=$(echo "$vbox_html" | sed 's/.*href=\"//g;s/\".*//g') # Url fi
 local path_arq="$dir_user_cache/$(basename $url_extpack)" # Destion/Arquivo.
 
 	_dow "$url_extpack" "$path_arq" --curl || { 
-		echo "$(_c 31)==> Falha  ao tentar baixar ExtensionPackc$(_c)"; return 1; 
+		echo "$(_c 31)=> Falha  ao tentar baixar ExtensionPackc$(_c)"; return 1; 
 	}	
 
 # --downloadonly
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 
 # Instalação
-echo "$(_c 32)==> $(_c)Instalando Extension Pack"
+echo "$(_c 32)=> $(_c)Instalando Extension Pack"
 sudo VBoxManage extpack install --replace "$path_arq"
 
-echo -ne "$(cor 32)==> $(cor)Deseja adicionar $USER ao grupo vboxusers ? $(cor 33)[s/n]$(cor) : " 
+echo -ne "$(cor 32)=> $(cor)Deseja adicionar $USER ao grupo vboxusers ? $(cor 33)[s/n]$(cor) : " 
 read acao 
 
 	[[ "${acao,,}" == 's' ]] && { 
@@ -260,7 +260,7 @@ local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/deb
 local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	read -p "$(_c 32)==> $(_c)Deseja limpar o cache do $(_c 35)apt$(_c) [s/n] ?: " input
+	read -p "$(_c 32)=> $(_c)Deseja limpar o cache do $(_c 35)apt$(_c) [s/n] ?: " input
 	if [[ "${input,,}" == 's' ]]; then
 		sudo apt-get clean
 		sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
@@ -269,10 +269,10 @@ local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 	
 find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian bionic contrib$" 2> /dev/null
 if [[ "$?" == '0' ]]; then # Pular
-	echo "$(_c 32 0)==> $(_c)Repositório já disponível $(_c 32 0)'pulando'$(_c)"
+	echo "$(_c 32 0)=> $(_c)Repositório já disponível $(_c 32 0)'pulando'$(_c)"
 
 else
-	echo "$(_c 32)==> $(_c)Adicionando chaves e repositório"
+	echo "$(_c 32)=> $(_c)Adicionando chaves e repositório"
 	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -'
 	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -'
 	echo "$vbox_repo" | sudo tee "$vbox_file" # Repositório.
@@ -280,11 +280,11 @@ fi
 	sudo apt update
 	
 	# Dependências
-	echo "$(cor 32)==> $(cor)Instalando dependências"
+	echo "$(cor 32)=> $(cor)Instalando dependências"
 	sudo sh -c 'apt install -y module-assistant build-essential dkms; apt install -y linux-headers-$(uname -r)'
 	
 	# Virtualbox 6.0
-	echo "$(_c 32)==> $(_c)Instalando virtualbox"
+	echo "$(_c 32)=> $(_c)Instalando virtualbox"
 	sudo apt install -y virtualbox-6.0
 	_virtualbox_extpack
 }
@@ -297,7 +297,7 @@ local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/deb
 local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	read -p "$(_c 32)==> $(_c)Deseja limpar o cache do $(_c 35)apt$(_c) [s/n] ?: " input
+	read -p "$(_c 32)=> $(_c)Deseja limpar o cache do $(_c 35)apt$(_c) [s/n] ?: " input
 	if [[ "${input,,}" == 's' ]]; then
 		sudo apt-get clean
 		sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
@@ -306,10 +306,10 @@ local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 	
 find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
 if [[ "$?" == '0' ]]; then # Pular
-	echo "$(_c 32 0)==> $(_c)Repositório já disponível $(_c 32 0)'pulando'$(_c)"
+	echo "$(_c 32 0)=> $(_c)Repositório já disponível $(_c 32 0)'pulando'$(_c)"
 
 else
-	echo "$(_c 32)==> $(_c)Adicionando chaves e repositório"
+	echo "$(_c 32)=> $(_c)Adicionando chaves e repositório"
 	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -'
 	sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -'
 	echo "$vbox_repo" | sudo tee "$vbox_file" # Repositório.
@@ -317,11 +317,11 @@ fi
 	sudo apt update
 	
 	# Dependências
-	echo "$(cor 32)==> $(cor)Instalando dependências"
+	echo "$(cor 32)=> $(cor)Instalando dependências"
 	sudo sh -c 'apt install -y module-assistant build-essential dkms; apt install -y linux-headers-$(uname -r)'
 	
 	# Virtualbox 6.0
-	echo "$(_c 32)==> $(_c)Instalando virtualbox"
+	echo "$(_c 32)=> $(_c)Instalando virtualbox"
 	sudo apt install -y virtualbox-6.0
 	_virtualbox_extpack
 }

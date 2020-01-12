@@ -18,7 +18,7 @@ _c()
 
 _msgs()
 {
-	echo "==> $@"
+	echo "=> $@"
 }
 
 #---------------------------------------------------#
@@ -94,7 +94,7 @@ _path_zsh()
 	command -v zsh 2> /dev/null || return 0
 	
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
-		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
+		echo "=> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
 	
 	zsh ~/'.zshrc'
@@ -106,7 +106,7 @@ _path_zsh()
 _path_bash()
 {
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
-		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
+		echo "=> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
 	
 	bash ~/'.bashrc'

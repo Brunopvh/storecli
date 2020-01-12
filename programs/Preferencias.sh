@@ -17,16 +17,16 @@ local url_hacking_parrot='https://dllb2.pling.com/api/files/download/id/15752227
 local path_arq="$dir_user_cache/$(basename $url_hacking_parrot)"
 
 _dow "$url_hacking_parrot" "$path_arq" --wget
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
 	}
 
 if [[ -d ~/.themes/hacking_Parrot ]]; then rm -rf ~/.themes/hacking_Parrot; fi
 
 	cd "$dir_temp" && mv $(ls -d hacking*) ~/.themes
-	if [[ $? == '0' ]]; then echo "$(_c 32)==> $(_c)[OK]"; fi
+	if [[ $? == '0' ]]; then echo "$(_c 32)=> $(_c)[OK]"; fi
 }
 
 #-----------------------------------------------------#
@@ -37,9 +37,9 @@ if [[ -d ~/.themes/hacking_Parrot ]]; then rm -rf ~/.themes/hacking_Parrot; fi
 function _ohmybash()
 {
 	# github_ohmy_bash="https://github.com/ohmybash/oh-my-bash.git"
-	echo -e "$(_c 33)==> $(_c)Instalar oh-my-bash $(_c 35)[s/n]$(_c) ? : "
+	echo -e "$(_c 33)=> $(_c)Instalar oh-my-bash $(_c 35)[s/n]$(_c) ? : "
 	read input
-	[[ "${input,,}" == 's' ]] || { echo -e "$(_c 31)==> $(_c)Abortando..."; return 0; }
+	[[ "${input,,}" == 's' ]] || { echo -e "$(_c 31)=> $(_c)Abortando..."; return 0; }
 
 	#sh -c "$(wget https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -O -)"
 	wget https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh -O '/tmp/ohmybash.sh'
@@ -51,7 +51,7 @@ function _ohmybash()
 function _ohmyzsh()
 {
 	if [[ ! -x $(command -v zsh 2> /dev/null) ]]; then 
-		echo -e "$(_c 32 0)==> Necessário instalar shell [zsh]$(_c)"
+		echo -e "$(_c 32 0)=> Necessário instalar shell [zsh]$(_c)"
 
 		if [[ -x $(command -v zypper 2> /dev/null) ]]; then
 			sudo zypper in zsh
@@ -64,7 +64,7 @@ function _ohmyzsh()
 		fi
 	fi
 
-	echo "$(_c 32 0)==> Instalando ohmyzsh$(_c)"
+	echo "$(_c 32 0)=> Instalando ohmyzsh$(_c)"
 	sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"	
 }
 
@@ -82,7 +82,7 @@ local path_arq="$dir_user_cache/papirus.run"
 	_dow "$url_papirus" "$path_arq" --wget
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 	chmod +x "$path_arq"
 	"$path_arq"
 }
@@ -97,6 +97,6 @@ function _sierra()
 github_sierra="$github/vinceliuice/Sierra-gtk-theme"
 _gitclone "$github_sierra"
 
-echo "$(_c 32)==> $(_c)Instalando"
+echo "$(_c 32)=> $(_c)Instalando"
 cd "$dir_temp" && { cd Sierra-gtk-theme && chmod +x install.sh && ./install.sh; }
 }

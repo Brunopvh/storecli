@@ -35,7 +35,7 @@ local path_arq="$dir_user_cache/$(basename $url_wcodecs)"
 
 _dow "$url_wcodecs" "$path_arq" --curl
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$$(_c 32)==> $$(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$$(_c 32)=> $$(_c)Feito somente download."; return 0; }
 
 sudo apt install -y --install-recommends ffmpeg ffmpegthumbnailer
 sudo apt install lame
@@ -45,7 +45,7 @@ sudo apt install lame
 		sudo dpkg --install "$path_arq"
 
 	else
-		echo "$(_c 31)==> $(_c)Abortando a instalação de $path_arq"; exit 1
+		echo "$(_c 31)=> $(_c)Abortando a instalação de $path_arq"; exit 1
 
 	fi
 }
@@ -64,10 +64,10 @@ local lista_codecs=(
 'x264' 'x264-libs' 'xvidcore' 
 )
 
-	echo "$(_c 32)==> $(_c)Instalando: ffmpeg ffmpegthumbnailer"
+	echo "$(_c 32)=> $(_c)Instalando: ffmpeg ffmpegthumbnailer"
 	sudo dnf install -y ffmpeg ffmpegthumbnailer.x86_64
 
-	echo "$(_c 32)==> $(_c)Instalando: ${lista_codecs[@]}"
+	echo "$(_c 32)=> $(_c)Instalando: ${lista_codecs[@]}"
 	sudo dnf install -y "${lista_codecs[@]}" 
 }
 
@@ -91,7 +91,7 @@ function _vlc_fedora()
 {
 	# Add repo fusion non free
 	"$Script_AddRepo" --fedora-repos
-	echo "$(_c 32 0)==> $(_c)Instalando vlc: "
+	echo "$(_c 32 0)=> $(_c)Instalando vlc: "
 	sudo dnf install vlc python-vlc
 }
 

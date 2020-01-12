@@ -28,7 +28,7 @@ function _c()
 
 # root.
 [[ $(id -u) == '0' ]] && { 
-	echo "$(_c 31)==> $(_c)Falha o usuário não pode ser o $(_c 31)[root]$(_c)"
+	echo "$(_c 31)=> $(_c)Falha o usuário não pode ser o $(_c 31)[root]$(_c)"
 	exit 1
 }
 
@@ -148,7 +148,7 @@ function _check_executable_cli()
 while [[ $1 ]]; do
 
 	if [[ ! -x $(which "$1" 2> /dev/null) ]]; then	
-		echo "$(_c 31)==> $(_c)$1 $(_space_msg ${#1}) [ERRO]"
+		echo "$(_c 31)=> $(_c)$1 $(_space_msg ${#1}) [ERRO]"
 		return 1; break
 	fi
 	shift
@@ -204,8 +204,8 @@ fi
 # Cli
 _check_executable_cli "${array_cli_requeriments[@]}" || {
 
-	echo "==> Falha: função $(_c 31)_check_executable_cli $(_c) retornou [erro]" 
-	echo "==> Execute:$(_c 31) $(basename $0) --configure $(_c) para resolver este erro"
+	echo "=> Falha: função $(_c 31)_check_executable_cli $(_c) retornou [erro]" 
+	echo "=> Execute:$(_c 31) $(basename $0) --configure $(_c) para resolver este erro"
 	exit 1 
 }
 
@@ -241,7 +241,7 @@ _conf_path_zsh
 
 function _prog_not_found()
 {
-echo "$(_c 31)==> $(_c)Programa indisponível para o seu sistema [$os_id]"
+echo "$(_c 31)=> $(_c)Programa indisponível para o seu sistema [$os_id]"
 }
 
 #=====================================================#
@@ -321,13 +321,13 @@ function _quebrado()
 {
 [[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
 
-echo "$(_c 32)==> $(_c)Limpando cache aguarde..."
+echo "$(_c 32)=> $(_c)Limpando cache aguarde..."
 sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
 
-echo "$(_c 32)==> $(_c)Executando dpkg --configure -a"
+echo "$(_c 32)=> $(_c)Executando dpkg --configure -a"
 sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
 
-echo "$(_c 32)==> $(_c)Executando apt update"
+echo "$(_c 32)=> $(_c)Executando apt update"
 sudo apt update 
 #sudo apt-get install --yes --force-yes -f 
 
@@ -406,7 +406,7 @@ while [[ "$1" ]]; do
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;
 		install) echo -ne "\r";;
-		*) echo "==> Programa indisponível: $(_c 31)$1 $(_c)";;
+		*) echo "=> Programa indisponível: $(_c 31)$1 $(_c)";;
 	esac
 	shift
 done

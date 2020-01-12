@@ -28,11 +28,11 @@ function _android_studio_debian()
 
 
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	echo "==> Adicionando $USER aos grupos: $(_c 32)libvirt libvirt-qemu$(_c)" 
+	echo "=> Adicionando $USER aos grupos: $(_c 32)libvirt libvirt-qemu$(_c)" 
 	sudo adduser "$USER" libvirt
 	sudo adduser "$USER" libvirt-qemu
 
-	echo "$(_c 32)==> $(_c)Instalando: lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386"
+	echo "$(_c 32)=> $(_c)Instalando: lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386"
 	sudo apt install lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386
 
 local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
@@ -41,22 +41,22 @@ local path_arq="$dir_user_cache/$(basename $url)"
 
 _dow "$url" "$path_arq" --curl
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v studio 2> /dev/null) ]] && { _msg_pack_instaled 'android-studio'; return 0; }
 
 	 # Lib ShaSum.sh
 	_check_sum "$path_arq" "$soma" || { 
 		echo "Erro função $(_c 31)_check_sum $(_c)retornou erro"
-		echo "$(_c 31)==> Arquivo não confialvél: $path_arq $(_c)" 
+		echo "$(_c 31)=> Arquivo não confialvél: $path_arq $(_c)" 
 		return 1 
 	}
 
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
 	}
 
-echo "$(_c 32)==> $(_c)Instalando android studio em ~/.local/bin"
+echo "$(_c 32)=> $(_c)Instalando android studio em ~/.local/bin"
 
 cd "$dir_temp" && mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
 cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
@@ -95,7 +95,7 @@ chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
 		return 0
 
 	else
-		echo "==> Função $(_c 31)_android_studio $(_c)retornou [erro]"
+		echo "=> Função $(_c 31)_android_studio $(_c)retornou [erro]"
 		return 1	
 	fi
 }
@@ -126,13 +126,13 @@ local path_arq="$dir_user_cache/pycharm-community-2019.1.2.tar.gz"
 _dow "$url_pycharm" "$path_arq" --wget
 
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v pycharm 2> /dev/null) ]] && { _msg_pack_instaled 'pycharm'; return 0; }
 
 "$Script_UnPack" "$path_arq" "$dir_temp"
-[[ $? == '0' ]] || { echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
 
-echo "$(_c 32)==> $(_c)Instalando"
+echo "$(_c 32)=> $(_c)Instalando"
 
 cd "$dir_temp" && mv $(ls -d pycharm*) "${array_pycharm_dirs[3]}" 1> /dev/null
 cp -u "${array_pycharm_dirs[3]}"/bin/pycharm.png "${array_pycharm_dirs[1]}"
@@ -165,7 +165,7 @@ if [[ -x $(which pycharm 2> /dev/null) ]]; then
 	return 0
 
 else
-	echo "==> Função $(_c 31)_pycharm $(_c)retornou [erro]"
+	echo "=> Função $(_c 31)_pycharm $(_c)retornou [erro]"
 	return 1	
 fi
 }
@@ -209,7 +209,7 @@ local path_arq="$dir_user_cache/vscode-amd64.deb"
 _dow "$url_code_debian" "$path_arq" --wget
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 	[[ -x $(command -v code) ]] && { _msg_pack_instaled 'code'; return 0; }
 
 sudo dpkg --install "$path_arq" # .deb
@@ -225,13 +225,13 @@ local path_arq="$dir_user_cache/vscode.tar.gz"
 _dow "$url_vscode_tar" "$path_arq" --wget
 
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v code) ]] && { _msg_pack_instaled 'code'; return 0; }
 
 "$Script_UnPack" "$path_arq" "$dir_temp"
-[[ $? == '0' ]] || { echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
 
-echo "$(cor 32)==> $(cor)Instalando"
+echo "$(cor 32)=> $(cor)Instalando"
 
 cd "$dir_temp" && mv $(ls -d VSCode*) "${array_vscode_dirs[3]}" 2> /dev/null
 cp -u "${array_vscode_dirs[3]}"/resources/app/resources/linux/code.png "${array_vscode_dirs[1]}"
@@ -262,7 +262,7 @@ if [[ -x "$(which code 2> /dev/null)" ]]; then
 	_info_msgs 'code instalado'
 	code
 else
-	echo "==> Função $(_c 31)_vscode$(_c) retornou [erro]"
+	echo "=> Função $(_c 31)_vscode$(_c) retornou [erro]"
 	return 1
 fi 
 

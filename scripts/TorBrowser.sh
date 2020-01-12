@@ -17,7 +17,7 @@ function _c()
 	fi
 }
 
-if [[ $(id -u) == '0' ]]; then echo "==> [Erro] usuário não pode ser o $(_c 31)[root]$(_c)"; exit 1; fi
+if [[ $(id -u) == '0' ]]; then echo "=> [Erro] usuário não pode ser o $(_c 31)[root]$(_c)"; exit 1; fi
 
 
 dir_default=~/.cache/downloads        # Downloads
@@ -89,7 +89,7 @@ function _conf_path_zsh()
 
 	# ~/.zshrc
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
-		echo "==> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
+		echo "=> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
 	
 	zsh ~/'.zshrc'
@@ -105,7 +105,7 @@ function _conf_path_bash()
 
 	# ~/.bashrc
 	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
-		echo "==> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
+		echo "=> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
 		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
 	
 	bash ~/'.bashrc'
@@ -120,7 +120,7 @@ function _conf_path_bash()
 function _get_info_tor()
 {
 # url = domain/version/name
-echo "$(_c 32)==> $(_c)Aguarde..."
+echo "$(_c 32)=> $(_c)Aguarde..."
 
 tor_page='https://www.torproject.org/download/'
 tor_domain='https://dist.torproject.org/torbrowser'
@@ -141,8 +141,8 @@ function _curl()
 {
 # $1 = url
 # $2 = arquivo.
-	echo -e "$(_c 32)==> $(_c)Baixando: $1"
-	echo -e "$(_c 32)==> $(_c)Destino: $2"
+	echo -e "$(_c 32)=> $(_c)Baixando: $1"
+	echo -e "$(_c 32)=> $(_c)Destino: $2"
 	curl -LS -C - "$1" -o "$2" || return 1
 }
 
@@ -155,8 +155,8 @@ if [[ ! -f "$tor_path_file_asc" ]]; then _curl "$tor_url_asc" "$tor_path_file_as
 # tar.xz
 if [[ -f "$tor_path_file" ]]; then
 	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
-	echo "==> O arquivo $(_c 35)já$(_c) existe em $tor_path_file"
-	echo "==> 'Pulando' o download"
+	echo "=> O arquivo $(_c 35)já$(_c) existe em $tor_path_file"
+	echo "=> 'Pulando' o download"
 	return 0
 
 else
@@ -176,8 +176,8 @@ function _unpack_tor_browser()
 
 	# Limpar o conteúdo do diretório antes de descomprimir.
 	cd "$dir_space_tor" && rm -rf * 1> /dev/null 2>&1 
-	echo -e "$(_c 32)==> $(_c)Descompactando: [$path_arq]"
-	echo -e "$(_c 32)==> $(_c)Destino: [$dir_space_tor]"
+	echo -e "$(_c 32)=> $(_c)Descompactando: [$path_arq]"
+	echo -e "$(_c 32)=> $(_c)Destino: [$dir_space_tor]"
 
 	# Detectar a extensão do arquivo.
 	if [[ "${path_arq: -6}" == 'tar.gz' ]]; then # tar.gz, 6 ultimos caracteres.
@@ -219,13 +219,13 @@ local path_keyring="$dir_space_tor/tor.keyring"
 
 if [[ -f "$path_keyring" ]]; then rm "$path_keyring"; fi
 
-	echo "==> Importando chaves"
+	echo "=> Importando chaves"
 	curl -LSs "$url_asc_tor" -o- | gpg --import -
 
-	echo "==> Gerando arquivo de verificação"	
+	echo "=> Gerando arquivo de verificação"	
 	gpg --output "$path_keyring" --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290
 
-	echo "==> Checando assinatura do arquivo [$tor_path_file]"
+	echo "=> Checando assinatura do arquivo [$tor_path_file]"
 	gpgv --keyring "$path_keyring" "$tor_path_file_asc" "$tor_path_file" || return 1
 
 }
@@ -243,7 +243,7 @@ _get_info_tor
 _download_tor	
 
 	[[ "$2" == '--downloadonly' ]] && {
-		echo "$(_c 32)==> $(_c)$(basename $0): Feito somente download."
+		echo "$(_c 32)=> $(_c)$(basename $0): Feito somente download."
 		return 0
 	}
 
@@ -253,14 +253,14 @@ _download_tor
 		return 0
 	fi
 
-	_check_sig_tor || { echo "$(_c 31)==> Falha arquivo não confiavél [$tor_path_file]$(_c)"; exit 1; }
+	_check_sig_tor || { echo "$(_c 31)=> Falha arquivo não confiavél [$tor_path_file]$(_c)"; exit 1; }
 
 	_unpack_tor_browser "$tor_path_file" || {
 		echo "Função $(_c 31)_unpack_tor_browser$(_c) retornou [erro]"
 		exit 1
 	}
 
-echo "$(_c 32)==> $(_c)Instalando"
+echo "$(_c 32)=> $(_c)Instalando"
 cd "$dir_space_tor" 
 mv $(ls -d tor-browser*) "${array_tor[0]}" # Mover para ~/.local/bin
 chmod -R +x "${array_tor[0]}" # Permissão de execução.
@@ -294,10 +294,10 @@ if [[ ! -x $(command -v torbrowser 2> /dev/null) ]]; then
 elif [[ -x $(command -v torbrowser 2> /dev/null) ]]; then
 	for c in "${array_tor[@]}"; do
 		if [[ -f "$c" ]] || [[ -d "$c" ]] || [[ -L "$c" ]]; then
-			echo -e "$(_c 32)==> $(_c)Removendo: $c"
+			echo -e "$(_c 32)=> $(_c)Removendo: $c"
 			rm -rf "$c"
 		else
-			echo "$(_c 31)==> $(_c)Não encontrado: $c"
+			echo "$(_c 31)=> $(_c)Não encontrado: $c"
 		fi
 	done
 fi

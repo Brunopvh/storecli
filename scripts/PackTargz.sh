@@ -26,7 +26,7 @@ function msgs() { echo -e "${1}${2} ${fecha}"; }
 # Programa não pode ser executado como root 
 # a autênticação com sudo será feita quando precisar.
 [[ $(id -u) == '0' ]] && { 
-	echo "$(cor 31)==> $(cor)O usuário não pode ser o $(cor 31)[root]$(cor) saindo..." 
+	echo "$(cor 31)=> $(cor)O usuário não pode ser o $(cor 31)[root]$(cor) saindo..." 
 	exit 1 
 }
 
@@ -221,14 +221,14 @@ local pacotes=$(basename $0)
 local lista_mensag=("Programa já instalado, para remove-lo use: $pacotes $(cor 32)r$(cor)emove $2")
 
 case "$1" in
-	1) echo "$(cor 31)==> $(cor)${lista_mensag[0]}";;
-	2) echo "$(cor 32)==> $(cor)Necessário fazer o download do pacote de instalação";;
-	3) echo "$(cor 32)==> $(cor)Arquivo de instalação já em cache";;
-	4) echo "$(cor 32)==> $(cor)Descompactando";;
-	5) echo "$(cor 32)==> $(cor)Instalando";;
-	6) echo "$(cor 32)==> $(cor)Instalação concluida";;
-	7) echo "$(cor 31)==> $(cor)Instalação falhou";;
-	8) echo "$(cor 31)==> $(cor)Download falhou";;
+	1) echo "$(cor 31)=> $(cor)${lista_mensag[0]}";;
+	2) echo "$(cor 32)=> $(cor)Necessário fazer o download do pacote de instalação";;
+	3) echo "$(cor 32)=> $(cor)Arquivo de instalação já em cache";;
+	4) echo "$(cor 32)=> $(cor)Descompactando";;
+	5) echo "$(cor 32)=> $(cor)Instalando";;
+	6) echo "$(cor 32)=> $(cor)Instalação concluida";;
+	7) echo "$(cor 31)=> $(cor)Instalação falhou";;
+	8) echo "$(cor 31)=> $(cor)Download falhou";;
 
 esac
 }
@@ -279,10 +279,10 @@ function check_apps()
 while [[ $1 ]]; do
 
 	if [[ -x $(which "$1") ]]; then
-		echo "$(cor 32)==> $(cor)[+] $1"
+		echo "$(cor 32)=> $(cor)[+] $1"
 	else
-		echo "$(cor 31)==> $(cor)[-] Pacote não encontrado: $1"
-		read -p "==> Pressione enter : " enter	
+		echo "$(cor 31)=> $(cor)[-] Pacote não encontrado: $1"
+		read -p "=> Pressione enter : " enter	
 		exit 1
 	fi
 	shift
@@ -295,12 +295,12 @@ done
 function install()
 {
 
-    echo -ne "${verde}==> ${fecha}Verificando conexão com a internet: "
+    echo -ne "${verde}=> ${fecha}Verificando conexão com a internet: "
     if [[ $(ping -c 1 8.8.8.8) ]]; then
 	    echo -e "${verde}C${fecha}onectado"
     else
         echo ' '
-	    msgs "${vermelho}" "==> Aviso${fecha}: Você está off-line" 
+	    msgs "${vermelho}" "=> Aviso${fecha}: Você está off-line" 
 	    read -p "Pressione enter" enter 
     fi
 
@@ -319,7 +319,7 @@ function install()
 			torbrowser) torbrowser;;
             veracrypt) veracrypt;;
 			vscode) vscode;;
-			*) echo "$(cor 31)==> [-]$(cor) Pacote não encontrado: $1"; exit 1;;
+			*) echo "$(cor 31)=> [-]$(cor) Pacote não encontrado: $1"; exit 1;;
             
         esac
         shift
@@ -336,11 +336,11 @@ function remove_apps()
 {
     while [[ "$1" ]]; do
         if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -x "$1" ]] || [[ -L "$1" ]]; then
-            msgs "$verde" "==> ${fecha}Removendo: $1"
+            msgs "$verde" "=> ${fecha}Removendo: $1"
             # Precisa ser root para remove ??
             if [[ $(echo $1 | grep "$HOME") ]]; then rm -rf "$1"; else sudo rm -rf $1; fi
         else
-            msgs "$vermelho" "==> ${fecha}Não encontrado: $1"
+            msgs "$vermelho" "=> ${fecha}Não encontrado: $1"
         fi
         shift
     done
@@ -365,7 +365,7 @@ function remove()
 			torbrowser) remove_apps "${lista_torbrowser[@]}";;
             veracrypt) sudo "/usr/bin/veracrypt-uninstall.sh";;
 			vscode) remove_apps "${lista_vscode[@]}";;
-			*) msgs "$vermelho" "==> [-]${fecha} Pacote não encontrado: $1";;
+			*) msgs "$vermelho" "=> [-]${fecha} Pacote não encontrado: $1";;
         esac
         shift
 		if [[ -z $1 ]]; then break; fi
@@ -428,12 +428,12 @@ function _Curl()
 local url="$1"
 local path_arq="$2"
 
-echo -e "==> Baixando: [$url]"
+echo -e "=> Baixando: [$url]"
 if [[ -z $2 ]]; then 
 	curl -# -C - -O "$url" 
 
 elif [[ -d $(dirname "$2") ]]; then
-	echo -e "==> Destino: [$path_arq]"
+	echo -e "=> Destino: [$path_arq]"
 	curl -# -C - -o "$path_arq" -O "$url"
 
 fi
@@ -446,8 +446,8 @@ fi
 function _dow()
 {
 	[[ -f "$2" ]] && { 
-		echo "==> O arquivo já existe em [$2]"
-		echo "==> 'Pulando' o download" 
+		echo "=> O arquivo já existe em [$2]"
+		echo "=> 'Pulando' o download" 
 		return 0 
 	}
 
@@ -460,7 +460,7 @@ elif [[ "$3" == '--curl' ]]; then
 	_Curl "$@"
 
 else
-	echo "==> Use: _dow <url> <file> --wget|--curl"
+	echo "=> Use: _dow <url> <file> --wget|--curl"
 	return 1
 
 fi
@@ -470,7 +470,7 @@ if [[ $? == '0' ]]; then
 	return 0
 
 else
-	echo "==> Função [_dow] retornou erro"
+	echo "=> Função [_dow] retornou erro"
 	return 1
 fi
 }
@@ -484,16 +484,16 @@ function _git_clone()
 # $1 = Diretório onde deve ser clonado.
 # $2 = Repositório para clonar.
 
-[[ ! -d "$1" ]] && { echo "$(cor 31)==> $(cor)Erro: informe um diretório de destino."; exit 1; }
-[[ ! -w "$1" ]] && { echo "$(cor 31)==> $(cor)Erro: Você não tem permissão de escrita em $1"; exit 1; }
-[[ -z $2 ]] && { echo "$(cor 31)==> $(cor)Erro: informe um repositório para ser clonado."; exit 1; }
+[[ ! -d "$1" ]] && { echo "$(cor 31)=> $(cor)Erro: informe um diretório de destino."; exit 1; }
+[[ ! -w "$1" ]] && { echo "$(cor 31)=> $(cor)Erro: Você não tem permissão de escrita em $1"; exit 1; }
+[[ -z $2 ]] && { echo "$(cor 31)=> $(cor)Erro: informe um repositório para ser clonado."; exit 1; }
 
 
 cd "$1"
 if git clone "$2"; then
-	echo "$(cor 32)==> $(cor)Sucesso: git clone $2"
+	echo "$(cor 32)=> $(cor)Sucesso: git clone $2"
 else
-	echo "$(cor 31)==> $(cor)Falha: git clone $2"
+	echo "$(cor 31)=> $(cor)Falha: git clone $2"
 	exit 1
 fi
 sleep 0.1
@@ -513,7 +513,7 @@ local dir_arq="$2"
 rm -rf "${dir_arq}"/* 1> /dev/null 2>&1 
 mkdir -p "$dir_arq"
 
-	echo -e "$(cor 32)==> $(cor)Descompactando ["$arq"]"
+	echo -e "$(cor 32)=> $(cor)Descompactando ["$arq"]"
 
 if [[ $(echo "$arq" | grep 'tar.gz') ]]; then
 	tar -zxvf "$arq" -C "$dir_arq" 1> /dev/null	
@@ -525,7 +525,7 @@ elif [[ $(echo "$arq" | grep 'tar.xz') ]]; then
 	tar -Jxf "$arq" -C "$dir_arq" 1> /dev/null
 
 else
-	echo "$(cor 31)==> $(cor)Arquivo inválido: $arq"
+	echo "$(cor 31)=> $(cor)Arquivo inválido: $arq"
 
 fi
 
@@ -557,7 +557,7 @@ function papirus()
 {
 
 if [[ -d ~/.icons/Papirus-Dark ]]; then mensag 1 'papirus'; exit 0; fi
-echo "$(cor 32)==> $(cor)Papirus [icones]"
+echo "$(cor 32)=> $(cor)Papirus [icones]"
 
 pacote_papirus="$dir_downloads"/papirus.run
 
@@ -566,7 +566,7 @@ if [[ -f "$pacote_papirus" ]]; then
 	mensag 3 
 else 
 	mensag 2 
-	echo "$(cor 32)==> $(cor)Baixando: $url_papirus"
+	echo "$(cor 32)=> $(cor)Baixando: $url_papirus"
 	_dow "$url_papirus" "$pacote_papirus" --curl
 
 fi
@@ -583,7 +583,7 @@ function peazip()
 {
 [[ -x $(which peazip) ]] && { mensag 1 'peazip'; return 0; }
 
-echo "$(cor 32)==> $(cor)Peazip"
+echo "$(cor 32)=> $(cor)Peazip"
 
 pacote_nome='peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
 pacote_peazip="${dir_downloads}/$pacote_nome"
@@ -642,7 +642,7 @@ function pycharm()
 {
 [[ -x $(which pycharm) ]] && { mensag 1 'pycharm'; return 0; }
 
-echo "$(cor 32)==> $(cor)Pycharm"
+echo "$(cor 32)=> $(cor)Pycharm"
 
 local pacote_pycharm="${dir_downloads}"/pycharm-community.tar.gz
 
@@ -655,7 +655,7 @@ fi
 
 _unpack "$pacote_pycharm" "$dir_temp"
 
-echo "$(cor 32)==> $(cor)Instalando"
+echo "$(cor 32)=> $(cor)Instalando"
 mv "$dir_temp"/pycharm-community*/ "$dir_bin"/pycharm-community
 chmod -R +x "$dir_bin"/pycharm-community
 cp -u "$dir_bin"/pycharm-community/bin/pycharm.png "$HOME"/.icons/pycharm.png
@@ -679,9 +679,9 @@ ln -sf "${dir_bin}/pycharm-community/bin/pycharm.sh" "${dir_bin}/pycharm"
 if [[ $? == 0 ]]; then
 	cp -u "${lista_pycharm[1]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${lista_pycharm[1]}" ~/'Área de trabalho'/ 2> /dev/null
-    echo "$(cor 32)==> $(cor)Instalação concluida"
+    echo "$(cor 32)=> $(cor)Instalação concluida"
 else
-    echo "$(cor 32)==> $(cor)Instalação falhou"; exit 1
+    echo "$(cor 32)=> $(cor)Instalação falhou"; exit 1
 fi
 
 }
@@ -691,7 +691,7 @@ fi
 function pyenv()
 {
 [[ -x $(which pyenv) ]] && { mensag 1 'pyenv'; return 0; }
-echo "$(cor 32)==> $(cor)pyenv"
+echo "$(cor 32)=> $(cor)pyenv"
 
 mensag 5 # Instalando
 curl -S -L "$url_pyenv" | bash -s -- "$@"
@@ -714,7 +714,7 @@ cd "$dir_downloads"
 
 _git_clone "$dir_downloads" "$github_sierra"
 
-echo "$(cor 32)==> $(cor)Instalando"
+echo "$(cor 32)=> $(cor)Instalando"
 chmod +x "$dir_downloads"/Sierra-gtk-theme/install.sh
 cd "$dir_downloads"/Sierra-gtk-theme/ && ./install.sh 
 }
@@ -725,7 +725,7 @@ cd "$dir_downloads"/Sierra-gtk-theme/ && ./install.sh
 function sublime_text()
 {
 [[ -d '/opt/sublime_text' ]] && { mensag 1 'sublime-text'; return 0; }
-echo "$(cor 32)==> $(cor)sublime-text"
+echo "$(cor 32)=> $(cor)sublime-text"
 
 new_url_sublime=$(curl -s "$html_sublime_text" -o- | grep -m 1 'http.*sublime.*x64.tar.bz2' | sed 's/\">64.*//g;s/.*=\"//g')
 if echo "$new_url_sublime" | grep -q '^https.*sublimetext.*x64.tar.bz2'; then 
@@ -786,10 +786,10 @@ pacote_telegram="$dir_downloads/telegram-amd64.tar.xz"
 
 	_unpack "$dir_downloads/telegram-amd64.tar.xz" "$dir_temp"
 
-	echo "$(cor 32)==> $(cor)Instalando"
+	echo "$(cor 32)=> $(cor)Instalando"
 	mv "$dir_temp/Telegram" "$dir_bin/"
 	ln -sf "$dir_bin/Telegram/Telegram" "$dir_bin/telegram"
-	echo -e "$(cor 33)==> $(cor)Aguarde..."
+	echo -e "$(cor 33)=> $(cor)Aguarde..."
 	telegram
 
 } 
@@ -801,8 +801,8 @@ tixati()
 
 [[ -x $(which tixati) ]] && { mensag 1 "tixati"; return 0; }
 
-echo "$(cor 32)==> $(cor)Tixati"
-echo "$(cor 32)==> $(cor)Obtendo url de download aguarde..."
+echo "$(cor 32)=> $(cor)Tixati"
+echo "$(cor 32)=> $(cor)Obtendo url de download aguarde..."
 tixati_html='https://www.tixati.com/download/linux.html' # Pagina de download do programa.
 url_tixati=$(wget -qE "$tixati_html" -O- | egrep -m 1 "https.*64.*tar.gz" | sed "s/gz\".*/gz/g;s/.*=\"//g") # url de download.
 pacote_nome=$(echo "$url_tixati" | sed 's/.*\///g') # Nome do arquivo.
@@ -862,7 +862,7 @@ torbrowser()
 {
 [[ -x $(which torbrowser) ]] && { mensag 1 'torbrowser'; return 0; }
 
-echo "$(cor 32)==> $(cor)Tor Browser"
+echo "$(cor 32)=> $(cor)Tor Browser"
 
 # https://dist.torproject.org/torbrowser/8.5.5/tor-browser-linux64-8.5.5_en-US.tar.xz
 
@@ -882,7 +882,7 @@ pacote_torbrowser="${dir_downloads}/${torbrowser_nome}"
 		mensag 3 
 	else 
 		mensag 2 
-		echo "$(cor 32)==> $(cor)Baixando: ${url_torbrowser}"
+		echo "$(cor 32)=> $(cor)Baixando: ${url_torbrowser}"
 		_dow "$url_torbrowser" "$pacote_torbrowser" --wget 
 
 	fi
@@ -921,7 +921,7 @@ veracrypt()
 {
 [[ -x $(which veracrypt) ]] && { mensag 1 'veracrypt'; return 0; }
 
-echo "$(cor 32)==> $(cor)veracrypt"
+echo "$(cor 32)=> $(cor)veracrypt"
 
 local veracrypt_html='https://www.veracrypt.fr/en/Downloads.html' # Pagina de download do programa.
 url_veracrypt=$(wget -qE "$veracrypt_html" -O- | egrep -m 1 "http.*tar.bz2" | sed 's/z2\".*/z2/g;s/.*\"//g' | sed 's/&#43\;/+/g')
@@ -958,7 +958,7 @@ vscode()
 {
 [[ -x $(which vscode) ]] && { mensag 1 'vscode'; return 0; }
 
-echo "$(cor 32)==> $(cor)vscode"
+echo "$(cor 32)=> $(cor)vscode"
 
 pacote_nome="vscode.tar.gz" # Nome do arquivo.
 pacote_vscode="${dir_downloads}/$pacote_nome" # Nome e diretório completo.
