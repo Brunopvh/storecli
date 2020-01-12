@@ -17,7 +17,7 @@ local url_hacking_parrot='https://dllb2.pling.com/api/files/download/id/15752227
 local path_arq="$dir_user_cache/$(basename $url_hacking_parrot)"
 
 _dow "$url_hacking_parrot" "$path_arq" --wget
-[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
 		echo "$(cor 31)==> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
@@ -82,7 +82,7 @@ local path_arq="$dir_user_cache/papirus.run"
 	_dow "$url_papirus" "$path_arq" --wget
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 	chmod +x "$path_arq"
 	"$path_arq"
 }

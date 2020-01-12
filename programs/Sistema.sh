@@ -134,7 +134,7 @@ local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
 _dow "$peazip_url_download" "$path_arq" --curl
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 	
 	[[ -x $(command -v peazip 2> /dev/null) ]] && { _msg_pack_instaled 'peazip'; return 0; }
 
@@ -212,7 +212,7 @@ local path_arq="$dir_user_cache/$(basename $url_extpack)" # Destion/Arquivo.
 	}	
 
 # --downloadonly
-[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 
 # Instalação
 echo "$(_c 32)==> $(_c)Instalando Extension Pack"

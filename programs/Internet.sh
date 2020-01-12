@@ -17,10 +17,10 @@ sudo sh -c 'wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | apt-
 find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
 
 if [[ $? == '0' ]]; then
-	echo "==> $(cl 33)R$(cl)epositório $(cl 35)já$(cl) está disponível 'pulando'"
+	echo "==> $(_c 33)R$(_c)epositório $(_c 35)já$(_c) está disponível 'pulando'"
 
 else
-	echo "$(cl 32)==> $(cl)Adicionando repositório"
+	echo "$(_c 32)==> $(_c)Adicionando repositório"
 	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
 
 fi
@@ -193,13 +193,13 @@ function _opera_stable_debian()
 {
 local opera_repo='deb [arch=amd64] https://deb.opera.com/opera-stable/ stable non-free'
 local opera_file='/etc/apt/sources.list.d/opera-stable.list'
-echo "$(cl 32)==> $(cl)Adicionando chaves agurade..."
+echo "$(_c 32)==> $(_c)Adicionando chaves agurade..."
 sudo sh -c 'wget -q -O- http://deb.opera.com/archive.key | apt-key add -'
 
 find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
 
 if [[ $? == '0' ]]; then
-	echo "==> $(cl 33)R$(cl)epositório $(cl 35)já$(cl) está disponível 'pulando'"
+	echo "==> $(_c 33)R$(_c)epositório $(_c 35)já$(_c) está disponível 'pulando'"
 
 else
 	echo "$opera_repo" | sudo tee "$opera_file"
@@ -510,7 +510,7 @@ local path_arq="$dir_user_cache/telegramsetup.1.8.15.tar.xz"
 	_dow "$url_telegram" "$path_arq" --wget
 
 	# --downloadonly
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 	[[ -x $(command -v telegram 2> /dev/null) ]] && { _msg_pack_instaled 'telegram'; return 0; }
 
 	"$Script_UnPack" "$path_arq" "$dir_temp"
@@ -590,7 +590,7 @@ _dow "$url_tar" "$path_arq" --curl # baixar somente .tar.gz - (qualquer linux)
 _dow "$url_tar_asc" "$path_arq_asc" --curl # Arquivo de verificação .asc
 
 # --downloadonly
-[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v tixati 2> /dev/null) ]] && { _msg_pack_instaled 'tixati'; return 0; }
 
 # Instalar gconf2.

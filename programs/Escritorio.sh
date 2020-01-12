@@ -46,7 +46,7 @@ local soma_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e8
 
 	_dow "$url" "$path_arq" --wget
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 
 	command -v "${array_libreoffice_dirs[1]}" 2> /dev/null && { _msg_pack_instaled 'libreoffice-appimage'; return 0; }
 

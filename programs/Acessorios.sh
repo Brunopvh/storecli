@@ -50,7 +50,7 @@ _dow "$veracrypt_url_dow" "$path_arq" --curl
 _dow "$veracrypt_url_dow_sig" "$path_sig" --curl
 
 # --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(cl 32)==> $(cl)Feito somente download."; return 0; }
+[[ "$download_only" == 'on' ]] && { echo "$(_c 32)==> $(_c)Feito somente download."; return 0; }
 [[ -x $(command -v veracrypt 2> /dev/null) ]] && { _msg_pack_instaled 'veracrypt'; return 0; }
 
 # Importar chaves públicas.

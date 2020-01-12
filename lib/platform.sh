@@ -1,21 +1,15 @@
 #!/usr/bin/env bash
 #
-# 
-# Use: source platform.sh
-# echo "Type=$os_type - Id=$os_id - Release=$os_release - Version=$os_version " 
-# echo "Codename=$os_codiname Name=$sysname"
+# Modificado em: 2020-01-11 
 #
-
-
-
-
-function usage_platform()
-{
-clear
-cat <<EOF
-Use: source $0
-EOF
-}
+# Use: source platform.sh
+# echo "Type = $os_type" 
+# echo "Id = $os_id" 
+# echo "Release = $os_release" 
+# echo "Version=$os_version" 
+# echo "Codename = $os_codiname" 
+# echo "Name = $sysname"
+#
 
 os_type='NoNe'
 os_id='NoNe'

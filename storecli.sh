@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
 #
-VERSION='2020-01-10'
+VERSION='2020-01-11'
 #
 #
 #-----------------------------------------------------#
@@ -20,25 +20,10 @@ VERSION='2020-01-10'
 # http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
 #
 
-function cl() { 
-if [[ -z $2 ]]; then
-	echo -e "\033[1;$1m"
-	
-elif [[ $2 ]]; then
-	echo -e "\033[$2;$1m"
-
-fi
-}
-
 function _c()
 {
-if [[ -z $2 ]]; then
-	echo -e "\033[1;$1m"
-	
-elif [[ $2 ]]; then
+	[[ -z $2 ]] && { echo -e "\033[1;$1m"; return 0; }
 	echo -e "\033[$2;$1m"
-
-fi
 }
 
 # root.
