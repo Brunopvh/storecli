@@ -398,7 +398,7 @@ while [[ "$1" ]]; do
 
 #-------------------- preferencias ---------------------------#
 		hacking-parrot) _hacking_parrot;;
-		icones-papirus) "$Script_Papirus";;
+		papirus) _papirus;; # Instalar diretamente pelo arquivo ./scripts/papirus.sh "$Script_Papirus"
 		ohmybash) _ohmybash;;
 		ohmyzsh) _ohmyzsh;;
 		sierra) _sierra;;

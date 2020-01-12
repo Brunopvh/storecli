@@ -94,12 +94,11 @@ function _Curl()
 
 	echo -e "=> Baixando: [$url]"
 	if [[ -z $2 ]]; then 
-		curl -# -C - -O "$url" 
+		curl -# -C - -f -O "$url" 
 
 	elif [[ -d $(dirname "$2") ]]; then
-		echo -e "=> Destino: [$path_arq]"
-		#curl -# -LS -C - "$url" -o "$path_arq" 
-		curl -LS -C - "$url" -o "$path_arq"
+		echo -e "=> Destino: [$path_arq]" 
+		curl -LSf -C - "$url" -o "$path_arq"
 
 	fi
 }

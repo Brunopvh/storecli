@@ -4,8 +4,6 @@
 
 github='https://github.com'
 
-mkdir -p ~/.themes
-
 #-----------------------------------------------------#
 
 function _hacking_parrot()
@@ -79,12 +77,15 @@ function _papirus()
 local url_papirus='https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/install.sh'
 local path_arq="$dir_user_cache/papirus.run"
 
-	_dow "$url_papirus" "$path_arq" --wget
+	_dow "$url_papirus" "$path_arq" --curl || {
+		echo "$(_c 31)Erro no download de [papirus] $(_c)"
+		return 1
+	}
 
 	# --download-only
 	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 	chmod +x "$path_arq"
-	"$path_arq"
+	sudo "$path_arq"
 }
 
 

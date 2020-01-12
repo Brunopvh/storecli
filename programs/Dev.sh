@@ -2,18 +2,6 @@
 #
 #
 
-
-function _c()
-{
-if [[ -z $2 ]]; then
-	echo -e "\033[1;$1m"
-	
-elif [[ $2 ]]; then
-	echo -e "\033[$2;$1m"
-
-fi
-}
-
 #-----------------------------------------------------#
 
 function _android_studio_debian()
@@ -123,7 +111,7 @@ function _pycharm()
 local url_pycharm='https://download.jetbrains.com/python/pycharm-community-2019.1.2.tar.gz'
 local path_arq="$dir_user_cache/pycharm-community-2019.1.2.tar.gz"
 
-_dow "$url_pycharm" "$path_arq" --wget
+_dow "$url_pycharm" "$path_arq" --curl
 
 # --download-only
 [[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }

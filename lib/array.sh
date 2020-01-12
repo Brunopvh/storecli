@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
 #
 #
-# Download Configuração e Instalaçao de programas.
+# Este arquivo contém varias listas "arrays" que são usados
+# por varios módulos é scripts deste conjunto de programas.
+# RESUMO: é um compartilhamento de "arrays" que são usados varias vezes.
 #
 
 #==================================================#
@@ -26,6 +28,7 @@ array_commands=(
 # Dir requeriments
 #==================================================#
 dir_user_bin=~/.local/bin
+dir_themes=~/.themes
 dir_user_applications=~/.local/share/applications
 dir_user_icons=~/.local/share/icons
 dir_user_cache=~/.cache/downloads
@@ -39,6 +42,7 @@ export array_user_dirs=(
 "$dir_user_cache"
 "$dir_user_config"
 "$dir_temp"
+"$dir_themes"
 )
 
 #==================================================#
@@ -54,9 +58,17 @@ export array_root_dirs=(
 "$dir_root_bin"
 )
 
-#==================================================#
+#--------------------------------------------------#
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#///////////////////////////////////////////////////////////////////
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
 # Arrays dirs programs
-#==================================================#
+#
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#////////////////////////////////////////////////////////////
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
 
 # Android studio.
 array_android_studio_dirs=(
@@ -137,11 +149,16 @@ array_vscode_dirs=(
 "$dir_user_bin/code-amd64" # Diretório de instalção.
 )
 
-#==================================================#
-#==================================================#
-# Arrays list programs
-#==================================================#
-#==================================================#
+#--------------------------------------------------#
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#///////////////////////////////////////////////////////////////////
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#
+# Arrays "Listas de programs disponíveis para instalação."
+#
+#\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\\
+#////////////////////////////////////////////////////////////
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 # Acessórios
 array_acessorios=(
@@ -206,7 +223,7 @@ array_sistema=(
 
 # Preferencias
 array_preferencias=(
-'icones-papirus'
+'papirus'
 'ohmybash'
 'ohmyzsh'
 'sierra'

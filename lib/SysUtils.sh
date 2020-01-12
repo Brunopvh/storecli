@@ -6,18 +6,6 @@
 source "$Lib_platform"
 source "$Lib_array"
 
-function _c()
-{
-if [[ -z $2 ]]; then
-	echo -e "\033[1;$1m"
-	
-elif [[ $2 ]]; then
-	echo -e "\033[$2;$1m"
-
-fi
-}
-
-
 #==================================================#
 # cli requeriments.
 #==================================================#
