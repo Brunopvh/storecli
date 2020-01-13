@@ -193,8 +193,14 @@ elif sys.argv[1] == '--list':
 #-----------------------------------------------#
 
 def _msgs(msg, c=''):
-	""" c = Cor """
-	print(c, end=''); print(f'-> {msg}', end=''); print(RS)
+	""" 
+	c = Cor 
+	_msg('Minha mensagem', R) -> Mensagem em vermelho/RED
+	_msg('Minha mensagem', G) -> Mensagem em verde
+	"""
+	print(c, end='')
+	print(f'-> {msg}', end='')
+	print(RS)
 
 #-----------------------------------------------#
 
@@ -499,18 +505,16 @@ def winrar():
 def _install():
 
 	# Wine está instalado ?
-	wine_check = subprocess.getstatusoutput('command -v wine 2> /dev/null')
+	if subprocess.getstatusoutput('which wine 2> /dev/null')[0] != int('0'):
+		_msgs('Necessário instalar [wine]', R)
+		info = input('Pressione enter para instalar agora.')
+		_install_wine()
 
-	if int(wine_check[0]) != int('0'):
-		_msgs(f'Wine não está instalado, use: {os.path.basename(sys.argv[0])} install wine', R)
-		info = input('Pressione enter: ')
-
-	# Winetricks está instalado ?
-	winetricks_check = subprocess.getstatusoutput('command -v winetricks 2> /dev/null')
-
-	if int(winetricks_check[0]) != int('0'):
-		_msgs(f'Winetricks não está instalado, use: {os.path.basename(sys.argv[0])} install winetricks', R)
-		info = input('Pressione enter: ')
+	# Wine está instalado ?
+	if subprocess.getstatusoutput('which winetricks 2> /dev/null')[0] != int('0'):
+		_msgs('Necessário instalar [winetricks]', R)
+		info = input('Pressione enter para instalar agora.')
+		_install_winetricks()
 
 	args = sys.argv[2:]
 	for num in range(0, len(args)):

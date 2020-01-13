@@ -25,11 +25,11 @@ function _run_sum()
 local path_arq="$1"
 local sum="$2"	
 
-	echo -e "$(_c 32)=> $(_c)Gerando soma do arquivo [$path_arq]"	
+	echo -e "$(_c 32)=> $(_c)Gerando hash do arquivo [$path_arq]"	
 	get_new_sum=$(sha256sum "$path_arq" | awk '{print $1}')
 
-	echo "[$sum] -> Soma informada"
-	echo "[$get_new_sum] -> Arquivo no disco"
+	echo "[$sum] -> Hash do servidor"
+	echo "[$get_new_sum] -> Hash do arquivo no disco"
 
 	echo -ne "=> Comparando os valores: "
 

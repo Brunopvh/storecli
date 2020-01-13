@@ -44,7 +44,7 @@ local url='https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.f
 local path_arq="$dir_user_cache/$(basename $url)"
 local soma_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e83c3ef1e6'
 
-	_dow "$url" "$path_arq" --wget
+	_dow "$url" "$path_arq" --curl || return 1
 	# --download-only
 	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
 
@@ -52,7 +52,7 @@ local soma_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e8
 
 	_check_sum "$path_arq" "$soma_libreoffice" || {
 		echo "$(_c 31)=> $(_c)Erro função $(_c 31)_check_sum $(_c)retornou erro"
-		echo "$(_c 31)=> Arquivo não confialvél: $path_arq $(_c)" 
+		echo "$(_c 31)=> Arquivo não confiável: $path_arq $(_c)" 
 		return 1 
 	}
 
