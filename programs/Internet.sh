@@ -779,7 +779,7 @@ if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
 
 	arq_ytdl=~/.local/share/applications/youtube-dl-gui.desktop
 
-	echo '[Desktop Entry]' > tee "$arq_ytdl"
+	echo '[Desktop Entry]' > "$arq_ytdl"
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
@@ -795,7 +795,7 @@ if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
 	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
-	echo -e "$(_c 32 0)=> [Feito]$(_c)"; return 0	
+	echo -e "$(_c 32 0)=> Youtube-dl-gui instalado com sucesso. $(_c)" && return 0	
 	
 else
 	echo "$(cor 31)=> $(cor)[-] A instalação de youtube-dl-gui falhou"
