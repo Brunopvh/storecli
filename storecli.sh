@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
 #
-VERSION='2020-01-11'
+VERSION='2020-01-18'
 #
 #
 #-----------------------------------------------------#
@@ -127,17 +127,14 @@ function _space_msg()
 #========================================================#
 # Info
 #========================================================#
-function _info_msgs()
+function _msg()
 {
-	if [[ -z $1 ]]; then
-		local msg='INFO'
+	[[ -z $1 ]] && {
+		echo -e "$(_c 32 1)-> INFO $(_c)"
+		return 0
+	}
 
-	elif [[ $1 ]]; then
-		local msg="$1"
-
-	fi
-
-	echo -e "$(_c 32 1)->$(_c) [${msg}]"
+	echo -e "$(_c 32 1)-> $(_c)[$@]"
 }
 
 #========================================================#
@@ -147,10 +144,11 @@ function _check_executable_cli()
 {
 while [[ $1 ]]; do
 
-	if [[ ! -x $(which "$1" 2> /dev/null) ]]; then	
+	[[ ! -x $(which "$1" 2> /dev/null) ]] && {
 		echo "$(_c 31)=> $(_c)$1 $(_space_msg ${#1}) [ERRO]"
-		return 1; break
-	fi
+		return 1 
+		break
+	}
 	shift
 done
 }
@@ -160,7 +158,7 @@ done
 #=====================================================#
 function _configure_system()
 {
-# requeriments cli
+	# requeriments cli
 	while ! _install_requeriments; do
 		echo -ne "[Erro] pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: "
 		read -n 1 _input
@@ -168,7 +166,7 @@ function _configure_system()
 		if [[ "${_input,,}" == 'r' ]]; then continue; else return 1; break; fi		
 	done
 
-# requeriments python/python3
+	# requeriments python/python3
 	while ! _python_requeriments; do
 		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
 		read -n 1 cr
@@ -194,6 +192,11 @@ elif [[ "$1" == '--logo' ]]; then
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
 	_configure_system || { echo "$(_c 31)Encerrando com erro. $(_c)"; exit 1; }
+
+elif [[ "$1" == '--upgrade' ]]; then
+	_msg 'Aguarde...'
+	"$StoreCli_Path/install.sh"
+	exit "$?"
 
 fi 
 
@@ -258,7 +261,7 @@ local DESTINATION_FILE="$dir_temp/storecli.sh"
 	mkdir -p "$dir_temp"
 	[[ -f "$DESTINATION_FILE" ]] && rm "$DESTINATION_FILE"
 
-	_info_msgs "Verificando atualização no github aguarde..."
+	_msg "Verificando atualização no github aguarde..."
 	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"
 
 	NEW_VERSION=$(grep -m 1 'VERSION=' "$DESTINATION_FILE" | sed "s/.*=//g;s/'//g")	
@@ -290,7 +293,7 @@ local DESTINATION_FILE="$dir_temp/storecli.sh"
 #=====================================================#
 # Verificar nova versão uma vez por dia.
 #=====================================================#
-_info_msgs "$os_type $os_id $os_version"
+_msg "$os_type $os_id $os_version"
 
 grep 'check_day' "$Config_File" 1> /dev/null || _day_update
 
@@ -426,7 +429,6 @@ while [[ $1 ]]; do
 		remove)  _packremove "$@"; exit "$?";; # PackRemove.sh
 		--list) _list_applications; exit "$?";;
 		--quebrado) _quebrado; exit "$?";;
-		--upgrade) "$StoreCli_Path/install.sh"; exit "$?";;
 		*) echo "$(_c 31)Comando não encontrado: $1 $(_c)"
 	esac
 	shift

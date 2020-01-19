@@ -78,7 +78,7 @@ chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
 	cp -u "${array_android_studio_dirs[0]}" ~/Desktop/ 2> /dev/null
 
 	if [[ -x $(command -v studio 2> /dev/null) ]]; then
-		_info_msgs 'android-studio instalado com sucesso'
+		_msg 'android-studio instalado com sucesso'
 		#studio
 		return 0
 
@@ -148,7 +148,7 @@ cp -u "${array_pycharm_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
 cp -u "${array_pycharm_dirs[0]}" ~/Desktop/ 2> /dev/null 
 
 if [[ -x $(which pycharm 2> /dev/null) ]]; then
-	_info_msgs 'pycharm instalado com sucesso'
+	_msg 'pycharm instalado com sucesso'
 	#pycharm
 	return 0
 
@@ -247,7 +247,7 @@ cp -u "${array_vscode_dirs[0]}" ~/Desktop/ 2> /dev/null
 cp -u "${array_vscode_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
 
 if [[ -x "$(which code 2> /dev/null)" ]]; then
-	_info_msgs 'code instalado'
+	_msg 'code instalado'
 	code
 else
 	echo "=> Função $(_c 31)_vscode$(_c) retornou [erro]"

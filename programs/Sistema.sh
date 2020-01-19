@@ -11,7 +11,7 @@ function _bluetooth()
 	[[ "$os_id" == 'debian' ]] || { _prog_not_found; return 1; }
 
 	sudo apt install -y bluez bluez-firmware bluez-hcidump
-	_info_msgs 'INFO'
+	_msg 'INFO'
 	echo "=> 1 - $(_c 32 0)G$(_c)NOME"
 	echo "=> 2 - $(_c 32 0)K$(_c)DE"
 	echo "=> 3 - $(_c 32 0)L$(_c)XDE/$(_c 32 0)X$(_c)FCE/$(_c 32 0)L$(_c)XQT/$(_c 32 0)M$(_c)ATE"
@@ -159,7 +159,7 @@ sudo mv "$dir_temp"/peazip-amd64 "${array_peazip_dirs[3]}" # dir.
 	cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
 
 if [[ -x $(which peazip 2> /dev/null) ]]; then
-	_info_msgs; echo "=> peazip instalado com sucesso."
+	_msg; echo "=> peazip instalado com sucesso."
 	return 0
 
 else

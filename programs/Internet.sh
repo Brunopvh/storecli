@@ -69,7 +69,7 @@ case "$sysname" in
 esac	
 
 if [[ $? == '0' ]]; then 
-	_info_msgs 'google-chrome instalado com sucesso'
+	_msg 'google-chrome instalado com sucesso'
 	return 0
 else
 	echo "=> Função $(_c 31)_google_chrome $(_c) retornou [erro]"
@@ -176,7 +176,7 @@ case "$sysname" in
 esac
 
 if [[ $? == '0' ]]; then 
-	_info_msgs 'megasync instalado com sucesso'
+	_msg 'megasync instalado com sucesso'
 	return 0
 else
 	echo "=> Função $(_c 31)_megasync$(_c) retornou [erro]"
@@ -268,7 +268,7 @@ esac
 
 
 if [[ $? == '0' ]]; then 
-	_info_msgs 'opera-stable instalado com sucesso'
+	_msg 'opera-stable instalado com sucesso'
 
 else
 	echo "=> Função $(_c 31)_opera_stable $(_c) retornou [erro]"
@@ -536,7 +536,7 @@ function _telegram()
 	telegram
 
 	if [[ -x $(command -v telegram 2> /dev/null) ]]; then
-		_info_msgs 'telegram instalado com sucesso'
+		_msg 'telegram instalado com sucesso'
 		return 0
 	else
 		echo "=> Função $(_c 31)_telegram $(_c) retornou [erro]"
@@ -571,7 +571,7 @@ local path_arq="$1"
 	cp -u "${array_tixati_dirs[0]}" ~/Desktop/ 2> /dev/null
 	
 	if [[ -x $(command -v tixati 2> /dev/null) ]]; then
-		_info_msgs 'tixati instalado' 
+		_msg 'tixati instalado' 
 		#tixati & 
 		return 0
 
@@ -617,7 +617,7 @@ elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
 
 fi
 
-	_info_msgs "Importando key tixati"
+	_msg "Importando key tixati"
 	curl -# -LS https://www.tixati.com/tixati.key -o- | gpg --import 
 
 	# Gpg

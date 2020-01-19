@@ -78,7 +78,7 @@ chmod u+x "${array_libreoffice_dirs[0]}"
 	cp -u "${array_libreoffice_dirs[0]}" ~/Desktop/ 2> /dev/null
 
 	if command -v "${array_libreoffice_dirs[1]}" 1> /dev/null 2>&1; then
-		_info_msgs 'LibreOfficeAppImage instalado com sucesso'
+		_msg 'LibreOfficeAppImage instalado com sucesso'
 		#studio
 		return 0
 
