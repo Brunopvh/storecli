@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
 #
-VERSION='2020-01-18'
+VERSION='2020-01-23'
 #
 #
 #-----------------------------------------------------#
@@ -91,6 +91,7 @@ source "$Lib_HttpsTransfer"
 source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 source "$Lib_Gpg"
+source "$Lib_CheckUpdate"
 #source "$Lib_PackManager" # esta "lib" atualmente não está em uso.
 
 source "$Lib_Acessorios"
@@ -253,33 +254,9 @@ echo "$(_c 31)=> $(_c)Programa indisponível para o seu sistema [$os_id]"
 
 function _day_update()
 {
-
-local REPO='https://github.com/Brunopvh/storecli.git'
-local RAWREPO="https://raw.githubusercontent.com/Brunopvh/storecli/master/storecli.sh"
-local DESTINATION_FILE="$dir_temp/storecli.sh"
-
-	mkdir -p "$dir_temp"
-	[[ -f "$DESTINATION_FILE" ]] && rm "$DESTINATION_FILE"
-
-	_msg "Verificando atualização no github aguarde..."
-	curl -# -LS "$RAWREPO" -o "$DESTINATION_FILE"
-
-	NEW_VERSION=$(grep -m 1 'VERSION=' "$DESTINATION_FILE" | sed "s/.*=//g;s/'//g")	
-	CURRENT_VERSION="$VERSION"
-
-	if [[ "$CURRENT_VERSION" != "$NEW_VERSION" ]]; then
-
-		echo "${esp}$esp"
-		echo -e "Nova versão disponível: $NEW_VERSION"
-		echo -e "Instalando atualização"
-		echo "${esp}$esp"
-		"$StoreCli_Path/install.sh" || return 1
-
-	else
-		echo "${esp}$esp"
-		echo "Ultima versão já instalada."
-		echo "${esp}$esp"
-
+	# Função que verifica atualização.
+	if _check_update; then
+		"$StoreCli_Path/install.sh" # Baixar e instalar a atualização.
 	fi
 
 	# Deletar linha que contém o dia da ultima verificação.
@@ -295,16 +272,22 @@ local DESTINATION_FILE="$dir_temp/storecli.sh"
 #=====================================================#
 _msg "$os_type $os_id $os_version"
 
+# O programa deve procurar por atualização no github uma vez por dia.
+# Se não houver a string 'check_day' no arquivo de configuração então
+# Será "chamada" a função _day_update que verifica se existe atualização
+# disponível, e se houver ela sera instalada.
 grep 'check_day' "$Config_File" 1> /dev/null || _day_update
 
-current_day=$(date | awk '{print $3}') # Dia atual
-old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}') # Dia da ultima verificação.
+# Dia atual
+current_day=$(date | awk '{print $3}') 
+# Dia da ultima verificação.
+old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}') 
 
+# Se o dia de "hoje" for diferente do dia da ultima verificação, então execute a função _day_update.
 if [[ "$current_day" != "$old_day" ]]; then 
 	_day_update || { 
 		echo "=> Falha ao tentar instalar atualização. Execute $(_c 31)$(basename $0) --upgrade $(_c)"
 	}
-	
 fi
 
 #=====================================================#
