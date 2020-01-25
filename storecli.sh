@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
 #
-VERSION='2020-01-23'
+VERSION='2020-01-25'
 #
 #
 #-----------------------------------------------------#
@@ -193,6 +193,7 @@ elif [[ "$1" == '--logo' ]]; then
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
 	_configure_system || { echo "$(_c 31)Encerrando com erro. $(_c)"; exit 1; }
+	exit 0
 
 elif [[ "$1" == '--upgrade' ]]; then
 	_msg 'Aguarde...'
