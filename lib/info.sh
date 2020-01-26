@@ -60,12 +60,12 @@ EOF
 
 function _logo()
 {
-echo "$(_c 34 1)**********************************************************$(_c)"
+echo "$(_c 31 0)**********************************************************$(_c)"
 echo "$(_c 31)  Autor: Bruno Da Silva Chaves"
 echo "$(_c 31)  Versão: $VERSION"
 echo "$(_c 31)  Github: $github_storecli"
-echo "$(_c 34)  StoreCli $(_c 32 0)sua loja de aplicativos via linha de comando."
-echo "$(_c 34 1)**********************************************************$(_c)"
+echo "$(_c 32 0)  storecli $(_c 31)sua loja de aplicativos via linha de comando."
+echo "$(_c 31 0)**********************************************************$(_c)"
 echo -n "$(_c)"
 }
 

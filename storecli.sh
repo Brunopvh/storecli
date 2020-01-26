@@ -282,12 +282,13 @@ function _day_update()
 	echo -e "check_day $(date | awk '{print $3}')" >> "$Config_File"
 }
 
+#=====================================================#
+_msg "Sistema $(_space_msg 7) $os_type $os_id $os_version"
+_msg "Downloads $(_space_msg 9) $dir_user_cache"
 
 #=====================================================#
 # Verificar nova versão uma vez por dia.
 #=====================================================#
-_msg "$os_type $os_id $os_version"
-
 # O programa deve procurar por atualização no github uma vez por dia.
 # Se não houver a string 'check_day' no arquivo de configuração então
 # Será "chamada" a função _day_update que verifica se existe atualização
@@ -333,7 +334,7 @@ _msg "Executando apt update"
 sudo apt update 
 #sudo apt-get install --yes --force-yes -f 
 
-echo -e "$(_c 33)[OK]$(_c)"
+_green "OK"
 }
 
 #=====================================================#
@@ -419,23 +420,19 @@ done
 # Execução do programa atraves dos argumentos recebidos.
 #=====================================================#
 
-
 if [[ ! -z $1 ]]; then
-	#_logo
-while [[ $1 ]]; do
-	case "$1" in
-		install) shift; _packmanager_install "$@"; exit "$?";; # PackManager.sh
-		remove)  _packremove "$@"; exit "$?";; # PackRemove.sh
-		--list) _list_applications; exit "$?";;
-		--quebrado) _quebrado; exit "$?";;
-		*) _red "Comando não encontrado ............... $1"
-	esac
-	shift
-done
-
+	while [[ $1 ]]; do
+		case "$1" in
+			install) shift; _packmanager_install "$@"; exit "$?";; # PackManager.sh
+			remove)  _packremove "$@"; exit "$?";; # PackRemove.sh
+			--list) _list_applications; exit "$?";;
+			--quebrado) _quebrado; exit "$?";;
+			*) _red "Comando não encontrado ............... $1"
+		esac
+		shift
+	done
 else
 	_logo
-
 fi
 
 exit "$?"
