@@ -73,6 +73,13 @@ _delete_all "${array_pycharm_dirs[@]}"
 
 #-----------------------------------------------------#
 
+function _remove_sublime()
+{
+_delete_all "${array_sublime_dirs[@]}"
+}
+
+#-----------------------------------------------------#
+
 function _remove_peazip()
 {
 [[ ! -x $(which peazip 2> /dev/null) ]] && { echo "=> peazip $(_c 31)não$(_c) está instalado"; return 0; }
@@ -129,7 +136,7 @@ while [[ $1 ]]; do
 		libreoffice-appimage) _remove_libreoffice_appimage;;
 		peazip) _remove_peazip;;
 		pycharm) _remove_pycharm;;
-		sublime-text) "$Script_PackTargz" remove sublime-text;;
+		sublime-text) _remove_sublime;;
 		teamviewer) _remove_teamviewer;;
 		telegram) _remove_telegram;;
 		tixati) _delete_all "${array_tixati_dirs[@]}";;

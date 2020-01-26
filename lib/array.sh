@@ -48,7 +48,7 @@ export array_user_dirs=(
 #==================================================#
 # Diretórios do [root]
 #==================================================#
-dir_root_applications='/usr/share/applications'
+dir_root_applications='/usr/share/applications' # .desktops.
 dir_root_icons='/usr/share/icons/hicolor' # .PGN.
 dir_root_bin='/usr/local/bin'
 
@@ -98,6 +98,14 @@ array_pycharm_dirs=(
 "$dir_user_icons/pycharm.png" # Icone png.
 "$dir_user_bin/pycharm" # Atalho para execução.
 "$dir_user_bin/pycharm-community" # Diretório de instalação.
+)
+
+# Sublime-text
+array_sublime_dirs=(
+"$dir_root_applications/sublime_text.desktop" # .desktop.
+"$dir_root_icons/256x256/apps/sublime-text.png" # .png.
+"$dir_root_bin/sublime" # Atalho para linha de comando.
+'/opt/sublime_text' # Diretório.
 )
 
 # PeaZip

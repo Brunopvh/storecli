@@ -163,7 +163,35 @@ fi
 #=====================================================#
 function _sublime_text()
 {
-"$Script_PackTargz" install sublime-text
+#"$Script_PackTargz" install sublime-text
+local pag_sublime='https://www.sublimetext.com/3'
+local url_sublime=$(curl -s "$pag_sublime" | grep -m 1 'http.*sublime.*x64.tar.bz2' | sed 's/">64.*//g;s/.*href="//g')
+local path_arq="$dir_user_cache/$(basename $url_sublime)"
+
+	_dow "$url_sublime" "$path_arq" --curl
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
+	[[ -x $(command -v sublime 2> /dev/null) ]] && { _msg_pack_instaled 'sublime-text'; return 0; }
+
+	# Descomprimir
+	"$Script_UnPack" "$path_arq" "$dir_temp" || {
+		echo "$(cor 31)=> Falha função [unpack] retornou erro."; return 1
+	}
+
+	sudo cp -u "$dir_temp"/sublime_text_3/sublime_text.desktop "${array_sublime_dirs[0]}" # Arquivo .desktop 
+	sudo cp -u "$dir_temp"/sublime_text_3/Icon/256x256/sublime-text.png "${array_sublime_dirs[1]}" # .png 
+	sudo mv "$dir_temp"/sublime_text_3 "${array_sublime_dirs[3]}" # Deretório.
+	sudo ln -sf /opt/sublime_text/sublime_text "${array_sublime_dirs[2]}" # atalho para linha de comando. 
+	#sudo gtk-update-icon-cache
+
+	if [[ -x $(command -v sublime 2> /dev/null) ]]; then
+		_msg 'sublime-text instalado com sucesso'
+		sublime
+		return 0
+	else
+		echo "$(_c 31)=> Função [_sublime_text] retornou erro $(_c)"
+		return 1	
+	fi
 }
 
 
