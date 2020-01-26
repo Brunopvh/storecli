@@ -131,11 +131,26 @@ function _space_msg()
 function _msg()
 {
 	[[ -z $1 ]] && {
-		echo -e "$(_c 32 1)-> INFO $(_c)"
+		echo -e "$(_c 32 2)=> INFO $(_c)"
 		return 0
 	}
 
-	echo -e "$(_c 32 1)-> $(_c)[$@]"
+	echo -e "=> $(_c)$@"
+}
+
+# Red
+function _red(){
+	echo -e "=> $(_c 31)$@$(_c)"
+}
+
+# Red
+function _green(){
+	echo -e "=> $(_c 32 2)$@$(_c)"
+}
+
+# Yellow
+function _yellow(){
+	echo -e "=> $(_c 33)$@$(_c)"
 }
 
 #========================================================#
@@ -146,7 +161,7 @@ function _check_executable_cli()
 while [[ $1 ]]; do
 
 	[[ ! -x $(which "$1" 2> /dev/null) ]] && {
-		echo "$(_c 31)=> $(_c)$1 $(_space_msg ${#1}) [ERRO]"
+		_red "$1 $(_space_msg ${#1}) ERRO."
 		return 1 
 		break
 	}
@@ -209,8 +224,8 @@ fi
 # Cli
 _check_executable_cli "${array_cli_requeriments[@]}" || {
 
-	echo "=> Falha: função $(_c 31)_check_executable_cli $(_c) retornou [erro]" 
-	echo "=> Execute:$(_c 31) $(basename $0) --configure $(_c) para resolver este erro"
+	_msg "Função $(_c 31)[_check_executable_cli]$(_c) retornou erro." 
+	_msg "Execute:$(_c 31) $(basename $0) --configure $(_c) para resolver este erro."
 	exit 1 
 }
 
@@ -228,7 +243,7 @@ if ! grep -q 'requeriments false' "$Config_File"; then
 		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1
 
 	else
-		echo "Execute manualmente: $(_c 32)$(basename $0) --configure$(_c)"
+		_msg "Execute manualmente: $(_c 32)$(basename $0) --configure$(_c)"
 		exit 0
 
 	fi
@@ -297,7 +312,7 @@ fi
 
 function _msg_pack_instaled()
 {
-	echo "=> já instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
+	_msg "$(_c 32 2)Já$(_c) instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
 }
 
 #=====================================================#
@@ -308,13 +323,13 @@ function _quebrado()
 {
 [[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
 
-echo "$(_c 32)=> $(_c)Limpando cache aguarde..."
+_msg "Limpando cache aguarde..."
 sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
 
-echo "$(_c 32)=> $(_c)Executando dpkg --configure -a"
+_msg "Executando dpkg --configure -a"
 sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
 
-echo "$(_c 32)=> $(_c)Executando apt update"
+_msg "Executando apt update"
 sudo apt update 
 #sudo apt-get install --yes --force-yes -f 
 
@@ -335,7 +350,7 @@ function _packmanager_install()
 	done
 
 while [[ "$1" ]]; do
-	echo "=> Instalando: $1"
+	_msg "Instalando ............... $1"
 	case "$1" in
 #-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;
@@ -393,7 +408,7 @@ while [[ "$1" ]]; do
 		--downloadonly) echo -en "\r";;
 		-d) echo -en "\r";;
 		install) echo -ne "\r";;
-		*) echo "=> Programa indisponível: $(_c 31)$1 $(_c)";;
+		*) _red "Programa indisponível ............... $1";;
 	esac
 	shift
 done
@@ -413,7 +428,7 @@ while [[ $1 ]]; do
 		remove)  _packremove "$@"; exit "$?";; # PackRemove.sh
 		--list) _list_applications; exit "$?";;
 		--quebrado) _quebrado; exit "$?";;
-		*) echo "$(_c 31)Comando não encontrado: $1 $(_c)"
+		*) _red "Comando não encontrado ............... $1"
 	esac
 	shift
 done

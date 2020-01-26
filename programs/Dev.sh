@@ -186,7 +186,7 @@ local path_arq="$dir_user_cache/$(basename $url_sublime)"
 
 	if [[ -x $(command -v sublime 2> /dev/null) ]]; then
 		_msg 'sublime-text instalado com sucesso'
-		sublime
+		sublime # Abrir o programa.
 		return 0
 	else
 		echo "$(_c 31)=> Função [_sublime_text] retornou erro $(_c)"

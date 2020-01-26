@@ -45,7 +45,7 @@ array_cli_ubuntu=(
 #===============================================#
 function _install_cli_debian()
 {
-	echo "$(_c 32)=> $(_c)Instalando: ${array_cli_requeriments[@]} ${array_cli_debian[@]}"
+	_msg "Instalando: ${array_cli_requeriments[@]} ${array_cli_debian[@]}"
 	sudo apt install -y "${array_cli_requeriments[@]}" "${array_cli_debian[@]}"
 
 	if [[ $? == '0' ]]; then 
@@ -53,7 +53,7 @@ function _install_cli_debian()
 
 	else
 		# Error apt install
-		echo "=> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
+		_msg "O gerenciador de pacotes $(_c 31)apt $(_c) retornou erro."
 		return 1
 	fi
 }
@@ -71,7 +71,7 @@ function _install_cli_ubuntu()
 
 	else
 		# Error apt install
-		echo "=> O gerenciador de pacotes $(_c 31)apt $(_c) retornou [erro]"
+		_msg "O gerenciador de pacotes $(_c 31)apt $(_c) retornou erro."
 		return 1
 	fi
 }
@@ -81,17 +81,17 @@ function _install_cli_ubuntu()
 #===============================================#
 function _install_cli_suse()
 {
-echo "$(_c 32)=> $(_c)Instalando: ${array_cli_requeriments[@]}"
-sudo zypper in "${array_cli_requeriments[@]}"
+	_msg "Instalando: ${array_cli_requeriments[@]}"
+	sudo zypper in "${array_cli_requeriments[@]}"
 
-if [[ $? == '0' ]]; then 
-	return 0
+	if [[ $? == '0' ]]; then 
+		return 0
 
-else
-	# Error zypper install
-	echo "=> O gerenciador de pacotes $(_c 31)zypper $(_c) retornou [erro]"
-	return 1
-fi
+	else
+		# Error zypper install
+		_msg "O gerenciador de pacotes $(_c 31)zypper $(_c) retornou [erro]"
+		return 1
+	fi
 }
 
 #===============================================#
@@ -99,14 +99,14 @@ fi
 #===============================================#
 function _install_cli_fedora()
 {
-	echo "$(_c 32 0)Instalando: ${array_cli_requeriments[@]} $(_c)"
+	_green "Instalando: ${array_cli_requeriments[@]}"
 	sudo dnf install "${array_cli_requeriments[@]}"
 
 	if [[ $? == '0' ]]; then
 		return 0
 
 	else
-		echo "$(_c 31)O gerenciador de pacotes dnf retornou erro $(_c)"
+		echo "$(_c 31)O gerenciador de pacotes dnf retornou erro"
 		return 1
 
 	fi
@@ -118,7 +118,7 @@ function _install_cli_fedora()
 #===============================================#
 function _install_cli_freebsd()
 {
-	echo "$(_c 32)=> $(_c)Instalando: ${array_cli_freebsd[@]} ${_python_requeriments_freebsd[@]}"
+	_msg "Instalando: ${array_cli_freebsd[@]} ${_python_requeriments_freebsd[@]}"
 	sudo pkg install -y "${array_cli_freebsd[@]}"
 
 	if [[ "$?" == '0' ]]; then
@@ -126,7 +126,7 @@ function _install_cli_freebsd()
 
 	else
 		# Error pkg install
-		echo "=> O gerenciador de pacotes $(_c 31)pkg $(_c) retornou [erro]"
+		_msg "O gerenciador de pacotes $(_c 31)pkg $(_c) retornou erro."
 		return 1
 
 	fi
@@ -138,9 +138,9 @@ function _install_cli_freebsd()
 #===============================================#
 function _python_requeriments_debian()
 {
-	echo "$(_c 32)=> Instalando python requeriments $(_c)"
+	_green "Instalando python requeriments"
 	sudo apt install -y 'python3' 'python' 'python3-pip' 'python-pip' 'python3-setuptools' 'python-setuptools'
-	[[ "$?" == '0' ]] || { echo "$(_c 31)Função _python_requeriments_debian retornou erro"; return 1; }
+	[[ "$?" == '0' ]] || { _red "Função _python_requeriments_debian retornou erro"; return 1; }
 }
 
 #===============================================#
@@ -148,7 +148,7 @@ function _python_requeriments_debian()
 #===============================================#
 function _python_requeriments_linux()
 {
-	echo "$(_c 32)=> $(_c)Instalando: ${array_python_linux[@]}"
+	_green "Instalando: ${array_python_linux[@]}"
 
 	if [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
 		sudo zypper in "${array_python_linux[@]}"
@@ -159,7 +159,7 @@ function _python_requeriments_linux()
 		[[ $? == '0' ]] || { return 1; }
 
 	else
-		echo "$(_c 31)=> $(_c)[Erro] seu sistema não e suportado."
+		_red "Erro seu sistema não e suportado."
 		return 1
 
 	fi
@@ -174,7 +174,7 @@ function _python_requeriments_linux()
 #===============================================#
 function _python_requeriments_freebsd()
 {
-	echo "$(_c 32)=> $(_c)Instalando: ${array_python_freebsd[@]}"
+	_msg "Instalando: ${array_python_freebsd[@]}"
 
 	if [[ -x $(which pkg 2> /dev/null) ]]; then
 		sudo pkg install -y "${array_python_freebsd[@]}"
@@ -212,16 +212,16 @@ function _install_requeriments()
 		_install_cli_fedora
 
 	else
-		echo "$(_c 31)Sistema não suportado $(_c)"; return 1
+		_red "Sistema não suportado."; return 1
 	fi
 
 
 if [[ $? == '0' ]]; then
-	echo "=> [OK] função $(_c 32)_install_requeriments $(_c)foi executada com sucesso"
+	_msg "Função $(_c 32)_install_requeriments $(_c)foi executada com sucesso."
 	return 0
 
 else
-	echo "=> Função $(_c 31)_install_requeriments $(_c)retornou [erro]" 
+	_red "Função [_install_requeriments] retornou erro." 
 	return 1
 
 fi
@@ -248,18 +248,18 @@ function _python_requeriments()
 		_python_requeriments_linux
 
 	else
-		echo "$(_c 31)Sistema não suportado $(_c)"; return 1
+		_red "Sistema não suportado"; return 1
 
 	fi
 
 
 if [[ $? == '0' ]]; then
-	echo "$(_c 32 0)=> função_python_requeriments foi executada com sucesso $(_c)"
+	_green "Função [_python_requeriments] foi executada com sucesso"
 	echo 'requeriments false' > "$Config_File"
 	return 0
 
 else
-	echo "$(_c 31)=> Função_python_requeriments retornou [erro] $(_c)" 
+	_red "Função [_python_requeriments] retornou erro." 
 	return 1
 
 fi
