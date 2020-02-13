@@ -233,24 +233,32 @@ read acao
 function _virtualbox_fedora()
 {
 local lista_vbox_fedora=(
-'libgomp' 'glibc-headers' 'glibc-devel' 'kernel-headers' 'dkms' 'qt5-qtx11extras' 
-'libxkbcommon' 'kernel-devel' 'binutils' 'gcc' 'make' 'patch'
+	'libgomp' 
+	'glibc-headers' 
+	'glibc-devel' 
+	'kernel-headers' 
+	'dkms' 
+	'qt5-qtx11extras' 
+	'libxkbcommon' 
+	'kernel-devel' 
+	'binutils' 
+	'gcc' 
+	'make' 
+	'patch'
 )
 
-sudo sh -c 'wget http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo -O /etc/yum.repos.d/virtualbox.repo'
+sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 sudo dnf update
 sudo dnf install -y "${lista_vbox_fedora[@]}"
-sudo dnf install -y $(rpm -qa kernel | sort -V |tail -n 1)
+sudo dnf install -y $(rpm -qa kernel | sort -V | tail -n 1)
 sudo yum install -y kernel-devel-$(uname -r) 
 sudo dnf install -y VirtualBox-6.0
 
 # Módulos
 sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
 sudo sh -c '/sbin/vboxconfig'
-_virtualbox_extpack
+_virtualbox_extpack # Instalar o pacote ExtensionPack.
 }
-
-#-----------------------------------------------------#
 
 #-----------------------------------------------------#
 
@@ -337,7 +345,7 @@ function _virtualbox()
 	case "$sysname" in
 		debian10) _virtualbox_buster;;
 		linuxmint19|ubuntu18.04) _virtualbox_bionic;;
-		thirty|thirty_one) _virtualbox_fedora;;	
+		fedora30|fedora31) _virtualbox_fedora;;	
 		*) _prog_not_found;;	
 	esac
 }

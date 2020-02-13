@@ -92,7 +92,7 @@ source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 source "$Lib_Gpg"
 source "$Lib_CheckUpdate"
-#source "$Lib_PackManager" # esta "lib" atualmente não está em uso.
+#source "$Lib_PackManager" # esta "lib" NÃO está em uso.
 
 source "$Lib_Acessorios"
 source "$Lib_Dev"
@@ -143,7 +143,7 @@ function _red(){
 	echo -e "=> $(_c 31)$@$(_c)"
 }
 
-# Red
+# Green
 function _green(){
 	echo -e "=> $(_c 32 2)$@$(_c)"
 }
