@@ -19,7 +19,6 @@ function _c()
 
 if [[ $(id -u) == '0' ]]; then echo "=> [Erro] usuário não pode ser o $(_c 31)[root]$(_c)"; exit 1; fi
 
-
 dir_default=~/.cache/downloads        # Downloads
 dir_space_tor="/tmp/space_tor_$USER"  # Temp
 log_w="$dir_default/wget-log"

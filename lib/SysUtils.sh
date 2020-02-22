@@ -302,15 +302,16 @@ function _conf_path_bash()
 # ~/.zshrc
 function _conf_path_zsh()
 {
-	command -v zsh 2> /dev/null || return 0
+	command -v zsh 1> /dev/null 2> /dev/null || return 0
 	
 	# Encerrar a função se '~/.local/bin' já existir na variável PATH.
-	if echo $PATH | grep -q "$HOME/.local/bin"; then return 0; fi 
+	# if echo $PATH | grep -q "$HOME/.local/bin"; then return 0; fi 
 
-	! grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc && {
-		echo "=> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
-		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
+	if grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc; then return 0; fi
+	
+	echo "=> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
+	echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
 	
 	zsh ~/'.zshrc'
-	}
+
 }

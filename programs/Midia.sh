@@ -45,7 +45,7 @@ sudo apt install lame
 		sudo dpkg --install "$path_arq"
 
 	else
-		echo "$(_c 31)=> $(_c)Abortando a instalação de $path_arq"; exit 1
+		_msg "Abortando a instalação de $path_arq"; return 1
 
 	fi
 }
@@ -59,16 +59,20 @@ function _codecs_fedora()
 	"$Script_AddRepo" --fedora-repos
 
 local lista_codecs=(
-'gstreamer1' 'gstreamer1-plugins-base' 
-'gstreamer-ffmpeg' 'libmpeg3'
-'x264' 'x264-libs' 'xvidcore' 
+'gstreamer1' 
+'gstreamer1-plugins-base' 
+'gstreamer-ffmpeg' 
+'libmpeg3'
+'x264' 
+'x264-libs' 
+'xvidcore' 
 )
 
-	echo "$(_c 32)=> $(_c)Instalando: ffmpeg ffmpegthumbnailer"
-	sudo dnf install -y ffmpeg ffmpegthumbnailer.x86_64
+	_green "Instalando: ffmpeg ffmpegthumbnailer"
+	sudo dnf install -y ffmpeg ffmpegthumbnailer.x86_64 || return 1
 
-	echo "$(_c 32)=> $(_c)Instalando: ${lista_codecs[@]}"
-	sudo dnf install -y "${lista_codecs[@]}" 
+	_green "Instalando: ${lista_codecs[@]}"
+	sudo dnf install -y "${lista_codecs[@]}" || return 1 
 }
 
 #-----------------------------------------------------#
@@ -91,7 +95,7 @@ function _vlc_fedora()
 {
 	# Add repo fusion non free
 	"$Script_AddRepo" --fedora-repos
-	echo "$(_c 32 0)=> $(_c)Instalando vlc: "
+	_green "Instalando: vlc"
 	sudo dnf install vlc python-vlc
 }
 
@@ -101,12 +105,10 @@ function _vlc_fedora()
 function _vlc()
 {
 case "$sysname" in
-	debian10) sudo apt install -y vlc;;
-	linuxmint19|ubuntu18.04) sudo apt install -y vlc;;
+	linuxmint19|ubuntu18.04|debian10) sudo apt install -y vlc;;
 	fedora30|fedora31) _vlc_fedora;;
 	freebsd12.0-release) sudo pkg install -y vlc;;
 	*) _prog_not_found;;
-
 esac
 }
 
@@ -153,8 +155,6 @@ function _gnome_mpv()
 }
 
 
-#-----------------------------------------------------#
-
 #=====================================================#
 # Smplayer
 #=====================================================#
@@ -175,3 +175,17 @@ function _smplayer()
 	fi
 
 }
+
+#=====================================================#
+# Totem
+#=====================================================#
+function _totem(){
+	case "$os_id" in
+		debian|ubuntu|linuxmint) sudo apt install -y totem;;
+		fedora) sudo dnf install -y totem;;
+		*) _prog_not_found; return 1;;
+	esac
+
+}
+
+

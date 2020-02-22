@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
 #
-VERSION='2020-02-12'
+VERSION='2020-02-16'
 #
 #
 #-----------------------------------------------------#
