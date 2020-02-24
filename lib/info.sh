@@ -99,6 +99,10 @@ echo "Sistema: "
 for a in "${array_sistema[@]}"; do echo "     $a"; done
 echo ' '
 
+echo "Wine: "
+for a in "${array_wine[@]}"; do echo "     $a"; done
+echo ' '
+
 echo "Preferências: "
 for a in "${array_preferencias[@]}"; do echo "     $a"; done
 

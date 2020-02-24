@@ -38,7 +38,8 @@ function _c()
 export readonly StoreCli_Path=$(dirname $(readlink -f "$0"))      # path deste arquivo.
 export readlink StoreCli_Path_Lib="$StoreCli_Path/lib"            # path para libs.
 export readlink StoreCli_Path_Scripts="$StoreCli_Path/scripts"    # path para scripts.
-export readlink StroreCli_Path_Programs="$StoreCli_Path/programs" # path das categorias.
+export readlink StoreCli_Path_Programs="$StoreCli_Path/programs"  # path das categorias.
+export readlink StoreCli_Path_Python="$StoreCli_Path/python"      # path dos scripts python.
 
 #========================================================#
 # Scripts
@@ -48,6 +49,7 @@ export Script_UnPack="$StoreCli_Path_Scripts/UnPack.sh"
 export Script_PackTargz="$StoreCli_Path_Scripts/PackTargz.sh"
 export Script_Papirus="$StoreCli_Path_Scripts/papirus.sh"
 export Script_AddRepo="$StoreCli_Path_Scripts/AddRepo.sh"
+export Script_Pywine="$StoreCli_Path_Python/pywine.py"
 
 #========================================================#
 # Libs
@@ -67,13 +69,13 @@ export Lib_Gpg="$StoreCli_Path_Lib/Gpg.sh"
 #========================================================#
 # Programs.
 #========================================================#
-export Lib_Acessorios="$StroreCli_Path_Programs/Acessorios.sh"
-export Lib_Dev="$StroreCli_Path_Programs/Dev.sh"
-export Lib_Escritorio="$StroreCli_Path_Programs/Escritorio.sh"
-export Lib_Internet="$StroreCli_Path_Programs/Internet.sh"
-export Lib_Midia="$StroreCli_Path_Programs/Midia.sh"
-export Lib_Sistema="$StroreCli_Path_Programs/Sistema.sh"
-export Lib_Preferencias="$StroreCli_Path_Programs/Preferencias.sh"
+export Lib_Acessorios="$StoreCli_Path_Programs/Acessorios.sh"
+export Lib_Dev="$StoreCli_Path_Programs/Dev.sh"
+export Lib_Escritorio="$StoreCli_Path_Programs/Escritorio.sh"
+export Lib_Internet="$StoreCli_Path_Programs/Internet.sh"
+export Lib_Midia="$StoreCli_Path_Programs/Midia.sh"
+export Lib_Sistema="$StoreCli_Path_Programs/Sistema.sh"
+export Lib_Preferencias="$StoreCli_Path_Programs/Preferencias.sh"
 
 #========================================================#
 # Config.
@@ -426,6 +428,10 @@ while [[ "$1" ]]; do
 		gparted) _gparted;;
 		peazip) _peazip;;
 		virtualbox) _virtualbox;;
+
+#------------------------ wine ---------------------------#
+		wine) "$Script_Pywine" install wine;;
+		winetricks) "$Script_Pywine" install winetricks;;
 
 #-------------------- preferencias ---------------------------#
 		hacking-parrot) _hacking_parrot;;

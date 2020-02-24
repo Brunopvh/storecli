@@ -230,6 +230,12 @@ array_sistema=(
 'virtualbox'
 )
 
+# Wine
+array_wine=(
+'wine'
+'winetricks'
+)
+
 # Preferencias
 array_preferencias=(
 'papirus'
