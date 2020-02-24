@@ -7,7 +7,10 @@
 
 source "$Lib_array"
 
-[[ ! -d "$dir_temp" ]] && { dir_temp="/tmp/git_$USER"; mkdir -p "$dir_temp"; }
+[[ ! -d "$dir_temp" ]] && { 
+	dir_temp="/tmp/StoreCli_$USER"
+	mkdir -p "$dir_temp" 
+}
 
 # Limpar antes de clonar
 cd "$dir_temp" && rm -rf *

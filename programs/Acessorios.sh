@@ -3,9 +3,6 @@
 #
 #
 
-
-#-----------------------------------------------------#
-
 #=====================================================#
 # Gnome-Disk
 #=====================================================#
@@ -25,8 +22,6 @@ function _gnome_disk()
 
 	fi
 }
-
-#-----------------------------------------------------#
 
 #=====================================================#
 # Veracrypt
@@ -76,6 +71,99 @@ cd "$dir_temp" && mv $(ls veracrypt*setup-gui-x64) "$dir_temp/veracryptx64" 1> /
 chmod +x "$dir_temp/veracryptx64"
 sudo "$dir_temp/veracryptx64"
 [[ -d "$dir_temp" ]] && { cd "$dir_temp" && sudo rm -rf *; }
+}
+
+#=====================================================#
+# WoeUsb
+#=====================================================#
+function _woeusb_buster(){
+	github='https://github.com'
+	github_woeusb="$github/slacka/WoeUSB.git"
+
+	local dir_woeusb="$dir_temp/WoeUSB"
+	local requeriments_woeusb=(
+			'devscripts' 
+			'equivs' 
+			'libwxgtk3.0-dev'
+			'grub-pc-bin'
+			)
+
+	_white "Necessário instalar os seguintes pacotes: ${requeriments_woeusb[@]}"
+	echo -ne "Deseja proseguir $(cor 32)[s/n]$(cor) ? : "
+	read input
+
+	[[ "${input,,}" == 's' ]] || { _red "Abortando..."; sleep 1; return 0; }
+
+	sudo apt update
+	sudo apt install -y "${requeriments_woeusb[@]}" || { 
+		_red "[-] Falha na instalação de: ${requeriments_woeusb[@]}"
+		return 1 
+	}
+
+	cd "$dir_temp" && sudo rm -rf *  # Limpar o diretório temporário.
+	_gitclone "$github_woeusb" || { 
+		_red "[-] Falha ao tentar clonar: $github_woeusb"
+		return 1 
+	}
+
+	ls -hl "$dir_woeusb"/debian/changelog
+
+	if ! sudo sed -i 's/(@@WOEUSB_VERSION@@)/(1.0)/g' "$dir_woeusb"/debian/changelog; then
+		_red "Falha ao tentar configurar o arquivo: $dir_woeusb/debian/changelog"
+		return 1
+	fi
+
+	_green "Compilando." 
+	sleep 1
+
+	cd "$dir_woeusb"
+	sudo sh -c 'dpkg-buildpackage -uc -b' || { 
+		_white "Falha ao tentar compilar o WoeUSB"
+		return 1 
+	}
+
+	#==================================================================#
+	#========================= instalação do pacote .deb ==============#
+	cd ..
+	if sudo dpkg --install "$dir_temp/woeusb_1.0_amd64.deb"; then
+		echo -e "$esp"
+		_green "WoeUSB instalado com sucesso"	
+	else
+		_quebrado # Remover pacotes quebrados.
+		echo ' '
+		_red "Falha ao tentar intalar WoeUSB"
+		cd "$dir_temp" && sudo rm -rf *
+		return 1
+	fi
+
+	#===============================================================#
+	#======================== salvar o arquivo .deb ? ==============#
+
+	_white "Deseja salvar o arquivo woeusb_1.0_amd64.deb $(cor 33)[s/n]$(cor)?: "
+	read input
+
+	[[ "${input,,}" == 's' ]] && {
+		mkdir -p "$HOME/Downloads"
+		echo -e "$esp"
+		cp -vu "$dir_temp/woeusb_1.0_amd64.deb" "$HOME"/Downloads/woeusb_1.0_amd64.deb
+		_white "Arquivo salvo em: [$HOME/Downloads/woeusb_1.0_amd64.deb]"
+		echo -e "$esp" 
+	}
+
+	cd "$dir_temp" && sudo rm -rf *
+}
+
+function _woeusb(){
+	if [[ "$os_codename" == 'buster' ]]; then
+		_woeusb_buster
+	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+		sudo apt install -y woeusb
+	elif [[ "$os_id" == 'fedora' ]]; then
+		sudo dnf install -y WoeUSB
+	else
+		_prog_not_found
+	fi
+		
 }
 
 #-----------------------------------------------------#

@@ -172,6 +172,7 @@ array_vscode_dirs=(
 array_acessorios=(
 'gnome-disk'
 'veracrypt'
+'woeusb'
 )
 
 # Desenvolvimento

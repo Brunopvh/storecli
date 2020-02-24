@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 #
 #
-# V='2020-02-16'
+# V='2020-02-23'
 #
 
 esp='-------------------'
 
 function _msg(){
 	echo -e "=> $@"
+}
+
+function _white(){
+	echo -e "\033[1;37m=> $@\033[m"
 }
 
 #============================================================#
@@ -57,7 +61,7 @@ function _addrepo_buster(){
 
 	# 
 
-	_msg "Adicionar o seguinte repositório [$debian_repo] em: /etc/apt/sources.list? "
+	_msg "Adicionar o seguinte repositório [$debian_repo] em: /etc/apt/sources.list?: "
 	read -p "Prosseguir? [s/n]: " _sn
 
 	[[ "$_sn" == 's' ]] || {
@@ -65,10 +69,22 @@ function _addrepo_buster(){
 		return 1
 	}
 
-	if ! grep '^deb.*debian.*main' /etc/apt/sources.list | grep -q 'main contrib non-free'; then
-		echo "$debian_repo" | sudo tee -a '/etc/apt/sources.list'
-		sudo apt update
+	if ! grep '^deb.*debian.*main' /etc/apt/sources.list | grep -q "^deb.*main contrib non-free$"; then
+		_white "Adicionando"
+		sudo sh -c "echo 'deb http://deb.debian.org/debian buster main contrib non-free' >> /etc/apt/sources.list"
 	fi
+
+	grep -q 'deb http://deb.debian.org/debian buster main' /etc/apt/sources.list && {
+		_white "Removendo repositório [main] duplicado"
+		sudo sed -i "/^deb http:\/\/deb.debian.org\/debian buster main\$/d" /etc/apt/sources.list
+	}
+
+	grep -q 'deb http://deb.debian.org/debian buster contrib non-free' /etc/apt/sources.list && {
+		_white "Removendo repositório [contrib non-free] duplicado"
+		sudo sed -i "/^deb http:\/\/deb.debian.org\/debian buster contrib non-free\$/d" /etc/apt/sources.list
+	}
+
+	sudo apt update
 
 }
 

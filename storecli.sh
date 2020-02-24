@@ -4,7 +4,7 @@
 # Download Configuração e Instalaçao de programas.
 # Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
 #
-VERSION='2020-02-16'
+VERSION='2020-02-23'
 #
 #
 #-----------------------------------------------------#
@@ -112,11 +112,12 @@ if [[ "$os_id" == 'linuxmint' ]] && [[ $(echo "$os_version" | cut -c -2) -ge 19 
 	sysname="${os_id}$(echo $os_version | cut -c -2)" # Usar apenas o número 19.
 fi
 
-esp='----------'
+esp='--------------'
 
 #========================================================#
 function _space_msg()
 {
+	# Espaçamento entre palavras.
 	num="$((35-$1))"
 
 	while [[ "$num" != '0' ]]; do
@@ -126,7 +127,7 @@ function _space_msg()
 }
 
 #========================================================#
-# Info
+# Mensagens e cores.
 #========================================================#
 function _msg()
 {
@@ -153,15 +154,33 @@ function _yellow(){
 	echo -e "=> $(_c 33)$@$(_c)"
 }
 
+# White
+function _white(){
+	echo -e "=> $(_c 37)$@$(_c)"
+}
+
 #========================================================#
-# Check cli programs
+# Verificar conexão com a internet.
+#========================================================#
+printf "=> Aguardando conexão (ping) "
+if ! ping -c 1 8.8.8.8 1> /dev/null; then
+	printf "\033[1;31m[-]\033[m\n"
+	_red "[!] AVISO LEGAL: Você está off-line [pressione enter] "
+	read enter
+else
+	printf "[OK]\n"
+fi
+
+
+#========================================================#
+# Verificar programas via cli necessários.
 #========================================================#
 function _check_executable_cli()
 {
 while [[ $1 ]]; do
 
 	[[ ! -x $(which "$1" 2> /dev/null) ]] && {
-		_red "$1 $(_space_msg ${#1}) ERRO."
+		_red "$1 $(_space_msg ${#1}) [!]."
 		return 1 
 		break
 	}
@@ -207,7 +226,7 @@ elif [[ "$1" == '--logo' ]]; then
 
 elif [[ "$1" == '--configure' ]]; then
 	# Lib SysUtils.sh
-	_configure_system || { echo "$(_c 31)Encerrando com erro. $(_c)"; exit 1; }
+	_configure_system || { _red "Encerrando com erro."; exit 1; }
 	exit 0
 
 elif [[ "$1" == '--upgrade' ]]; then
@@ -219,8 +238,15 @@ fi
 
 
 #=====================================================#
-# Check system
+# Verificações.
 #=====================================================#
+# Se o sistema for debian buster, verificar repositórios "main contrib e nonfree." 
+if [[ "$os_codename" == 'buster' ]]; then
+	grep -q 'deb http://deb.debian.org/debian buster main contrib non-free' '/etc/apt/sources.list' || {
+		"$Script_AddRepo" --debian-repos
+	}
+fi
+
 # Cli
 _check_executable_cli "${array_cli_requeriments[@]}" || {
 
@@ -313,6 +339,7 @@ fi
 
 function _msg_pack_instaled()
 {
+	# Informar ao usuário que determinado pacote já está instalado.
 	_msg "$(_c 32 2)Já$(_c) instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
 }
 
@@ -356,6 +383,7 @@ while [[ "$1" ]]; do
 #-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;
 		veracrypt) _veracrypt;;
+		woeusb) _woeusb;;
 
 #-------------------- desenvolvimento -------------------#
 		android-studio) _android_studio;;
@@ -427,7 +455,8 @@ if [[ ! -z $1 ]]; then
 			remove)  _packremove "$@"; exit "$?";; # PackRemove.sh
 			--list) _list_applications; exit "$?";;
 			--quebrado) _quebrado; exit "$?";;
-			*) _red "Comando não encontrado ............... $1"
+			--debian-repos) "$Script_AddRepo" --debian-repos;;
+			*) _white "Comando não encontrado ............... $(_c 31)[$1]$(_c)"
 		esac
 		shift
 	done

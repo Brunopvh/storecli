@@ -7,7 +7,7 @@
 # echo "Id = $os_id" 
 # echo "Release = $os_release" 
 # echo "Version=$os_version" 
-# echo "Codename = $os_codiname" 
+# echo "Codename = $os_codename" 
 # echo "Name = $sysname"
 #
 
@@ -15,7 +15,7 @@ os_type='NoNe'
 os_id='NoNe'
 os_release='NoNe'
 os_version='NoNe'
-os_codiname='NoNe'
+os_codename='NoNe'
 sysname='NoNe'
 
 #=============================================#
