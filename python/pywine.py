@@ -88,6 +88,11 @@ if platform.system() != 'Linux':
 # Limpar a tela do console.
 os.system('clear')
 
+# Usuário não pode ser "root"
+if getpass.getuser() == 'root': 
+	msg.red('Usuário não pode ser o [root]')
+	sys.exit('1')
+
 #----------------------------------------------------------#
 # Ajuda
 def usage():
@@ -329,7 +334,7 @@ tup_pkgs = (
 '7zip', 
 'burnaware', 
 'formatfactory', 
-'office2007',
+'office2007pro',
 'peazip', 
 'q4wine', 
 'vlc', 
@@ -351,7 +356,19 @@ def configure_wine():
 	msg.white('Aguarde...')
 	os.system('winecfg')
 
+#----------------------------------------------------------#
+def office2007pro():
+	# sudo mount -o loop OFFICE12.iso /mnt
+	print('===================================================')
+	msg.white(f'Necessário CD ou imagem .iso para instalação, volume OFFICE12.')
+	msg.white('Você pode usar um comando semelhante a este para montar o arquivo .iso [sudo mount -o loop OFFICE12.iso /mnt]')
+	print('===================================================')
+	info = str(input('=> Pressione enter: '))
+		
+	msg.white(f'Executando: winetricks office2007pro WINEARCH=win32')
+	os.system('winetricks office2007pro WINEARCH=win32')
 
+#----------------------------------------------------------#
 def install_pkgs(ARGS):
 	for c in ARGS:
 
@@ -361,6 +378,9 @@ def install_pkgs(ARGS):
 		elif c == 'burnaware':
 			_download('burnaware')
 			os.system(f'wine {path_burnaware}')
+
+		elif c == 'office2007pro':
+			office2007pro()
 
 		elif c == 'peazip':
 			_download('peazip')

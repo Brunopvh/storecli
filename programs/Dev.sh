@@ -108,8 +108,10 @@ function _android_studio()
 #=====================================================#
 function _pycharm()
 {
-local url_pycharm='https://download.jetbrains.com/python/pycharm-community-2019.1.2.tar.gz'
-local path_arq="$dir_user_cache/pycharm-community-2019.1.2.tar.gz"
+#local url_pycharm='https://download.jetbrains.com/python/pycharm-community-2019.1.2.tar.gz'
+local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2019.3.3.tar.gz'
+local path_arq="$dir_user_cache/$(basename $url_pycharm)"
+local hash_pycharm='ad796856195b574534ba6f9b49edad175b99465b5536d520c3e442527f63c353'
 
 _dow "$url_pycharm" "$path_arq" --curl
 
