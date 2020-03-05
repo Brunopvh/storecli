@@ -202,8 +202,8 @@ url_suse_repo = 'https://download.opensuse.org/repositories/Emulators'
 url_emulator_debian = (f'{url_suse_repo}/:/Wine:/Debian')
 url_libfaudio_buster_default = (f'{url_emulator_debian}/Debian_10/amd64/libfaudio0_20.01-0~buster_amd64.deb')
 
-url_key_buster = (f'{url_suse_repo}:/Wine:/Debian/Debian_10/Release.key')
-url_key_winestable = 'https://dl.winehq.org/wine-builds/winehq.key'
+url_key_libfaudio_buster = (f'{url_suse_repo}:/Wine:/Debian/Debian_10/Release.key')
+url_key_winehq = 'https://dl.winehq.org/wine-builds/winehq.key'
 
 url_winrar = 'http://www.rarlab.com/rar/winrar-x64-571br.exe'
 url_burnaware = 'http://download.betanews.com/download/1212419334-2/burnaware_free_12.4.exe'
@@ -283,34 +283,55 @@ for d in tup_dirs:
 #----------------------------------------------------------#
 # Arquivos
 Winetricks_Script = (f'{dir_bin}/winetricks')
-
+wine_file_repos = '/etc/apt/sources.list.d/wine.list'
 path_file_winrar = (f'{dir_downloads}/{os.path.basename(url_winrar)}')
+
+#----------------------------------------------------------#
+def config_cli_utils():
+	"""
+	Instalar utlitários necessarios
+	"""
+
+	if (os_id == 'debian') or (os_id == 'linuxmint') or (os_id == 'ubuntu'):
+
+		# Instalar utilitários de linha de comando antes de prosseguir.
+		msg.white('Necessário instalar os pacotes: dirmngr apt-transport-https gnupg gpgv2 gpgv')
+		os.system("sudo sh -c 'apt update; apt install -y dirmngr apt-transport-https gnupg gpgv2 gpgv'")
+
+#----------------------------------------------------------#
+class AddReps:
+	"""
+	Adicionar repositórios no sistema.
+	"""
+
+	def key(url_key):
+		"""
+		Informar um url de chave de assinatura para adicionar no sistema
+		"""
+		print(space_line)
+		msg.white(f'Adicionando key apartir de [{url_key}]')
+		os.system(f"sudo sh -c 'wget -qO- {url_key} | apt-key add -'")
+
+
+	def source_list(repos, file_repos):
+		"""
+		Informar um repositório seguido de um arquivo onde o repositório ficara gravado.
+		"""
+		print(space_line)
+		msg.white(f'Adicionando o repositório [{repos}]')
+		os.system(f"echo {repos} | sudo tee {file_repos}")
 
 #----------------------------------------------------------#
 class Setup_Wine:
 	"""
 	Instalar o wine no sistema incluindo dependências
 	"""
-
 	def libfaudio_buster():
 		"""
 		Instalar a depedência libfaudio no debian buster
 		"""
-
-		# Instalar utilitários de linha de comando antes de prosseguir.
-		msg.white('Necessário instalar os pacotes: dirmngr apt-transport-https gnupg gpgv2 gpgv')
-		os.system("sudo sh -c 'apt update; apt install -y dirmngr apt-transport-https gnupg gpgv2 gpgv'")
-
-		# Importar keys
-		print(space_line)
-		msg.white('Adicionando keys aguarde')
-		os.system(f"sudo sh -c 'wget -qO- {url_key_buster} | apt-key add -'") # key para libfaudio
-		os.system(f"sudo sh -c 'wget -qO- {url_key_winestable} | apt-key add -'") # Key para wine-stable
-
-		#  Adicionar repositórios no sistema
-		msg.white('Adicionando repositórios aguarde')
-		os.system(f"echo {repos_wine_buster} | sudo tee /etc/apt/sources.list.d/wine.list")
-		os.system(f"echo {repos_emulators_buster} | sudo tee /etc/apt/sources.list.d/emulators.list")
+		AddRepos.key(url_key_libfaudio_buster)
+		AddRepos.sources_list(repos_wine_buster, wine_file_repos)
 
 		# Adicionar suporte a arch 32 bits.
 		print(space_line)
@@ -397,6 +418,7 @@ def install_wine():
 	"""
 
 	if (os_id == 'debian') and (os_codename == 'buster'):
+		config_cli_utils()
 		Setup_Wine.libfaudio_buster()
 		Setup_Wine.winehq_debian()
 		Setup_Wine.winetricks_debian()
