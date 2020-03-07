@@ -25,6 +25,7 @@ else
 
 fi
 
+# sudo apt install libu2f-udev
 sudo sh -c 'aptitude update; aptitude install google-chrome-stable -y'	
 }
 

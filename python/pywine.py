@@ -6,7 +6,7 @@
 # wget (módulo do python3 - pip3 install wget)
 #
 #
-VERSION = '2020-03-05'
+VERSION = '2020-03-06'
 #
 
 import os, sys
@@ -19,64 +19,28 @@ import urllib.request   # urllib.request.urlopen(url)
 from time import sleep
 from pathlib import Path
 
+#----------------------------------------------------------#
+dir_root = os.path.dirname(os.path.realpath(__file__)) # Endereço deste script no disco.
+dir_run = os.getcwd()                                  # Diretório onde o terminal está aberto.
+sys.path.insert(0, dir_root) # print(sys.path)
+
+from modules.sys_info import *
+from modules.colors import *
+
+info = SysInfo()
+os_id = info.get_id()
+os_version = info.get_version()
+os_codename = info.get_codename()
+os_version_id = info.get_version_id()
+
+#----------------------------------------------------------#
+
 # Necessário python 3.7 ou superior.
-if platform.python_version()[0:3] < '3.7':
-	print(f'\033[93m[!] Necessário ter python 3.7 ou superior instalado, saindo...\033[m\n')
+if platform.python_version()[0:3] < '3.6':
+	print(f'\033[93m[!] Necessário ter python 3.6 ou superior instalado, saindo...\033[m\n')
 	sys.exit('1')
 
-Red = '\033[1;31m'
-Green = '\033[1;32m'
-Yellow = '\033[1;33m'
-White = '\033[1;37m'
-Reset = '\033[m'
-
 space_line = '====================================================='
-
-#----------------------------------------------------------#
-class C:
-	"""
-	Altera a cor do terminal (Color).
-	"""
-
-	def red():
-		print(Red, end='')
-
-	def green():
-		print(Green, end='')
-
-	def yellow():
-		print(Yellow, end='')
-
-	def white():
-		print(White, end='')
-
-	def reset():
-		print(Reset, end='')
-		
-#----------------------------------------------------------#
-class msg:
-	"""
-	Exibe mensagem com determinada cor.
-	"""
-
-	def red(text):
-		print('=> ', end='')
-		C.red()
-		print(f'{text}')
-		C.reset()
-	
-	def green(text):
-		print('=> ', end='')
-		print(f'{Green}{text}{Reset}')
-
-	def yellow(text):
-		print('=> ', end='')
-		print(f'{Yellow}{text}{Reset}')
-		
-
-	def white(text):
-		print('=> ', end='')
-		print(f'{White}{text}{Reset}')
 
 #----------------------------------------------------------#
 
@@ -92,88 +56,6 @@ os.system('clear')
 if getpass.getuser() == 'root': 
 	msg.red('Usuário não pode ser o [root]')
 	sys.exit('1')
-
-# Detectar versão do sistema.
-file_release = '/etc/os-release' # Arquivo que contém informações do sistema.
-lines_release = open(file_release, 'rt').readlines()
-
-#----------------------------------------------------------#
-class SysInfo:
-	"""
-	Retornar informações do sistma como nome (debian/ubuntu/fedora...)
-
-	info = SysInfo()
-
-	print(f'Id -> {info.get_id()}')
-	print(f'Version Id -> {info.get_version_id()}')
-	print(f'Id Like -> {info.get_id_like()}')
-	print(f'Version -> {info.get_version()}')
-	print(f'Codename -> {info.get_codename()}')
-	"""
-
-	# ID
-	def get_id(self):
-		for i in lines_release:
-			if i[0:3] == 'ID=':
-				os_id = i.replace('\n', '').replace('"', '').replace('ID=', '')
-				break
-
-		self.os_id = os_id
-		return self.os_id
-		
-	# Id Like
-	def get_id_like(self):
-		os_id_like = 'NoNe'
-		for i in lines_release:
-			if i[0:8] == 'ID_LIKE=':
-				i = i.replace('\n', '').replace('"', '').replace('ID_LIKE=', '')
-				os_id_like = i.replace(' ', '_')
-				break
-
-		self.os_id_like = os_id_like
-		return self.os_id_like
-
-	# Version Id
-	def get_version_id(self):
-		os_version_id = 'NoNe'
-		for i in lines_release:
-			if i[0:11] == 'VERSION_ID=':
-				os_version_id = i.replace('\n', '').replace('"', '').replace('VERSION_ID=', '')
-				break
-
-		self.os_version_id = os_version_id
-		return self.os_version_id
-
-	# Version
-	def get_version(self):
-		os_version = 'NoNe'
-		for i in lines_release:
-			if i[0:8] == 'VERSION=':
-				i = i.replace('\n', '').replace('"', '').replace('VERSION=', '')
-				os_version = i.replace('(', '').replace(')', '').replace(' ', '_')
-				break
-
-		self.os_version = os_version
-		return os_version
-
-	# Codename
-	def get_codename(self):
-		os_codename = 'NoNe'
-		for i in lines_release:
-			if i[0:17] == 'VERSION_CODENAME=':
-				os_codename = i.replace('\n', '').replace('"', '').replace('VERSION_CODENAME=', '')
-				break
-
-		self.os_codename = os_codename
-		return self.os_codename
-
-#----------------------------------------------------------#
-
-info = SysInfo()
-os_id = info.get_id()
-os_version = info.get_version()
-os_codename = info.get_codename()
-os_version_id = info.get_version_id()
 
 #----------------------------------------------------------#
 # Ajuda
@@ -196,27 +78,7 @@ if len(sys.argv) >= int('2'):
 		print(f'V{VERSION}')
 		exit()
 
-#----------------------------------------------------------#
-# URLs
-url_suse_repo = 'https://download.opensuse.org/repositories/Emulators'
-url_emulator_debian = (f'{url_suse_repo}/:/Wine:/Debian')
-url_libfaudio_buster_default = (f'{url_emulator_debian}/Debian_10/amd64/libfaudio0_20.01-0~buster_amd64.deb')
-
-url_key_libfaudio_buster = (f'{url_suse_repo}:/Wine:/Debian/Debian_10/Release.key')
-url_key_winehq = 'https://dl.winehq.org/wine-builds/winehq.key'
-
-url_winrar = 'http://www.rarlab.com/rar/winrar-x64-571br.exe'
-url_burnaware = 'http://download.betanews.com/download/1212419334-2/burnaware_free_12.4.exe'
-url_vlc = 'https://get.videolan.org/vlc/3.0.8/win32/vlc-3.0.8-win32.exe'
-url_peazip = 'https://osdn.net/frs/redir.php?m=c3sl&f=peazip%2F71536%2Fpeazip-6.9.2.WIN64.exe'
-url_ffactory = 'http://www.pcfreetime.com/public/FFSetup4.8.0.0.exe'
-url_epsxe = 'http://www.epsxe.com/files/ePSXe205.zip' 
-
-#----------------------------------------------------------#
-# Repositórios
-repos_emulators_buster = 'deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10 ./'
-repos_wine_buster = 'deb https://dl.winehq.org/wine-builds/debian/ buster main'
-repos_winetricks = 'https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks'
+print(f'Sistema: {os_id} {os_version_id}')
 
 #----------------------------------------------------------#
 # Requerimentos wine para debian e dirivados.
@@ -259,16 +121,38 @@ tup_requeriments_winetricks_suse = (
 
 # Lista de programas disponiveis para instalção.
 tup_programs = (
-	'wine'
-	'winetricks'
-	'winrar'
+	'wine',
+	'winetricks',
+	'winrar',
 	)
 
 #----------------------------------------------------------#
-# Diretórios.
-dir_root = os.path.dirname(os.path.realpath(__file__)) # Endereço deste script no disco.
-dir_run = os.getcwd()                                  # Diretório onde o terminal está aberto.
+# URLs
+#----------------------------------------------------------#
+repos_suse_emulators = ''
+url_key_libfaudio_buster = 'https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10/Release.key'
+url_key_libfaudio_bionic = 'https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key'
+url_key_winehq = 'https://dl.winehq.org/wine-builds/winehq.key'
 
+url_winrar = 'http://www.rarlab.com/rar/winrar-x64-571br.exe'
+url_burnaware = 'http://download.betanews.com/download/1212419334-2/burnaware_free_12.4.exe'
+url_vlc = 'https://get.videolan.org/vlc/3.0.8/win32/vlc-3.0.8-win32.exe'
+url_peazip = 'https://osdn.net/frs/redir.php?m=c3sl&f=peazip%2F71536%2Fpeazip-6.9.2.WIN64.exe'
+url_ffactory = 'http://www.pcfreetime.com/public/FFSetup4.8.0.0.exe'
+url_epsxe = 'http://www.epsxe.com/files/ePSXe205.zip' 
+
+#----------------------------------------------------------#
+# Repositórios
+#----------------------------------------------------------#
+repos_emulators_buster = 'deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10 ./'
+repos_emulators_bionic = 'deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./'
+repos_wine_buster = 'deb https://dl.winehq.org/wine-builds/debian/ buster main'
+repos_wine_bionic = 'deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main'
+repos_winetricks = 'https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks'
+
+#----------------------------------------------------------#
+# Diretórios.
+#----------------------------------------------------------#
 dir_home = Path.home()                       # Home do usuario
 dir_bin = (f'{dir_home}/.local/bin')         # Local de binarios na home
 dir_downloads = (f'{dir_home}/.cache/downloads')  # Cache temporário para downloads
@@ -282,6 +166,7 @@ for d in tup_dirs:
 
 #----------------------------------------------------------#
 # Arquivos
+#----------------------------------------------------------#
 Winetricks_Script = (f'{dir_bin}/winetricks')
 wine_file_repos = '/etc/apt/sources.list.d/wine.list'
 path_file_winrar = (f'{dir_downloads}/{os.path.basename(url_winrar)}')
@@ -291,58 +176,70 @@ def config_cli_utils():
 	"""
 	Instalar utlitários necessarios
 	"""
-
 	if (os_id == 'debian') or (os_id == 'linuxmint') or (os_id == 'ubuntu'):
-
 		# Instalar utilitários de linha de comando antes de prosseguir.
 		msg.white('Necessário instalar os pacotes: dirmngr apt-transport-https gnupg gpgv2 gpgv')
 		os.system("sudo sh -c 'apt update; apt install -y dirmngr apt-transport-https gnupg gpgv2 gpgv'")
 
 #----------------------------------------------------------#
-class AddReps:
-	"""
-	Adicionar repositórios no sistema.
-	"""
-
-	def key(url_key):
-		"""
-		Informar um url de chave de assinatura para adicionar no sistema
-		"""
-		print(space_line)
-		msg.white(f'Adicionando key apartir de [{url_key}]')
-		os.system(f"sudo sh -c 'wget -qO- {url_key} | apt-key add -'")
-
-
-	def source_list(repos, file_repos):
-		"""
-		Informar um repositório seguido de um arquivo onde o repositório ficara gravado.
-		"""
-		print(space_line)
-		msg.white(f'Adicionando o repositório [{repos}]')
-		os.system(f"echo {repos} | sudo tee {file_repos}")
-
-#----------------------------------------------------------#
 class Setup_Wine:
 	"""
 	Instalar o wine no sistema incluindo dependências
+	https://forum.winehq.org/viewtopic.php?f=8&t=32192
+	https://forum.winehq.org/viewtopic.php?t=32061
+	https://forum.winehq.org/viewtopic.php?f=8&t=32192
 	"""
-	def libfaudio_buster():
-		"""
-		Instalar a depedência libfaudio no debian buster
-		"""
-		AddRepos.key(url_key_libfaudio_buster)
-		AddRepos.sources_list(repos_wine_buster, wine_file_repos)
 
-		# Adicionar suporte a arch 32 bits.
+	def add_archi386():
+		"""
+		Adicionar suporte a arch 32 bits.
+		"""
 		print(space_line)
 		msg.white('Adicionando suporte a arch i386')
 		os.system(f"sudo dpkg --add-architecture i386")
-		os.system('sudo apt update')
 		
-		# Instalar libfaudio
+	def buster():
+		"""
+		Instalar a depedência libfaudio no debian buster
+		"""
+		print(space_line)
+		msg.white(f'Adicionando keys')
+		print(url_key_libfaudio_buster, end=' ')
+		os.system(f"sudo sh -c 'wget -qO- {url_key_libfaudio_buster} | apt-key add -'")
+
+		print(url_key_winehq, end='')
+		os.system(f"sudo sh -c 'wget -qO- {url_key_winehq} | apt-key add -'")
+
+		ms.white(f'Adicionando repositórios {repos_emulators_buster} {repos_wine_buster}')
+		os.system(f"echo {repos_emulators_buster} | sudo tee {file_repos}")
+		os.system(f"echo {repos_wine_buster} | sudo tee {file_repos}")
+		os.system('sudo apt update')
+
+		print(space_line)
 		msg.green('Instalando libfaudio')
 		os.system('sudo apt install libfaudio0:i386')
 
+	def bionic():
+		"""
+		Instalar a depedência libfaudio no ubuntu bionic
+		"""
+		print(space_line)
+		msg.white(f'Adicionando keys')
+		print(url_key_libfaudio_bionic, end=' ')
+		os.system(f"sudo sh -c 'wget -qO- {url_key_libfaudio_bionic} | apt-key add -'")
+		# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys DFA175A75104960E
+
+		print(url_key_winehq, end='')
+		os.system(f"sudo sh -c 'wget -qO- {url_key_winehq} | apt-key add -'")
+
+		msg.white(f'Adicionando repositórios {repos_emulators_bionic} {repos_wine_bionic}')
+		os.system(f'sudo apt-add-repository {repos_emulators_bionic}')
+		os.system(f'sudo apt-add-repository {repos_wine_bionic}')
+		os.system('sudo apt update')
+
+		print(space_line)
+		msg.green('Instalando libfaudio')
+		os.system('sudo apt install libfaudio0:i386')
 		
 	def winehq_debian():
 		"""
@@ -417,9 +314,17 @@ def install_wine():
 	de acordo com o sistema.
 	"""
 
-	if (os_id == 'debian') and (os_codename == 'buster'):
+	if (os_codename == 'buster'):
 		config_cli_utils()
-		Setup_Wine.libfaudio_buster()
+		Setup_Wine.add_archi386()
+		Setup_Wine.buster()
+		Setup_Wine.winehq_debian()
+		Setup_Wine.winetricks_debian()
+
+	elif ((os_id == 'linuxmint') and (os_version_id[0:2] == '19')) or ((os_id == 'ubuntu') and (os_codename == 'bionic')):
+		config_cli_utils()
+		Setup_Wine.add_archi386()
+		Setup_Wine.bionic()
 		Setup_Wine.winehq_debian()
 		Setup_Wine.winetricks_debian()
 
@@ -491,26 +396,32 @@ class WindPrograms:
 
 #----------------------------------------------------------#
 
-def install_programs(args):
+def install_programs():
 
-	for c in args:
+	for c in sys.argv[2:]:
+		c = str(c)
 
-		if c == 'wine ':
+		if c == str('wine '):
 			install_wine()
 
-		elif c == 'winetricks':
+		elif c == str('winetricks'):
 			install_wine()
 
-		elif c == 'winrar':
+		elif c == str('winrar'):
 			WindPrograms.winrar()
 			os.system(f'wine {path_file_winrar}')
 
 		else:
 			msg.red(f'Programa indisponível: {c}')
 
+#----------------------------------------------------------#
+
 if sys.argv[1] == 'install':
-	list_args = sys.argv[2:]
-	install_programs(list_args)
+	install_programs()
+
+elif sys.argv[1] == '--list':
+	for c in tup_programs:
+		print(f'    {c}')
 
 
 

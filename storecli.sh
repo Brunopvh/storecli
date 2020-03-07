@@ -1,34 +1,34 @@
 #!/usr/bin/env bash
 #
+#
+VERSION='2020-03-06'
+#
 # StoreCli a sua loja de aplicativos via linha de comando.
 # Download Configuração e Instalaçao de programas.
-# Sistemas suportados, (Debian/Ubuntu/Mint Fedora)
-#
-VERSION='2020-03-05'
+# Sistemas suportados, (Debian/Ubuntu/Mint/Fedora)
 #
 #
-#-----------------------------------------------------#
-# REPOSITÓRIO.
+#--------------------| REPOSITÓRIO |----------------------------#
 # https://github.com/Brunopvh/storecli.git 
 #
-# Instalação.
+#--------------------| INSTALAÇÃO |-----------------------------#
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)" 
 # sh -c "$(wget -q https://raw.github.com/Brunopvh/storecli/master/install.sh -O-)"
 #
-#-----------------------------------------------------#
-# REFERÊNCIAS
+#--------------------| REFERÊNCIAS |----------------------------#
 # http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
 #
 
 function _c()
 {
+	# Alterar cores do terminal.
 	[[ -z $2 ]] && { echo -e "\033[1;$1m"; return 0; }
 	echo -e "\033[$2;$1m"
 }
 
 # root.
 [[ $(id -u) == '0' ]] && { 
-	echo "$(_c 31)=> $(_c)Falha o usuário não pode ser o $(_c 31)[root]$(_c)"
+	echo "$(_c 31)=> Falha o usuário não pode ser o [root]$(_c)"
 	exit 1
 }
 
@@ -115,6 +115,7 @@ if [[ "$os_id" == 'linuxmint' ]] && [[ $(echo "$os_version" | cut -c -2) -ge 19 
 fi
 
 esp='--------------'
+space_line='================================================'
 
 #========================================================#
 function _space_msg()
@@ -148,7 +149,7 @@ function _red(){
 
 # Green
 function _green(){
-	echo -e "=> $(_c 32 2)$@$(_c)"
+	echo -e "=> $(_c 32)$@$(_c)"
 }
 
 # Yellow
@@ -160,19 +161,6 @@ function _yellow(){
 function _white(){
 	echo -e "=> $(_c 37)$@$(_c)"
 }
-
-#========================================================#
-# Verificar conexão com a internet.
-#========================================================#
-printf "=> Aguardando conexão (ping) "
-if ! ping -c 1 8.8.8.8 1> /dev/null; then
-	printf "\033[1;31m[-]\033[m\n"
-	_red "[!] AVISO LEGAL: Você está off-line [pressione enter] "
-	read enter
-else
-	printf "[OK]\n"
-fi
-
 
 #========================================================#
 # Verificar programas via cli necessários.
@@ -195,21 +183,30 @@ done
 #=====================================================#
 function _configure_system()
 {
-	# requeriments cli
+	# instalar utilitários de linha de comando de acordo com cada sistema.
 	while ! _install_requeriments; do
-		echo -ne "[Erro] pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: "
-		read -n 1 _input
-		echo ' '
-		if [[ "${_input,,}" == 'r' ]]; then continue; else return 1; break; fi		
+		read -n 1 -p "Erro pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: " _input
+		
+		if [[ "${_input,,}" == 'r' ]]; then 
+			continue
+		else 
+			return 1 
+			break 
+		fi		
 	done
 
-	# requeriments python/python3
+	# Instalar o python3 e alguns módulos que serão utilizados pelo script "pywine"
 	while ! _python_requeriments; do
 		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
 		read -n 1 cr
 		echo ' '
 
-		if [[ "${cr,,}" == 'r' ]]; then continue; else return 1; break; fi		
+		if [[ "${cr,,}" == 'r' ]]; then 
+			continue
+		else 
+			return 1
+			break 
+		fi		
 	done
 
 }
@@ -239,10 +236,24 @@ elif [[ "$1" == '--upgrade' ]]; then
 fi 
 
 
+#========================================================#
+# Verificar conexão com a internet.
+#========================================================#
+printf "=> Aguardando conexão (ping) "
+if ! ping -c 1 8.8.8.8 1> /dev/null; then
+	printf "\033[1;31m[-]\033[m\n"
+	_red "[!] AVISO LEGAL: Você está off-line [pressione enter] "
+	read enter
+else
+	printf "[OK]\n"
+fi
+
 #=====================================================#
 # Verificações.
 #=====================================================#
-# Se o sistema for debian buster, verificar repositórios "main contrib e nonfree." 
+# Se o sistema for debian buster, verificar repositórios "main contrib e nonfree"
+# sempre que este script for inicializado, caso não estejam disponiveis o usuario
+# será indagado sobre adiciona-los ou não no sistema. 
 if [[ "$os_codename" == 'buster' ]]; then
 	grep -q 'deb http://deb.debian.org/debian buster main contrib non-free' '/etc/apt/sources.list' || {
 		"$Script_AddRepo" --debian-repos
@@ -257,18 +268,26 @@ _check_executable_cli "${array_cli_requeriments[@]}" || {
 	exit 1 
 }
 
-# Config_File
+# Se o arquivo de configuração ainda não existir no sistema, será criado um arquivo vazio.
 [[ ! -f "$Config_File" ]] && echo ' ' > "$Config_File"
 
+# Quando a configuração deste script e concluida com exito ele gera uma linha no arquivo "$Config_File"
+# com a seguinte string 'requeriments_false' isso significa que a primeira configuração foi executada 
+# com sucesso no sistema. Sendo assim não será necessário configura-lo sempre que o script é executado
+# porém se o arquivo não existir ou se esta string não for encontrada as funções de configuração deste
+# script serão invocadas.
 if ! grep -q 'requeriments false' "$Config_File"; then
-	echo -e "$esp $(_c 32)[INFO]$(_c) $esp"
+	_white "$space_line"
 
 	echo "=> Necessário executar a opção $(_c 32 0)--configure$(_c) pela primeira vez em seu sistema."
 	echo -ne "=> Deseja executar esta ação agora $(_c 32)[s/n]$(_c)? : "
 
 	read _input
 	if [[ "${_input,,}" == 's' ]]; then
-		_configure_system || echo "$(_c 31)Encerrando com [erro] $(_c)"; exit 1
+		_configure_system || {
+			echo "$(_c 31)Encerrando com erro $(_c)" 
+			exit 1
+		}
 
 	else
 		_msg "Execute manualmente: $(_c 32)$(basename $0) --configure$(_c)"
@@ -289,7 +308,7 @@ _conf_path_zsh
 
 function _prog_not_found()
 {
-echo "$(_c 31)=> $(_c)Programa indisponível para o seu sistema [$os_id]"
+	_red "Programa indisponível para o seu sistema [$os_id]"
 }
 
 #=====================================================#
@@ -298,9 +317,11 @@ echo "$(_c 31)=> $(_c)Programa indisponível para o seu sistema [$os_id]"
 
 function _day_update()
 {
-	# Função que verifica atualização.
+	# Verificar se existe atualização deste script no github. Essa verificação será feita
+	# uma vez por dia.
 	if _check_update; then
-		"$StoreCli_Path/install.sh" # Baixar e instalar a atualização.
+		# Atualização disponivel, instalar imediatamente.
+		"$StoreCli_Path/install.sh" 
 	fi
 
 	# Deletar linha que contém o dia da ultima verificação.
@@ -325,6 +346,7 @@ grep 'check_day' "$Config_File" 1> /dev/null || _day_update
 
 # Dia atual
 current_day=$(date | awk '{print $3}') 
+
 # Dia da ultima verificação.
 old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}') 
 
@@ -351,19 +373,26 @@ function _msg_pack_instaled()
 
 function _quebrado()
 {
-[[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
+	# Função para remover pacotes quebrados em sistemas debian.
+	[[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
 
-_msg "Limpando cache aguarde..."
-sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
+	echo -e "$space_line"
+	_msg "Limpando cache aguarde"
+	if ! sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'; then
+		_red "Comando [apt-get clean; apt-get remove -y; apt-get autoremove -y] falhou"
+	fi
 
-_msg "Executando dpkg --configure -a"
-sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
+	_msg "Executando [apt install -f -y; dpkg --configure -a]"
+	if ! sudo sh -c 'apt install -f -y; dpkg --configure -a'; then
+		_red "Comando [apt install -f -y; dpkg --configure -a; apt --fix-broken install] falhou"
+	fi
 
-_msg "Executando apt update"
-sudo apt update 
-#sudo apt-get install --yes --force-yes -f 
+	_msg "Executando apt update"
+	sudo apt update 
+	# sudo apt install --yes --force-yes -f
+	# sudo apt --fix-broken install 
 
-_green "OK"
+	_green "OK"
 }
 
 #=====================================================#

@@ -1,20 +1,26 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 #
-# VERSION = '2019-12-06'
+SYS_INFO_VERSION = '2020-03-06'
 #
+#-------------------- USO --------------------------#
 # from sys_info import SysInfo
 # info = SysInfo()
+#
+# info = SysInfo()
+# os_id = info.get_id()
+# os_version = info.get_version()
+# os_codename = info.get_codename()
+# os_version_id = info.get_version_id()
+#
+# print(os_id)
+# print(os_version)
+# print(os_codename)
+# print(os_version)
+# print(os_version_id)
+#
 
-# print(f'Id -> {info.get_id()}')
-# print(f'Version Id -> {info.get_version_id()}')
-# print(f'Id Like -> {info.get_id_like()}')
-# print(f'Version -> {info.get_version()}')
-# print(f'Codename -> {info.get_codename()}')
-
-
-import os
-import platform
+import os, platform
 
 if platform.system() == 'Linux':
 	file_release = '/etc/os-release'
@@ -36,8 +42,10 @@ else:
 class SysInfo:
 	"""Retornar informações do sistma"""
 
-	# ID
 	def get_id(self):
+		"""
+		debian/ubuntu/fedora...
+		"""
 		for i in lines_release:
 			if i[0:3] == 'ID=':
 				os_id = i.replace('\n', '').replace('"', '').replace('ID=', '')
@@ -46,7 +54,6 @@ class SysInfo:
 		self.os_id = os_id
 		return self.os_id
 		
-	# Id Like
 	def get_id_like(self):
 		os_id_like = 'NoNe'
 		for i in lines_release:
@@ -91,3 +98,5 @@ class SysInfo:
 
 		self.os_codename = os_codename
 		return self.os_codename
+
+		

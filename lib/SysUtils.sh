@@ -140,7 +140,10 @@ function _python_requeriments_debian()
 {
 	_green "Instalando python requeriments"
 	sudo apt install -y 'python3' 'python' 'python3-pip' 'python-pip' 'python3-setuptools' 'python-setuptools'
-	[[ "$?" == '0' ]] || { _red "Função _python_requeriments_debian retornou erro"; return 1; }
+	[[ "$?" == '0' ]] || { _red "Função [_python_requeriments_debian] retornou erro"; return 1; }
+
+	pip3 install wheel --user 
+	pip3 install wget --user
 }
 
 #===============================================#
@@ -164,6 +167,9 @@ function _python_requeriments_linux()
 
 	fi
 
+		# Se a instalação dos pacotes que estão no "array_python_linux" for concluida com sucesso, então
+		# o script irá prosseguir para as linhas de código abaixo.
+		pip3 install wheel --user
 		pip3 install wget --user
 		[[ $? == '0' ]] || { return 1; }
 }
@@ -217,7 +223,7 @@ function _install_requeriments()
 
 
 if [[ $? == '0' ]]; then
-	_msg "Função $(_c 32)_install_requeriments $(_c)foi executada com sucesso."
+	_msg "Função $(_c 32)[_install_requeriments] $(_c)foi executada com sucesso."
 	return 0
 
 else
@@ -236,7 +242,7 @@ fi
 function _python_requeriments()
 {
 	if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'linuxmint' ]] || [[ "$os_id" == 'ubuntu' ]]; then
-		 _python_requeriments_debian && pip3 install wget --user
+		 _python_requeriments_debian
 
 	elif [[ "$sysname" == 'freebsd12.0-release' ]]; then
 		_python_requeriments_freebsd
