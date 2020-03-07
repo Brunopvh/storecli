@@ -286,38 +286,3 @@ function _create_dirs_user()
 	done
 }
 
-
-#---------------------------------------------------#
-
-# ~/.bashrc
-function _conf_path_bash()
-{
-	# Encerrar a função se '~/.local/bin' já existir na variável PATH.
-	if echo $PATH | grep -q "$HOME/.local/bin"; then return 0; fi
-
-	! grep -q "^export.*$HOME/.local/bin.*" ~/.bashrc && {
-		echo "=> Adicionando: ~/.local/bin em PATH [~/.bashrc]"
-		echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.bashrc
-	
-	bash ~/'.bashrc'
-	}
-}
-
-#---------------------------------------------------#
-
-# ~/.zshrc
-function _conf_path_zsh()
-{
-	command -v zsh 1> /dev/null 2> /dev/null || return 0
-	
-	# Encerrar a função se '~/.local/bin' já existir na variável PATH.
-	# if echo $PATH | grep -q "$HOME/.local/bin"; then return 0; fi 
-
-	if grep -q "^export.*$HOME/.local/bin.*" ~/.zshrc; then return 0; fi
-	
-	echo "=> Adicionando: ~/.local/bin em PATH [~/.zshrc]"
-	echo "export PATH=$HOME/.local/bin:$PATH" >> ~/.zshrc
-	
-	zsh ~/'.zshrc'
-
-}

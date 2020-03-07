@@ -19,6 +19,8 @@ VERSION='2020-03-06'
 # http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
 #
 
+clear
+
 function _c()
 {
 	# Alterar cores do terminal.
@@ -49,7 +51,8 @@ export Script_UnPack="$StoreCli_Path_Scripts/UnPack.sh"
 export Script_PackTargz="$StoreCli_Path_Scripts/PackTargz.sh"
 export Script_Papirus="$StoreCli_Path_Scripts/papirus.sh"
 export Script_AddRepo="$StoreCli_Path_Scripts/AddRepo.sh"
-export Script_Pywine="$StoreCli_Path_Python/pywine.py"
+export Script_Pywine="$HOME/.local/bin/pywine-amd64/pywine.py"
+export Script_Config_Path="$StoreCli_Path_Scripts/conf_path.sh"
 
 #========================================================#
 # Libs
@@ -65,6 +68,7 @@ export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 export Lib_CheckUpdate="$StoreCli_Path_Lib/CheckUpdate.sh"
 export Lib_Gpg="$StoreCli_Path_Lib/Gpg.sh"
+export Lib_Color="$StoreCli_Path_Lib/Colors.sh"
 
 #========================================================#
 # Programs.
@@ -94,6 +98,7 @@ source "$Lib_PackRemove"
 source "$Lib_ShaSum"
 source "$Lib_Gpg"
 source "$Lib_CheckUpdate"
+source "$Lib_Color"
 #source "$Lib_PackManager" # esta "lib" NÃO está em uso.
 
 source "$Lib_Acessorios"
@@ -127,39 +132,6 @@ function _space_msg()
 		echo -ne "-"
 		num="$(($num-1))"
 	done
-}
-
-#========================================================#
-# Mensagens e cores.
-#========================================================#
-function _msg()
-{
-	[[ -z $1 ]] && {
-		echo -e "$(_c 32 2)=> INFO $(_c)"
-		return 0
-	}
-
-	echo -e "=> $(_c)$@"
-}
-
-# Red
-function _red(){
-	echo -e "=> $(_c 31)$@$(_c)"
-}
-
-# Green
-function _green(){
-	echo -e "=> $(_c 32)$@$(_c)"
-}
-
-# Yellow
-function _yellow(){
-	echo -e "=> $(_c 33)$@$(_c)"
-}
-
-# White
-function _white(){
-	echo -e "=> $(_c 37)$@$(_c)"
 }
 
 #========================================================#
@@ -297,10 +269,8 @@ if ! grep -q 'requeriments false' "$Config_File"; then
 	
 fi
 
-# SysUtils.sh
-_create_dirs_user
-_conf_path_bash 
-_conf_path_zsh
+_create_dirs_user       # SysUtils.sh
+"$Script_Config_Path"   # conf_path.sh
 
 #=====================================================#
 #------------------ End check system -----------------#
