@@ -134,6 +134,11 @@ function _space_msg()
 	done
 }
 
+if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
+	echo -e "Inserindo [$HOME/.local/bin] na variável PATH de [$USER]"
+	PATH="$HOME/.local/bin:$PATH"
+fi
+
 #========================================================#
 # Verificar programas via cli necessários.
 #========================================================#
@@ -180,7 +185,6 @@ function _configure_system()
 			break 
 		fi		
 	done
-
 }
 
 #=====================================================#
@@ -239,6 +243,14 @@ _check_executable_cli "${array_cli_requeriments[@]}" || {
 	_msg "Execute:$(_c 31) $(basename $0) --configure $(_c) para resolver este erro."
 	exit 1 
 }
+
+# Instalar o script pywine.
+if [[ ! -x $(command -v pywine 2> /dev/null) ]]; then
+	[[ -f "$dir_temp/conf_pywine.sh" ]] && rm "$dir_temp/conf_pywine.sh"
+	curl -SL https://raw.github.com/Brunopvh/pywine/master/conf_pywine.sh -o "$dir_temp/conf_pywine.sh"
+	chmod +x "$dir_temp/conf_pywine.sh"
+	"$dir_temp/conf_pywine.sh"
+fi
 
 # Se o arquivo de configuração ainda não existir no sistema, será criado um arquivo vazio.
 [[ ! -f "$Config_File" ]] && echo ' ' > "$Config_File"
