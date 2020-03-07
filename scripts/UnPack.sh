@@ -46,6 +46,9 @@ function _unpack()
 	elif [[ "${path_arq: -6}" == 'tar.xz' ]]; then # tar.xz
 		type_arq='tar.xz'
 
+	elif [[ "${path_arq: -4}" == '.zip' ]]; then # .zip
+		type_arq='zip'
+
 	else
 		echo "$(_c 31)Arquivo não suportado: [$path_arq] $(_c)"
 		return 1
@@ -62,6 +65,7 @@ function _unpack()
 		'tar.gz') tar -zxvf "$path_arq" -C "$DIR_TEMP" 1> /dev/null;;
 		'tar.bz2') tar -jxvf "$path_arq" -C "$DIR_TEMP" 1> /dev/null;;
 		'tar.xz') tar -Jxf "$path_arq" -C "$DIR_TEMP" 1> /dev/null;;
+		zip) unzip "$path_arq" -d "$DIR_TEMP" 1> /dev/null;;
 		*) return 1;;
 	esac
 
