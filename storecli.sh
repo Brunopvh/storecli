@@ -140,14 +140,25 @@ if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
 fi
 
 #========================================================#
+# Verificar executáveis.
+#========================================================#
+function _WHICH()
+{
+	if [[ -x $(command -v "$1" 2> /dev/null) ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#========================================================#
 # Verificar programas via cli necessários.
 #========================================================#
 function _check_executable_cli()
 {
 while [[ $1 ]]; do
-
-	[[ ! -x $(which "$1" 2> /dev/null) ]] && {
-		_red "$1 $(_space_msg ${#1}) [!]."
+	_WHICH "$1" || {
+		_red "$1 $(_space_msg ${#1}) [!]"
 		return 1 
 		break
 	}
@@ -210,7 +221,6 @@ elif [[ "$1" == '--upgrade' ]]; then
 	exit "$?"
 
 fi 
-
 
 #========================================================#
 # Verificar conexão com a internet.

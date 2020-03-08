@@ -62,20 +62,20 @@ function _google_chrome_tumbleweed()
 
 function _google_chrome()
 {
-case "$sysname" in
-	debian10|linuxmint19|ubuntu18.04) _google_chrome_debian;;
-	opensuse-tumbleweed) _google_chrome_tumbleweed;;
-	fedora30|fedora31) _google_chrome_fedora;;
-	*) _prog_not_found; return 1;;
-esac	
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _google_chrome_debian;;
+		opensuse-tumbleweed|opensuse-leap) _google_chrome_tumbleweed;;
+		fedora) _google_chrome_fedora;;
+		*) _prog_not_found; return 1;;
+	esac	
 
-if [[ $? == '0' ]]; then 
-	_msg 'google-chrome instalado com sucesso'
-	return 0
-else
-	_red "Função _google_chrome retornou erro"
-	return 1
-fi
+	if [[ $? == '0' ]]; then 
+		_msg 'google-chrome instalado com sucesso'
+		return 0
+	else
+		_red "Função _google_chrome retornou erro"
+		return 1
+	fi
 }
 
 #=====================================================#
@@ -590,7 +590,8 @@ function _tixati()
 # https://support.tixati.com/Release%20Verification
 
 pag_tixati='https://www.tixati.com/download/linux.html' # Pagina de download do programa.
-local html=$(wget -q "$pag_tixati" -O- | egrep '(amd64.deb|x86_64.rpm|tar.gz)') # Html
+#local html=$(wget -q "$pag_tixati" -O- | egrep '(amd64.deb|x86_64.rpm|tar.gz)') # Html
+local html=$(curl -sSL "$pag_tixati" | egrep '(amd64.deb|x86_64.rpm|tar.gz)') # Html
 
 local url_deb=$(echo "$html" | grep -m 1 'amd64.deb' | sed 's/amd64.deb\".*/amd64.deb/g;s/.*\"//g') # .deb
 local url_rpm=$(echo "$html" | grep -m 1 'x86_64.rpm' | sed 's/x86_64.rpm\".*/x86_64.rpm/g;s/.*\"//g') # .rpm
@@ -729,19 +730,21 @@ function _twodict_github()
 
 	_green "Instalando: twodict"
 
-	cd "$dir_temp/twodict" && {
-		if [[ -x $(command -v python2 2> /dev/null) ]]; then
-			sudo python2 setup.py install
+	cd "$dir_temp/twodict"
+	if _WHICH 'python2'; then
+		sudo python2 setup.py install
+	elif _WHICH 'python2.7'; then
+		sudo python2.7 setup.py install
+	fi
 
-		elif [[ -x $(command -v python2 2> /dev/null) ]]; then
-			sudo python2.7 setup.py install
-
-		fi
-
-		[[ $? == '0' ]] || { _red "Falha: twodict"; return 1; }
+	[[ $? == '0' ]] || { 
+		_red "Falha: twodict"
+		return 1
 	}
 
-if [[ -d "$dir_temp/twodict" ]]; then cd "$dir_temp" && sudo rm -rf twodict; fi
+	if [[ -d "$dir_temp/twodict" ]]; then 
+		cd "$dir_temp" && sudo rm -rf twodict
+	fi
 }
 
 #--------------------------------------------------------#
@@ -819,6 +822,7 @@ function _youtube_dl_gui_github()
 case "$sysname" in
 	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
 	linuxmint19|ubuntu18.04) _youtube_dl_gui_pip; return 0;;
+	ubuntu19.10) sudo apt install python-wxgtk3.0 gettext; _twodict_github;;
 	fedora30|fedora31) sudo dnf install -y python2-wxpython; _twodict_github;;
 	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
 	opensuse-tumbleweed) _youtube_dl_gui_tumbleweed; return 0;;
@@ -839,7 +843,7 @@ esac
 
 	sudo rm -rf "$dir_temp/youtube-dl-gui" 2> /dev/null
 
-	if [[ -x $(command -v youtube-dl-gui 2> /dev/null) ]]; then
+	if _WHICH 'youtube-dl-gui'; then
 
 		arq_ytdl='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 

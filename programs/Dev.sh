@@ -113,16 +113,33 @@ local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-20
 local path_arq="$dir_user_cache/$(basename $url_pycharm)"
 local hash_pycharm='ad796856195b574534ba6f9b49edad175b99465b5536d520c3e442527f63c353'
 
-_dow "$url_pycharm" "$path_arq" --curl
+	_dow "$url_pycharm" "$path_arq" --curl
 
-# --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-[[ -x $(command -v pycharm 2> /dev/null) ]] && { _msg_pack_instaled 'pycharm'; return 0; }
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { 
+		white "Feito somente download" 
+		return 0 
+	}
 
-"$Script_UnPack" "$path_arq" "$dir_temp"
-[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+	_WHICH 'pycharm' && { 
+		_msg_pack_instaled 'pycharm'
+		return 0 
+	}
 
-echo "$(_c 32)=> $(_c)Instalando"
+	# Lib ShaSum.sh
+	_check_sum "$path_arq" "$hash_pycharm" || { 
+		_red "Falha função [_check_sum] retornou erro"
+		_red "Arquivo não confialvél: [$path_arq]" 
+		return 1 
+	}
+
+	# Descomprimir
+	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
+		_red "Falha função [unpack] retornou erro"
+		return 1
+	}
+
+_white "Instalando"
 
 cd "$dir_temp" && mv $(ls -d pycharm*) "${array_pycharm_dirs[3]}" 1> /dev/null
 cp -u "${array_pycharm_dirs[3]}"/bin/pycharm.png "${array_pycharm_dirs[1]}"
@@ -133,7 +150,8 @@ echo "#!/usr/bin/env bash" > "${array_pycharm_dirs[2]}"
 echo -e "\ncd ${array_pycharm_dirs[3]}/bin/ && ./pycharm.sh" >> "${array_pycharm_dirs[2]}"
 chmod +x "${array_pycharm_dirs[2]}"
 
-	touch "${array_pycharm_dirs[0]}" # .desktop
+	# Criar arquivo .desktop
+	touch "${array_pycharm_dirs[0]}" 
 	echo "[Desktop Entry]" > "${array_pycharm_dirs[0]}"
     {
         echo "Name=Pycharm Community"
@@ -172,12 +190,17 @@ local path_arq="$dir_user_cache/$(basename $url_sublime)"
 
 	_dow "$url_sublime" "$path_arq" --curl
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-	[[ -x $(command -v sublime 2> /dev/null) ]] && { _msg_pack_instaled 'sublime-text'; return 0; }
+	[[ "$download_only" == 'on' ]] && { 
+		_white "Feito somente download"
+		return 0 
+	}
+
+	_WHICH 'sublime'  && { _msg_pack_instaled 'sublime-text'; return 0; }
 
 	# Descomprimir
 	"$Script_UnPack" "$path_arq" "$dir_temp" || {
-		echo "$(cor 31)=> Falha função [unpack] retornou erro."; return 1
+		_red "Falha função [unpack] retornou erro."
+		return 1
 	}
 
 	sudo cp -u "$dir_temp"/sublime_text_3/sublime_text.desktop "${array_sublime_dirs[0]}" # Arquivo .desktop 
@@ -202,19 +225,19 @@ local path_arq="$dir_user_cache/$(basename $url_sublime)"
 #=====================================================#
 function _vim()
 {
-if [[ -x $(command -v zypper 2> /dev/null) ]]; then
-	sudo zypper in vim
+	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+		sudo zypper in vim
 
-elif [[ -x $(command -v dnf 2>/dev/null) ]]; then
-	sudo dnf install vim
+	elif [[ -x $(command -v dnf 2>/dev/null) ]]; then
+		sudo dnf install vim
 
-elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-	sudo apt install -y vim
+	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+		sudo apt install -y vim
 
-else
-	_prog_not_found; return 1
+	else
+		_prog_not_found; return 1
 
-fi	
+	fi	
 }
 
 #=====================================================#
