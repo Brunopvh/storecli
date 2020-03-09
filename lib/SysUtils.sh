@@ -104,14 +104,28 @@ function _install_cli_fedora()
 
 	if [[ $? == '0' ]]; then
 		return 0
+	else
+		_red "O gerenciador de pacotes dnf retornou erro"
+		return 1
+	fi
+}
+
+#===============================================#
+# Install cli arch
+#===============================================#
+function _install_cli_arch()
+{
+	_msg "Instalando: ${array_cli_requeriments[@]}"
+	sudo pacman -S "${array_cli_requeriments[@]}"
+	if [[ $? == '0' ]]; then
+		return 0
 
 	else
-		echo "$(_c 31)O gerenciador de pacotes dnf retornou erro"
+		_red "O gerenciador de pacotes pacman retornou erro"
 		return 1
 
 	fi
 }
-
 
 #===============================================#
 # Install cli freebsd
@@ -161,6 +175,9 @@ function _python_requeriments_linux()
 		sudo dnf install -y "${array_python_linux[@]}"
 		[[ $? == '0' ]] || { return 1; }
 
+	elif [[ -x $(which pacman 2> /dev/null) ]]; then # ArchLinux
+		sudo pacman -S "${array_python_linux[@]}" || return 1
+
 	else
 		_red "Erro seu sistema não e suportado."
 		return 1
@@ -169,9 +186,14 @@ function _python_requeriments_linux()
 
 		# Se a instalação dos pacotes que estão no "array_python_linux" for concluida com sucesso, então
 		# o script irá prosseguir para as linhas de código abaixo.
-		pip3 install wheel --user
-		pip3 install wget --user
-		[[ $? == '0' ]] || { return 1; }
+		# python3 -m pip install -U pylint --user
+		pip3 install wheel --user || return 1
+		pip3 install wget --user || return 1
+		if [[ $? == '0' ]]; then
+			return 0
+		else
+			return 1
+		fi
 }
 
 
@@ -217,8 +239,11 @@ function _install_requeriments()
 	elif [[ "$sysname" == 'fedora31' ]]; then
 		_install_cli_fedora
 
+	elif [[ "$sysname" == 'arch' ]]; then # ArchLinux
+		_install_cli_arch
+
 	else
-		_red "Sistema não suportado."; return 1
+		_red "Sistema não suportado [$sysname]"; return 1
 	fi
 
 
@@ -253,22 +278,25 @@ function _python_requeriments()
 	elif [[ "$sysname" == 'fedora31' ]]; then
 		_python_requeriments_linux
 
+	elif [[ "$sysname" == 'arch' ]]; then # ArchLinux
+		_install_cli_arch
+
 	else
 		_red "Sistema não suportado"; return 1
 
 	fi
 
 
-if [[ $? == '0' ]]; then
-	_green "Função [_python_requeriments] foi executada com sucesso"
-	echo 'requeriments false' > "$Config_File"
-	return 0
+	if [[ $? == '0' ]]; then
+		_green "Função [_python_requeriments] foi executada com sucesso"
+		echo 'requeriments false' > "$Config_File"
+		return 0
 
-else
-	_red "Função [_python_requeriments] retornou erro." 
-	return 1
+	else
+		_red "Função [_python_requeriments] retornou erro." 
+		return 1
 
-fi
+	fi
 }
 
 #===============================================#

@@ -47,27 +47,55 @@ function _compactadores()
 {
 
 local compactadores_debian=(
-'p7zip-full' 'p7zip' 'p7zip-rar' 
-'cabextract' 'unzip' 'xz-utils'
-'lhasa' 'unace' 'arc' 'arj' 
-'lzma' 'rar' 'unrar-free'
-'zip' 'ncompress'
+	'p7zip-full' 
+	'p7zip' 
+	'p7zip-rar' 
+	'cabextract' 
+	'unzip' 
+	'xz-utils'
+	'lhasa' 
+	'unace' 
+	'arc' 
+	'arj' 
+	'lzma' 
+	'rar' 
+	'unrar-free'
+	'zip' 
+	'ncompress'
 )
 
 local compactadores_fedora=(
-'zip' 'ncompress' 'xarchiver'
-'arj' 'cabextract' 'unzip' 
-'p7zip' 'lzma' 'arc' 
+	'zip' 
+	'ncompress' 
+	'xarchiver'
+	'arj' 
+	'cabextract' 
+	'unzip' 
+	'p7zip' 
+	'lzma' 
+	'arc' 
 )
 
-	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+local compactadores_arch=( 
+	'tar' 
+	'gzip' 
+	'bzip2' 
+	'unzip' 
+	'unrar' 
+	'p7zip'
+)
+
+	if _WHICH 'zypper'; then
 		sudo zypper in "${compactadores_fedora[@]}"
 
-	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+	elif _WHICH 'dnf'; then
 		sudo dnf install "${compactadores_fedora[@]}"
 
-	elif [[ -x $(command -v apt) ]]; then
+	elif _WHICH 'apt'; then
 		sudo apt install "${compactadores_debian[@]}"
+
+	elif _WHICH 'pacman'; then
+		sudo pacman -S "${compactadores_arch[@]}"
 
 	else
 		_prog_not_found; return 1
@@ -96,14 +124,17 @@ function _firmware()
 #=====================================================#
 function _gparted()
 {
-	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
+	if _WHICH 'zypper'; then
 		sudo zypper in -y gparted
 
-	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
+	elif _WHICH 'dnf'; then
 		sudo dnf install -y gparted
 
-	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
+	elif _WHICH 'apt'; then
 		sudo apt install -y gparted
+
+	elif _WHICH 'pacman'; then
+		sudo pacman -S gparted
 
 	else
 		_prog_not_found; return 1
@@ -134,7 +165,10 @@ local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
 _dow "$peazip_url_download" "$path_arq" --curl
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
+	[[ "$download_only" == 'on' ]] && { 
+		echo "$(_c 32)=> $(_c)Feito somente download."
+		return 0 
+	}
 	
 	[[ -x $(command -v peazip 2> /dev/null) ]] && { _msg_pack_instaled 'peazip'; return 0; }
 
