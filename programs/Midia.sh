@@ -77,6 +77,33 @@ local lista_codecs=(
 
 #-----------------------------------------------------#
 
+function _codecs_arch()
+{
+	local list_codecs_arch=(
+		'a52dec' 
+		'faac' 
+		'faad2' 
+		'flac' 
+		'jasper' 
+		'lame' 
+		'libdca' 
+		'libdv' 
+		'libmad' 
+		'libmpeg2' 
+		'libtheora' 
+		'libvorbis' 
+		'libxv' 
+		'opus' 
+		'wavpack' 
+		'x264' 
+		'xvidcore'
+	)
+	_green "Instalando: ${list_codecs_arch[@]}"
+	sudo pacman -S "${list_codecs_arch[@]}" || return 1
+}
+
+#-----------------------------------------------------#
+
 # Codecs
 function _codecs()
 {
@@ -86,6 +113,7 @@ case "$sysname" in
 	linuxmint19|ubuntu18.04) _codecs_ubuntu;;
 	fedora30|fedora31) _codecs_fedora;;
 	opensuse-tumbleweed) _codecs_tumbleweed;;
+	arch) _codecs_arch;;
 	*) _prog_not_found;;
 
 esac

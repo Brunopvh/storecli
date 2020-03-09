@@ -604,21 +604,32 @@ local path_arq_asc="$dir_user_cache/$(basename $url_tar_asc)"
 _dow "$url_tar" "$path_arq" --curl # baixar somente .tar.gz - (qualquer linux)
 _dow "$url_tar_asc" "$path_arq_asc" --curl # Arquivo de verificação .asc
 
-# --downloadonly
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-[[ -x $(command -v tixati 2> /dev/null) ]] && { _msg_pack_instaled 'tixati'; return 0; }
+	# --downloadonly
+	[[ "$download_only" == 'on' ]] && { 
+		echo "$(_c 32)=> $(_c)Feito somente download."
+		return 0 
+	}
 
-# Instalar gconf2.
-if [[ -x $(which zypper 2> /dev/null) ]]; then # Suse
-	sudo zypper in gconf2
+	[[ -x $(command -v tixati 2> /dev/null) ]] && { 
+		_msg_pack_instaled 'tixati' 
+		return 0 
+	}
 
-elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
-	sudo dnf install GConf2
+	# Instalar gconf2.
+	echo -e "$space_line"
+	if _WHICH 'zypper'; then # Suse
+		sudo zypper in gconf2
 
-elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
-	sudo apt install -y gconf2
+	elif _WHICH 'dnf'; then # Fedora
+		sudo dnf install GConf2
 
-fi
+	elif _WHICH 'apt'; then # Debian distros.
+		sudo apt install -y gconf2
+
+	elif _WHICH 'pacman'; then
+		sudo pacman -S gtk2
+
+	fi
 
 	_green "Importando key tixati"
 	curl -# -LS https://www.tixati.com/tixati.key -o- | gpg --import 
@@ -735,12 +746,19 @@ function _twodict_github()
 		sudo python2 setup.py install
 	elif _WHICH 'python2.7'; then
 		sudo python2.7 setup.py install
+	else
+		_red "Falha: Instale o python2"
+		return 1
 	fi
 
-	[[ $? == '0' ]] || { 
-		_red "Falha: twodict"
+	
+	if [[ $? == '0' ]]; then 
+		_white "twodict instalado com sucesso"
+	else
+		_red "Falha na instalação de: twodict"
 		return 1
-	}
+	fi
+	echo -e "$space_line"
 
 	if [[ -d "$dir_temp/twodict" ]]; then 
 		cd "$dir_temp" && sudo rm -rf twodict
@@ -813,11 +831,13 @@ fi
 
 function _youtube_dl_gui_github()
 {
-	[[ -x $(command -v youtube-dl-gui 2> /dev/null) ]] && {
+	if _WHICH 'youtube-dl-gui'; then
 		_msg "$(_c 32 2)Já$(_c) instalado, deseja reinstalar novamente $(_c 32 2)[s/n]$(_c) ?: "
 		read sn
 		[[ "${sn,,}" == 's' ]] || { return 0; }
-	}
+	fi
+
+#--------------------------------------------------------#
 
 case "$sysname" in
 	debian10) sudo apt install -y python-wxgtk3.0 gettext python-twodict;; 
@@ -826,8 +846,11 @@ case "$sysname" in
 	fedora30|fedora31) sudo dnf install -y python2-wxpython; _twodict_github;;
 	freebsd-12.0-release) sudo pkg install py27-wxPython30; _twodict_github;;
 	opensuse-tumbleweed) _youtube_dl_gui_tumbleweed; return 0;;
+	arch) sudo pacman -S python2-wxpython3; _twodict_github;;
 	*) _prog_not_found; return 1;;
 esac
+
+#--------------------------------------------------------#
 
 	github_youtube_dl_gui="https://github.com/MrS0m30n3/youtube-dl-gui.git"
 	_gitclone "$github_youtube_dl_gui" || { _red "Função [_gitclone] retornou erro."; return 1; }

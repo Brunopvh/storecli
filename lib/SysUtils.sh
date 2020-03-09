@@ -116,15 +116,21 @@ function _install_cli_fedora()
 function _install_cli_arch()
 {
 	_msg "Instalando: ${array_cli_requeriments[@]}"
-	sudo pacman -S "${array_cli_requeriments[@]}"
-	if [[ $? == '0' ]]; then
-		return 0
-
-	else
+	sudo pacman -S "${array_cli_requeriments[@]}" || { 
 		_red "O gerenciador de pacotes pacman retornou erro"
 		return 1
+	}
 
+	echo "$(_c 32)$space_line"
+	_white "Adicionar suporte ao sistema de arquivos $(_c 32)ntfs/ntfs-3g$(_c) [s/n]?: "
+	read sn
+	if [[ "${sn,,}" != 's' ]]; then
+		_white "Abortando"
+		return 0
 	fi
+	sudo pacman -S ntfs-3g 
+	sudo modprobe fuse
+
 }
 
 #===============================================#
