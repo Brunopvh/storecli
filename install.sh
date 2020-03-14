@@ -104,8 +104,9 @@ _Install()
 
 	if _cli storecli; then
 		storecli --logo
-		_msg "$(storecli --version)"
-		_msg "Use: $(_c 32 2)storecli --help $(_c)"
+		storecli --help
+		#_msg "$(storecli --version)"
+		#_msg "Use: $(_c 32 2)storecli --help $(_c)"
 		return 0
 	else
 		_msg "$(_c 31)Falha ao tentar instalar [storecli]. $(_c)"
@@ -157,7 +158,12 @@ _Config_Path()
 #--------------------------------------------------#
 _Run()
 {
-	[ $(id -u) -eq 0 ] && { _msg "$(_c 31)Usuário não pode ser o [root] saindo... $(_c)"; return 1; }
+	[ $(id -u) -eq 0 ] && { 
+		_msg "$(_c 31)Usuário não pode ser o [root] saindo... $(_c)" 
+		return 1 
+	}
+	
+
 	_check || exit 1
 	_Install || exit 1
 
