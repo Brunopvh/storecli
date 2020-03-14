@@ -63,12 +63,11 @@ function _install_cli_debian()
 #===============================================#
 function _install_cli_ubuntu()
 {
-	echo "=> Instalando: ${array_cli_debian[@]} ${array_cli_ubuntu[@]}"
+	_msg "Instalando: ${array_cli_debian[@]} ${array_cli_ubuntu[@]}"
 	sudo apt install -y "${array_cli_debian[@]}" "${array_cli_ubuntu[@]}"
 
 	if [[ $? == '0' ]]; then 
 		return 0
-
 	else
 		# Error apt install
 		_msg "O gerenciador de pacotes $(_c 31)apt $(_c) retornou erro."
@@ -86,7 +85,6 @@ function _install_cli_suse()
 
 	if [[ $? == '0' ]]; then 
 		return 0
-
 	else
 		# Error zypper install
 		_msg "O gerenciador de pacotes $(_c 31)zypper $(_c) retornou [erro]"
@@ -122,14 +120,16 @@ function _install_cli_arch()
 	}
 
 	echo "$(_c 32)$space_line"
-	_white "Adicionar suporte ao sistema de arquivos $(_c 32)ntfs/ntfs-3g$(_c) [s/n]?: "
-	read sn
-	if [[ "${sn,,}" != 's' ]]; then
+	read -p "Adicionar suporte ao sistema de arquivos $(_c 32)ntfs$(_c) [s/n]?: " sn
+	
+	if [[ "${sn,,}" == 's' ]]; then
+		sudo pacman -S ntfs-3g 
+		sudo modprobe fuse
+	else
 		_white "Abortando"
-		return 0
 	fi
-	sudo pacman -S ntfs-3g 
-	sudo modprobe fuse
+	
+	"$Script_AddRepo" --arch-repos
 
 }
 
@@ -143,12 +143,10 @@ function _install_cli_freebsd()
 
 	if [[ "$?" == '0' ]]; then
 		return 0
-
 	else
 		# Error pkg install
 		_msg "O gerenciador de pacotes $(_c 31)pkg $(_c) retornou erro."
 		return 1
-
 	fi
 }
 
@@ -160,10 +158,23 @@ function _python_requeriments_debian()
 {
 	_green "Instalando python requeriments"
 	sudo apt install -y 'python3' 'python' 'python3-pip' 'python-pip' 'python3-setuptools' 'python-setuptools'
-	[[ "$?" == '0' ]] || { _red "Função [_python_requeriments_debian] retornou erro"; return 1; }
+	[[ "$?" == '0' ]] || { 
+		_red "Função [_python_requeriments_debian] retornou erro"
+		return 1 
+	}
 
-	pip3 install wheel --user 
-	pip3 install wget --user
+	pip3 install wheel --user || return 1 
+	pip3 install wget --user || return 1
+}
+
+#===============================================#
+# Install python requeriments ArchLinux
+#===============================================#
+function _python_requeriments_arch()
+{
+	sudo pacman -S 'python3' 'python2' 'python-pip' 'python-setuptools'
+	pip install wget --user
+	pip install wheel --user
 }
 
 #===============================================#
@@ -182,7 +193,7 @@ function _python_requeriments_linux()
 		[[ $? == '0' ]] || { return 1; }
 
 	elif [[ -x $(which pacman 2> /dev/null) ]]; then # ArchLinux
-		sudo pacman -S "${array_python_linux[@]}" || return 1
+		_python_requeriments_arch || return 1
 
 	else
 		_red "Erro seu sistema não e suportado."
@@ -192,6 +203,7 @@ function _python_requeriments_linux()
 
 		# Se a instalação dos pacotes que estão no "array_python_linux" for concluida com sucesso, então
 		# o script irá prosseguir para as linhas de código abaixo.
+		
 		# python3 -m pip install -U pylint --user
 		pip3 install wheel --user || return 1
 		pip3 install wget --user || return 1
@@ -212,14 +224,11 @@ function _python_requeriments_freebsd()
 
 	if [[ -x $(which pkg 2> /dev/null) ]]; then
 		sudo pkg install -y "${array_python_freebsd[@]}"
-
 	else
 		return 1
-
 	fi
 
-		pip-3.6 install wget bash --user
-		[[ $? == '0' ]] || { return 1; }
+	pip-3.6 install wget bash --user || { return 1; }
 }
 
 #===============================================#
@@ -253,15 +262,13 @@ function _install_requeriments()
 	fi
 
 
-if [[ $? == '0' ]]; then
-	_msg "Função $(_c 32)[_install_requeriments] $(_c)foi executada com sucesso."
-	return 0
-
-else
-	_red "Função [_install_requeriments] retornou erro." 
-	return 1
-
-fi
+	if [[ $? == '0' ]]; then
+		_msg "Função $(_c 32)[_install_requeriments] $(_c)foi executada com sucesso."
+		return 0
+	else
+		_red "Função [_install_requeriments] retornou erro." 
+		return 1
+	fi
 }
 
 #===============================================#
@@ -285,7 +292,7 @@ function _python_requeriments()
 		_python_requeriments_linux
 
 	elif [[ "$sysname" == 'arch' ]]; then # ArchLinux
-		_install_cli_arch
+		_python_requeriments_linux
 
 	else
 		_red "Sistema não suportado"; return 1
@@ -297,11 +304,9 @@ function _python_requeriments()
 		_green "Função [_python_requeriments] foi executada com sucesso"
 		echo 'requeriments false' > "$Config_File"
 		return 0
-
 	else
 		_red "Função [_python_requeriments] retornou erro." 
 		return 1
-
 	fi
 }
 

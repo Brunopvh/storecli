@@ -5,6 +5,7 @@
 #
 
 esp='-------------------'
+space_line='======================================'
 
 function _msg(){
 	echo -e "=> $@"
@@ -12,6 +13,16 @@ function _msg(){
 
 function _white(){
 	echo -e "\033[1;37m=> $@\033[m"
+}
+
+function usage()
+{
+cat <<EOF 
+  Use: $(basename $(readlink -f $0)) --distro-repos
+    --debian-repos             Habilitar repositórios em debian buster
+    --fedora-repos             Habilitar repositórios no fedora
+    --arch-repos               Habilitar repositórios no archlinux
+EOF
 }
 
 #============================================================#
@@ -60,7 +71,6 @@ function _addrepo_buster(){
 	}
 
 	# 
-
 	_msg "Adicionar o seguinte repositório [$debian_repo] em: /etc/apt/sources.list?: "
 	read -p "Prosseguir? [s/n]: " _sn
 
@@ -88,6 +98,32 @@ function _addrepo_buster(){
 
 }
 
+#============================================================#
+# Repositórios ArchLinux
+#============================================================#
+function _addrepo_arch(){
+
+	# Linha onde está a string multibli.
+	local num_line=$(grep -n '^\#\[multilib\]' /etc/pacman.conf | sed 's/:.*//g')
+	local num_line_repo="$(($num_line+1))"
+
+	echo -e "$space_line"
+	read -p "Deseja habilitar o repositório [multilib] [s/n]?: " sn
+	[[ "${sn,,}" == 's' ]] || {
+		_msg "Abortando"
+		return 1
+	}
+
+	# Descomentar as linhas abaixo com o sed.
+	sudo sed -i "s|^\#\[multilib\]\$|[multilib]|" /etc/pacman.conf
+	sudo sed -i "s|^\#Include = \/etc\/pacman.d\/mirrorlist\$|Include = \/etc\/pacman.d\/mirrorlist|" /etc/pacman.conf
+
+	_msg "Sincronizando repositórios"
+	# listar todos os pacotes no repositório multilib.
+	# pacman -Sl
+	sudo pacman -Sy
+}
+
 #-----------------------------------------------#
 
 if [[ ! -z $1 ]]; then
@@ -96,9 +132,14 @@ if [[ ! -z $1 ]]; then
 		case "$1" in
 			--fedora-repos) _install_repos_fedora;;
 			--debian-repos) _addrepo_buster;;
+			--arch-repos) _addrepo_arch;;
+			-h|--help) usage;;
+			*) usage;;
 		esac
 		shift
-	done	
+	done
+elif [[ -z $1 ]]; then
+		usage	
 
 fi
 

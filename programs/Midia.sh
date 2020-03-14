@@ -98,6 +98,7 @@ function _codecs_arch()
 		'x264' 
 		'xvidcore'
 	)
+
 	_green "Instalando: ${list_codecs_arch[@]}"
 	sudo pacman -S "${list_codecs_arch[@]}" || return 1
 }
@@ -121,6 +122,11 @@ esac
 
 function _vlc_fedora()
 {
+	if [[ "$os_id" != 'fedora' ]]; then
+		_prog_not_found
+		return 1
+	fi
+
 	# Add repo fusion non free
 	"$Script_AddRepo" --fedora-repos
 	_green "Instalando: vlc"
@@ -132,12 +138,16 @@ function _vlc_fedora()
 # Vlc
 function _vlc()
 {
-case "$sysname" in
-	linuxmint19|ubuntu18.04|debian10) sudo apt install -y vlc;;
-	fedora30|fedora31) _vlc_fedora;;
-	freebsd12.0-release) sudo pkg install -y vlc;;
-	*) _prog_not_found;;
-esac
+	if _WHICH 'dnf'; then # dnf/fedora
+		_vlc_fedora
+	elif _WHICH 'apt'; then
+		sudo apt install -y vlc
+	elif _WHICH 'pacman'; then
+		sudo pacman -S vlc
+	else
+		_prog_not_found
+	fi
+	return "$?"
 }
 
 #-----------------------------------------------------#
@@ -155,6 +165,9 @@ function _parole()
 
 	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
 		sudo apt install -y parole
+
+	elif [[ -x $(command -v pacman 2> /dev/null) ]]; then
+		sudo pacman -S parole
 
 	else
 		_prog_not_found; return 1
@@ -196,6 +209,9 @@ function _smplayer()
 
 	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
 		sudo apt install -y smplayer
+
+	elif [[ -x $(command -v pacman 2> /dev/null) ]]; then
+		sudo pacman -S smplayer
 
 	else
 		_prog_not_found; return 1
