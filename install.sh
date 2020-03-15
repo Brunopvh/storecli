@@ -104,9 +104,7 @@ _Install()
 
 	if _cli storecli; then
 		storecli --logo
-		storecli --help
-		#_msg "$(storecli --version)"
-		#_msg "Use: $(_c 32 2)storecli --help $(_c)"
+		#storecli --help
 		return 0
 	else
 		_msg "$(_c 31)Falha ao tentar instalar [storecli]. $(_c)"
