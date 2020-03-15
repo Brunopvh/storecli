@@ -31,6 +31,7 @@ function _fontes_microsoft()
 {
 	case "$os_id" in
 		debian|linuxmint|ubuntu) sudo apt install -y msttcorefonts ttf-mscorefonts-installer;;
+		fedora) sudo dnf install -y mscore-fonts;;
 		*) _prog_not_found;;
 	esac
 }

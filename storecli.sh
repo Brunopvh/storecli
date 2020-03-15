@@ -413,6 +413,7 @@ while [[ "$1" ]]; do
 
 #-------------------- desenvolvimento -------------------#
 		android-studio) _android_studio;;
+		codeblocks) _codeblocks;;
 		pycharm) _pycharm;;
 		sublime-text) _sublime_text;;
 		vim) _vim;;

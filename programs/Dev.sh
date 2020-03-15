@@ -6,12 +6,13 @@
 function _android_studio_zip()
 {
 	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-	local url_sdk_linux='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
+	local url_sdktools='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
 	local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
 	local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
 	local path_arq="$dir_user_cache/$(basename $url)"
 
 	_dow "$url" "$path_arq" --curl
+	#_dow "$url_sdktools" "$dir_user_cache/$(basename $url_sdktools)" --curl
 
 	# --download-only
 	[[ "$download_only" == 'on' ]] && { 
@@ -75,8 +76,6 @@ function _android_studio_zip()
 	if _WHICH 'studio'; then
 		_white 'android-studio instalado com sucesso'
 		#studio
-		return 0
-
 	else
 		_red "Função [_android_studio] retornou erro"
 		return 1	
@@ -207,6 +206,34 @@ function _android_studio()
 }
 
 #-----------------------------------------------------#
+function _codeblocks_fedora()
+{
+	# https://sempreupdate.com.br/como-instalar-o-codeblocks-no-fedora/
+	#
+	# local url_codeblocks_fedora='http://sourceforge.net/projects/codeblocks/files/Binaries/17.12/Linux/Fedora%2028%20(aka%20Rawhide)/codeblock-17.12-1.fc28.x86_64.tar.xz'
+
+	sudo dnf install -y codeblocks || return 1
+	sudo dnf install make automake gcc gcc-c++ kernel-devel || return 1
+	# sudo dnf groupinstall "Development Tools" "Development Libraries" 
+}
+
+#-----------------------------------------------------#
+function _codeblocks_archlinux()
+{
+	# https://www.archlinux.org/packages/community/x86_64/codeblocks/
+	sudo pacman -S codeblocks
+}
+
+#-----------------------------------------------------#
+
+function _codeblocks()
+{
+	case "$os_id" in
+		fedora) _codeblocks_fedora;;
+		archlinux) _codeblocks_archlinux;;
+		*) _prog_not_found;;
+	esac
+}
 
 #=====================================================#
 # Pycharm

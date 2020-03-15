@@ -178,6 +178,7 @@ array_acessorios=(
 # Desenvolvimento
 array_dev=(
 'android-studio'
+'codeblocks'
 'pycharm'
 'sublime-text'
 'vim'
