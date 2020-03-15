@@ -87,6 +87,10 @@ echo "Escritorio: "
 for a in "${array_escritorio[@]}"; do echo "     $a"; done
 echo ' '
 
+echo "Gnome-Shell - pacote: [gnome-utils]"
+for a in "${array_gnome_shell[@]}"; do echo "     $a"; done
+echo ' '
+
 echo "Internet: "
 for a in "${array_internet[@]}"; do echo "     $a"; done
 echo ' '

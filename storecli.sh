@@ -64,7 +64,6 @@ export Lib_platform="$StoreCli_Path_Lib/platform.sh"            # Detecta o sist
 export Lib_Info="$StoreCli_Path_Lib/info.sh"
 export Lib_SysUtils="$StoreCli_Path_Lib/SysUtils.sh"
 export Lib_HttpsTransfer="$StoreCli_Path_Lib/HttpsTransfer.sh"
-#export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh"     # Gerencia instalação dos pacotes.
 export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"        # Gerencia remoção dos pacotes.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
@@ -82,6 +81,7 @@ export Lib_Internet="$StoreCli_Path_Programs/Internet.sh"
 export Lib_Midia="$StoreCli_Path_Programs/Midia.sh"
 export Lib_Sistema="$StoreCli_Path_Programs/Sistema.sh"
 export Lib_Preferencias="$StoreCli_Path_Programs/Preferencias.sh"
+export Lib_Gnome_Shell="$StoreCli_Path_Programs/GnomeShell.sh"
 
 #========================================================#
 # Config.
@@ -110,6 +110,7 @@ source "$Lib_Internet"
 source "$Lib_Midia"
 source "$Lib_Sistema"
 source "$Lib_Preferencias"
+source "$Lib_Gnome_Shell"
 
 #--------------------------------------------------------#
 if [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
@@ -422,6 +423,9 @@ while [[ "$1" ]]; do
 		fontes-ms) _fontes_microsoft;;
 		libreoffice) _libreoffice;;
 		libreoffice-appimage) _libreoffice_appimage;;
+
+#-------------------- gnome-shell --------------------------#
+		gnome-utils) _gnome_shell;;
 
 #-------------------- internet --------------------------#
 		google-chrome) _google_chrome;;

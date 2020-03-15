@@ -192,6 +192,15 @@ array_escritorio=(
 'libreoffice-appimage'
 )
 
+# gnome-shell
+array_gnome_shell=(
+'gnome-tweaks'
+'gnome-shell-extension-topicons-plus'		
+'gnome-shell-extension-drive-menu'
+'gnome-backgrounds-extras'
+'verne-backgrounds-gnome'
+)
+
 # Internet
 array_internet=(
 'google-chrome'
