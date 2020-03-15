@@ -59,6 +59,20 @@ function _google_chrome_tumbleweed()
 }
 
 #-----------------------------------------------------#
+function _google_chrome_archlinux()
+{
+	# https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-Arch-com-Git
+	local github_chrome='https://aur.archlinux.org/google-chrome.git'
+
+ 	_gitclone "$github_chrome" || return 1
+	cd "$dir_temp"/google-chrome
+
+	echo -e "$space_line"
+	_white "Executando: makepkg -s"
+	makepkg -s
+	#sudo pacman -U [pacote.pkg.tar.xz]
+}
+#-----------------------------------------------------#
 
 function _google_chrome()
 {
@@ -66,10 +80,11 @@ function _google_chrome()
 		debian|ubuntu|linuxmint) _google_chrome_debian;;
 		opensuse-tumbleweed|opensuse-leap) _google_chrome_tumbleweed;;
 		fedora) _google_chrome_fedora;;
+		arch) _google_chrome_archlinux;;
 		*) _prog_not_found; return 1;;
 	esac	
 
-	if [[ $? == '0' ]]; then 
+	if [[ $? == '0' ]] && [[ -x $(command -v google-chrome 2> /dev/null) ]]; then 
 		_msg 'google-chrome instalado com sucesso'
 		return 0
 	else

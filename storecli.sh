@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020-03-13'
+VERSION='2020-03-14'
 #
 # StoreCli a sua loja de aplicativos via linha de comando.
 # Download Configuração e Instalaçao de programas.
@@ -17,6 +17,8 @@ VERSION='2020-03-13'
 #
 #--------------------| REFERÊNCIAS |----------------------------#
 # http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
+# https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-Arch-com-Git
+#
 #
 
 #clear

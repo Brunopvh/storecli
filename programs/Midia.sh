@@ -28,10 +28,16 @@ function _codecs_ubuntu()
 
 function _codecs_debian()
 {
-local deb_multimidia='http://www.deb-multimedia.org'
-local url_wcodecs="$deb_multimidia/pool/non-free/w/w64codecs/w64codecs_20071007-dmo2_amd64.deb"
-local soma_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
-local path_arq="$dir_user_cache/$(basename $url_wcodecs)"
+	#------------------| AlsaMixer |---------------------------#
+	# visite o link abaixo se tiver problemas com a sua placa de audio.
+	# https://vitux.com/how-to-control-audio-on-the-debian-command-line/
+	# sudo apt install install alsa-utils
+	#
+	
+	local deb_multimidia='http://www.deb-multimedia.org'
+	local url_wcodecs="$deb_multimidia/pool/non-free/w/w64codecs/w64codecs_20071007-dmo2_amd64.deb"
+	local soma_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
+	local path_arq="$dir_user_cache/$(basename $url_wcodecs)"
 
 _dow "$url_wcodecs" "$path_arq" --curl
 # --download-only

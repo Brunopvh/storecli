@@ -6,46 +6,139 @@
 
 function _android_studio_debian()
 {
+	# Encerrar a função se os sistema não for baseado em debian.
+	if [[ ! -f /etc/debian_version ]]; then
+		return 1
+	fi
+
+	# debian utils
+	local array_virt_debian=(
+		qemu-kvm 
+		libvirt-clients 
+		libvirt-daemon-system
+	)
+
+	# ubuntu utils
+	local array_virt_ubuntu=(
+		qemu-kvm 
+		libvirt-bin 
+		ubuntu-vm-builder 
+		bridge-utils
+	)
+
+	# Debian lib utils.
+	local array_libutils_debian=(
+		lib32z1  
+		lib32stdc++6 
+		lib32gcc1 
+		lib32ncurses6
+		lib32tinfo6
+		libc6-i386
+	)
+
+	# Ubuntu lib utils.
+	local array_libutils_ubuntu=(
+		lib32z1 
+		lib32ncurses5 
+		lib32stdc++6 
+		lib32gcc1 
+		lib32tinfo5 
+		libc6-i386
+	)
+
+	sudo apt update
+	echo -e "$space_line"
+	_white "Instalando: openjdk-8-jdk"
 	sudo apt install openjdk-8-jdk
 
-	case "$os_id" in
-		debian) sudo apt install qemu-kvm libvirt-clients libvirt-daemon-system;;
-		ubuntu|linuxmint) sudo apt install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils;;
-		*) return 1;;
-	esac
-
+	#-----------------------------------------------------#
+	if [[ "$os_id" == 'debian' ]]; then
+		for c in "${array_virt_debian[@]}"; do
+			echo -e "$space_line"
+			_white "Instalando: $c"
+			sudo apt install -y "$c" || {
+				_red "Falha: $c"
+				sleep 1
+				#return 1; break				
+				}
+		done
+	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+		for c in "${array_virt_ubuntu[@]}"; do
+			echo -e "$space_line"
+			_white "Instalando: $c"
+			sudo apt install -y "$c" || {
+				_red "Falha: $c"
+				sleep 1
+				#return 1; break				
+				}
+		done
+	fi
+	#-----------------------------------------------------#
 
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	echo "=> Adicionando $USER aos grupos: $(_c 32)libvirt libvirt-qemu$(_c)" 
+	_white "Adicionando $USER aos grupos: $(_c 32)libvirt | libvirt-qemu$(_c)" 
 	sudo adduser "$USER" libvirt
 	sudo adduser "$USER" libvirt-qemu
 
-	echo "$(_c 32)=> $(_c)Instalando: lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386"
-	sudo apt install lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386
+	#-----------------------------------------------------#
+	if [[ "$os_id" == 'debian' ]]; then
+		for c in "${array_libutils_debian[@]}"; do
+			echo -e "$space_line"
+			_white "Instalando: $c"
+			sudo apt install -y "$c" || {
+					_red "Falha: $c"
+					sleep 1
+					#return 1; break
+				}
+		done
+	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+		for c in "${array_libutils_ubuntu[@]}"; do
+			echo -e "$space_line"
+			_white "Instalando: $c"
+			sudo apt install -y "$c" || {
+					_red "Falha: $c"
+					sleep 1
+					#return 1; break
+				}
+		done
+	fi
+	#-----------------------------------------------------#
 
-local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
-local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
-local path_arq="$dir_user_cache/$(basename $url)"
+	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+	local url_sdk_linux='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
+	local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
+	local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
+	local path_arq="$dir_user_cache/$(basename $url)"
 
-_dow "$url" "$path_arq" --curl
-# --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-[[ -x $(command -v studio 2> /dev/null) ]] && { _msg_pack_instaled 'android-studio'; return 0; }
+	_dow "$url" "$path_arq" --curl
+
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download."
+		return 0 
+	}
+	
+	# Verificar se studio já está instalado.
+	_WHICH 'studio' && { 
+		_msg_pack_instaled 'android-studio'
+		return 0
+	}
 
 	 # Lib ShaSum.sh
+	echo -e "$space_line"
 	_check_sum "$path_arq" "$soma" || { 
-		echo "Erro função $(_c 31)_check_sum $(_c)retornou erro"
-		echo "$(_c 31)=> Arquivo não confialvél: $path_arq $(_c)" 
+		_red "Erro função [_check_sum] retornou erro"
+		_red "Arquivo não confiavel: $path_arq" 
 		return 1 
 	}
 
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+		_red "Falha: [unpack] retornou erro" 
+		return 1 
 	}
 
-echo "$(_c 32)=> $(_c)Instalando android studio em ~/.local/bin"
-
+_white "Instalando android studio em ~/.local/bin"
 cd "$dir_temp" && mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
 cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
 chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
@@ -77,13 +170,13 @@ chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
 	cp -u "${array_android_studio_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${array_android_studio_dirs[0]}" ~/Desktop/ 2> /dev/null
 
-	if [[ -x $(command -v studio 2> /dev/null) ]]; then
-		_msg 'android-studio instalado com sucesso'
+	if _WHICH 'studio'; then
+		_white 'android-studio instalado com sucesso'
 		#studio
 		return 0
 
 	else
-		echo "=> Função $(_c 31)_android_studio $(_c)retornou [erro]"
+		_red "Função [_android_studio] retornou erro"
 		return 1	
 	fi
 }
@@ -95,8 +188,8 @@ function _android_studio()
 # https://www.blogopcaolinux.com.br/2017/09/Instalando-Android-Studio-no-Debian-e-no-Ubuntu.html
 # https://developer.android.com/studio/index.html#downloads
 
-	case "$sysname" in
-		debian10|linuxmint19|ubuntu18.04) _android_studio_debian;;
+	case "$os_id" in
+		debian|linuxmint|ubuntu) _android_studio_debian;;
 		*) _prog_not_found; return 1;;
 	esac
 }

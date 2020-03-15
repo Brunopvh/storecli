@@ -131,6 +131,12 @@ function _install_cli_arch()
 	
 	"$Script_AddRepo" --arch-repos
 
+	_msg "Instalando: binutils"
+	sudo pacman -S binutils
+
+	_msg "Instalando: base-devel"
+	sudo pacman -S base-devel
+
 }
 
 #===============================================#
