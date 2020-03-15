@@ -52,7 +52,6 @@ _msg "fedora-workstation-repositories"
 sudo dnf install -y fedora-workstation-repositories || return 1
 sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm" || return 1
 sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" || return 1
-return "$0"
 }
 
 #============================================================#

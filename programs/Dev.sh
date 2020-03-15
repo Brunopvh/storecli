@@ -331,10 +331,10 @@ local path_arq="$dir_user_cache/$(basename $url_sublime)"
 function _vim()
 {
 	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
-		sudo zypper in vim
+		sudo zypper install -y vim
 
 	elif [[ -x $(command -v dnf 2>/dev/null) ]]; then
-		sudo dnf install vim
+		sudo dnf install -y vim
 
 	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
 		sudo apt install -y vim
