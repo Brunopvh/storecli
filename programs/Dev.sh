@@ -3,6 +3,88 @@
 #
 
 #-----------------------------------------------------#
+function _android_studio_zip()
+{
+	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
+	local url_sdk_linux='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
+	local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
+	local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
+	local path_arq="$dir_user_cache/$(basename $url)"
+
+	_dow "$url" "$path_arq" --curl
+
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download."
+		return 0 
+	}
+	
+	# Verificar se studio já está instalado.
+	_WHICH 'studio' && { 
+		_msg_pack_instaled 'android-studio'
+		return 0
+	}
+
+	# Lib ShaSum.sh
+	echo -e "$space_line"
+	_check_sum "$path_arq" "$soma" || { 
+		_red "Erro função [_check_sum] retornou erro"
+		_red "Arquivo não confiavel: $path_arq" 
+		return 1 
+	}
+
+
+	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
+		_red "Falha: [unpack] retornou erro" 
+		return 1 
+	}
+
+	_white "Instalando android studio em ~/.local/bin"
+	cd "$dir_temp" 
+	mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
+	cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
+	chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
+
+	# .desktop
+	echo '[Desktop Entry]' > "${array_android_studio_dirs[0]}"
+	{
+		echo "Version=1.0"
+		echo "Type=Application"
+		echo "Name=Android Studio"
+		echo "Icon=studio.png"
+		echo "Exec=sh -c 'cd ${array_android_studio_dirs[3]}/bin && ./studio.sh'"
+		echo "Comment=The Drive to Develop"
+		echo "Categories=Development;IDE;"
+		echo "Terminal=false"
+		echo "StartupWMClass=jetbrains-studio"
+	} >> "${array_android_studio_dirs[0]}"
+
+	# Atalho para linha de comando.
+	echo '#!/bin/sh' > "${array_android_studio_dirs[2]}" # ~/.local/bin/studio
+	echo "cd ${array_android_studio_dirs[3]}/bin && ./studio.sh" >> "${array_android_studio_dirs[2]}"
+
+	# Permissão.
+	chmod u+x "${array_android_studio_dirs[0]}"
+	chmod u+x "${array_android_studio_dirs[2]}"
+
+	# Área de trabalho.
+	cp -u "${array_android_studio_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${array_android_studio_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${array_android_studio_dirs[0]}" ~/Desktop/ 2> /dev/null
+
+	if _WHICH 'studio'; then
+		_white 'android-studio instalado com sucesso'
+		#studio
+		return 0
+
+	else
+		_red "Função [_android_studio] retornou erro"
+		return 1	
+	fi
+
+}
+
+#-----------------------------------------------------#
 
 function _android_studio_debian()
 {
@@ -102,87 +184,16 @@ function _android_studio_debian()
 				}
 		done
 	fi
-	#-----------------------------------------------------#
 
-	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-	local url_sdk_linux='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
-	local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
-	local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
-	local path_arq="$dir_user_cache/$(basename $url)"
-
-	_dow "$url" "$path_arq" --curl
-
-	# --download-only
-	[[ "$download_only" == 'on' ]] && { 
-		_green "Feito somente download."
-		return 0 
-	}
-	
-	# Verificar se studio já está instalado.
-	_WHICH 'studio' && { 
-		_msg_pack_instaled 'android-studio'
-		return 0
-	}
-
-	 # Lib ShaSum.sh
-	echo -e "$space_line"
-	_check_sum "$path_arq" "$soma" || { 
-		_red "Erro função [_check_sum] retornou erro"
-		_red "Arquivo não confiavel: $path_arq" 
-		return 1 
-	}
-
-
-	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		_red "Falha: [unpack] retornou erro" 
-		return 1 
-	}
-
-_white "Instalando android studio em ~/.local/bin"
-cd "$dir_temp" && mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
-cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
-chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
-
-	# .desktop
-	echo '[Desktop Entry]' > "${array_android_studio_dirs[0]}"
-	{
-		echo "Version=1.0"
-		echo "Type=Application"
-		echo "Name=Android Studio"
-		echo "Icon=studio.png"
-		echo "Exec=sh -c 'cd ${array_android_studio_dirs[3]}/bin && ./studio.sh'"
-		echo "Comment=The Drive to Develop"
-		echo "Categories=Development;IDE;"
-		echo "Terminal=false"
-		echo "StartupWMClass=jetbrains-studio"
-	} >> "${array_android_studio_dirs[0]}"
-
-	# Atalho para linha de comando.
-	echo '#!/bin/sh' > "${array_android_studio_dirs[2]}" # ~/.local/bin/studio
-	echo "cd ${array_android_studio_dirs[3]}/bin && ./studio.sh" >> "${array_android_studio_dirs[2]}"
-
-	# Permissão.
-	chmod u+x "${array_android_studio_dirs[0]}"
-	chmod u+x "${array_android_studio_dirs[2]}"
-
-	# Área de trabalho.
-	cp -u "${array_android_studio_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_android_studio_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "${array_android_studio_dirs[0]}" ~/Desktop/ 2> /dev/null
-
-	if _WHICH 'studio'; then
-		_white 'android-studio instalado com sucesso'
-		#studio
-		return 0
-
-	else
-		_red "Função [_android_studio] retornou erro"
-		return 1	
-	fi
+	_android_studio_zip
 }
 
 #-----------------------------------------------------#
-
+function _android_archlinux()
+{
+	_android_studio_zip
+}
+#-----------------------------------------------------#
 function _android_studio()
 {
 # https://www.blogopcaolinux.com.br/2017/09/Instalando-Android-Studio-no-Debian-e-no-Ubuntu.html
@@ -190,6 +201,7 @@ function _android_studio()
 
 	case "$os_id" in
 		debian|linuxmint|ubuntu) _android_studio_debian;;
+		arch) _android_archlinux;;
 		*) _prog_not_found; return 1;;
 	esac
 }
@@ -338,34 +350,49 @@ function _vim()
 #=====================================================#
 function _vscode_debian()
 {
-local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
-local path_arq="$dir_user_cache/vscode-amd64.deb"
-_dow "$url_code_debian" "$path_arq" --wget
+	local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
+	local path_arq="$dir_user_cache/vscode-amd64.deb"
+	_dow "$url_code_debian" "$path_arq" --curl
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-	[[ -x $(command -v code) ]] && { _msg_pack_instaled 'code'; return 0; }
+	[[ "$download_only" == 'on' ]] && { 
+		echo "$(_c 32)=> $(_c)Feito somente download."
+		return 0 
+	}
+	
+	[[ -x $(command -v code) ]] && { 
+		_msg_pack_instaled 'code'
+		return 0
+	}
 
-sudo dpkg --install "$path_arq" # .deb
+	sudo dpkg --install "$path_arq" # .deb
 }
 
 #-----------------------------------------------------#
 
 function _vscode()
 {
-local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
-local path_arq="$dir_user_cache/vscode.tar.gz"
+	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
+	local path_arq="$dir_user_cache/vscode.tar.gz"
 
-_dow "$url_vscode_tar" "$path_arq" --wget
+	_dow "$url_vscode_tar" "$path_arq" --curl
 
-# --download-only
-[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-[[ -x $(command -v code) ]] && { _msg_pack_instaled 'code'; return 0; }
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download."
+		return 0
+	}
 
-"$Script_UnPack" "$path_arq" "$dir_temp"
-[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+	[[ -x $(command -v code) ]] && { 
+		_msg_pack_instaled 'code'
+		return 0
+	}
 
-echo "$(cor 32)=> $(cor)Instalando"
+	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
+		_red "Falha: [unpack] retornou erro"
+		return 1 
+	}
+
 
 cd "$dir_temp" && mv $(ls -d VSCode*) "${array_vscode_dirs[3]}" 2> /dev/null
 cp -u "${array_vscode_dirs[3]}"/resources/app/resources/linux/code.png "${array_vscode_dirs[1]}"
@@ -393,10 +420,10 @@ cp -u "${array_vscode_dirs[0]}" ~/Desktop/ 2> /dev/null
 cp -u "${array_vscode_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
 
 if [[ -x "$(which code 2> /dev/null)" ]]; then
-	_msg 'code instalado'
+	_green 'code instalado com sucesso'
 	code
 else
-	echo "=> Função $(_c 31)_vscode$(_c) retornou [erro]"
+	_red "Função [_vscode] retornou erro"
 	return 1
 fi 
 

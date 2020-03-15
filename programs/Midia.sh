@@ -64,15 +64,15 @@ function _codecs_fedora()
 	# Add repo fusion non free
 	"$Script_AddRepo" --fedora-repos
 
-local lista_codecs=(
-'gstreamer1' 
-'gstreamer1-plugins-base' 
-'gstreamer-ffmpeg' 
-'libmpeg3'
-'x264' 
-'x264-libs' 
-'xvidcore' 
-)
+	local lista_codecs=(
+		'gstreamer1' 
+		'gstreamer1-plugins-base' 
+		'gstreamer-ffmpeg' 
+		'libmpeg3'
+		'x264' 
+		'x264-libs' 	
+		'xvidcore' 
+	)
 
 	_green "Instalando: ffmpeg ffmpegthumbnailer"
 	sudo dnf install -y ffmpeg ffmpegthumbnailer.x86_64 || return 1
@@ -136,7 +136,7 @@ function _vlc_fedora()
 	# Add repo fusion non free
 	"$Script_AddRepo" --fedora-repos
 	_green "Instalando: vlc"
-	sudo dnf install vlc python-vlc
+	sudo dnf install -y vlc python-vlc
 }
 
 #-----------------------------------------------------#

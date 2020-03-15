@@ -42,20 +42,17 @@ function _install_repos_fedora()
 local repos_fusion_free='https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release'
 local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
 
-echo "${esp}${esp}"
-_msg "Adicionar os seguintes repositórios"
+echo "$space_line"
+_msg "Adicionando os seguintes repositórios: "
+sleep 1
 _msg "rpmfusion-free-release-$(rpm -E %fedora)"
 _msg "rpmfusion-nonfree-release-$(rpm -E %fedora)"
 _msg "fedora-workstation-repositories"
 
-read -p "$(_msg Prosseguir [s/n]?:) " adc
-[[ "${adc,,}" == 's' ]] || { _msg "Abortando..."; return 0; }
-
-_msg "Aguarde..."
 sudo dnf install -y fedora-workstation-repositories || return 1
 sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm" || return 1
 sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" || return 1
-return 0
+return "$0"
 }
 
 #============================================================#
