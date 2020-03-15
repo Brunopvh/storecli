@@ -175,7 +175,7 @@ sudo rpm --import https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.k
 		echo "gpgkey=https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"	
 	} | sudo tee -a /etc/yum.repos.d/megasync.repo
 
-sudo dnf install megasync
+sudo dnf install -y megasync
 }
 
 #-----------------------------------------------------#
