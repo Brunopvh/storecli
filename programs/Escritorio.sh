@@ -26,12 +26,25 @@ function _atril()
 }
 
 #-----------------------------------------------------#
+function _fontes_microsoft_fedora()
+{
+	# https://www.livresoftware.com.br/2018/02/instalando-fontes-microsoft-no-fedora.html
+	# https://diolinux.com.br/2020/01/como-instalar-as-fontes-da-microsoft-no.html
+	#
+	#local url_fontes='https://downloads.sourceforge.net/project/mscorefonts2/rpms/msttcore-fonts-installer-2.6-1.noarch.rpm'
+	#local path_arq="$dir_user_cache/msttcore-fonts-installer-2.6-1.noarch.rpm"
+	#_dow "$url_fontes" "$path_arq" --curl
+	#sudo dnf install "$path_arq"
+	sudo dnf install -y mscore-fonts
+}
+
+#-----------------------------------------------------#
 
 function _fontes_microsoft()
 {
 	case "$os_id" in
 		debian|linuxmint|ubuntu) sudo apt install -y msttcorefonts ttf-mscorefonts-installer;;
-		fedora) sudo dnf install -y mscore-fonts;;
+		fedora) ;;
 		*) _prog_not_found;;
 	esac
 }
