@@ -104,17 +104,38 @@ chmod u+x "${array_libreoffice_dirs[0]}"
 }
 
 #-----------------------------------------------------#
+_libreoffice_ptbr(){
+	# Verificar qual o idioma do usuário atual
+	local _lang=$(printenv | grep -m 1 '^LANG=' | sed 's/.*=//g')
+	
+	# Se for "pt_BR.UTF-8" instalar suporte para português do Brasil.
+	if [[ "$_lang" != 'pt_BR.UTF-8' ]]; then
+		return 0
+	fi
+
+	case "$os_id" in
+		debian) sudo apt install -y libreoffice-help-pt-br libreoffice-l10n-pt-br;;
+		ubuntu|linuxmint) sudo apt install -y libreoffice-help-pt-br libreoffice-l10n-pt-br;;
+		fedora) sudo dnf install -y libreoffice-langpack-pt-BR;;
+		open-suse) sudo zypper in libreoffice-l10n-pt_BR;;
+		arch) sudo pacman -S libreoffice-fresh-pt-br;;
+		freebsd) sudo pkg install pt_BR-libreoffice;;
+	esac
+}
+#-----------------------------------------------------#
 
 function _libreoffice()
 {
 	case "$os_id" in 
-		debian) sudo apt install -y libreoffice-help-pt-br libreoffice-l10n-pt-br;;
-		ubuntu|linuxmint) sudo apt install -y libreoffice libreoffice-help-pt-br libreoffice-l10n-pt-br;;
-		fedora) sudo dnf install libreoffice libreoffice-langpack-pt-BR;;
-		open-suse) sudo zypper in libreoffice-l10n-pt_BR;;
-		freebsd) sudo pkg install libreoffice pt_BR-libreoffice;;
+		debian|ubuntu|linuxmint) sudo apt install -y libreoffice;;
+		fedora) sudo dnf install -y libreoffice;;
+		open-suse) sudo zypper in -y libreoffice-l10n-pt_BR;;
+		arch) sudo pacman -S libreoffice;;
+		freebsd) sudo pkg install libreoffice;;
 		*) _libreoffice_appimage;;
 	esac
+
+	_libreoffice_ptbr
 }
 
 #-----------------------------------------------------#
