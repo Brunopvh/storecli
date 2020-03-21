@@ -225,10 +225,19 @@ function _codeblocks_archlinux()
 }
 
 #-----------------------------------------------------#
+function _codeblocks_debian()
+{
+	sudo apt install -y codeblocks codeblocks-common codeblocks-contrib || {
+		_red "[!] Falha ao tentar instalar codeblocks"
+		return 1
+	}
+}
+#-----------------------------------------------------#
 
 function _codeblocks()
 {
 	case "$os_id" in
+		debian) _codeblocks_debian;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
 		*) _prog_not_found;;
@@ -262,6 +271,7 @@ local hash_pycharm='ad796856195b574534ba6f9b49edad175b99465b5536d520c3e442527f63
 	_check_sum "$path_arq" "$hash_pycharm" || { 
 		_red "Falha função [_check_sum] retornou erro"
 		_red "Arquivo não confialvél: [$path_arq]" 
+		rm "$path_arq"
 		return 1 
 	}
 

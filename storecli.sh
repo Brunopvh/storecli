@@ -219,6 +219,10 @@ elif [[ "$1" == '--configure' ]]; then
 	_configure_system || { _red "Encerrando com erro."; exit 1; }
 	exit 0
 
+elif [[ "$1" == '--list' ]]; then
+	_list_applications
+	exit 0
+
 elif [[ "$1" == '--upgrade' ]]; then
 	_msg 'Aguarde...'
 	"$StoreCli_Path/install.sh"
