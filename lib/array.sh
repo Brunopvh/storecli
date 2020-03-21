@@ -204,18 +204,19 @@ array_gnome_shell=(
 
 # Internet
 array_internet=(
-'google-chrome'
-'megasync'
-'opera-stable'
-'proxychains'
-'qbittorrent'
-'teamviewer'
-'telegram'
-'tixati'
-'torbrowser'
-'uget'
-'youtube-dl'
-'youtube-dl-gui'
+	'chromium'
+	'google-chrome'
+	'megasync'
+	'opera-stable'
+	'proxychains'
+	'qbittorrent'
+	'teamviewer'
+	'telegram'
+	'tixati'
+	'torbrowser'
+	'uget'
+	'youtube-dl'
+	'youtube-dl-gui'
 )
 
 # Midia

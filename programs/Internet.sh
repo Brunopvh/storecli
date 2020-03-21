@@ -2,7 +2,39 @@
 #
 #
 
-source "$Lib_GitClone"
+#source "$Lib_GitClone"
+
+#=====================================================#
+# Chomium
+#=====================================================#
+
+#=====================================================#
+function _chromium_lang()
+{
+	# Instalar pacote de idioma ptbr se o idioma do usuário for
+	# 
+	local lang=$(printenv | grep -m 1 '^LANG=' | sed 's/.*=//g')
+	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
+
+	case "$os_id" in
+		debian) sudo apt install -y chromium-l10n;;
+		ubuntu) sudo apt install -y chromium-browser-l10n;;
+		*) return 0;;
+	esac
+}
+#=====================================================#
+function _chromium()
+{
+	case "$os_id" in
+		debian) sudo apt install -y chromium;;
+		ubuntu|linuxmint) sudo apt install -y chromium-browser;;
+		fedora) sudo dnf install -y chromium;;
+		freebsd12) sudo pkg install chromium;;
+		*) _prog_ind;;
+	esac
+
+	_chromium_lang # Instalar pacote de idioma ptbr.
+}
 
 #=====================================================#
 # Google chrome

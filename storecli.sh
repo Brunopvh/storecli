@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020-03-15'
+VERSION='2020-03-21'
 #
 # StoreCli a sua loja de aplicativos via linha de comando.
 # Download Configuração e Instalaçao de programas.
-# Sistemas suportados, (Debian/Ubuntu/Mint/Fedora)
+# Sistemas suportados, (Debian/Ubuntu/Mint/Fedora/ArchLinux)
 #
 #
 #--------------------| REPOSITÓRIO |----------------------------#
@@ -129,13 +129,14 @@ space_line='======================================================='
 function _space_msg()
 {
 	# Espaçamento entre palavras.
-	num="$((35-$1))"
+	num="$((40-$1))"
 
 	while [[ "$num" != '0' ]]; do
 		echo -ne "-"
 		num="$(($num-1))"
 	done
 }
+#========================================================#
 
 if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
 	echo -e "Inserindo [$HOME/.local/bin] na variável PATH de [$USER]"
@@ -404,7 +405,7 @@ function _packmanager_install()
 	done
 
 while [[ "$1" ]]; do
-	_msg "Instalando ............... $1"
+	_msg "Instalando ------------------------ $1"
 	case "$1" in
 #-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;
@@ -429,6 +430,7 @@ while [[ "$1" ]]; do
 		gnome-utils) _gnome_shell;;
 
 #-------------------- internet --------------------------#
+		chromium) _chromium;;
 		google-chrome) _google_chrome;;
 		megasync) _megasync;;
 		opera-stable) _opera_stable;;

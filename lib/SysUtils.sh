@@ -119,6 +119,7 @@ function _install_cli_arch()
 		return 1
 	}
 
+	# Suporte ao NTFS
 	echo "$(_c 32)$space_line"
 	read -p "Adicionar suporte ao sistema de arquivos $(_c 32)ntfs$(_c) [s/n]?: " sn
 	
@@ -129,14 +130,19 @@ function _install_cli_arch()
 		_white "Abortando"
 	fi
 	
+	# Adicionar repositórios
 	"$Script_AddRepo" --arch-repos
 
 	_msg "Instalando: binutils"
 	sudo pacman -S binutils
 
+	# Base-Devel
 	_msg "Instalando: base-devel"
 	sudo pacman -S base-devel
 
+	# xdpinfo
+	#_white "Instalando: xorg-xdpyinfo"
+	#sudo pacman -S xorg-xdpyinfo
 }
 
 #===============================================#

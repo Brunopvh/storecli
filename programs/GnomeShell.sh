@@ -24,6 +24,11 @@ function _gnome_shell()
 	'gnome-tweaks' 'gnome-backgrounds'
 	)
 
+	# Debian
+	local array_gnome_shell_debian=(
+	'gnome-tweaks' 'gnome-shell-extension-top-icons-plus' 'gnome-shell-extension-dashtodock'
+	)
+
 	#----------------------------------------------------#
 	# Verifcar qual o gerenciador de pacotes da distro e instalar pacotes 
 	# e extenções do gnome-shell.
