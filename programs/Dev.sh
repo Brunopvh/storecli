@@ -3,17 +3,50 @@
 #
 
 #-----------------------------------------------------#
-function _android_studio_zip()
+function _android_sdktools()
 {
 	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
 	local url_sdktools='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
-	local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
-	local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
+	local url_commandline_tools='https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip'
+
+	local path_sdktools="$dir_user_cache/$(basename $url_sdktools)"
+	local path_commandline_tools="$dir_user_cache/$(basename $url_commandline_tools)"
+
+	local hash_commandline_tools='f10f9d5bca53cc27e2d210be2cbc7c0f1ee906ad9b868748d74d62e10f2c8275'
+	local hash_skdtools=''
+
+	# Baixar skdtools.
+	_dow "$url_sdktools" "$path_sdktools" --curl
+
+	# --download-only
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download."
+		return 0 
+	}
+
+	# Descomprimir skdtools.
+	"$Script_UnPack" "$path_sdktools" "$dir_temp" || { 
+		_red "Falha função [unpack] retornou erro"
+		return 1
+	}
+
+
+	#mkdir -p "$HOME/Android/SDK"
+
+}
+
+#-----------------------------------------------------#
+function _android_studio_zip()
+{
+	# https://developer.android.com/studio
+	#local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
+	#local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
+	local url='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
+	local soma='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
 	local path_arq="$dir_user_cache/$(basename $url)"
 
 	_dow "$url" "$path_arq" --curl
-	#_dow "$url_sdktools" "$dir_user_cache/$(basename $url_sdktools)" --curl
-
+	
 	# --download-only
 	[[ "$download_only" == 'on' ]] && { 
 		_green "Feito somente download."
@@ -133,27 +166,15 @@ function _android_studio_debian()
 	sudo apt install openjdk-8-jdk
 
 	#-----------------------------------------------------#
-	if [[ "$os_id" == 'debian' ]]; then
-		for c in "${array_virt_debian[@]}"; do
-			echo -e "$space_line"
-			_white "Instalando: $c"
-			sudo apt install -y "$c" || {
-				_red "Falha: $c"
-				sleep 1
-				#return 1; break				
-				}
-		done
-	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		for c in "${array_virt_ubuntu[@]}"; do
-			echo -e "$space_line"
-			_white "Instalando: $c"
-			sudo apt install -y "$c" || {
-				_red "Falha: $c"
-				sleep 1
-				#return 1; break				
-				}
-		done
-	fi
+	for c in "${array_virt_debian[@]}"; do
+		echo -e "$space_line"
+		_white "Instalando: $c"
+		sudo apt install -y "$c" || {
+			_red "Falha: $c"
+			sleep 1
+			#return 1; break				
+			}
+	done
 	#-----------------------------------------------------#
 
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
@@ -162,27 +183,15 @@ function _android_studio_debian()
 	sudo adduser "$USER" libvirt-qemu
 
 	#-----------------------------------------------------#
-	if [[ "$os_id" == 'debian' ]]; then
-		for c in "${array_libutils_debian[@]}"; do
-			echo -e "$space_line"
-			_white "Instalando: $c"
-			sudo apt install -y "$c" || {
-					_red "Falha: $c"
-					sleep 1
-					#return 1; break
-				}
-		done
-	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		for c in "${array_libutils_ubuntu[@]}"; do
-			echo -e "$space_line"
-			_white "Instalando: $c"
-			sudo apt install -y "$c" || {
-					_red "Falha: $c"
-					sleep 1
-					#return 1; break
-				}
-		done
-	fi
+	for c in "${array_libutils_debian[@]}"; do
+		echo -e "$space_line"
+		_white "Instalando: $c"
+		sudo apt install -y "$c" || {
+				_red "Falha: $c"
+				sleep 1
+				#return 1; break
+			}
+	done
 
 	_android_studio_zip
 }
@@ -192,14 +201,89 @@ function _android_archlinux()
 {
 	_android_studio_zip
 }
+
 #-----------------------------------------------------#
+
+function _android_studio_ubuntu()
+{
+	# Encerrar a função se os sistema não for baseado em debian.
+	if [[ ! -f /etc/debian_version ]]; then
+		return 1
+	fi
+
+	# ubuntu utils
+	local array_virt_ubuntu=(
+		'qemu-kvm' 'libvirt-bin' 'ubuntu-vm-builder' 'bridge-utils'
+	)
+
+	# Ubuntu lib utils.
+	local array_libutils_ubuntu=(
+		'lib32z1' 'lib32ncurses5' 'lib32stdc++6' 'lib32gcc1' 'lib32tinfo5' 'libc6-i386'
+	)
+
+	sudo apt update
+	echo -e "$space_line"
+	_white "Instalando: openjdk-8-jdk"
+	sudo apt install openjdk-8-jdk
+
+	#-----------------------------------------------------#
+	for c in "${array_virt_ubuntu[@]}"; do
+		echo -e "$space_line"
+		_white "Instalando: $c"
+		sudo apt install -y "$c" || {
+			_red "Falha: $c"
+			sleep 1
+			#return 1; break				
+			}
+	done
+	#-----------------------------------------------------#
+
+	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
+	_white "Adicionando $USER aos grupos: $(_c 32)libvirt | libvirt-qemu$(_c)" 
+	sudo adduser "$USER" libvirt
+	sudo adduser "$USER" libvirt-qemu
+
+	#-----------------------------------------------------#
+	for c in "${array_libutils_ubuntu[@]}"; do
+		echo -e "$space_line"
+		_white "Instalando: $c"
+		sudo apt install -y "$c" || {
+				_red "Falha: $c"
+				sleep 1
+				#return 1; break
+			}
+	done
+
+	_android_studio_zip
+}
+
+#-----------------------------------------------------#
+function _android_studio_fedora()
+{
+	local array_libs_fedora=('zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686')
+
+	for c in "${array_libs_fedora[@]}"; do
+		echo -e "$space_line"
+		_white "Instalando: $c"
+		sudo dnf install "$c" || {
+			_red "[!] Falha: $c"
+			sleep 1
+		}
+	done
+
+	_android_studio_zip 
+}
+#-----------------------------------------------------#
+
 function _android_studio()
 {
 # https://www.blogopcaolinux.com.br/2017/09/Instalando-Android-Studio-no-Debian-e-no-Ubuntu.html
 # https://developer.android.com/studio/index.html#downloads
 
 	case "$os_id" in
-		debian|linuxmint|ubuntu) _android_studio_debian;;
+		debian) _android_studio_debian;;
+		linuxmint|ubuntu) _android_studio_ubuntu;;
+		fedora) _android_studio_fedora;;
 		arch) _android_archlinux;;
 		*) _prog_not_found; return 1;;
 	esac
