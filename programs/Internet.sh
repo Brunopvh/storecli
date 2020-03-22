@@ -550,45 +550,61 @@ function _teamviewer()
 #=====================================================#
 function _telegram()
 {
-# https://desktop.telegram.org/
-# https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz
+	# https://desktop.telegram.org/
+	# https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz
+	# curl -vSL -w "%{http_code}" https://telegram.org/dl/desktop/linux
+	local url_telegram='https://telegram.org/dl/desktop/linux'
+	local path_arq="$dir_user_cache/telegramsetup.tar.xz"
+
+	# Remover arquivo de downloads antigos - usar sempre a ultima versão.
+	if [[ -f "$path_arq" ]]; then
+		rm "$path_arq"
+	fi
 
 	# Instalar gconf2.
-	if [[ -x $(which zypper 2> /dev/null) ]]; then # Suse
+	if _WHICH 'zypper'; then # Suse
 		sudo zypper in gconf2
 
-	elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
+	elif _WHICH 'dnf'; then # Fedora
 		sudo dnf install GConf2
 
-	elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
+	elif _WHICH 'apt'; then # Debian distros.
 		sudo apt install -y gconf2
 
 	fi
 
-	local url_telegram='https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz'
-	local path_arq="$dir_user_cache/telegramsetup.1.8.15.tar.xz"
-
-	_dow "$url_telegram" "$path_arq" --wget
+	
+	_dow "$url_telegram" "$path_arq" 
 
 	# --downloadonly
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-	[[ -x $(command -v telegram 2> /dev/null) ]] && { _msg_pack_instaled 'telegram'; return 0; }
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download"
+		return 0
+	}
+	
+	# Já instalado
+	if _WHICH 'telegram'; then
+		_msg_pack_instaled 'telegram'
+		return 0
+	fi
 
-	"$Script_UnPack" "$path_arq" "$dir_temp"
-	[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
+	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
+		_red "[!] Função [unpack] retornou erro" 
+		return 1
+	}
 
-	_msg "Instalando"
+	_msg "Aguarde..."
 
 	cd "$dir_temp" && mv -v $(ls -d Telegra*) "$dir_user_bin/telegram-amd64" 1> /dev/null
 	chmod -R 755 "$dir_user_bin/telegram-amd64"
 	ln -sf "$dir_user_bin/telegram-amd64/Telegram" "$dir_user_bin/telegram"
 	telegram
 
-	if [[ -x $(command -v telegram 2> /dev/null) ]]; then
-		_msg 'telegram instalado com sucesso'
+	if _WHICH 'telegram'; then
+		_white 'telegram instalado com sucesso'
 		return 0
 	else
-		echo "=> Função $(_c 31)_telegram $(_c) retornou [erro]"
+		_red "[!] Função [_telegram] retornou erro"
 		return 1
 	fi
 }
