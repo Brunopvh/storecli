@@ -272,6 +272,7 @@ function _android_studio_fedora()
 	done
 
 	_android_studio_zip 
+	_android_sdktools
 }
 #-----------------------------------------------------#
 
