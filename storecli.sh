@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020-03-22'
+VERSION='2020-03-29'
 #
 # StoreCli a sua loja de aplicativos via linha de comando.
 # Download Configuração e Instalaçao de programas.
@@ -65,6 +65,7 @@ export Lib_platform="$StoreCli_Path_Lib/platform.sh"            # Detecta o sist
 export Lib_Info="$StoreCli_Path_Lib/info.sh"
 export Lib_SysUtils="$StoreCli_Path_Lib/SysUtils.sh"
 export Lib_HttpsTransfer="$StoreCli_Path_Lib/HttpsTransfer.sh"
+export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh"        # Gerencia instalação dos pacotes.
 export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"        # Gerencia remoção dos pacotes.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
@@ -102,7 +103,7 @@ source "$Lib_ShaSum"
 source "$Lib_Gpg"
 source "$Lib_CheckUpdate"
 source "$Lib_Color"
-#source "$Lib_PackManager" # esta "lib" NÃO está em uso.
+source "$Lib_PackManager" 
 
 source "$Lib_Acessorios"
 source "$Lib_Dev"
@@ -136,6 +137,30 @@ function _space_msg()
 		echo -ne "-"
 		num="$(($num-1))"
 	done
+}
+
+#========================================================#
+
+function space_msg()
+{
+	# Espaçamento entre palavras tamanho padrão 50 caracteres.
+	num_string="${#1}" # Obter o tamana da string do primeiro parametro
+	shift
+
+	# Somar com o tamanho dos demais parametros caso tenha mais do que um.
+	for c in "$@"; do
+		num_string="$(($num_string+${#1}))"
+		shift
+	done
+
+	# Subtrair 40 pelo tamanho total obtido.
+	num="$((40-$num_string))" 
+
+	while [[ "$num" != '0' ]]; do
+		echo -ne "-" # Ecoar na tela sem quebrar linhas
+		num="$(($num-1))"
+	done
+	echo -en ">"
 }
 #========================================================#
 
@@ -206,16 +231,16 @@ function _configure_system()
 #=====================================================#
 # Args
 #=====================================================#
-if [[ "$1" == '--help' ]]; then
+if [[ "$1" == '--help' ]] || [[ "$1" == '-h' ]]; then
 	usage; exit 0
 
-elif [[ "$1" == '--version' ]]; then
+elif [[ "$1" == '--version' ]] || [[ "$1" == '-v' ]]; then
 	echo -e "$(basename $0) V${VERSION}"; exit 0
 
 elif [[ "$1" == '--logo' ]]; then
 	_logo; exit 0 # LibInfo
 
-elif [[ "$1" == '--configure' ]]; then
+elif [[ "$1" == '--configure' ]] || [[ "$1" == '-c' ]]; then
 	# Lib SysUtils.sh
 	_configure_system || { _red "Encerrando com erro."; exit 1; }
 	exit 0
@@ -224,7 +249,7 @@ elif [[ "$1" == '--list' ]]; then
 	_list_applications
 	exit 0
 
-elif [[ "$1" == '--upgrade' ]]; then
+elif [[ "$1" == '--upgrade' ]] || [[ "$1" == '-u' ]]; then
 	_msg 'Aguarde...'
 	"$StoreCli_Path/install.sh"
 	exit "$?"
@@ -333,8 +358,8 @@ function _day_update()
 }
 
 #=====================================================#
-_msg "Sistema $(_space_msg 7) $os_type $os_id $os_version"
-_msg "Downloads $(_space_msg 9) $dir_user_cache"
+_msg "Sistema $(space_msg $os_type $os_id $os_version) $os_type $os_id $os_version"
+_msg "Downloads $(space_msg $dir_user_cache) $dir_user_cache"
 
 #=====================================================#
 # Verificar nova versão uma vez por dia.
@@ -354,7 +379,7 @@ old_day=$(grep 'check_day' "$Config_File" | awk '{print $2}')
 # Se o dia de "hoje" for diferente do dia da ultima verificação, então execute a função _day_update.
 if [[ "$current_day" != "$old_day" ]]; then 
 	_day_update || { 
-		echo "=> Falha ao tentar instalar atualização. Execute $(_c 31)$(basename $0) --upgrade $(_c)"
+		_msg "Falha ao tentar instalar atualização. Execute $(_c 31)$(basename $0) --upgrade $(_c)"
 	}
 fi
 
@@ -397,95 +422,6 @@ function _quebrado()
 }
 
 #=====================================================#
-# Executar funções de instalação de acordo com 
-# o(s) argumento(s) recebidos.
-#=====================================================#
-
-function _packmanager_install()
-{
-	for arg in "$@"; do
-		if [[ "$arg" == '--downloadonly' ]] || [[ "$arg" == '-d' ]]; then
-			export download_only='on'
-		fi
-	done
-
-while [[ "$1" ]]; do
-	_msg "Instalando ------------------------ $1"
-	case "$1" in
-#-------------------- Acessórios ------------------------#
-		gnome-disk) _gnome_disk;;
-		veracrypt) _veracrypt;;
-		woeusb) _woeusb;;
-
-#-------------------- desenvolvimento -------------------#
-		android-studio) _android_studio;;
-		codeblocks) _codeblocks;;
-		pycharm) _pycharm;;
-		sublime-text) _sublime_text;;
-		vim) _vim;;
-		vscode) _vscode;;
-
-#-------------------- Escritório ------------------------#
-		atril) _atril;;
-		fontes-ms) _fontes_microsoft;;
-		libreoffice) _libreoffice;;
-		libreoffice-appimage) _libreoffice_appimage;;
-
-#-------------------- gnome-shell --------------------------#
-		gnome-utils) _gnome_shell;;
-
-#-------------------- internet --------------------------#
-		chromium) _chromium;;
-		google-chrome) _google_chrome;;
-		megasync) _megasync;;
-		opera-stable) _opera_stable;;
-		proxychains) _proxychains;;
-		qbittorrent) _qbittorrent;;
-		teamviewer) _teamviewer;;
-		telegram) _telegram;;
-		tixati) _tixati;;
-		torbrowser) _torbrowser;;
-		uget) _uget;;
-		youtube-dl) _youtube_dl;;
-		youtube-dl-gui) _youtube_dl_gui_github;;
-
-#-------------------- midia ----------------------------#
-		codecs) _codecs;;
-		vlc) _vlc;;
-		parole) _parole;;
-		gnome-mpv) _gnome_mpv;;
-		smplayer) _smplayer;;
-
-#-------------------- sistema ---------------------------#
-		bluetooth) _bluetooth;;
-		compactadores) _compactadores;;
-		firmware-*) _firmware "$1";;
-		gparted) _gparted;;
-		peazip) _peazip;;
-		virtualbox) _virtualbox;;
-
-#------------------------ wine ---------------------------#
-		wine) "$Script_Pywine" install wine;;
-		winetricks) "$Script_Pywine" install winetricks;;
-
-#-------------------- preferencias ---------------------------#
-		hacking-parrot) _hacking_parrot;;
-		papirus) _papirus;; # Instalar diretamente pelo arquivo ./scripts/papirus.sh "$Script_Papirus"
-		ohmybash) _ohmybash;;
-		ohmyzsh) _ohmyzsh;;
-		sierra) _sierra;;
-
-		--downloadonly) echo -en "\r";;
-		-d) echo -en "\r";;
-		install) echo -ne "\r";;
-		*) _red "Programa indisponível ............... $1";;
-	esac
-	shift
-done
-
-}
-
-#=====================================================#
 # Execução do programa atraves dos argumentos recebidos.
 #=====================================================#
 
@@ -497,12 +433,13 @@ if [[ ! -z $1 ]]; then
 			--list) _list_applications; exit "$?";;
 			--quebrado) _quebrado; exit "$?";;
 			--debian-repos) "$Script_AddRepo" --debian-repos;;
-			*) _white "Comando não encontrado ............... $(_c 31)[$1]$(_c)"
+			*) _white "Comando não encontrado $(space_msg $1) [$1]"; sleep 1;;
 		esac
 		shift
 	done
 else
-	_logo
+	#_logo
+	usage
 fi
 
 exit "$?"

@@ -62,15 +62,16 @@ curl -LsS https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc | gpg --im
 
 	# unpack
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1 
+		_red "Falha função [unpack] retornou erro" 
+		return 1 
 	}
 
-echo "$(cor 32)=> $(cor)Instalando"
+	_msg "Instalando"
 
-cd "$dir_temp" && mv $(ls veracrypt*setup-gui-x64) "$dir_temp/veracryptx64" 1> /dev/null
-chmod +x "$dir_temp/veracryptx64"
-sudo "$dir_temp/veracryptx64"
-[[ -d "$dir_temp" ]] && { cd "$dir_temp" && sudo rm -rf *; }
+	cd "$dir_temp" && mv $(ls veracrypt*setup-gui-x64) "$dir_temp/veracryptx64" 1> /dev/null
+	chmod +x "$dir_temp/veracryptx64"
+	sudo "$dir_temp/veracryptx64"
+	[[ -d "$dir_temp" ]] && { cd "$dir_temp" && sudo rm -rf *; }
 }
 
 #=====================================================#
@@ -89,7 +90,7 @@ function _woeusb_buster(){
 			)
 
 	_white "Necessário instalar os seguintes pacotes: ${requeriments_woeusb[@]}"
-	echo -ne "Deseja proseguir $(cor 32)[s/n]$(cor) ? : "
+	echo -ne "Deseja proseguir $(_c 32)[s/n]$(_c) ? : "
 	read input
 
 	[[ "${input,,}" == 's' ]] || { _red "Abortando..."; sleep 1; return 0; }
@@ -139,7 +140,7 @@ function _woeusb_buster(){
 	#===============================================================#
 	#======================== salvar o arquivo .deb ? ==============#
 
-	_white "Deseja salvar o arquivo woeusb_1.0_amd64.deb $(cor 33)[s/n]$(cor)?: "
+	_white "Deseja salvar o arquivo woeusb_1.0_amd64.deb $(_c 33)[s/n]$(_c)?: "
 	read input
 
 	[[ "${input,,}" == 's' ]] && {

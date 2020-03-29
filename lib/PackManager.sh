@@ -30,7 +30,7 @@ fi
 
 function _msg_pack_instaled()
 {
-	echo "=> já instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
+	_msg "já instalado para remove-lo use: $(basename $0) $(_c 32)r$(_c)emove $1"
 }
 
 #=====================================================#
@@ -38,19 +38,22 @@ function _msg_pack_instaled()
 #=====================================================#
 function _quebrado()
 {
-[[ ! -x $(command -v apt 2> /dev/null) ]] && { _prog_not_found; return 1; }	
+	[[ ! -x $(command -v apt 2> /dev/null) ]] && { 
+		_prog_not_found 
+		return 1
+	}	
 
-echo "$(_c 32)=> $(_c)Limpando cache aguarde..."
-sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
+	_msg "Executando [apt-get clean; apt-get remove -y; apt-get autoremove -y]"
+	sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'
 
-echo "$(_c 32)=> $(_c)Executando dpkg --configure -a"
-sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
+	_msg "Executando [apt-get install -f -y; dpkg --configure -a; apt --fix-broken install]"
+	sudo sh -c 'apt-get install -f -y; dpkg --configure -a; apt --fix-broken install'
 
-echo "$(_c 32)=> $(_c)Executando apt update"
-sudo apt update 
-#sudo apt-get install --yes --force-yes -f 
+	_msg "Executando [apt update]"
+	sudo apt update 
+	#sudo apt-get install --yes --force-yes -f 
 
-echo -e "$(_c 33)[OK]$(_c)"
+	_msg "OK"
 }
 
 #=====================================================#
@@ -65,14 +68,22 @@ function _packmanager_install()
 	done
 
 while [[ "$1" ]]; do
-	echo "=> Instalando: $1"
+	if [[ "$1" == '-d' ]] || [[ "$1" == '--downloadonly' ]]; then
+		echo -en "\r"
+	else
+		_msg "Instalando $(space_msg $1) $1"
+	fi
+
+
 	case "$1" in
 #-------------------- Acessórios ------------------------#
 		gnome-disk) _gnome_disk;;
 		veracrypt) _veracrypt;;
+		woeusb) _woeusb;;
 
 #-------------------- desenvolvimento -------------------#
 		android-studio) _android_studio;;
+		codeblocks) _codeblocks;;
 		pycharm) _pycharm;;
 		sublime-text) _sublime_text;;
 		vim) _vim;;
@@ -84,7 +95,11 @@ while [[ "$1" ]]; do
 		libreoffice) _libreoffice;;
 		libreoffice-appimage) _libreoffice_appimage;;
 
+#-------------------- gnome-shell --------------------------#
+		gnome-utils) _gnome_shell;;
+
 #-------------------- internet --------------------------#
+		chromium) _chromium;;
 		google-chrome) _google_chrome;;
 		megasync) _megasync;;
 		opera-stable) _opera_stable;;
@@ -113,19 +128,20 @@ while [[ "$1" ]]; do
 		peazip) _peazip;;
 		virtualbox) _virtualbox;;
 
+#------------------------ wine ---------------------------#
+		wine) "$Script_Pywine" install wine;;
+		winetricks) "$Script_Pywine" install winetricks;;
+
 #-------------------- preferencias ---------------------------#
 		hacking-parrot) _hacking_parrot;;
-		icones-papirus) "$Script_Papirus";;
+		papirus) _papirus;; # Instalar diretamente pelo arquivo ./scripts/papirus.sh "$Script_Papirus"
 		ohmybash) _ohmybash;;
 		ohmyzsh) _ohmyzsh;;
 		sierra) _sierra;;
-
-		--downloadonly) echo -en "\r";;
-		-d) echo -en "\r";;
+		--downloadonly|-d) echo -en "\r";;
 		install) echo -ne "\r";;
-		*) echo "=> Programa indisponível: $(_c 31)$1 $(_c)";;
+		*) _red "Programa indisponível $(space_msg $1) $1";;
 	esac
 	shift
 done
-
 }

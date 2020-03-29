@@ -7,16 +7,6 @@ github_storecli='https://github.com/Brunopvh/storecli.git'
 
 source "$Lib_array"
 
-function _c() { 
-if [[ -z $2 ]]; then
-	echo -e "\033[1;$1m"
-	
-elif [[ $2 ]]; then
-	echo -e "\033[$2;$1m"
-
-fi
-}
-
 #============================================================#
 # Usage
 #============================================================#
@@ -32,13 +22,13 @@ cat <<EOF
    $(basename $0): V$VERSION
 
 Comandos:
-   --configure            Instala programas necessários (dependências).
-   --help                 Mostra esse menu e sai.
-   --list                 Lista aplicativos disponíveis para instalação.
-   --logo                 Exibe logo e sai.
-   --quebrado             Remove pacotes quebrados.
-   --upgrade              Instala a ultima versão deste script em: ~/.local/bin            
-   --version              Mostra versão e sai. 
+   --configure|-c             Instala programas necessários (dependências).
+   --help|-h                  Mostra esse menu e sai.
+   --list                     Lista aplicativos disponíveis para instalação.
+   --logo                     Exibe logo e sai.
+   --quebrado                 Remove pacotes quebrados.
+   --upgrade|-u               Instala a ultima versão deste script em: ~/.local/bin            
+   --version|-v               Mostra versão e sai. 
    
    install <pacote>       Instala um ou mais pacote(s) 
                             Ex: $(basename $0) vlc google-chrome icones-papirus

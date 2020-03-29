@@ -622,7 +622,7 @@ local path_arq="$1"
 		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
 	}
 
-	echo "$(cor 32)=> $(cor)Instalando"
+	_msg "Instalando"
 
 	cd "$dir_temp" && mv $(ls -d tixati*) "$dir_temp/tixati-amd64" 1> /dev/null
 	chmod -R a+x "$dir_temp/tixati-amd64"
