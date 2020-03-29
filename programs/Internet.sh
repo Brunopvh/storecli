@@ -65,6 +65,8 @@ sudo sh -c 'aptitude update; aptitude install google-chrome-stable -y'
 
 function _google_chrome_fedora()
 {
+	# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
+	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 	sudo dnf install fedora-workstation-repositories
 	sudo dnf config-manager --set-enabled google-chrome
 	sudo dnf install -y google-chrome-stable

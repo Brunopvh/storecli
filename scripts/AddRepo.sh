@@ -30,28 +30,30 @@ EOF
 #============================================================#
 function _install_repos_fedora()
 {
-# sudo dnf repolist
-# sudo dnf repository-packages fedora list
-# sudo dnf repository-packages fedora list available
-# sudo dnf repository-packages fedora list installed
-# sudo vim /etc/yum.repos.d/grafana.repo
-# sudo dnf config-manager --add-repo /etc/yum.repos.d/grafana.repo
-# sudo dnf --enablerepo=grafana install grafana  
-# sudo dnf --disablerepo=fedora-extras install grafana
+	# sudo dnf repolist
+	# sudo dnf repository-packages fedora list
+	# sudo dnf repository-packages fedora list available
+	# sudo dnf repository-packages fedora list installed
+	# sudo vim /etc/yum.repos.d/grafana.repo
+	# sudo dnf config-manager --add-repo /etc/yum.repos.d/grafana.repo
+	# sudo dnf --enablerepo=grafana install grafana  
+	# sudo dnf --disablerepo=fedora-extras install grafana
+	# dnf --best upgrade
+	# 
 
-local repos_fusion_free='https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release'
-local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
+	local repos_fusion_free='https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release'
+	local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
 
-echo "$space_line"
-_msg "Adicionando os seguintes repositórios: "
-sleep 1
-_msg "rpmfusion-free-release-$(rpm -E %fedora)"
-_msg "rpmfusion-nonfree-release-$(rpm -E %fedora)"
-_msg "fedora-workstation-repositories"
+	echo "$space_line"
+	_msg "Adicionando os seguintes repositórios: "
+	sleep 1
+	_msg "rpmfusion-free-release-$(rpm -E %fedora)"
+	_msg "rpmfusion-nonfree-release-$(rpm -E %fedora)"
+	_msg "fedora-workstation-repositories"
 
-sudo dnf install -y fedora-workstation-repositories || return 1
-sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm" || return 1
-sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" || return 1
+	sudo dnf install -y fedora-workstation-repositories || return 1
+	sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm" || return 1
+	sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" || return 1
 }
 
 #============================================================#

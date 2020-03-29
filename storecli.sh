@@ -18,7 +18,8 @@ VERSION='2020-03-22'
 #--------------------| REFERÊNCIAS |----------------------------#
 # http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
 # https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-Arch-com-Git
-#
+# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
+# 
 #
 
 #clear

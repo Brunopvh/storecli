@@ -14,8 +14,11 @@ function _gnome_shell()
 
 	# Fedora
 	local array_gnome_shell_fedora=(
-	'gnome-tweaks' 'gnome-shell-extension-topicons-plus'
-	'gnome-shell-extension-drive-menu' 'gnome-backgrounds-extras'
+	'gnome-tweaks' 
+	'gnome-shell-extension-topicons-plus'
+	'gnome-shell-extension-drive-menu' 
+	'gnome-shell-extension-dash-to-dock.noarch'
+	'gnome-backgrounds-extras'
 	'verne-backgrounds-gnome'
 	)
 
