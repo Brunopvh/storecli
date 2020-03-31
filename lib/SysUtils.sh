@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 #
+# Este módulo serve para verficar os requisitos minimos de sistema necessário
+# para o funcionamento correto deste programa. 
+# ele também instala os requerimentos se so solicitado apatir do argumento '--configure'
 #
 #
 
@@ -41,7 +44,9 @@ array_cli_ubuntu=(
 )
 
 #===============================================#
-# Install cli debian
+# Instalar alguns requerimentos em particular para o Debia e seus
+# derivados, para poder usar o 'apt' com suporte a 'https' entre outros
+# recursos para que não cause falha na instalação dos pacotes.
 #===============================================#
 function _install_cli_debian()
 {
@@ -131,7 +136,7 @@ function _install_cli_arch()
 	fi
 	
 	# Adicionar repositórios
-	"$Script_AddRepo" --arch-repos
+	#"$Script_AddRepo" --arch-repos
 
 	_msg "Instalando: binutils"
 	sudo pacman -S binutils
@@ -337,3 +342,36 @@ function _create_dirs_user()
 	done
 }
 
+
+
+#=====================================================#
+# Configure system
+#=====================================================#
+function _configure_system()
+{
+	# instalar utilitários de linha de comando de acordo com cada sistema.
+	while ! _install_requeriments; do
+		read -n 1 -p "Erro pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: " _input
+		
+		if [[ "${_input,,}" == 'r' ]]; then 
+			continue
+		else 
+			return 1 
+			break 
+		fi		
+	done
+
+	# Instalar o python3 e alguns módulos que serão utilizados pelo script "pywine"
+	while ! _python_requeriments; do
+		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
+		read -n 1 cr
+		echo ' '
+
+		if [[ "${cr,,}" == 'r' ]]; then 
+			continue
+		else 
+			return 1
+			break 
+		fi		
+	done
+}

@@ -8,12 +8,52 @@
 #=====================================================#
 function _codecs_tumbleweed()
 {
+	# https://software.opensuse.org/download/package?package=opensuse-codecs-installer&project=multimedia%3Aapps
+	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
+	#sudo zypper ar -f http://opensuse-guide.org/repo/openSUSE_Tumbleweed/ libdvdcss
+	#sudo zypper ar -f http://packman.inode.at/suse/openSUSE_Tumbleweed/ packman
+	#sudo zypper ref
+
+	# Adicionar repostórios
+	local tumbleweed_multimedia='https://download.opensuse.org/repositories/multimedia:apps/openSUSE_Tumbleweed/multimedia:apps.repo'
+	
+	sudo zypper addrepo "$tumbleweed_multimedia"
 	sudo zypper ar -f http://opensuse-guide.org/repo/openSUSE_Tumbleweed/ libdvdcss
 	sudo zypper ar -f http://packman.inode.at/suse/openSUSE_Tumbleweed/ packman
-	sudo zypper ref
+	sudo zypper refresh
 
-	sudo zypper install -f libxine2-codecs dvdauthor gstreamer-plugins-bad gstreamer-plugins-bad-orig-addon   
-	sudo zypper install -f smplayer x264 x265 ogmtools libavcodec58
+	# Instalar os codecs
+	local array_tumbleweed_codecs=(
+		opensuse-codecs-installer
+		libxine2-codecs 
+		dvdauthor 
+		gstreamer-plugins-bad 
+		gstreamer-plugins-bad-orig-addon 
+		gstreamer-plugins-ugly-orig-addon 
+		gstreamer-plugins-good-extra 
+		libxine2-codecs    
+		gstreamer-plugins-base  
+		gstreamer-plugins-good 
+		gstreamer-plugins-libav  
+		gstreamer-plugins-ugly 
+		gstreamer-plugins-good-qtqml
+		smplayer 
+		x264 
+		x265 
+		vlc-codecs 
+		vlc-codec-gstreamer 
+		ogmtools 
+		libavcodec58
+	)
+
+	for c in "${array_tumbleweed_codecs[@]}"; do
+		_yellow "[+] Instalando [$c]"
+		if ! sudo zypper in "$c"; then
+			_red "[!] Falha [$c]"
+			sleep 1
+		fi
+	done
+
 }
 
 #-----------------------------------------------------#
@@ -126,34 +166,23 @@ case "$sysname" in
 esac
 }
 
-function _vlc_fedora()
-{
-	if [[ "$os_id" != 'fedora' ]]; then
-		_prog_not_found
-		return 1
-	fi
-
-	# Add repo fusion non free
-	"$Script_AddRepo" --fedora-repos
-	_green "Instalando: vlc"
-	sudo dnf install -y vlc python-vlc
-}
-
 #-----------------------------------------------------#
 
 # Vlc
 function _vlc()
 {
-	if _WHICH 'dnf'; then # dnf/fedora
-		_vlc_fedora
-	elif _WHICH 'apt'; then
-		sudo apt install -y vlc
-	elif _WHICH 'pacman'; then
-		sudo pacman -S vlc
+	# No fedora e necessário de repostórios externos para instalar o vlc por isso
+	# requer um passo-a-passo especial.
+	if _WHICH 'dnf'; then
+		"$Script_AddRepo" --fedora-repos # Adicionar repositórios fusion non free
+		package_man_cli vlc python-vlc
+	elif _WHICH 'zypper'; then
+		package_man_cli vlc vlc-codec-gstreamer vlc-lang python3-python-vlc vlc-vdpau
+
 	else
-		_prog_not_found
+		package_man_cli vlc
+	
 	fi
-	return "$?"
 }
 
 #-----------------------------------------------------#
@@ -163,23 +192,7 @@ function _vlc()
 #=====================================================#
 function _parole()
 {
-	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
-		sudo zypper in -y parole
-
-	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
-		sudo dnf install -y parole
-
-	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-		sudo apt install -y parole
-
-	elif [[ -x $(command -v pacman 2> /dev/null) ]]; then
-		sudo pacman -S parole
-
-	else
-		_prog_not_found; return 1
-
-	fi
-
+	package_man_cli parole	
 }
 
 #-----------------------------------------------------#

@@ -37,9 +37,9 @@ Comandos:
                             Ex: $(basename $0) remove torbrowser vscode
    
 Opções:
-   -d|--downloadonly      Somente baixa o(s) pacote(s) se disponível.
-                          se não for possivel o pacote será instalado.
-                          Ex: $(basename $0) -d <pacote>
+   -d|--downloadonly      Somente baixa o(s) pacote(s) se disponível. Se não for possivel 
+                          fazer somente download o pacote será instalado.
+                          Ex: $(basename $0) install -d <pacote>
                           
 EOF
 }

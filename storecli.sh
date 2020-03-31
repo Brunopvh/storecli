@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020-03-29'
+VERSION='2020-03-31'
 #
 # StoreCli a sua loja de aplicativos via linha de comando.
 # Download Configuração e Instalaçao de programas.
@@ -65,8 +65,9 @@ export Lib_platform="$StoreCli_Path_Lib/platform.sh"            # Detecta o sist
 export Lib_Info="$StoreCli_Path_Lib/info.sh"
 export Lib_SysUtils="$StoreCli_Path_Lib/SysUtils.sh"
 export Lib_HttpsTransfer="$StoreCli_Path_Lib/HttpsTransfer.sh"
-export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh"        # Gerencia instalação dos pacotes.
-export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"        # Gerencia remoção dos pacotes.
+export Lib_PackManager="$StoreCli_Path_Lib/PackManager.sh"          # Gerencia instalação dos pacotes.
+export Lib_PackRemove="$StoreCli_Path_Lib/PackRemove.sh"            # Gerencia remoção dos pacotes.
+export Lib_Package_Man_Cli="$StoreCli_Path_Lib/Package_man_cli.sh"  # Gerenciador de pacotes da distro.
 export Lib_ShaSum="$StoreCli_Path_Lib/ShaSum.sh"
 export Lib_GitClone="$StoreCli_Path_Lib/GitClone.sh"
 export Lib_CheckUpdate="$StoreCli_Path_Lib/CheckUpdate.sh"
@@ -104,6 +105,7 @@ source "$Lib_Gpg"
 source "$Lib_CheckUpdate"
 source "$Lib_Color"
 source "$Lib_PackManager" 
+source "$Lib_Package_Man_Cli"
 
 source "$Lib_Acessorios"
 source "$Lib_Dev"
@@ -162,6 +164,7 @@ function space_msg()
 	done
 	echo -en ">"
 }
+
 #========================================================#
 
 if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
@@ -182,7 +185,7 @@ function _WHICH()
 }
 
 #========================================================#
-# Verificar programas via cli necessários.
+# Verificar programas via cli necessários para este script.
 #========================================================#
 function _check_executable_cli()
 {
@@ -194,38 +197,6 @@ while [[ $1 ]]; do
 	}
 	shift
 done
-}
-
-#=====================================================#
-# Configure system
-#=====================================================#
-function _configure_system()
-{
-	# instalar utilitários de linha de comando de acordo com cada sistema.
-	while ! _install_requeriments; do
-		read -n 1 -p "Erro pressione $(_c 32)r$(_c) para repetir ou $(_c 31)s$(_c) para sair: " _input
-		
-		if [[ "${_input,,}" == 'r' ]]; then 
-			continue
-		else 
-			return 1 
-			break 
-		fi		
-	done
-
-	# Instalar o python3 e alguns módulos que serão utilizados pelo script "pywine"
-	while ! _python_requeriments; do
-		echo -ne "[Falha] selecione $(_c 32)continuar $(_c)ou $(_c 32)repetir $(_c)[c/r]: "
-		read -n 1 cr
-		echo ' '
-
-		if [[ "${cr,,}" == 'r' ]]; then 
-			continue
-		else 
-			return 1
-			break 
-		fi		
-	done
 }
 
 #=====================================================#
@@ -288,22 +259,17 @@ _check_executable_cli "${array_cli_requeriments[@]}" || {
 	exit 1 
 }
 
-# Instalar o script pywine.
-if [[ ! -x $(command -v pywine 2> /dev/null) ]]; then
-	[[ -f "$dir_temp/conf_pywine.sh" ]] && rm "$dir_temp/conf_pywine.sh"
-	curl -SL https://raw.github.com/Brunopvh/pywine/master/conf_pywine.sh -o "$dir_temp/conf_pywine.sh"
-	chmod +x "$dir_temp/conf_pywine.sh"
-	"$dir_temp/conf_pywine.sh"
-fi
-
 # Se o arquivo de configuração ainda não existir no sistema, será criado um arquivo vazio.
 [[ ! -f "$Config_File" ]] && echo ' ' > "$Config_File"
 
+
+#=====================================================#
 # Quando a configuração deste script e concluida com exito ele gera uma linha no arquivo "$Config_File"
 # com a seguinte string 'requeriments_false' isso significa que a primeira configuração foi executada 
 # com sucesso no sistema. Sendo assim não será necessário configura-lo sempre que o script é executado
 # porém se o arquivo não existir ou se esta string não for encontrada as funções de configuração deste
 # script serão invocadas.
+#=====================================================#
 if ! grep -q 'requeriments false' "$Config_File"; then
 	_white "$space_line"
 
@@ -327,6 +293,17 @@ fi
 
 _create_dirs_user       # SysUtils.sh
 "$Script_Config_Path"   # conf_path.sh
+
+
+# Instalar o script pywine.
+if ! _WHICH 'pywine'; then
+	mkdir -p "$dir_temp"
+	[[ -f "$dir_temp/conf_pywine.sh" ]] && rm "$dir_temp/conf_pywine.sh"
+	url_conf_pywine='https://raw.github.com/Brunopvh/pywine/master/conf_pywine.sh'
+	curl -SL "$url_conf_pywine" -o "$dir_temp/conf_pywine.sh" || exit 1
+	chmod +x "$dir_temp/conf_pywine.sh"
+	"$dir_temp/conf_pywine.sh"
+fi
 
 #=====================================================#
 #------------------ End check system -----------------#
@@ -420,6 +397,18 @@ function _quebrado()
 
 	_green "OK"
 }
+
+#=====================================================#
+
+for arg in "$@"; do
+		if [[ "$arg" == '--downloadonly' ]] || [[ "$arg" == '-d' ]]; then
+			export download_only='on'
+
+		elif [[ "$arg" == '--yes' ]] || [[ "$arg" == '-y' ]]; then
+			export install_yes='on'
+
+		fi
+done
 
 #=====================================================#
 # Execução do programa atraves dos argumentos recebidos.

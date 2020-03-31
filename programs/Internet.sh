@@ -26,9 +26,10 @@ function _chromium_lang()
 function _chromium()
 {
 	case "$os_id" in
-		debian) sudo apt install -y chromium;;
-		ubuntu|linuxmint) sudo apt install -y chromium-browser;;
-		fedora) sudo dnf install -y chromium;;
+		debian) package_man_cli chromium;;
+		ubuntu|linuxmint) package_man_cli chromium-browser;;
+		fedora) package_man_cli chromium;;
+		opensuse-tumbleweed) package_man_cli chromium chromium-uget-integrator;; 
 		freebsd12) sudo pkg install chromium;;
 		*) _prog_ind;;
 	esac
@@ -58,7 +59,8 @@ else
 fi
 
 # sudo apt install libu2f-udev
-sudo sh -c 'aptitude update; aptitude install google-chrome-stable -y'	
+sudo apt update
+package_man_cli google-chrome-stable 
 }
 
 #-----------------------------------------------------#
@@ -69,27 +71,20 @@ function _google_chrome_fedora()
 	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 	sudo dnf install fedora-workstation-repositories
 	sudo dnf config-manager --set-enabled google-chrome
-	sudo dnf install -y google-chrome-stable
+	package_man_cli google-chrome-stable
 }
 
 #-----------------------------------------------------#
 
 function _google_chrome_tumbleweed()
 {
-	#wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
-	_msg "Adicionando key e repo"
+	# wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
+	_msg "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub ]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub 
+
+	_msg "Adicionando repo [http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google]"
 	sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google 
-
-	_msg "Instalando google-chrome"
-
-
-	if sudo zypper in google-chrome-stable; then
-		return 0
-	else
-		return 1
-
-	fi
+	package_man_cli google-chrome-stable
 }
 
 #-----------------------------------------------------#
@@ -130,6 +125,10 @@ function _google_chrome()
 #=====================================================#
 # Cliente Mega Sync
 #=====================================================#
+
+
+#-----------------------------------------------------#
+
 function _megasync_suse_tumbleweed()
 {
 # https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
@@ -173,24 +172,40 @@ fi
 
 #-----------------------------------------------------#
 
-function _megasync_ubuntu18()
+function _megasync_ubuntu()
 {
-local mega_repos_ubuntu18="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
-local mega_file="/etc/apt/sources.list.d/megasync.list"
+	# https://mega.nz/linux/MEGAsync/xUbuntu_19.10/
+	# https://mega.nz/linux/MEGAsync/
+	#
+	local url_libraw16='http://archive.ubuntu.com/ubuntu/pool/main/libr/libraw/libraw16_0.18.8-1ubuntu0.3_amd64.deb'
+	local mega_file="/etc/apt/sources.list.d/megasync.list"
+	path_libraw="$dir_user_cache/$(basename $url_libraw16)"
 
-find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.*Ubuntu_18\.04" 2> /dev/null
-if [[ $? == '0' ]]; then
-	echo "=> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
+	if [[ "$os_codename" == 'bionic' ]] || [[ "$sysname" == 'linuxmint19' ]]; then # Ubuntu 18.04
+		local mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
+		local mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key'
+		
+	elif [[ "$os_codename" == 'eoan' ]]; then # Ubuntu 19.10
+		local mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
+		local mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_19.10/Release.key'
+		_dow "$url_libraw16" "$path_libraw" 
+		_msg "Instalando [$path_libraw]"
+		sudo dpkg --install "$path_libraw"
+	else
+		_prog_not_found
+		return 1
+	fi
 
-else
-	_msg "Adicionando repositório"
-	echo "$mega_repos_ubuntu18" | sudo tee "$mega_file"
+	#find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.*Ubuntu_18\.04" 2> /dev/null
+	_msg "Adicionando repositório [$mega_repos_ubuntu]"
+	echo "$mega_repos_ubuntu" | sudo tee "$mega_file"
 
-fi
-
-	_msg "Adicionando key."	
-	sudo sh -c 'wget -c https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key -O- | apt-key add -'
-	sudo sh -c 'apt update; apt install -y megasync'
+	_msg "Adicionando key [$mega_url_key]"
+	curl -sSL "$mega_url_key" -o- | sudo apt-key add -	
+	#sudo sh -c 'wget -c https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key -O- | apt-key add -'
+	sudo apt update 
+	sudo apt install libc-ares2 libmediainfo0v5 
+	sudo apt install -y megasync
 }
 
 #-----------------------------------------------------#
@@ -220,7 +235,7 @@ function _megasync()
 case "$sysname" in
 	opensuse-tumbleweed) _megasync_suse_tumbleweed;;
 	debian10) _megasync_debian10;;
-	linuxmint19|ubuntu18.04) _megasync_ubuntu18;;
+	linuxmint19|ubuntu18.04|ubuntu19.10) _megasync_ubuntu;;
 	fedora30|fedora31) _megasync_fedora;;
 	*) _prog_not_found; return 1;;
 

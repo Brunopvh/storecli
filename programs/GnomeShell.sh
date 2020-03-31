@@ -7,11 +7,6 @@
 
 function _gnome_shell()
 {
-	if ! printenv | grep -q ^"DESKTOP_SESSION=gnome"; then
-		_red "Você não está em sessão gnome-shell" 
-		return 1
-	fi
-
 	# Fedora
 	local array_gnome_shell_fedora=(
 	'gnome-tweaks' 
@@ -20,6 +15,11 @@ function _gnome_shell()
 	'gnome-shell-extension-dash-to-dock.noarch'
 	'gnome-backgrounds-extras'
 	'verne-backgrounds-gnome'
+	)
+
+	# OpenSuxe
+	local array_gnome_shell_suse=(
+	'gnome-tweaks' 
 	)
 
 	# ArchLinux
@@ -41,28 +41,30 @@ function _gnome_shell()
 		for c in "${array_gnome_shell_fedora[@]}"; do
 			echo -e "$space_line"
 			_white "Instalando: $c"
-			sudo dnf install -y "$c"
+			package_man_cli "$c"
 		done
 
 	elif _WHICH "zypper"; then       # Suse
-		for c in "${array_gnome_shell_fedora[@]}"; do
+		for c in "${array_gnome_shell_suse[@]}"; do
 			echo -e "$space_line"
 			_white "Instalando: $c"
-			sudo zypper install -y "$c"
+			package_man_cli "$c" || {
+				_red "[!] Falha $c"
+			}
 		done
 
 	elif _WHICH "pacman"; then       # ArchLinux
 		for c in "${array_gnome_shell_arclinux[@]}"; do
 			echo -e "$space_line"
 			_white "Instalando: $c"
-			sudo pacman -S "$c"
+			package_man_cli "$c"
 		done
 
 	elif _WHICH "apt"; then          # Debian
 		for c in "${array_gnome_shell_debian[@]}"; do
 			echo -e "$space_line"
 			_white "Instalando: $c"
-			sudo apt install -y "$c"
+			package_man_cli "$c"
 		done
 
 	else

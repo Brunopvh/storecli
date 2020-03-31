@@ -36,7 +36,7 @@ function _green(){
 
 # Yellow
 function _yellow(){
-	echo -e "=> $(_c 33)$@$(_c)"
+	echo -e "=> $(_c 93)$@$(_c)"
 }
 
 # White

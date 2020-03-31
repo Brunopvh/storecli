@@ -170,13 +170,17 @@ _dow "$peazip_url_download" "$path_arq" --curl
 		return 0 
 	}
 	
-	[[ -x $(command -v peazip 2> /dev/null) ]] && { _msg_pack_instaled 'peazip'; return 0; }
+	_WHICH 'peazip' && { 
+		_msg_pack_instaled 'peazip'
+		return 0 
+	}
 
-"$Script_UnPack" "$path_arq" "$dir_temp"
+	"$Script_UnPack" "$path_arq" "$dir_temp"
 
-[[ $? == '0' ]] || { echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; }
-
-echo "$(cor 32)=> $(cor)Instalando"
+	[[ $? == '0' ]] || { 
+		_red "Falha [unpack] retornou erro" 
+		return 1 
+	}
 
 cd "$dir_temp" && mv -v $(ls -d peazip*) "$dir_temp/peazip-amd64" 1> /dev/null
 sudo chown -R root:root "$dir_temp/peazip-amd64" #1> /dev/null # root é o dono.
@@ -197,7 +201,7 @@ if [[ -x $(which peazip 2> /dev/null) ]]; then
 	return 0
 
 else
-	echo "$(cor 31)=> $(cor)Falha"
+	echo "$(_c 31)=> $(_c)Falha"
 	return 1
 
 fi
@@ -252,7 +256,7 @@ local path_arq="$dir_user_cache/$(basename $url_extpack)" # Destion/Arquivo.
 echo "$(_c 32)=> $(_c)Instalando Extension Pack"
 sudo VBoxManage extpack install --replace "$path_arq"
 
-echo -ne "$(cor 32)=> $(cor)Deseja adicionar $USER ao grupo vboxusers ? $(cor 33)[s/n]$(cor) : " 
+echo -ne "$(_c 32)=> $(_c)Deseja adicionar $USER ao grupo vboxusers ? $(_c 33)[s/n]$(_c) : " 
 read acao 
 
 	[[ "${acao,,}" == 's' ]] && { 
@@ -322,7 +326,7 @@ fi
 	sudo apt update
 	
 	# Dependências
-	echo "$(cor 32)=> $(cor)Instalando dependências"
+	echo "$(_c 32)=> $(_c)Instalando dependências"
 	sudo sh -c 'apt install -y module-assistant build-essential dkms; apt install -y linux-headers-$(uname -r)'
 	
 	# Virtualbox 6.0
@@ -359,7 +363,7 @@ fi
 	sudo apt update
 	
 	# Dependências
-	echo "$(cor 32)=> $(cor)Instalando dependências"
+	echo "$(_c 32)=> $(_c)Instalando dependências"
 	sudo sh -c 'apt install -y module-assistant build-essential dkms; apt install -y linux-headers-$(uname -r)'
 	
 	# Virtualbox 6.0
