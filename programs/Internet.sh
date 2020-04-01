@@ -2,7 +2,7 @@
 #
 #
 
-#source "$Lib_GitClone"
+source "$Lib_GitClone"
 
 #=====================================================#
 # Chomium
@@ -928,7 +928,10 @@ esac
 #--------------------------------------------------------#
 
 	github_youtube_dl_gui="https://github.com/MrS0m30n3/youtube-dl-gui.git"
-	_gitclone "$github_youtube_dl_gui" || { _red "Função [_gitclone] retornou erro."; return 1; }
+	_gitclone "$github_youtube_dl_gui" || { 
+		_red "Função [_gitclone] retornou erro." 
+		return 1 
+	}
 
 	cd "$dir_temp/youtube-dl-gui" && {
 		if [[ -x $(command -v python2 2> /dev/null) ]]; then # Linux
