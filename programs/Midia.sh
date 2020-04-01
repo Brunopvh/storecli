@@ -178,7 +178,9 @@ function _vlc_tumbleweed()
 {
 	# https://en.opensuse.org/SDB:Firefox_MP4/H.264_Video_Support
 	# http://download.videolan.org/pub/videolan/vlc/SuSE/Tumbleweed/vlc.ymp
-	_red "Program indisponível"; sleep 1
+	# sudo zypper in libqt5-qtquickcontrols2-private-headers-devel
+
+	_red "Programa indisponível"; sleep 1
 }
 
 #-----------------------------------------------------#

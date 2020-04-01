@@ -15,9 +15,12 @@ function package_man_cli()
 	#        'sudo apt install -y --download-only' (para somente baixar)
 	#        'sudo zypper in --downloadonly' (para somente baixar).
 	#
+	#-------------------------------------------------------------#
+	# Somente download
+	#-------------------------------------------------------------#
 	[[ "$download_only" == 'on' ]] && {
 
-		if [[ -f '/etc/debian_release' ]]; then
+		if [[ -f '/etc/debian_version' ]]; then
 			sudo apt install -y --download-only "$@"
 
 		elif [[ "$os_id" == 'fedora' ]]; then
@@ -38,9 +41,11 @@ function package_man_cli()
 	return 0 # Somente download encerrar depois de baixar os pacotes.
 	}
 
+	#-------------------------------------------------------------#
 	# Baixar e instalar assumindo sim/yes.
+	#-------------------------------------------------------------#
 	[[ "$install_yes" == 'on' ]] && {
-		if [[ -f '/etc/debian_release' ]]; then
+		if [[ -f '/etc/debian_version' ]]; then
 			sudo apt install -y "$@"
 
 		elif [[ "$os_id" == 'fedora' ]]; then
@@ -62,7 +67,7 @@ function package_man_cli()
 	}
 
 
-	if [[ -f '/etc/debian_release' ]]; then
+	if [[ -f '/etc/debian_version' ]]; then
 		sudo apt install "$@"
 
 	elif [[ "$os_id" == 'fedora' ]]; then

@@ -42,25 +42,25 @@ function _chromium()
 #=====================================================#
 function _google_chrome_debian()
 {
-local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
-_msg "Adicionando key"
-sudo sh -c 'wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | apt-key add -'
+	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
+	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
+	_msg "Adicionando key"
+	sudo sh -c 'wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | apt-key add -'
 
-find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
+	find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
 
-if [[ $? == '0' ]]; then
-	_msg "Repositório $(_c 35)já$(_c) está disponível 'pulando'"
+	if [[ $? == '0' ]]; then
+		_msg "Repositório $(_c 35)já$(_c) está disponível 'pulando'"
 
-else
-	_msg "Adicionando repositório"
-	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
+	else
+		_msg "Adicionando repositório"
+		echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
 
-fi
+	fi
 
-# sudo apt install libu2f-udev
-sudo apt update
-package_man_cli google-chrome-stable 
+	# sudo apt install libu2f-udev
+	sudo apt update
+	package_man_cli google-chrome-stable 
 }
 
 #-----------------------------------------------------#
@@ -113,7 +113,7 @@ function _google_chrome()
 		*) _prog_not_found; return 1;;
 	esac	
 
-	if [[ $? == '0' ]] && [[ -x $(command -v google-chrome 2> /dev/null) ]]; then 
+	if _WHICH 'google-chrome'; then 
 		_msg 'google-chrome instalado com sucesso'
 		return 0
 	else
@@ -131,38 +131,33 @@ function _google_chrome()
 
 function _megasync_suse_tumbleweed()
 {
-# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
+	# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
 
-echo "$(_c 32 0)=> $(_c)Adicionando key e repo"
-sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key
-sudo zypper ar -f https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA
-sudo zypper ref
+	echo "$(_c 32 0)=> $(_c)Adicionando key e repo"
+	sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key
+	sudo zypper ar -f https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA
+	sudo zypper ref
 
-echo "$(_c 32)=> $(_c)Instalando megasync"
-if sudo zypper in megasync; then
-	return 0
-else
-	return 1
+	_msg "Instalando megasync"
+	if sudo zypper in megasync; then
+		return 0
+	else
+		return 1
 
-fi
+	fi
 }
 
 #-----------------------------------------------------#
 
 function _megasync_debian10()
 {
-local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
-local mega_file="/etc/apt/sources.list.d/megasync.list"
+	local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
+	local mega_file="/etc/apt/sources.list.d/megasync.list"
 
-find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
-if [[ $? == '0' ]]; then # Pular 
-	echo "=> $(_c 33)R$(_c)epositório $(_c 32)já$(_c) está disponível 'pulando'"
-
-else
+	# find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
+	
 	_msg "Adicionando repositório"
 	echo "$mega_repos" | sudo tee "$mega_file"
-
-fi
 
 	_msg "Adicionando key."	
 	sudo sh -c 'wget https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key -O - | apt-key add -'
