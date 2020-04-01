@@ -19,8 +19,8 @@ function _veracrypt()
 	# https://www.veracrypt.fr/en/Digital%20Signatures.html
 	veracrypt_url_dow='https://launchpad.net/veracrypt/trunk/1.23/+download/veracrypt-1.23-setup.tar.bz2' # Default.
 	veracrypt_pag='https://www.veracrypt.fr/en/Downloads.html'
-	#veracrypt_html=$(wget -q "$veracrypt_pag" -O- | grep -m 1 "http.*verac.*tar.bz2" | awk '{print $2}')
-	veracrypt_html=$(curl -sSL "$veracrypt_pag" | grep -m 1 "http.*verac.*tar.bz2" | awk '{print $2}')
+	veracrypt_html=$(wget -q "$veracrypt_pag" -O- | grep -m 1 "http.*verac.*tar.bz2" | awk '{print $2}')
+	#veracrypt_html=$(curl -sSL "$veracrypt_pag" | grep -m 1 "http.*verac.*tar.bz2" | awk '{print $2}')
 	veracrypt_url_dow=$(echo "$veracrypt_html" | sed 's/bz2\".*/bz2/g;s/.*\"//g' | sed 's/&#43\;/+/g') 
 	veracrypt_url_dow_sig="${veracrypt_url_dow}.sig"
 
