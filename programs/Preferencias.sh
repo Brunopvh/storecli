@@ -78,14 +78,22 @@ local url_papirus='https://raw.githubusercontent.com/PapirusDevelopmentTeam/papi
 local path_arq="$dir_user_cache/papirus.run"
 
 	_dow "$url_papirus" "$path_arq" --curl || {
-		echo "$(_c 31)Erro no download de [papirus] $(_c)"
+		echo "[!] Falha no download de [papirus]"
 		return 1
 	}
 
 	# --download-only
-	[[ "$download_only" == 'on' ]] && { echo "$(_c 32)=> $(_c)Feito somente download."; return 0; }
-	chmod +x "$path_arq"
-	sudo "$path_arq"
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download" 
+		return 0 
+	}
+
+	if _WHICH 'apt'; then
+		package_man_cli 'papirus'
+	else
+		chmod +x "$path_arq"
+		sudo "$path_arq"
+	fi
 }
 
 
