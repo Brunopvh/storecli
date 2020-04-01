@@ -221,11 +221,13 @@ array_internet=(
 
 # Midia
 array_midia=(
-'codecs'
-'gnome-mpv'
-'parole'
-'smplayer'
-'vlc'
+	'celluloid'
+	'cinema'
+	'codecs'
+	'gnome-mpv'
+	'parole'
+	'smplayer'
+	'vlc'
 )
 
 # Sistema

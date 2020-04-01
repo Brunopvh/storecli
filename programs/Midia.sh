@@ -10,17 +10,9 @@ function _codecs_tumbleweed()
 {
 	# https://software.opensuse.org/download/package?package=opensuse-codecs-installer&project=multimedia%3Aapps
 	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
-	#sudo zypper ar -f http://opensuse-guide.org/repo/openSUSE_Tumbleweed/ libdvdcss
-	#sudo zypper ar -f http://packman.inode.at/suse/openSUSE_Tumbleweed/ packman
-	#sudo zypper ref
-
-	# Adicionar repostórios
-	local tumbleweed_multimedia='https://download.opensuse.org/repositories/multimedia:apps/openSUSE_Tumbleweed/multimedia:apps.repo'
 	
-	sudo zypper addrepo "$tumbleweed_multimedia"
-	sudo zypper ar -f http://opensuse-guide.org/repo/openSUSE_Tumbleweed/ libdvdcss
-	sudo zypper ar -f http://packman.inode.at/suse/openSUSE_Tumbleweed/ packman
-	sudo zypper refresh
+	# Adicionar repostórios
+	"$Script_AddRepo" --tumbleweed-repos
 
 	# Instalar os codecs
 	local array_tumbleweed_codecs=(
@@ -50,7 +42,7 @@ function _codecs_tumbleweed()
 		_yellow "[+] Instalando [$c]"
 		if ! sudo zypper in "$c"; then
 			_red "[!] Falha [$c]"
-			sleep 1
+			sleep 0.5
 		fi
 	done
 
@@ -168,6 +160,29 @@ esac
 
 #-----------------------------------------------------#
 
+function _celluloid()
+{
+	package_man_cli 'celluloid'
+}
+
+#-----------------------------------------------------#
+
+function _cinema()
+{
+	package_man_cli 'cinema'
+}
+
+#-----------------------------------------------------#
+
+function _vlc_tumbleweed()
+{
+	# https://en.opensuse.org/SDB:Firefox_MP4/H.264_Video_Support
+	# http://download.videolan.org/pub/videolan/vlc/SuSE/Tumbleweed/vlc.ymp
+	_red "Program indisponível"; sleep 1
+}
+
+#-----------------------------------------------------#
+
 # Vlc
 function _vlc()
 {
@@ -177,11 +192,9 @@ function _vlc()
 		"$Script_AddRepo" --fedora-repos # Adicionar repositórios fusion non free
 		package_man_cli vlc python-vlc
 	elif _WHICH 'zypper'; then
-		package_man_cli vlc vlc-codec-gstreamer vlc-lang python3-python-vlc vlc-vdpau
-
+		_vlc_tumbleweed
 	else
 		package_man_cli vlc
-	
 	fi
 }
 

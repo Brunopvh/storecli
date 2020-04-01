@@ -15,6 +15,10 @@ function _white(){
 	echo -e "\033[1;37m=> $@\033[m"
 }
 
+_yellow(){
+	echo -e "\033[1;93m[+] $@\033[m"
+}
+
 function usage()
 {
 cat <<EOF 
@@ -22,6 +26,7 @@ cat <<EOF
     --debian-repos             Habilitar repositórios em debian buster
     --fedora-repos             Habilitar repositórios no fedora
     --arch-repos               Habilitar repositórios no archlinux
+    --tumblewee-repos          Adicionar repostórios extras para OpenSuse Tumbleweed
 EOF
 }
 
@@ -54,6 +59,37 @@ function _install_repos_fedora()
 	sudo dnf install -y fedora-workstation-repositories || return 1
 	sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm" || return 1
 	sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" || return 1
+}
+
+#============================================================#
+# Repositórios OpenSuse Tumbleweed
+#============================================================#
+function _addrepo_tumbleweed(){
+	# https://software.opensuse.org/download/package?package=opensuse-codecs-installer&project=multimedia%3Aapps
+	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
+	# sudo zypper ar -f http://opensuse-guide.org/repo/openSUSE_Tumbleweed/ libdvdcss
+	# sudo zypper ar -f http://packman.inode.at/suse/openSUSE_Tumbleweed/ packman
+	# sudo zypper ref
+
+	# Adicionar repostórios
+
+	_yellow "Adicionando openSUSE_Tumbleweed/multimedia:apps.repo"
+	sudo zypper addrepo https://download.opensuse.org/repositories/multimedia:apps/openSUSE_Tumbleweed/multimedia:apps.repo
+	
+	_yellow "Adicionando openSUSE_Tumbleweed/ libdvdcss"
+	sudo zypper ar -f http://opensuse-guide.org/repo/openSUSE_Tumbleweed/ libdvdcss
+
+	_yellow "Adicionando openSUSE_Tumbleweed/ packman"
+	sudo zypper ar -f http://packman.inode.at/suse/openSUSE_Tumbleweed/ packman
+
+	_yellow "Adicionando vlc/SuSE/Tumbleweed/SuSE.repo"
+	sudo zypper ar -f http://download.videolan.org/pub/videolan/vlc/SuSE/Tumbleweed/SuSE.repo
+	#sudo zypper ar -f http://download.videolan.org/pub/vlc/SuSE/Tumbleweed/
+
+	_yellow "Adicionando openSUSE_Tumbleweed/ packman"
+	sudo  zypper ar -cfp 90 http://ftp.gwdg.de/pub/linux/misc/packman/suse/openSUSE_Tumbleweed/ packman
+
+	sudo zypper refresh
 }
 
 #============================================================#
@@ -122,7 +158,7 @@ function _addrepo_arch(){
 	sudo pacman -Sy
 }
 
-#-----------------------------------------------#
+#============================================================#
 
 if [[ ! -z $1 ]]; then
 
@@ -131,6 +167,7 @@ if [[ ! -z $1 ]]; then
 			--fedora-repos) _install_repos_fedora;;
 			--debian-repos) _addrepo_buster;;
 			--arch-repos) _addrepo_arch;;
+			--tumbleweed-repos) _addrepo_tumbleweed;;
 			-h|--help) usage;;
 			*) usage;;
 		esac
@@ -140,6 +177,8 @@ elif [[ -z $1 ]]; then
 		usage	
 
 fi
+
+#============================================================#
 
 exit "$?"
 

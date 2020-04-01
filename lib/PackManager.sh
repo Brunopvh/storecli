@@ -114,6 +114,8 @@ function _packmanager_install()
 			youtube-dl-gui) _youtube_dl_gui_github;;
 
 	#-------------------- midia ----------------------------#
+			celluloid) _celluloid;;
+			cinema) _cinema;;
 			codecs) _codecs;;
 			vlc) _vlc;;
 			parole) _parole;;
