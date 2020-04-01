@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020-03-31'
+VERSION='2020-04-01'
 #
 # StoreCli a sua loja de aplicativos via linha de comando.
 # Download Configuração e Instalaçao de programas.
