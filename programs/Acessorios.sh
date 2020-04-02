@@ -3,6 +3,8 @@
 #
 #
 
+source "$Lib_array"
+
 #=====================================================#
 # Gnome-Disk
 #=====================================================#
@@ -146,9 +148,9 @@ function _woeusb(){
 	if [[ "$os_codename" == 'buster' ]]; then
 		_woeusb_buster
 	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		sudo apt install -y woeusb
+		package_man_cli woeusb
 	elif [[ "$os_id" == 'fedora' ]]; then
-		sudo dnf install -y WoeUSB
+		package_man_cli WoeUSB
 	else
 		_prog_not_found
 	fi

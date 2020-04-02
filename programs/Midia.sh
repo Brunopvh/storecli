@@ -52,8 +52,8 @@ function _codecs_tumbleweed()
 
 function _codecs_ubuntu()
 {
-	sudo apt install -y --install-recommends ffmpeg ffmpegthumbnailer
-	sudo apt install ubuntu-restricted-extras
+	package_man_cli --install-recommends ffmpeg ffmpegthumbnailer
+	package_man_cli ubuntu-restricted-extras
 }
 
 #-----------------------------------------------------#
@@ -71,21 +71,25 @@ function _codecs_debian()
 	local soma_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
 	local path_arq="$dir_user_cache/$(basename $url_wcodecs)"
 
-_dow "$url_wcodecs" "$path_arq" --curl
-# --download-only
-[[ "$download_only" == 'on' ]] && { echo "$$(_c 32)=> $$(_c)Feito somente download."; return 0; }
+	_dow "$url_wcodecs" "$path_arq" --curl
+	
+	[[ "$download_only" == 'on' ]] && { 
+		_green "Feito somente download" 
+		return 0 
+	}
 
-sudo apt install -y --install-recommends ffmpeg ffmpegthumbnailer
-sudo apt install lame
+	package_man_cli --install-recommends ffmpeg ffmpegthumbnailer
+	package_man_cli lame
 
-	_check_sum "$path_arq" "$soma_wcodecs" # w64codecs.
-	if [[ $? == '0' ]]; then	
-		sudo dpkg --install "$path_arq"
+	_check_sum "$path_arq" "$soma_wcodecs" || {
+		_red "Abortando a instalação de $path_arq"
+		return 1
+	} # w64codecs.
 
-	else
-		_msg "Abortando a instalação de $path_arq"; return 1
-
-	fi
+	
+	echo -e "$space_line"
+	_msg "Instalando [$path_arq]"
+	sudo dpkg --install "$path_arq"
 }
 
 #-----------------------------------------------------#
@@ -147,7 +151,7 @@ function _codecs_arch()
 function _codecs()
 {
 case "$sysname" in
-	freebsd12.0-release) sudo pkg install -y ffmpeg ffmpegthumbnailer gstreamer-ffmpeg;;
+	freebsd12.0-release) package_man_cli ffmpeg ffmpegthumbnailer gstreamer-ffmpeg;;
 	debian10) _codecs_debian;;
 	linuxmint19|ubuntu18.04) _codecs_ubuntu;;
 	fedora30|fedora31) _codecs_fedora;;
@@ -217,14 +221,12 @@ function _parole()
 #=====================================================#
 function _gnome_mpv()
 {
-	if [[ -x $(command -v dnf 2> /dev/null) ]]; then
-		sudo dnf install -y gnome-mpv smplayer-themes
-
-	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-		sudo apt install -y gnome-mpv
-
+	if _WHICH 'dnf'; then
+		package_man_cli gnome-mpv smplayer-themes
+	elif [[ -f '/etc/debian_version' ]]; then
+		package_man_cli gnome-mpv
 	else
-		_prog_not_found; return 1
+		package_man_cli gnome-mpv 
 
 	fi
 }
@@ -235,35 +237,14 @@ function _gnome_mpv()
 #=====================================================#
 function _smplayer()
 {
-	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
-		sudo zypper in -y smplayer
-
-	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
-		sudo dnf install -y smplayer
-
-	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-		sudo apt install -y smplayer
-
-	elif [[ -x $(command -v pacman 2> /dev/null) ]]; then
-		sudo pacman -S smplayer
-
-	else
-		_prog_not_found; return 1
-
-	fi
-
+	package_man_cli smplayer
 }
 
 #=====================================================#
 # Totem
 #=====================================================#
 function _totem(){
-	case "$os_id" in
-		debian|ubuntu|linuxmint) sudo apt install -y totem;;
-		fedora) sudo dnf install -y totem;;
-		*) _prog_not_found; return 1;;
-	esac
-
+	package_man_cli totem
 }
 
 

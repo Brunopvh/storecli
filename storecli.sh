@@ -89,7 +89,7 @@ export Lib_Gnome_Shell="$StoreCli_Path_Programs/GnomeShell.sh"
 #========================================================#
 # Config.
 #========================================================#
-export Config_File=~/.config/"$(basename $0).conf" # Arquivo de configuração para o usuário atual.
+export Config_File="$HOME/.config/storecli.conf" # Arquivo de configuração para o usuário atual.
 
 #========================================================#
 # Import
@@ -335,8 +335,8 @@ function _day_update()
 }
 
 #=====================================================#
-_msg "Sistema $(space_msg $os_type $os_id $os_version) $os_type $os_id $os_version"
-_msg "Downloads $(space_msg $dir_user_cache) $dir_user_cache"
+_msg "[$os_type $os_id] $(space_msg "$os_type $os_id") Sistema"
+_msg "[$dir_user_cache] $(space_msg $dir_user_cache) Downloads"
 
 #=====================================================#
 # Verificar nova versão uma vez por dia.
@@ -403,10 +403,8 @@ function _quebrado()
 for arg in "$@"; do
 		if [[ "$arg" == '--downloadonly' ]] || [[ "$arg" == '-d' ]]; then
 			export download_only='on'
-
 		elif [[ "$arg" == '--yes' ]] || [[ "$arg" == '-y' ]]; then
 			export install_yes='on'
-
 		fi
 done
 

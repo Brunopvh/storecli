@@ -3,7 +3,7 @@
 # 
 # Este módulo serve para auxiliar o script storecli a instalar
 # algumas exentenções uteis para o gnome-shell.
-
+#
 
 function _gnome_shell()
 {
@@ -24,12 +24,15 @@ function _gnome_shell()
 
 	# ArchLinux
 	local array_gnome_shell_arclinux=(
-	'gnome-tweaks' 'gnome-backgrounds'
+	'gnome-tweaks' 
+	'gnome-backgrounds'
 	)
 
 	# Debian
 	local array_gnome_shell_debian=(
-	'gnome-tweaks' 'gnome-shell-extension-top-icons-plus' 'gnome-shell-extension-dashtodock'
+	'gnome-tweaks' 
+	'gnome-shell-extension-top-icons-plus' 
+	'gnome-shell-extension-dashtodock'
 	)
 
 	#----------------------------------------------------#

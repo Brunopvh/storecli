@@ -13,12 +13,14 @@ function _chromium_lang()
 {
 	# Instalar pacote de idioma ptbr se o idioma do usuário for
 	# 
+
+	# Verificar se o idioma da sessão e pt_br.
 	local lang=$(printenv | grep -m 1 '^LANG=' | sed 's/.*=//g')
 	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
 
 	case "$os_id" in
-		debian) sudo apt install -y chromium-l10n;;
-		ubuntu) sudo apt install -y chromium-browser-l10n;;
+		debian) package_man_cli chromium-l10n;;
+		ubuntu) package_man_cli chromium-browser-l10n;;
 		*) return 0;;
 	esac
 }
@@ -199,15 +201,15 @@ function _megasync_ubuntu()
 	curl -sSL "$mega_url_key" -o- | sudo apt-key add -	
 	#sudo sh -c 'wget -c https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key -O- | apt-key add -'
 	sudo apt update 
-	sudo apt install libc-ares2 libmediainfo0v5 
-	sudo apt install -y megasync
+	package_man_cli libc-ares2 libmediainfo0v5 
+	package_man_cli megasync
 }
 
 #-----------------------------------------------------#
 
 function _megasync_fedora()
 {
-sudo rpm --import https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key
+	sudo rpm --import https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key
 
 	echo '[MEGAsync]' | sudo tee /etc/yum.repos.d/megasync.repo
 	{
@@ -219,7 +221,7 @@ sudo rpm --import https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.k
 		echo "gpgkey=https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"	
 	} | sudo tee -a /etc/yum.repos.d/megasync.repo
 
-sudo dnf install -y megasync
+	package_man_cli megasync
 }
 
 #-----------------------------------------------------#
@@ -236,11 +238,11 @@ case "$sysname" in
 
 esac
 
-if [[ $? == '0' ]]; then 
+if _WHICH 'megasync'; then 
 	_msg 'megasync instalado com sucesso'
 	return 0
 else
-	_red "Função [_megasync] retornou erro."
+	_red "[!] Função [_megasync] retornou erro."
 	return 1
 fi
 }
@@ -332,7 +334,7 @@ if [[ $? == '0' ]]; then
 	_msg 'opera-stable instalado com sucesso'
 
 else
-	echo "=> Função $(_c 31)_opera_stable $(_c) retornou [erro]"
+	_red "Função [_opera_stable] retornou erro"
 	return 1
 fi
 }
@@ -568,31 +570,23 @@ function _telegram()
 	local url_telegram='https://telegram.org/dl/desktop/linux'
 	local path_arq="$dir_user_cache/telegramsetup.tar.xz"
 
-	# Remover arquivo de downloads antigos - usar sempre a ultima versão.
-	if [[ -f "$path_arq" ]]; then
-		rm "$path_arq"
-	fi
+	_dow "$url_telegram" "$path_arq"
+
 
 	# Instalar gconf2.
 	if _WHICH 'zypper'; then # Suse
-		sudo zypper in gconf2
-
+		package_man_cli gconf2
 	elif _WHICH 'dnf'; then # Fedora
-		sudo dnf install GConf2
-
+		package_man_cli GConf2
 	elif _WHICH 'apt'; then # Debian distros.
-		sudo apt install -y gconf2
-
+		package_man_cli gconf2
 	fi
-
-	
-	_dow "$url_telegram" "$path_arq" 
 
 	# --downloadonly
 	[[ "$download_only" == 'on' ]] && { 
 		_green "Feito somente download"
 		return 0
-	}
+	}	
 	
 	# Já instalado
 	if _WHICH 'telegram'; then
@@ -626,10 +620,11 @@ function _telegram()
 #=====================================================#
 function _tixat_tar()
 {
-local path_arq="$1"
+	local path_arq="$1"
 
 	"$Script_UnPack" "$path_arq" "$dir_temp" || { 
-		echo "$(cor 31)=> $(cor)Falha: (unpack) retornou [Erro]"; return 1; 
+		_red "[!] Falha: [_unpack] retornou erro"
+		return 1 
 	}
 
 	_msg "Instalando"
@@ -647,14 +642,13 @@ local path_arq="$1"
 	cp -u "${array_tixati_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${array_tixati_dirs[0]}" ~/Desktop/ 2> /dev/null
 	
-	if [[ -x $(command -v tixati 2> /dev/null) ]]; then
+	if _WHICH 'tixati'; then
 		_msg 'tixati instalado com sucesso.' 
-		#tixati & 
+		tixati & 
 		return 0
-
 	else
-		echo "$(_c 31)=> Falha: tixati$(_c)"; return 1
-	
+		_red "Falha: [tixati]"
+		return 1
 	fi
 }
 
@@ -681,11 +675,11 @@ _dow "$url_tar_asc" "$path_arq_asc" --curl # Arquivo de verificação .asc
 
 	# --downloadonly
 	[[ "$download_only" == 'on' ]] && { 
-		echo "$(_c 32)=> $(_c)Feito somente download."
+		_green "Feito somente download."
 		return 0 
 	}
 
-	[[ -x $(command -v tixati 2> /dev/null) ]] && { 
+	_WHICH 'tixati' && { 
 		_msg_pack_instaled 'tixati' 
 		return 0 
 	}
@@ -693,17 +687,11 @@ _dow "$url_tar_asc" "$path_arq_asc" --curl # Arquivo de verificação .asc
 	# Instalar gconf2.
 	echo -e "$space_line"
 	if _WHICH 'zypper'; then # Suse
-		sudo zypper in gconf2
-
+		package_man_cli gconf2
 	elif _WHICH 'dnf'; then # Fedora
-		sudo dnf install GConf2
-
+		package_man_cli GConf2
 	elif _WHICH 'apt'; then # Debian distros.
-		sudo apt install -y gconf2
-
-	elif _WHICH 'pacman'; then
-		sudo pacman -S gtk2
-
+		package_man_cli gconf2
 	fi
 
 	_green "Importando key tixati"
@@ -740,19 +728,7 @@ function _torbrowser()
 #=====================================================#
 function _uget()
 {
-if [[ -x $(which zypper 2> /dev/null) ]]; then # Suse
-	sudo zypper in -y uget
-
-elif [[ -x $(which dnf 2> /dev/null) ]]; then # Fedora
-	sudo dnf install uget
-
-elif [[ -x $(which apt 2> /dev/null) ]]; then # Debian distros.
-	sudo apt install -y uget
-
-elif [[ -x $(which pkg 2> /dev/null) ]]; then # Freebsd.
-	sudo pkg install -y uget
-
-fi
+	package_man_cli uget 
 }
 
 #=====================================================#

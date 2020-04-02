@@ -86,16 +86,16 @@ local compactadores_arch=(
 )
 
 	if _WHICH 'zypper'; then
-		sudo zypper in "${compactadores_fedora[@]}"
+		package_man_cli "${compactadores_fedora[@]}"
 
 	elif _WHICH 'dnf'; then
-		sudo dnf install "${compactadores_fedora[@]}"
+		package_man_cli "${compactadores_fedora[@]}"
 
 	elif _WHICH 'apt'; then
-		sudo apt install "${compactadores_debian[@]}"
+		package_man_cli "${compactadores_debian[@]}"
 
 	elif _WHICH 'pacman'; then
-		sudo pacman -S "${compactadores_arch[@]}"
+		package_man_cli "${compactadores_arch[@]}"
 
 	else
 		_prog_not_found; return 1
@@ -111,10 +111,10 @@ function _firmware()
 	[[ "$os_id" == 'debian' ]] || { _prog_not_found; return 1; }
 
 	case "$1" in
-		firmware-ralink) sudo apt install firmware-ralink -y;;
-		firmware-atheros) sudo apt install firmware-atheros -y;;
-		firmware-realtek) sudo apt install firmware-realtek -y;;
-		firmware-linux-nonfree) sudo apt install firmware-linux-nonfree -y;;
+		firmware-ralink) package_man_cli firmware-ralink;;
+		firmware-atheros) package_man_cli firmware-atheros;;
+		firmware-realtek) package_man_cli firmware-realtek;;
+		firmware-linux-nonfree) package_man_cli firmware-linux-nonfree;;
 	esac
 }
 
@@ -124,23 +124,7 @@ function _firmware()
 #=====================================================#
 function _gparted()
 {
-	if _WHICH 'zypper'; then
-		sudo zypper in -y gparted
-
-	elif _WHICH 'dnf'; then
-		sudo dnf install -y gparted
-
-	elif _WHICH 'apt'; then
-		sudo apt install -y gparted
-
-	elif _WHICH 'pacman'; then
-		sudo pacman -S gparted
-
-	else
-		_prog_not_found; return 1
-
-	fi
-
+	package_man_cli gparted
 }
 
 #=====================================================#
@@ -148,63 +132,61 @@ function _gparted()
 #=====================================================#
 function _peazip()
 {
-# Devido a um bug na versão 7.0 do programa peazip
-# será ultilizado url de download fixo na versão 6.8
+	# Devido a um bug na versão 7.0 do programa peazip
+	# será ultilizado url de download fixo na versão 6.8
 
-#peazip_server='https://osdn.net/dl/peazip'
-#peazip_pag='https://osdn.net/projects/peazip/downloads'
+	#peazip_server='https://osdn.net/dl/peazip'
+	#peazip_pag='https://osdn.net/projects/peazip/downloads'
 
-#peazip_html=$(wget -q "$peazip_pag" -O- | grep -m 1 "portable.*tar.gz" | awk '{print $6}')
-#peazip_pacote=$(echo "$peazip_html" | sed 's/.*peazip_portable/peazip_portable/g;s/\/\".*//g')
-#peazip_url_download="$peazip_server/$peazip_pacote" # Ultima versão
+	#peazip_html=$(wget -q "$peazip_pag" -O- | grep -m 1 "portable.*tar.gz" | awk '{print $6}')
+	#peazip_pacote=$(echo "$peazip_html" | sed 's/.*peazip_portable/peazip_portable/g;s/\/\".*//g')
+	#peazip_url_download="$peazip_server/$peazip_pacote" # Ultima versão
 
-# Url fixo versão 6.8
-local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
+	# Url fixo versão 6.8
+	local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_arq="$dir_user_cache/$(basename $peazip_url_download)"
 
-_dow "$peazip_url_download" "$path_arq" --curl
+	_dow "$peazip_url_download" "$path_arq" --curl
 
-	# --download-only
-	[[ "$download_only" == 'on' ]] && { 
-		echo "$(_c 32)=> $(_c)Feito somente download."
-		return 0 
-	}
-	
-	_WHICH 'peazip' && { 
-		_msg_pack_instaled 'peazip'
-		return 0 
-	}
+		# --download-only
+		[[ "$download_only" == 'on' ]] && { 
+			echo "$(_c 32)=> $(_c)Feito somente download."
+			return 0 
+		}
+		
+		_WHICH 'peazip' && { 
+			_msg_pack_instaled 'peazip'
+			return 0 
+		}
 
-	"$Script_UnPack" "$path_arq" "$dir_temp"
+		"$Script_UnPack" "$path_arq" "$dir_temp"
 
-	[[ $? == '0' ]] || { 
-		_red "Falha [unpack] retornou erro" 
-		return 1 
-	}
+		[[ $? == '0' ]] || { 
+			_red "Falha [unpack] retornou erro" 
+			return 1 
+		}
 
-cd "$dir_temp" && mv -v $(ls -d peazip*) "$dir_temp/peazip-amd64" 1> /dev/null
-sudo chown -R root:root "$dir_temp/peazip-amd64" #1> /dev/null # root é o dono.
-sudo chmod -R a+x "$dir_temp/peazip-amd64"
+	cd "$dir_temp" && mv -v $(ls -d peazip*) "$dir_temp/peazip-amd64" 1> /dev/null
+	sudo chown -R root:root "$dir_temp/peazip-amd64" #1> /dev/null # root é o dono.
+	sudo chmod -R a+x "$dir_temp/peazip-amd64"
 
-sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.desktop "${array_peazip_dirs[0]}" # .desktop
-sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.png "${array_peazip_dirs[1]}" # PNG.
-sudo mv "$dir_temp"/peazip-amd64/peazip "${array_peazip_dirs[2]}" # binario.
-sudo mv "$dir_temp"/peazip-amd64 "${array_peazip_dirs[3]}" # dir.
+	sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.desktop "${array_peazip_dirs[0]}" # .desktop
+	sudo mv "$dir_temp"/peazip-amd64/FreeDesktop_integration/peazip.png "${array_peazip_dirs[1]}" # PNG.
+	sudo mv "$dir_temp"/peazip-amd64/peazip "${array_peazip_dirs[2]}" # binario.
+	sudo mv "$dir_temp"/peazip-amd64 "${array_peazip_dirs[3]}" # dir.
 
-	# Atalho desktop
-	cp -u "${array_peazip_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_peazip_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
+		# Atalho desktop
+		cp -u "${array_peazip_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
+		cp -u "${array_peazip_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
+		cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
 
-if [[ -x $(which peazip 2> /dev/null) ]]; then
-	_msg; echo "=> peazip instalado com sucesso."
-	return 0
-
-else
-	echo "$(_c 31)=> $(_c)Falha"
-	return 1
-
-fi
+	if _WHICH 'peazip'; then
+		_msg "peazip instalado com sucesso."
+		return 0
+	else
+		_red "[!] Falha"
+		return 1
+	fi
 }
 
 #-----------------------------------------------------#

@@ -10,19 +10,7 @@ source "$Lib_array"
 
 function _atril()
 {
-	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
-		sudo zypper in atril 
-
-	elif [[ -x $(command -v dnf 2> /dev/null) ]]; then
-		sudo dnf install atril
-
-	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-		sudo apt install atril
-
-	elif [[ -x $(command -v pkg 2> /dev/null) ]]; then
-		sudo pkg install atril
-
-	fi
+	package_man_cli atril
 }
 
 #-----------------------------------------------------#
@@ -102,12 +90,12 @@ _libreoffice_ptbr(){
 	fi
 
 	case "$os_id" in
-		debian) sudo apt install -y libreoffice-help-pt-br libreoffice-l10n-pt-br;;
-		ubuntu|linuxmint) sudo apt install -y libreoffice-help-pt-br libreoffice-l10n-pt-br;;
-		fedora) sudo dnf install -y libreoffice-langpack-pt-BR;;
-		open-suse) sudo zypper in libreoffice-l10n-pt_BR;;
-		arch) sudo pacman -S libreoffice-fresh-pt-br;;
-		freebsd) sudo pkg install pt_BR-libreoffice;;
+		debian) package_man_cli libreoffice-help-pt-br libreoffice-l10n-pt-br;;
+		ubuntu|linuxmint) package_man_cli libreoffice-help-pt-br libreoffice-l10n-pt-br;;
+		fedora) package_man_cli libreoffice-langpack-pt-BR;;
+		open-suse) package_man_cli libreoffice-l10n-pt_BR;;
+		arch) package_man_cli libreoffice-fresh-pt-br;;
+		freebsd) package_man_cli pt_BR-libreoffice;;
 	esac
 }
 #-----------------------------------------------------#
@@ -115,11 +103,11 @@ _libreoffice_ptbr(){
 function _libreoffice()
 {
 	case "$os_id" in 
-		debian|ubuntu|linuxmint) sudo apt install -y libreoffice;;
-		fedora) sudo dnf install -y libreoffice;;
-		open-suse) sudo zypper in -y libreoffice-l10n-pt_BR;;
-		arch) sudo pacman -S libreoffice;;
-		freebsd) sudo pkg install libreoffice;;
+		debian|ubuntu|linuxmint) package_man_cli libreoffice;;
+		fedora) package_man_cli libreoffice;;
+		open-suse) package_man_cli libreoffice-l10n-pt_BR;;
+		arch) package_man_cli libreoffice;;
+		freebsd) package_man_cli libreoffice;;
 		*) _libreoffice_appimage;;
 	esac
 

@@ -31,6 +31,9 @@ function package_man_cli()
 
 		elif _WHICH 'pacman'; then
 			sudo pacman -S "$@"
+
+		elif _WHICH 'pkg'; then
+			sudo pkg install "$@"
 		
 		else
 			_prog_not_found
@@ -57,6 +60,9 @@ function package_man_cli()
 		elif _WHICH 'pacman'; then
 			sudo pacman -S "$@"
 
+		elif _WHICH 'pkg'; then # FreeBSD
+			sudo pkg install "$@"
+
 		else
 			_prog_not_found
 			return 1
@@ -78,6 +84,9 @@ function package_man_cli()
 
 	elif _WHICH 'pacman'; then
 		sudo pacman -S "$@"
+
+	elif _WHICH 'pkg'; then # FreeBSD
+			sudo pkg install "$@"
 
 	else
 		_prog_not_found
