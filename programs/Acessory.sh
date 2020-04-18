@@ -1,0 +1,191 @@
+#!/usr/bin/env bash
+#
+#
+#
+
+#=====================================================#
+# Gnome-Disk
+#=====================================================#
+function _gnome_disk()
+{
+	#msg "Instalando $(SPACE_TEXT Instalando) gnome-disk-utility"
+	_package_man_distro 'gnome-disk-utility'
+}
+
+#=====================================================#
+# Veracrypt
+#=====================================================#
+function _veracrypt()
+{
+	# https://www.veracrypt.fr/en/Digital%20Signatures.html
+	# 5069A233D55A0EEB174A5FC3821ACD02680D16DE
+	#
+	# Chechar  fingerprint
+	# gpg --import --import-options show-only VeraCrypt_PGP_public_key.asc
+	# 
+	# Importar public key
+	# gpg --import VeraCrypt_PGP_public_key.asc
+	#
+	# Verificar a assinatura do arquivo de instalação.
+	# gpg --verify veracrypt-1.23-setup.tar.bz2.sig veracrypt-1.23-setup.tar.bz2
+	#
+	# 'https://launchpad.net/veracrypt/trunk/1.23/+download/veracrypt-1.23-setup.tar.bz2'
+	# https://launchpad.net/veracrypt/trunk/1.24-update4/&#43;download/veracrypt-1.24-Update4-setup.tar.bz2
+	#
+	# libgtk-x11-2.0.so.0 (ArchLinux)
+	#
+	# Necessário sessão gráfica para instalar esse programa.
+	if [[ -z "$DISPLAY" ]]; then
+		red "Necessário sessão gráfica (Xorg) para instalar esse pacote"
+		return 1
+	fi
+
+	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
+	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
+	local vc_url_dow=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
+	local vc_url_sig="${vc_url_dow}.sig"
+
+	local path_file="$Dir_Downloads/$(basename $vc_url_dow)"
+	local path_sig="${path_file}.sig"
+	
+
+	_dow "$vc_url_sig" "$path_sig" || return 1
+	_dow "$vc_url_dow" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+	# Já instalado.
+	if _WHICH 'veracrypt'; then
+		_INFO 'pkg_are_instaled' 'veracrypt'
+		return 0
+	fi
+
+	# Importar chaves públicas.
+	green "Importando key [https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc]"
+	curl -sSL 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' -o - | gpg --import
+	_verify_sig "$path_sig" "$path_file" || return 1
+	_unpack "$path_file" || return 1
+
+	cd "$Dir_Unpack"
+	mv $(ls veracrypt*setup-gui-x64) "$Dir_Unpack/veracryptx64" 1> /dev/null
+	chmod +x "$Dir_Unpack/veracryptx64"
+	#sudo xterm -title 'Instalando veracrypt' "$Dir_Unpack/veracryptx64" 
+	xterm -title 'Instalando veracrypt' "$Dir_Unpack/veracryptx64" 
+
+	case "$os_id" in
+		arch) green "Instalando o pacote [gtk2]"; _package_man_distro gtk2;;
+	esac
+
+	if _WHICH 'veracrypt'; then
+		_INFO 'pkg_sucess' 'veracrypt'
+		return 0
+	else
+		_INFO 'pkg_instalation_failed' 'veracrypt'
+		return 1
+	fi
+}
+
+#=====================================================#
+# WoeUsb
+#=====================================================#
+function _woeusb_buster(){
+	github_woeusb="https://github.com/slacka/WoeUSB.git"
+
+	local dir_woeusb="$dir_temp/WoeUSB"
+	local requeriments_woeusb_debian=(
+			'devscripts' 'equivs' 'libwxgtk3.0-dev' 'grub-pc-bin'
+		)
+
+	msg "Necessário instalar os seguintes pacotes: ${Yellow}${requeriments_woeusb_debian[@]}${Reset}"
+	_YESNO "Deseja proseguir" || return 1
+	
+
+	_APT update || return 1
+	_package_man_distro "${requeriments_woeusb_debian[@]}" || return 1
+
+	cd "$dir_temp" && sudo rm -rf *  # Limpar o diretório temporário.
+	_gitclone "$github_woeusb" || return 1
+
+	ls -hl "$dir_woeusb"/debian/changelog || return 1
+
+	if ! sudo sed -i 's/(@@WOEUSB_VERSION@@)/(1.0)/g' "$dir_woeusb"/debian/changelog; then
+		red "Falha ao tentar configurar o arquivo: $dir_woeusb/debian/changelog"
+		return 1
+	fi
+
+	green "Compilando." 
+	sleep 1
+
+	cd "$dir_woeusb"
+	sudo sh -c 'dpkg-buildpackage -uc -b' || { 
+		red "Falha ao tentar compilar o WoeUSB"
+		return 1 
+	}
+
+	echo -e "$space_line"
+
+	#==================================================================#
+	#========================= instalação do pacote .deb ==============#
+	cd ..
+	if sudo dpkg --install "$dir_temp/woeusb_1.0_amd64.deb"; then
+		echo -e "$space_line"
+		_INFO 'pkg_sucess' 'WoeUSB'	
+	else
+		_BROKE # Remover pacotes quebrados.
+		echo -e "$space_line"
+		_INFO 'pkg_instalation_failed' 'WoeUSB'
+		cd "$dir_temp" && sudo rm -rf *
+		return 1
+	fi
+
+	#===============================================================#
+	#======================== salvar o arquivo .deb ? ==============#
+
+	green "Deseja salvar o arquivo woeusb_1.0_amd64.deb [${Yellow}s${Reset}/${Red}n${Reset}]?: "
+	read -t 10 -n 1 sn
+
+	if [[ -z "$install_yes" ]]; then
+		[[ "${sn,,}" == 's' ]] && {
+		mkdir -p "$HOME/Downloads"
+		echo -e "$space_line"
+		cp -vu "$dir_temp/woeusb_1.0_amd64.deb" "$HOME"/Downloads/woeusb_1.0_amd64.deb
+		green "Arquivo salvo em: [$HOME/Downloads/woeusb_1.0_amd64.deb]"
+	}
+	fi
+
+	cd "$dir_temp" && sudo rm -rf *
+}
+
+
+function _woeusb(){
+	if [[ "$os_codename" == 'buster' ]]; then
+		_woeusb_buster
+	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+		_package_man_distro woeusb
+	elif [[ "$os_id" == 'fedora' ]]; then
+		_package_man_distro WoeUSB
+	else
+		_INFO 'pkg_not_found' 'WoeUSB'
+		return 1
+	fi
+		
+}
+
+
+#=============================================================#
+# Instalar todos os pacotes da categória Acessorios.
+#=============================================================#
+_Acessory_All()
+{
+	if [[ -z "$install_yes" ]]; then
+		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
+	fi
+	_gnome_disk
+	_veracrypt
+	_woeusb
+}
+
