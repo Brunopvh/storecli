@@ -3,10 +3,10 @@
 #
 #
 #
-VERSION='V2020-04-18_rev4'
+VERSION='V2020-04-18_rev5'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
-# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/apps-buster/master/setup.sh)"
+# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 #----------------------- SOBRE O PROGRAM --------------------------#
 #   Este script serve para automatizar/facilitar a instalação de softwares
@@ -231,7 +231,7 @@ msg "Sistema: $os_id"
 _install_update_storecli()
 {
 	_ping || return 1
-	sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/apps-buster/master/setup.sh)" || return 1
+	sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)" || return 1
 	return 0
 }
 

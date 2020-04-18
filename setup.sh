@@ -1,9 +1,11 @@
 #!/bin/sh
 #
 #
-# https://github.com/Brunopvh/apps-buster.git
-# https://github.com/Brunopvh/apps-buster/archive/master.zip
+# https://github.com/Brunopvh/storecli.git
+# https://github.com/Brunopvh/storecli/archive/master.zip
+# https://github.com/Brunopvh/storecli/archive/master.tar.gz
 #
+# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 
 Red="\033[1;31m"
@@ -38,7 +40,7 @@ _yellow()
 # Urls
 #----------------------------------------------------------#
 github='https://github.com'
-url_proj="$github/Brunopvh/apps-buster"
+url_proj="$github/Brunopvh/storecli"
 url_repo="${url_proj}.git"
 url_master="${url_proj}/archive/master.tar.gz"
 
@@ -46,22 +48,26 @@ url_master="${url_proj}/archive/master.tar.gz"
 #----------------------------------------------------------#
 # Diretórios e arquivos.
 #----------------------------------------------------------#
+
 if [ $(id -u) -eq 0 ]; then
-	dir_apps_buster="/opt/apps-buster-amd64"
+	dir_storecli="/opt/storecli-amd64"
 	path_link='/usr/local/bin/storecli'
 	path_link_gui='/usr/local/bin/gui-storecli'
 else
-	dir_apps_buster="$HOME/.local/bin/apps-buster-amd64"
+	dir_storecli="$HOME/.local/bin/storecli-amd64"
 	path_link="$HOME/.local/bin/storecli"
 	path_link_gui="$HOME/.local/bin/gui-storecli"
 fi
 
+
 dir_temp="/tmp/$USER/update"
 dir_unpack="$dir_temp/unpack"
+
 mkdir -p "$dir_temp"
 mkdir -p "$dir_unpack"
-mkdir -p "$dir_apps_buster"
-path_file_repo="$dir_temp/apps-buster.tar.gz"
+mkdir -p "$dir_storecli"
+
+path_file_repo="$dir_temp/storecli.tar.gz"
 
 
 #----------------------------------------------------------#
@@ -91,7 +97,6 @@ _download_repo()
 		_red "Falha no download"
 		return 1
 	fi
-	echo "$space_line"
 	return 0
 }
 
@@ -111,8 +116,8 @@ _RMDIR()
 
 _uninstall()
 {
-	if [ -d "$dir_apps_buster" ]; then
-		_RMDIR "$dir_apps_buster" || return 1
+	if [ -d "$dir_storecli" ]; then
+		_RMDIR "$dir_storecli" || return 1
 	fi
 
 
@@ -140,7 +145,9 @@ _unpack()
 	cd "/tmp"
 
 	# Limpar o diretório antes da descompressão.
-	cd "$dir_unpack" && sudo rm -rf *
+	# _msg "Limpando diretório: $dir_unpack"
+	# cd "$dir_unpack" && sudo rm -rf *
+	cd "$dir_unpack" && rm -rf *
 
 	
 	# Descomprimir
@@ -158,13 +165,13 @@ _unpack()
 
 _install()
 {
-	_msg "Instalando em: $dir_apps_buster"
+	_msg "Instalando em: $dir_storecli"
 	cd "$dir_unpack"
-	mv $(ls -d apps-b*) "$dir_apps_buster"
-	ln -sf "$dir_apps_buster"/storecli.sh "$path_link"
-	ln -sf "$dir_apps_buster"/gui.sh "$path_link_gui"
+	mv $(ls -d storecli*) "$dir_storecli"
+	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
+	ln -sf "$dir_storecli"/gui.sh "$path_link_gui"   # Link do gui
 
-	chmod -R a+x "$dir_apps_buster"
+	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" || return 1
 	chmod a+x "$path_link_gui"
 	
@@ -178,9 +185,7 @@ _install()
 main()
 {
 	case "$1" in
-		-r|--remove) _red "Desinstalando"
-					_uninstall; return 0
-					;;
+		-r|--remove) _uninstall; return 0;;
 	esac
 
 	_download_repo || return 1
