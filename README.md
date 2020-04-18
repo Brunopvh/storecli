@@ -11,8 +11,8 @@ Passo 1 - instalar o curl:
      Fedora
      sudo dnf install -y curl
      
-     Suse
-     sudo zypper in curl
+     ArchLinux
+     sudo pacman -S curl
      
 Passo 2 executar o script de instalação via linha de comando.
 sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
