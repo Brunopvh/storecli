@@ -3,6 +3,8 @@
 
 Instalação:
 Passo 1 - instalar o curl:
+     
+     
      Debian/Ubuntu
      sudo apt install -y curl
    
