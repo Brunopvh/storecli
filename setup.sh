@@ -1,0 +1,200 @@
+#!/bin/sh
+#
+#
+# https://github.com/Brunopvh/apps-buster.git
+# https://github.com/Brunopvh/apps-buster/archive/master.zip
+#
+#
+
+Red="\033[1;31m"
+Green="\033[1;32m"
+Yellow="\033[1;33m"
+White="\033[1;37m"
+Reset="\033[m"
+
+space_line='------------------------------------------'
+
+_msg()
+{
+	echo "[>] $@"
+}
+
+_red()
+{
+	echo "$(printf $Red)[!] $@$(printf $Reset)"
+}
+
+_green()
+{
+	echo "$(printf $Green)[*] $@$(printf $Reset)"
+}
+
+_yellow()
+{
+	echo "$(printf $Yellow)[+] $@$(printf $Reset)"
+}
+
+#----------------------------------------------------------#
+# Urls
+#----------------------------------------------------------#
+github='https://github.com'
+url_proj="$github/Brunopvh/apps-buster"
+url_repo="${url_proj}.git"
+url_master="${url_proj}/archive/master.tar.gz"
+
+
+#----------------------------------------------------------#
+# Diretórios e arquivos.
+#----------------------------------------------------------#
+if [ $(id -u) -eq 0 ]; then
+	dir_apps_buster="/opt/apps-buster-amd64"
+	path_link='/usr/local/bin/storecli'
+	path_link_gui='/usr/local/bin/gui-storecli'
+else
+	dir_apps_buster="$HOME/.local/bin/apps-buster-amd64"
+	path_link="$HOME/.local/bin/storecli"
+	path_link_gui="$HOME/.local/bin/gui-storecli"
+fi
+
+dir_temp="/tmp/$USER/update"
+dir_unpack="$dir_temp/unpack"
+mkdir -p "$dir_temp"
+mkdir -p "$dir_unpack"
+mkdir -p "$dir_apps_buster"
+path_file_repo="$dir_temp/apps-buster.tar.gz"
+
+
+#----------------------------------------------------------#
+
+_WHICH()
+{
+	cli=$(command -v "$1" 2> /dev/null)
+	if [ -x "$cli" ]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#----------------------------------------------------------#
+
+if ! _WHICH 'curl'; then
+	_red "Instale a ferramenta [curl]"
+	exit 1
+fi
+
+_download_repo()
+{
+	_msg "Baixando [$url_master]"
+	_msg "Destino [$path_file_repo]"
+	if ! curl -# -SL "$url_master" -o "$path_file_repo"; then
+		_red "Falha no download"
+		return 1
+	fi
+	echo "$space_line"
+	return 0
+}
+
+
+_RMDIR()
+{
+	# Remove um arquivo ou diretório informado no parametro $1
+	# $1 = arquivo/diretório
+
+	#sudo -k
+	while [ $1 ]; do
+		_red "Removendo: $1"
+		rm -rf "$1"
+		shift
+	done
+}
+
+_uninstall()
+{
+	if [ -d "$dir_apps_buster" ]; then
+		_RMDIR "$dir_apps_buster" || return 1
+	fi
+
+
+	if [ -L "$path_link" ]; then
+		_RMDIR "$path_link" || return 1
+	fi
+
+	if [ -L "$path_link_gui" ]; then
+		_RMDIR "$path_link_gui" || return 1
+	fi
+	return 0
+}
+
+
+_unpack()
+{
+	if [ -z $1 ]; then 
+		return 1
+	fi
+
+	local path_file="$1"
+
+	_msg "Descomprimindo: $path_file"
+	_msg "Destino: $dir_unpack"
+	cd "/tmp"
+
+	# Limpar o diretório antes da descompressão.
+	cd "$dir_unpack" && sudo rm -rf *
+
+	
+	# Descomprimir
+	tar -zxvf "$path_file" -C "$dir_unpack" 1> /dev/null
+
+	if [ $? -eq 0 ]; then
+		return 0
+	else
+		_red "Funçao [_unpack] retornou erro"
+		_red "Removendo [$path_file]"
+		rm -rf "$path_file"
+		return 1
+	fi
+}
+
+_install()
+{
+	_msg "Instalando em: $dir_apps_buster"
+	cd "$dir_unpack"
+	mv $(ls -d apps-b*) "$dir_apps_buster"
+	ln -sf "$dir_apps_buster"/storecli.sh "$path_link"
+	ln -sf "$dir_apps_buster"/gui.sh "$path_link_gui"
+
+	chmod -R a+x "$dir_apps_buster"
+	chmod a+x "$path_link" || return 1
+	chmod a+x "$path_link_gui"
+	
+	if _WHICH 'storecli'; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+main()
+{
+	case "$1" in
+		-r|--remove) _red "Desinstalando"
+					_uninstall; return 0
+					;;
+	esac
+
+	_download_repo || return 1
+	_uninstall || return 1
+	_unpack "$path_file_repo" || return 1
+	_install || return 1
+
+	echo "$space_line"
+	_msg "Instalando com sucesso $(storecli --version)"
+}
+
+
+main "$@" || exit 1
+exit 0
+
+
+
