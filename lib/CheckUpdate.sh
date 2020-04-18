@@ -5,7 +5,7 @@
 
 function _check_update_storecli()
 {
-	local url_storecli='https://raw.github.com/Brunopvh/apps-buster/master/storecli.sh'
+	local url_storecli='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
 	local storecli_temp="$dir_temp/storecli.sh"
 
 	# Este programa deve procurar por atualizações uma vez por dia

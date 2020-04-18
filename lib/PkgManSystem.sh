@@ -8,16 +8,25 @@
 _apt_process_look()
 {
 	# '/var/cache/apt/archives/lock'
+
+	local array_time_chars=('\' '|' '/' '-')
+	local num_char='0'
+
 	while [[ $(ps aux | grep 'root.*apt' | egrep '(install|upgrade)') ]]; do
 		
-		_pid=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade)' | awk '{print $2}')
+		local _pid=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade)' | awk '{print $2}')
+		local _char="${array_time_chars[$num_char]}"
+
 		if [[ -z "$_pid" ]]; then
 			break
 		else
-			echo -e "Aguardando processo apt finalizar pid [$_pid]\r"
-			#echo -ne "Aguardando processo apt finalizar pid [$_pid]\r"
-			sleep 2
+			echo -ne "Aguardando processo apt finalizar pid [$_pid] [${_char}]\r"
+			sleep 0.3
 		fi
+
+		num_char="$(($num_char+1))"
+		[[ "$num_char" == '4' ]] && num_char='0'
+
 	done	
 	echo "Finalizado"
 }
