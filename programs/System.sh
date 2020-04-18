@@ -49,7 +49,7 @@ function _compactadores()
 {
 
 	local compactadores_debian=(
-		'p7zip-full' 'p7zip' 'p7zip-rar' 'cabextract' 'unzip' 'xz-utils''lhasa' 
+		'p7zip-full' 'p7zip' 'p7zip-rar' 'cabextract' 'unzip' 'xz-utils' 'lhasa' 
 		'unace' 'arc' 'arj' 'lzma' 'rar' 'unrar-free' 'zip' 'ncompress'
 	)
 
@@ -60,6 +60,7 @@ function _compactadores()
 	local compactadores_arch=( 
 		'tar' 'gzip' 'bzip2' 'unzip' 'unrar' 'p7zip'
 	)
+
 
 	if _WHICH 'zypper'; then
 		_package_man_distro "${compactadores_fedora[@]}"

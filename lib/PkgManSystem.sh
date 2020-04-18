@@ -27,7 +27,8 @@ _apt_process_look()
 		num_char="$(($num_char+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 
-	done	
+	done
+	echo -e "Aguardando processo apt finalizar pid [$_pid] [${_char}]"
 	echo "Finalizado"
 }
 
@@ -58,6 +59,7 @@ _pacman_process_look()
 		[[ "$num_char" == '4' ]] && num_char='0'
 
 	done	
+	echo -e "Aguardando processo pacman -S finalizar pid [$_pid] [${_char}]"
 	echo "Finalizado"
 }
 
