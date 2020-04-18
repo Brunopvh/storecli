@@ -15,6 +15,8 @@ Passo 1 - instalar o curl:
      sudo pacman -S curl
      
 Passo 2 executar o script de instalação via linha de comando.
+
+
 sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 
 INFO:
