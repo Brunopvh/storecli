@@ -2,17 +2,21 @@
 # Sua loja de aplicativos via linha de comando.
 
 Instalação:
-     git clone https://github.com/Brunopvh/storecli.git
+Passo 1 - instalar o curl:
+     Debian/Ubuntu
+     sudo apt install -y curl
    
-    chmod -R +x storecli && cd storecli
+     Fedora
+     sudo dnf install -y curl
+     
+     Suse
+     sudo zypper in curl
+     
+Passo 2 executar o script de instalação via linha de comando.
+sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 
-    ./install.sh     -> Instala em ~/.local/bin
-
-    sudo ./install   -> Instala em /opt
-  
-Reinicie o terminal/shell
-
-storecli --help
-storecli --list
-storecli install <pacote>
+INFO:
+storecli --help           => Ajuda
+storecli --list           => Lista pacotes disponíveis para instalação.
+storecli install <pacote> => Instala um pacote
 
