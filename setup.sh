@@ -141,7 +141,7 @@ _unpack()
 	local path_file="$1"
 
 	_msg "Descomprimindo: $path_file"
-	_msg "Destino: $dir_unpack"
+	#_msg "Destino: $dir_unpack"
 	cd "/tmp"
 
 	# Limpar o diretório antes da descompressão.
@@ -192,8 +192,7 @@ main()
 	_uninstall || return 1
 	_unpack "$path_file_repo" || return 1
 	_install || return 1
-
-	echo "$space_line"
+	
 	_msg "Instalando com sucesso $(storecli --version)"
 }
 
