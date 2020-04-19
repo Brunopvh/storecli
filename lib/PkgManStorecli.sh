@@ -71,6 +71,7 @@ _packmanager_storecli()
 			compactadores) _compactadores;;
 			gparted) _gparted;;
 			peazip) _peazip;;
+			stacer) _stacer;;
 			virtualbox) _virtualbox;;
 
 #----------- Preferências ----------------------------------#

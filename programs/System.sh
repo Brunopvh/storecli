@@ -153,6 +153,37 @@ _peazip()
 	fi
 }
 
+#=====================================================#
+# Stacer
+#=====================================================#
+function _stacer_debian()
+{
+	# https://github.com/oguzhaninan/Stacer/releases
+	# https://github.com/oguzhaninan/Stacer
+	local url='https://github.com/oguzhaninan/Stacer/releases/download/v1.1.0/stacer_1.1.0_amd64.deb'
+	local path_file="$Dir_Downloads/$(basename $url)"
+
+	_dow "$url" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$url"
+		return 0 
+	fi
+
+	sudo dpkg --install "$path_file"
+	_BROKE # Remover pacotes quebrados
+}
+
+
+function _stacer()
+{
+	case "$os_id" in
+		debian) _stacer_debian;;
+		*) _package_man_distro stacer;;
+	esac
+}
+
 
 #=====================================================#
 # Vitualbox

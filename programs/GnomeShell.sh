@@ -34,6 +34,12 @@ function _topicons_plus_github()
 	# make install
 	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
 
+	echo -e "$space_line"
+
+	if _YESNO "Deseja abrir a jenela de configuração para topicons-plus"; then
+		gnome-extensions prefs TopIcons@phocean.net
+	fi
+
 }
 
 
