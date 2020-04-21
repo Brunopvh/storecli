@@ -19,6 +19,7 @@ _packmanager_storecli()
 
 #----------- Acessorios ------------------------------------#
 			Acessorios) _Acessory_All;;
+			etcher) _etcher;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 

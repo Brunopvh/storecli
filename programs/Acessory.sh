@@ -10,8 +10,41 @@
 function _etcher_debian()
 {
 	# https://www.balena.io/etcher/
-	# 
-	return 0
+	# https://github.com/balena-io/etcher/releases/ (VERSÕES PARA DOWNLOAD)
+	# https://github.com/resin-io/etcher/releases/download/v1.1.1/etcher-electron_1.1.1_amd64.deb
+	# https://github.com/balena-io/etcher/releases/download/v1.5.81/balena-etcher-electron_1.5.81_amd64.deb
+	#
+	local url='https://github.com/balena-io/etcher/releases/download/v1.5.81/balena-etcher-electron_1.5.81_amd64.deb'
+	local path_file="$Dir_Downloads/$(basename $url)"
+
+	_dow "$url" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+	#sudo dpkg --install "$path_file"
+
+
+}
+
+
+function _etcher_appimage()
+{
+	# https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage
+	local url='https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage'
+	local path_file="$Dir_Downloads/$(basename $url)"
+
+	_dow "$url" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
 }
 
 function _etcher()
