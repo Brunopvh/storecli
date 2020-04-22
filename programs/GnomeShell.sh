@@ -43,6 +43,43 @@ function _topicons_plus_github()
 }
 
 
+function _dashtodock_github()
+{
+	# https://micheleg.github.io/dash-to-dock/download.html
+	#
+
+	local url='https://github.com/micheleg/dash-to-dock/archive/master.tar.gz'
+	local url_repo='https://github.com/micheleg/dash-to-dock.git'
+	local path_file="$Dir_Downloads/dash_to_dock.tar.gz"
+
+	_gitclone "$url_repo" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+
+	# Instalar o pacote make
+	_package_man_distro make
+
+	cd "$dir_temp"/dash-to-dock
+	echo -e "$space_line"
+	make
+	make install
+	#sudo make install 
+
+	echo -e "$space_line"
+
+	if _YESNO "Deseja abrir a jenela de configuração gnome-shell-extension-prefs"; then
+		# gnome-shell-extension-prefs dash-to-dock@micxgx.gmail.com
+		gnome-shell-extension-prefs
+	fi
+
+}
+
+
 function _gnome_shell_extensions()
 {
 	# Sessão desktop do usuário

@@ -22,7 +22,7 @@ cat << EOF
        install <pacote>              Instala um pacote.
 
 
-             Opições para install [-d|--downloadonly] somente baixa o(s) pacote(s).
+             Opções para install [-d|--downloadonly] somente baixa o(s) pacote(s).
              $Script_root install -d torbrowser 
              $Script_root install --downloadonly pycharm 
 EOF
@@ -104,6 +104,7 @@ case "$os_id" in
 	suse) for a in "${array_gnome_shell_suse[@]}"; do echo "     $a"; done;;
 esac
 echo "     topicons-plus"
+echo "     dash-to-dock"
 }
 
 
