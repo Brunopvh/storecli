@@ -171,6 +171,10 @@ function _codecs_fedora()
 
 function _codecs_arch()
 {
+	#
+	# https://bbs.archlinux.org/viewtopic.php?id=223197
+	#
+
 	local list_codecs_arch=(
 		'a52dec' 
 		'faac' 
@@ -193,8 +197,25 @@ function _codecs_arch()
 		'ffmpegthumbnailer'
 	)
 
-	green "Instalando: ${list_codecs_arch[@]}"
-	_package_man_distro "${list_codecs_arch[@]}" || return 1
+	local list_codecs_parole=(
+		'gst-libav'
+		'gst-plugins-bad'
+		'gst-plugins-ugly'
+		)
+
+	for x in "${list_codecs_arch[@]}"; do 
+		echo -e "$space_line"
+		yellow "Instalando: $x"
+		if ! _package_man_distro "$x"; then red "Falha: $x"; fi
+	done
+
+	
+	for x in "${list_codecs_parole[@]}"; do 
+		echo -e "$space_line"
+		yellow "Instalando: $x"
+		if ! _package_man_distro "$x"; then red "Falha: $x"; fi
+	done
+	
 }
 
 #-----------------------------------------------------#

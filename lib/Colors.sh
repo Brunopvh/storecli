@@ -60,22 +60,22 @@ _c()
 #=============================================================#
 msg()
 {
-	echo -e "${White}[>] $@${Reset}"
+	echo -e "${CWhite}[>] $@${Reset}"
 }
 
 red()
 {
-	echo -e "${Red}[!] $@${Reset}"
+	echo -e "${CSRed}[!] $@${Reset}"
 }
 
 green()
 {
-	echo -e "${Green}[+] $@${Reset}"
+	echo -e "${CGreen}[+] $@${Reset}"
 }
 
 yellow()
 {
-	echo -e "${Yellow}[*] $@${Reset}"
+	echo -e "${CYellow}[*] $@${Reset}"
 }
 
 #=============================================================#

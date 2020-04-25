@@ -3,12 +3,12 @@
 #
 #
 #
-VERSION='V2020-04-21_rev1'
+VERSION='V2020-04-25_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
-#----------------------- SOBRE O PROGRAM --------------------------#
+#----------------------- SOBRE O PROGRAMA --------------------------#
 #   Este script serve para automatizar/facilitar a instalação de softwares
 # em sistemas baseados em Linux, atualmente tem suporte para os siguites
 # sistemas: Debian, Ubuntu, LinuxMint, Fedora e ArchLinux. É util para ser 
