@@ -5,6 +5,11 @@
 
 _packmanager_storecli()
 {
+	if [[ -z $1 ]]; then
+		usage
+		return 1
+	fi
+
 	while [[ $1 ]]; do
 		case "$1" in
 			-d|--downloadonly) echo -en "\r";;

@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='V2020-04-25_rev1'
+VERSION='V2020-04-26_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -222,8 +222,6 @@ fi
 # SEMPRE CHECAR PATH AO INICIAR.
 "$Script_config_path"
 
-# Mostrar o tipo de sistema.
-msg "Sistema: $os_id"
 
 #=============================================================#
 # Instalar ultima versão do programa disponível no github
@@ -250,6 +248,9 @@ done
 
 
 if [[ ! -z $1 ]]; then
+	# Mostrar o tipo de sistema.
+	white "Sistema: $(uname -s) $os_id"
+	
 	while [[ $1 ]]; do
 		case "$1" in
 			install) shift; _packmanager_storecli "$@";;

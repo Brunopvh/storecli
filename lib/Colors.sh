@@ -78,6 +78,11 @@ yellow()
 	echo -e "${CYellow}[*] $@${Reset}"
 }
 
+white()
+{
+	echo -e "${CWhite}[>] $@${Reset}"
+}
+
 #=============================================================#
 
 SPACE_TEXT()
