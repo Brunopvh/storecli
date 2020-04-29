@@ -142,6 +142,7 @@ array_vscode_dirs=(
 
 # Acessórios
 array_acessorios=(
+'etcher'
 'gnome-disk'
 'veracrypt'
 'woeusb'

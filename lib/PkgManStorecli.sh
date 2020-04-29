@@ -39,6 +39,7 @@ _packmanager_storecli()
 #----------- Office -----------------------------------------#
 			Office) _Office_All;;
 			atril) _atril;;
+			'fontes-ms') _fontes_microsoft;;
 			libreoffice) _libreoffice;;
 			libreoffice-appimage) _libreoffice_appimage;;
 

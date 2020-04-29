@@ -25,9 +25,11 @@ function _etcher_debian()
 		return 0 
 	fi
 
-	#sudo dpkg --install "$path_file"
-
-
+	yellow "Instalando: libappindicator1 libpango1.0-0"
+	_package_man_distro libappindicator1 libpango1.0-0
+	yellow "Instalando: $path_file"
+	sudo dpkg --install "$path_file"
+	_BROKE # Remover pacotes quebrados
 }
 
 

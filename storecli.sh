@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='V2020-04-26_rev1'
+VERSION='V2020-04-28_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -256,6 +256,7 @@ if [[ ! -z $1 ]]; then
 			install) shift; _packmanager_storecli "$@";;
 			remove) shift; _pack_remove "$@";;
 
+			-b|--broke) _BROKE;;
 			-c|--configure) configure_all;;
 			-d|--downloadonly) export download_only='True';;
 			-u|--upgrade) _install_update_storecli; exit;;

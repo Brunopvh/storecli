@@ -74,23 +74,26 @@ _BROKE()
 	echo -e "$space_line"
 	msg "Executando [apt-get clean; apt-get remove -y; apt-get autoremove -y]"
 	if ! sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'; then
-		red "Falha"
-		return 1
+		red "Falha: apt-get clean; apt-get remove -y; apt-get autoremove -y"
 	fi
 
 	echo -e "$space_line"
 	msg "Executando [apt install -f -y; dpkg --configure -a]"
 	if ! sudo sh -c 'apt install -f -y; dpkg --configure -a'; then
-		red "Falha"
-		return 1
+		red "Falha: apt install -f -y; dpkg --configure -a"
+	fi
+
+	echo -e "$space_line"
+	msg "Executando [apt --fix-broken install]"
+	if ! sudo sh -c 'apt --fix-broken install'; then
+		red "Falha: apt --fix-broken install"
 	fi
 
 	echo -e "$space_line"
 	msg "Executando [apt update]"
 	sudo apt update
 	msg "OK"
-	# sudo apt install --yes --force-yes -f
-	# sudo apt --fix-broken install 
+	# sudo apt install --yes --force-yes -f 
 }
 
 _APT()
