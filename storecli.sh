@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_04_30_rev2'
+VERSION='2020_05_01_rev2'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -138,8 +138,8 @@ Config_File="$HOME/.config/storecli_script.conf"
 
 #=============================================================#
 # Válidar se o Kernel e Linux.
-if [[ $(uname -s) != 'Linux' ]]; then
-	red "Seu sistema não é Linux"
+if [[ $(uname -s) != 'Linux' ]] && [[ $(uname -s) != 'FreeBSD' ]]; then
+	red "Execute este programa em sistemas Linux ou FreeBSD"
 	exit 1
 fi
 

@@ -60,8 +60,8 @@ array_python_freebsd=(
 )
 
 # Python3 FreeBSD
-array_python_freebsd=(
-'python3' 'python36' 'py36-pip-19.1.1' 'py36-pip-tools-4.1.0'
+array_python3_freebsd=(
+'python3' 'python37' 'py37-pip' 'py37-pip-tools'
 )
 
 
@@ -84,6 +84,50 @@ _config_python()
 	fi
 	return 0 
 }
+
+#=============================================================#
+
+# Fedora e derivados
+_config_freebsd_requeriments()
+{
+	echo -e "$space_line"
+	msg "Executando [_config_freebsd_requeriments]"
+	echo -e "$space_line"
+
+	# Instalar ferramentas de linha de comando.
+	for c in "${array_cli_freebsd[@]}"; do
+		yellow "Instalando: $c"
+		if ! _package_man_distro "$c"; then
+			red "Falha: $c"
+			return 1
+			break
+		fi
+	done
+	
+
+	# Instalar utilitários para python2.
+	for c in "${array_python_freebsd[@]}"; do
+		yellow "Instalando: $c"
+		if ! _package_man_distro "$c"; then
+			red "Falha: $c"
+			return 1
+			break
+		fi
+	done
+
+
+	# Instalar utilitários para python3.
+	for c in "${array_python3_freebsd[@]}"; do
+		yellow "Instalando: $c"
+		if ! _package_man_distro "$c"; then
+			red "Falha: $c"
+			return 1
+			break
+		fi
+	done
+	return 0
+}
+
 
 #=============================================================#
 
@@ -273,6 +317,8 @@ _config_system_requeriments()
 		_config_fedora_requeriments || return 1
 	elif [[ "$os_id" == 'arch' ]]; then
 		_config_archlinux_requeriments || return 1
+	elif [[ "$os_id" == '12.1-RELEASE' ]]; then
+		_config_freebsd_requeriments || return 1
 	else
 		red "Seu sistema não é suportado [$os_id]"
 		return 1

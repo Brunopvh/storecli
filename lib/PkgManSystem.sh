@@ -63,6 +63,33 @@ _pacman_process_look()
 	echo "Finalizado"
 }
 
+_pkg_process_look()
+{
+	local array_time_chars=('\' '|' '/' '-')
+	local num_char='0'
+
+	while [[ $(ps aux | grep 'root.*pkg' | egrep '(install)') ]]; do
+		
+		local _pid=$(ps aux | grep 'root.*pkg' | egrep -m 1 '(install)' | awk '{print $2}')
+		local _char="${array_time_chars[$num_char]}"
+
+		if [[ -z "$_pid" ]]; then
+			break
+		else
+			#echo -ne "Aguardando processo pacman -S finalizar pid [$_pid] ${Red}[$_char]${Reset}\r"
+			echo -ne "Aguardando processo pkg finalizar pid [$_pid] [${_char}]\r"
+			sleep 0.3
+		fi
+
+		num_char="$(($num_char+1))"
+		[[ "$num_char" == '4' ]] && num_char='0'
+
+	done	
+	echo -e "Aguardando processo pkg finalizar pid [$_pid] [${_char}]"
+	echo "Finalizado"
+}
+
+
 _BROKE()
 {
 	# Função para remover pacotes quebrados em sistemas debian.
@@ -144,6 +171,8 @@ _PACMAN()
 _PKG()
 {
 	# FreeBSD
+	[[ $(ps aux | grep 'root.*pkg' | egrep '(install)') ]] && _pkg_process_look
+
 	if sudo pkg "$@"; then
 		return 0
 	else
@@ -238,6 +267,12 @@ _package_man_distro()
 		fi
 	elif [[ "$install_yes" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then
 		if _ZYPPER install "$@"; then
+			return 0
+		else
+			return 1
+		fi
+	elif [[ "$install_yes" == 'True' ]] && [[ -x $(which pkg 2> /dev/null) ]]; then
+		if _PKG install -y "$@"; then
 			return 0
 		else
 			return 1
