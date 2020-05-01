@@ -17,8 +17,8 @@ function _check_update_storecli()
 	# hoje for igual o dia da ultima verificação então esta função deve ser encerrada
 	# 
 
-	# dia de hoje
-	day=$(date | cut -d' ' -f 2)                           
+	# dia de hoje - usar o sed para apagar strings e utilizar apenas números.
+	day=$(date | sed "s/[a-z]\+//g;s/  //" | cut -d ' ' -f 1)                           
 	
 	# dia em que a ultima busca por atualizaçãoes por executada.
 	day_update=$(grep -m 1 "day_update" "$Config_File" | cut -d' ' -f 2 2> /dev/null)
@@ -36,12 +36,12 @@ function _check_update_storecli()
 	new_version=$(grep -m 1 ^'VERSION=' "$storecli_temp" | sed "s/VERSION=//g;s/'//g")
 	
 	# Comparar veresão atual com a versão do programa no github.
-
+	msg "Versão do github: $new_version"
 	if [[ "$VERSION" == "$new_version" ]]; then
 		msg "Não existem atualizações disponíveis"
 		return 1
 	else
-		msg "Versão local ${Yellow}$VERSION${Reset} - versão disponível ${Yellow}$new_version${Reset}"
+		msg "Versão local ${Yellow}$VERSION${Reset}"
 	fi
 
 	# Instalar nova versão
