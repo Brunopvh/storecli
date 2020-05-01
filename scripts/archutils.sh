@@ -1,14 +1,21 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-04-11'
-# archutils.sh /dev/sda2 /dev/sda7
+VERSION='2020-04-30'
 #
+#--------------------------| INFORMAÇÃOES |----------------------#
+# Este programa serve para automatizar a instalação do archlinux
+# em maquinas UEFI com idioma PTBR UTF 8.
+#
+# USO: 
+#      archutils.sh /dev/sdXY /dev/sdXZ
+#
+#      /dev/sdXY = partição UEFI
+#      /dev/sdXZ = partição do sistema "/"
+#      
+#----------------------------------------------------------------#
 # pacstrap /mnt base #base-devel
 # genfstab -U -p /mnt >> /mnt/etc/fstab
 # 
-#
-#
-#
 #
 # grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 # grub-mkconfig -o /boot/grub/grub.cfg
@@ -40,10 +47,10 @@ VERSION='2020-04-11'
 
 scpace_line='=========================================================='
 
-Red='\033[1;31m'
-Green='\033[1;32m'
-Yellow='\033[1;93m'
-White='\033[1;37m'
+Red='\033[0;31m'
+Green='\033[0;32m'
+Yellow='\033[0;33m'
+White='\033[0;37m'
 Reset='\033[m'
 
 #=============================================================#
@@ -94,12 +101,17 @@ EOF
 
 case "$1" in
 	-h|--help) usage; exit;;
+	-v|--version) echo -e "$(basename $0) V${VERSION}"; exit;;
 esac
+
+echo -e "$(basename $0) V${VERSION}"
 
 #=============================================================#
 partition_efi="$1"
 partiton_root="$2"
 
+# url_appsbuster='https://github.com/Brunopvh/apps-buster/archive/master.tar.gz'
+url_storecli='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 
 # Verificar conexão com a internet.
 echo -ne "[>] Aguardando conexão "
@@ -116,6 +128,7 @@ fi
 # Arrays
 #=============================================================#
 # Pacotes básicos que estão nos repositórios do arch.
+#
 array_pkgs_base=(
 	'dosfstools'
 	'mtools'
@@ -123,6 +136,7 @@ array_pkgs_base=(
 	'networkmanager'
 	'wpa_supplicant'
 	'wireless_tools'
+	'wpa_actiond'	
 	'dhclient'
 	'sudo'
 	'dialog'
@@ -133,7 +147,8 @@ array_pkgs_base=(
 )
 
 array_laptop_utils=(
-	'acpi' 'acpid'
+	'acpi' 
+	'acpid'
 )
 
 # Pacotes para instalação do gnome-shell no arch.
@@ -149,30 +164,6 @@ array_gnomeshell=(
 	'gnome-control-center'
 	'adwaita-icon-theme'
 )
-#=============================================================#
-_PACMAN()
-{
-	# Usar o gerenciador de pacotes do arch para instalar pacotes
-	# e retornar '0' ou '1'.
-	if sudo pacman "$@"; then
-		return 0
-	else
-		return 1
-	fi
-}
-#=============================================================#
-_YESNO()
-{
-	text="$1"
-	_green "${text} [${Yellow}s${Reset}/${Red}n${Reset}]?: "
-	read -t 10 -n 1 sn
-	echo ' '
-	if [[ "${sn,,}" == 's' ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
 
 #=============================================================#
 _isroot()
@@ -184,23 +175,61 @@ _isroot()
 	fi
 }
 
+#=============================================================#
+
+_PACMAN()
+{
+	# Usar o gerenciador de pacotes do arch para instalar pacotes
+	# e retornar '0' ou '1'.
+
+	if ! _isroot; then
+		_red "Você precisa ser o 'root'"
+		return 1
+	fi
+
+
+	if pacman -S --neededs "$@"; then
+		return 0
+	else
+		return 1
+	fi
+}
+#=============================================================#
+_YESNO()
+{
+	# Função para indagações do tipo sim ou não que retorna '0'
+	# se o usuário responder 's' ou '1' se o usuário responder 'n'.
+	# O texto a ser exibido deve ser passado no parametro '1' ($1)
+
+	local text="$1"
+	_green "${text} [${Yellow}s${Reset}/${Red}n${Reset}]?: "
+	read -t 10 -n 1 sn
+	echo ' '
+	if [[ "${sn,,}" == 's' ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#=============================================================#
+
 _ismount()
 {
 	# Se o dispositivo estiver montado retorna '0', se não retorna '1'.
 	# USE _ismount "$1"
-	device="$1"
+	local partition="$1"
 
-	# Um dispositivo do tipo /dev/sdXy tem 9 caracteres
-	# Validar o tamanho de caracteres.
-	if [[ "${#device}" < '9' ]]; then 
-		_red "Informe um dispositivo do tipo /dev/sdXy"
+	# Uma partição montada do tipo /dev/sdXy tem 9 caracteres validar o tamanho de caracteres.
+	if [[ "${#partition}" < '9' ]]; then 
+		_red "Informe uma partição do tipo /dev/sdXy"
 		return 1
 	fi
 
 	# Procurar o ponto de montagem
-	proc_device=$(grep "$device" '/proc/mounts' | awk '{print $1}')
+	proc_device=$(grep "$partition" '/proc/mounts' | awk '{print $1}')
 
-	if [[ "$proc_device" == "$device" ]]; then
+	if [[ "$proc_device" == "$partition" ]]; then
 		return 0
 	else
 		return 1
@@ -210,22 +239,28 @@ _ismount()
 #=============================================================#
 _UMOUNT_DEV()
 {
-	# Desmontar um dispositivo.
-	# $1 = device a ser desmontado
+	# Desmontar uma partição montada.
+	# $1 = partição a ser desmontada
 	# USE _UMOUNT_DEV "$1"
+	local partition="$1"
 
-	_msg "Desmontando [$1]"
+	_yellow "Desmontando: $partition"
 	if ! _isroot; then
 		_red "Você precisa ser 'root'"
 		return 1
 	fi
 
+	if ! _ismount "$partiton"; then
+		_red "Partição não montada: $patition"
+		return 1
+	fi
+
 	# Desmontar
-	if umount "$1"; then
-		_msg "[$1] desmontado com sucesso"
+	if umount "$partiton"; then
+		_yellow "Desmontado com sucesso: $patition"
 		return 0
 	else
-		_red "Falha ao tentar desmontar [$1]"
+		_red "Falha ao tentar desmontar: $partiton"
 		return 1
 	fi
 }
@@ -233,15 +268,18 @@ _UMOUNT_DEV()
 #=============================================================#
 _MOUNT_DEVICE()
 {
-	# USE _MOUNT_DEVICE device mount_point
-	_msg "Montando [$1] em [$2]"
+	# USE _MOUNT_DEVICE partiton mount_point
+	local partition="$1"
+	local mount_point="$2"
+
+	_yellow "Montando [$partition] em [$mount_point]"
 	if ! _isroot; then
 		_red "Você precisa ser 'root'"
 		return 1
 	fi
 
 	# Montar
-	if mount "$1" "$2"; then
+	if mount "$partiton" "$mount_point"; then
 		return 0
 	else
 		return 1
@@ -261,7 +299,7 @@ _FORMAT_FAT()
 		_UMOUNT_DEV "$1" || return 1
 	fi
 	
-	_msg "Formatando [$1] como FAT32"
+	_yellow "Formatando [$1] como FAT32"
 	if ! _isroot; then
 		_red "Você precisa ser 'root'"
 		return 1
@@ -276,54 +314,56 @@ _FORMAT_EXT4()
 	local device="$1"
 	local label="$2"
 
-	_msg "Formatando $1 como ext4"
+	_yellow "Formatando $1 como ext4"
 	mkfs.ext4 -L "$label" "$device"
 }
 
 #=============================================================#
 _configure_base()
 {
-	local url='https://github.com/Brunopvh/apps-buster/archive/master.tar.gz'
+	# PART 1
+	# Formatar partições, montar partições e gerar fstab.
 
 	if ! _isroot; then
 		_red "Você precisa ser 'root' para realizar está operação"
 		return 1
 	fi
 
-	# Formatar dispositivo EFI
-	if _YESNO "Deseja formatar $partition_efi com FAT32"; then
+	
+	if _YESNO "Deseja formatar $partition_efi como FAT32"; then
 		_YESNO "Tem certeza que deseja formatar $partition_efi" && {
 			_FORMAT_FAT "$partition_efi"
 		}
 	fi
 
-	# Formatar partição onde o sistema será instalado.
+	
 	if _YESNO "Deseja formatar $partiton_root como EXT4"; then 
 		_FORMAT_EXT4 "$partiton_root" 'ARCHLINUX'
 	fi
 
-	_msg "Criando /mnt/boot"; mkdir -p "/mnt/boot"
-	_msg "Criando /mnt/boot/efi"; mkdir -p "/mnt/boot/efi"
+	_yellow "Criando /mnt/boot"; mkdir -p "/mnt/boot"
+	_yellow "Criando /mnt/boot/efi"; mkdir -p "/mnt/boot/efi"
 
-	_msg "Montando $partiton_root em [/mnt]"
+	_yellow "Montando $partiton_root em /mnt"
 	_MOUNT_DEVICE "$partiton_root" '/mnt' 
 
-	_msg "Montando partição EFI [$partition_efi] em /mnt/boot/efi"
+	_yellow "Montando partição EFI [$partition_efi] em /mnt/boot/efi"
 	_MOUNT_DEVICE "$partition_efi" "/mnt/boot/efi" 
 
 	# Pacstrap
-	_msg "Executando [pacstrap /mnt base base-devel]"
+	_yellow "Executando: pacstrap /mnt base base-devel"
 	pacstrap /mnt base 'base-devel' linux 'linux-firmware'
 
 	# Configuar FSTAB.
 	_yellow "Configurando fstab [genfstab -U -p /mnt >> /mnt/etc/fstab]"
 	genfstab -p /mnt >> /mnt/etc/fstab
 
-	_msg "Executando [arch-chroot /mnt /bin/bash]"
+	_yellow "Executando: arch-chroot /mnt /bin/bash"
+	echo -e "$space_line"
 	_green "Execute os comandos a seguir para proxima fase"
-	_msg "curl -LS $url -o apps-buster.tar.gz"
-	_msg "tar -zxvf apps-buster.tar.gz"
-	_msg "chmod -R +x apps-buster; ./apps-buster/scripts/archutils.sh"
+	_green "curl -LS $url_storecli -o storecli.tar.gz"
+	_green "tar -zxvf storecli.tar.gz"
+	_green "chmod -R +x storecli; ./storecli/scripts/archutils.sh"
 	
 	arch-chroot /mnt /bin/bash
 
@@ -331,43 +371,56 @@ _configure_base()
 
 _configure_POSBASE()
 {
+	# PART 2
 	# /usr/share/zoneinfo/America/Porto_Velho
 	if ! _isroot; then
 		_red "Você precisa ser 'root' para realizar está operação"
 		return 1
 	fi
 
-	_msg "Executando [ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime]"
+	_yellow "Executando: ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime"
 	ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime
 
 	# Idioma pt_BR.UTF-8
-	_green "Executando  sed -i 's/# pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen"
-	cp '/etc/locale.gen' '/etc/locale.gen.backup'
+	_yellow "Criando backup de /etc/locale.gen em /etc/locale.gen.backup"
+	cp '/etc/locale.gen' '/etc/locale.gen.backup' # Criar backup
+
+	_yellow "Executando  sed -i 's/# pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen"
 	sed -i 's/# pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/g' '/etc/locale.gen'
 
+	_yellow "Configurando: pt_BR.UTF-8 em /etc/locale.conf"
 	echo 'LANG="pt_BR.UTF-8"' > '/etc/locale.conf'
+
+	_yellow "Configurando: KEYMAP=br-abnt2 em /etc/vconsole.conf"
 	echo 'KEYMAP=br-abnt2' > '/etc/vconsole.conf'
 
 	_yellow "Executando [locale-gen]"
 	locale-gen
 
 	# Hostname
-	echo "$Yellow"
-	read -p "-> Digite um HOSTENAME para sua máquiana: " hname
-	_green "Usando este hostname $hname"
-	echo "$hname" > '/etc/hostname'
+	_yellow "Digite um HOSTENAME para sua máquina: "
+	read host_name
+	_yellow "Usando este hostname $host_name"
+	echo "$host_name" > '/etc/hostname'
 
-	_green "Configurando /etc/hosts"
+	_yellow "Configurando /etc/hosts"
 	echo '127.0.0.1	localhost.localdomain	localhost' >> '/etc/hosts'
 	echo '::1	localhost.localdomain	localhost' >> '/etc/hosts'
 	echo -e "127.0.0.1	${hname}.localdomain	$hname" >> '/etc/hosts'
 
-	_green "Executando pacman -S wireless_tools wpa_supplicant wpa_actiond dialog"
-	pacman -S wireless_tools wpa_supplicant wpa_actiond dialog
-
-	_msg "Executando pacman -Syy"
+	_yellow "Executando pacman -Syy"
 	pacman -Syy
 
+	for X in "${array_pkgs_base[@]}"; do
+		echo -e "$space_line"
+		_green "Instalando: $X"
+		if ! _PACMAN "$X"; then
+			_red "Falha: $X"
+			sleep 1
+		fi
+	done
+
+	echo -e "$space_line"
 	_green "Para finalizar defina sua senha de ${Red}root${Reset} com o comando passwd"
 	_green "Também e recomendado habilitar o multilib em /etc/pacman.conf"
 	_green "Em seguida execute este programa novamente e escolha a opição 3 no menu"
@@ -384,13 +437,16 @@ _install_grub()
 		return 1
 	fi
 
-	_msg "Executando pacman -S grub os-prober efibootmgr"
-	pacman -S grub 'os-prober' efibootmgr 
+	_yellow "Executando pacman -S grub os-prober efibootmgr"
+	if ! _PACMAN grub 'os-prober' efibootmgr; then
+		_red "Falha: grub os-prober efibootmgr"
+		return 1
+	fi 
 
-	_msg "Executando grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck"
+	_yellow "Executando grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck"
 	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 
-	_msg "Executando grub-mkconfig -o /boot/grub/grub.cfg"
+	_yellow "Executando grub-mkconfig -o /boot/grub/grub.cfg"
 	grub-mkconfig -o /boot/grub/grub.cfg
 
 	_yellow "Execute este programa novamente e selecione a opição 4 no menu"
@@ -405,57 +461,64 @@ _configure_systemctl()
 	# systemctl enable NetwokrManager
 	# systemctl enable gdm
 
-	echo "systemctl status NetworkManager"
-	echo "systemctl start NetworkManager"
-	echo "systemctl enable NetwokrManager"
-	echo "systemctl enable gdm"
+	#_yellow "Executando: systemctl status NetworkManager"
+	_yellow "systemctl start NetworkManager"; systemctl start NetworkManager
+	_yellow "systemctl enable NetwokrManager"; systemctl enable NetwokrManager
+	_yellow "systemctl enable gdm"; systemctl enable gdm
 }
 
 _install_gnome()
 {
 	for c in "${array_pkgs_base[@]}"; do
 		echo -e "$scpace_line"
-		_green "Instalando: $c"
-		pacman -S "$c"
+		_yellow "Instalando: $c"
+		if ! _PACMAN "$c"; then
+			_red "Falha: $c"
+			sleep 1
+		fi
 	done
 
-	_msg "Instalando: ${array_laptop_utils[@]}"
-	pacman -S "${array_laptop_utils[@]}"
+	#_yellow "Instalando: ${array_laptop_utils[@]}"
+	#pacman -S "${array_laptop_utils[@]}"
 
 	for c in "${array_gnomeshell[@]}"; do
 		echo -e "$scpace_line"
-		_green "Instalando: $c"
-		pacman -S "$c"
+		_yellow "Instalando: $c"
+		if ! _PACMAN "$c"; then
+			_red "Falha: $c"
+			sleep 1
+		fi
 	done
 
 
-	systemctl enable NetwokrManager
-	systemctl enable gdm
+	_configure_systemctls
 
+	echo -e "$space_line"
 	_yellow "Execute as ações a seguir manualmente"
 	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
 	_yellow "usermod -aG wheel"
 	_yellow "Edite o arquivo visudo"
-	
 	_yellow "umount -R /mnt"
+	echo ' '
 }
 
 #=============================================================#
 main()
 {
 
-	_msg "Selecine uma opição"
-	_msg "1 - Instalar base ARCH"
-	_msg "2 - Instalar POS BASE - (opição usada após o arch-chroot)"
-	_msg "3 - Instalar Grub"
-	_msg "4 - Instalar gnome-shell"
-	read op
+	_yellow "MENU PRINCIPAL"
+	_green "1 - Instalar base ARCH"
+	_green "2 - Instalar POS BASE - (opição usada após o arch-chroot)"
+	_green "3 - Instalar Grub"
+	_green "4 - Instalar gnome-shell"
+	read -p "Digite um número e pressione enter: " op
 
 	case "$op" in
 		1) _configure_base "$@";;
 		2) _configure_POSBASE "$@";;
 		3) _install_grub;;
 		4) _install_gnome;;
+		*) exit 0;;
 	esac
 
 }

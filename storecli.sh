@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='V2020-04-28_rev1'
+VERSION='V2020-04-30_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
