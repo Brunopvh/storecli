@@ -34,70 +34,16 @@ _loop_pid()
 
 
 #=============================================================#
-# Loop deverá ser executado se houver outro processo 'pacman -S'
-# em execução.
+# Remover pacotes quebrados em sistemas debian.
 #=============================================================#
-_pacman_process_look()
-{
-	local array_time_chars=('\' '|' '/' '-')
-	local num_char='0'
-
-	while [[ $(ps aux | grep 'root.*pacman' | egrep '(-S|y)') ]]; do
-		
-		local _pid=$(ps aux | grep 'root.*pacman' | egrep -m 1 '(-S|y)' | awk '{print $2}')
-		local _char="${array_time_chars[$num_char]}"
-
-		if [[ -z "$_pid" ]]; then
-			break
-		else
-			#echo -ne "Aguardando processo pacman -S finalizar pid [$_pid] ${Red}[$_char]${Reset}\r"
-			echo -ne "Aguardando processo pacman -S finalizar pid [$_pid] [${_char}]\r"
-			sleep 0.3
-		fi
-
-		num_char="$(($num_char+1))"
-		[[ "$num_char" == '4' ]] && num_char='0'
-
-	done	
-	echo -e "Aguardando processo pacman -S finalizar pid [$_pid] [${_char}]"
-	echo "Finalizado"
-}
-
-_pkg_process_look()
-{
-	local array_time_chars=('\' '|' '/' '-')
-	local num_char='0'
-
-	while [[ $(ps aux | grep 'root.*pkg' | egrep '(install)') ]]; do
-		
-		local _pid=$(ps aux | grep 'root.*pkg' | egrep -m 1 '(install)' | awk '{print $2}')
-		local _char="${array_time_chars[$num_char]}"
-
-		if [[ -z "$_pid" ]]; then
-			break
-		else
-			#echo -ne "Aguardando processo pacman -S finalizar pid [$_pid] ${Red}[$_char]${Reset}\r"
-			echo -ne "Aguardando processo pkg finalizar pid [$_pid] [${_char}]\r"
-			sleep 0.3
-		fi
-
-		num_char="$(($num_char+1))"
-		[[ "$num_char" == '4' ]] && num_char='0'
-
-	done	
-	echo -e "Aguardando processo pkg finalizar pid [$_pid] [${_char}]"
-	echo "Finalizado"
-}
-
-
 _BROKE()
 {
-	# Função para remover pacotes quebrados em sistemas debian.
 	if [[ ! -x $(command -v apt 2> /dev/null) ]]; then
 		yellow "Esta opção só está disponivel para sistemas baseados em Debian"
 		return 0
 	fi
 
+	
 	echo -e "$space_line"
 	msg "Executando [apt-get clean; apt-get remove -y; apt-get autoremove -y]"
 	if ! sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'; then
@@ -179,7 +125,8 @@ _PACMAN()
 _PKG()
 {
 	# FreeBSD
-	[[ $(ps aux | grep 'root.*pkg' | egrep '(install)') ]] && _pkg_process_look
+	Pid_Pkg_Install=$(ps aux | grep 'root.*pkg' | egrep -m 1 '(install|update)' | awk '{print $2}')
+	[[ ! -z $Pid_Pkg_Install ]] && _loop_pid "$Pid_Pkg_Install"
 
 	if sudo pkg "$@"; then
 		return 0

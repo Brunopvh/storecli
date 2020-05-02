@@ -34,6 +34,7 @@ _pack_remove()
 
 		case "$1" in
 			android-studio) _delete_all "${array_android_studio_dirs[@]}";;
+			etcher) _delete_all "${array_etcher_dirs[@]}";;
 			papirus) _delete_all "${array_papirus_dirs[@]}";;
 			peazip) _delete_all "${array_peazip_dirs[@]}";;
 			pycharm) _delete_all "${array_pycharm_dirs[@]}";;

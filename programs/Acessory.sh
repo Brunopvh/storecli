@@ -32,6 +32,32 @@ function _etcher_debian()
 	_BROKE # Remover pacotes quebrados
 }
 
+function _etcher_archlinux()
+{
+	# https://aur.archlinux.org/packages/balena-etcher/
+	local url_pkgbuild='https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=balena-etcher'
+	local url_snapshot='https://aur.archlinux.org/cgit/aur.git/snapshot/balena-etcher.tar.gz'
+	local path_file="$Dir_Downloads/etcher_archlinux.tar.gz"
+	
+	_dow "$url_snapshot" "$path_file" || return 1
+	
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+	
+	_unpack "$path_file" || return 1
+	
+	cd "$Dir_Unpack"
+	mv $(ls -d balena-*) "$dir_temp/etcher"
+	cd "$dir_temp/etcher"
+	yellow "Executando: makepkg -s"
+	makepkg -s
+	
+	#green "Executando sudo pacman -U $(ls etcher*.tar.*)"
+	#sudo pacman -U $(ls etcher*.tar.*)
+}
 
 function _etcher_appimage()
 {
@@ -46,13 +72,54 @@ function _etcher_appimage()
 		_INFO 'download_only' "$path_file"
 		return 0 
 	fi
+	
+	# Já instalado.
+	if _WHICH 'balena-etcher-electron'; then
+		_INFO 'pkg_are_instaled' 'balena-etcher-electron'
+		return 0
+	fi
+	
+	white "Criando link simbólico em: ${array_etcher_dirs[2]}"
+	sudo cp "$path_file" "${array_etcher_dirs[1]}"
+	sudo chmod a+x "${array_etcher_dirs[1]}"
+	sudo ln -sf "${array_etcher_dirs[1]}" "${array_etcher_dirs[2]}"
+	
+	
+	white "Criando arquivo .desktop"
+	
+	echo "[Desktop Entry]" | sudo tee "${array_etcher_dirs[0]}"
+	{
+        echo "Name=BalenaEtcher"
+        echo "Comment=Flash OS images to SD cards and USB drives, safely and easily"
+        echo "Version=1.0"
+        echo "Icon=balena-etcher-electron"
+        echo "Exec=${array_etcher_dirs[2]}"
+        echo "Terminal=false"
+        echo "Categories=Utility;"
+        echo "Type=Application"
+    } | sudo tee -a "${array_etcher_dirs[0]}"
 
+    # Área de trabalho.
+	white "Criando atalho na Área de trabalho"
+	cp -u "${array_etcher_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${array_etcher_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${array_etcher_dirs[0]}" ~/Desktop/ 2> /dev/null 
+
+	if _WHICH 'balena-etcher-electron'; then
+		_INFO 'pkg_sucess' 'balena-etcher-electron'
+		return 0
+	else
+		_INFO 'pkg_instalation_failed' 'balena-etcher-electron'
+		return 1
+	fi
 }
 
 function _etcher()
 {
 	case "$os_id" in
 		debian) _etcher_debian;;
+		arch) _etcher_appimage;;
+		*) _etcher_appimage;;
 	esac
 }
 

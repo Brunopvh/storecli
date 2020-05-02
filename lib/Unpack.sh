@@ -33,6 +33,8 @@ _unpack()
 		type_file='tar.xz'
 	elif [[ "${path_file: -4}" == '.zip' ]]; then # .zip
 		type_file='zip'
+	elif [[ "${path_file: -4}" == '.deb' ]]; then # .deb
+		type_file='deb'
 	else
 		red "Arquivo não suportado [$path_file]"
 		return 1
@@ -54,12 +56,13 @@ _unpack()
 			'tar.bz2') tar -jxvf "$path_file" -C "$Dir_Unpack" 1> /dev/null;;
 			'tar.xz') tar -Jxf "$path_file" -C "$Dir_Unpack" 1> /dev/null;;
 			zip) unzip "$path_file" -d "$Dir_Unpack" 1> /dev/null;;
+			deb) ar -x "$path_file" --output="$Dir_Unpack" 1> /dev/null;;
 			*) return 1;;
 		esac
 	else
 		# Usuário tem NÃO permissão de escrita no diretório destino
 		red "Você não tem permissão de escrita em [$Dir_Unpack]"
-		
+		return 1
 		case "$type_file" in
 			'tar.gz') sudo tar -zxvf "$path_file" -C "$Dir_Unpack" 1> /dev/null;;
 			'tar.bz2') sudo tar -jxvf "$path_file" -C "$Dir_Unpack" 1> /dev/null;;

@@ -228,7 +228,7 @@ case "$os_id" in
 	debian) _codecs_debian;;
 	linuxmint|ubuntu) _codecs_ubuntu;;
 	fedora) _codecs_fedora;;
-	opensuse-tumbleweed) _codecs_tumbleweed;;
+	'opensuse-tumbleweed') _codecs_tumbleweed;;
 	arch) _codecs_arch;;
 	*) _INFO 'pkg_not_found' 'chromium'; return 1;;
 
@@ -302,12 +302,71 @@ function _spotify_ubuntu()
  	_package_man_cli 'spotify-client'
 }
 
+function _spotify_archlinux()
+{
+	# https://www.vivaolinux.com.br/dica/Spotify-no-Arch-Linux
+	local spotify_url='https://repository-origin.spotify.com/pool/non-free/s/spotify-client'
+	local spotify_file_server=$(curl -sSL "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
+	local Spotify_Url_Server="$spotify_url/$spotify_file_server"
+	local path_file="$Dir_Downloads/$spotify_file_server"
+	
+	_dow "$Spotify_Url_Server" "$path_file" || return 1
+	
+	
+	local array_spotify_requeriments=( 
+		gconf 
+		gtk2
+		glib2 
+		nss 
+		libsystemd 
+		libxtst 
+		libx11 
+		libxss 
+		rtmpdump
+		'desktop-file-utils' 
+		'alsa-lib' 
+		'openssl-1.0'
+	)
+	
+	for X in "${array_spotify_requeriments[@]}"; do
+		yellow "Instalando: $X"
+		if ! _package_man_distro "$X"; then
+			red "Falha: $X"
+		fi
+	done
+	
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+	
+	_unpack "$path_file" || return 1
+	cd "$Dir_Unpack"
+	white "Descomprimindo arquivo data.tar.gz"
+	sudo tar -zxpvf data.tar.gz -C / 1> /dev/null
+	sudo install -Dm644 /usr/share/spotify/spotify.desktop /usr/share/applications/spotify.desktop
+	sudo install -Dm644 /usr/share/spotify/icons/spotify-linux-512.png /usr/share/pixmaps/spotify-client.png
+}
+
 function _spotify()
 {
 	if [[ "$os_id" == 'debian' ]]; then
 		_spotify_debian
 	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
 		_spotify_ubuntu
+	elif [[ "$os_id" == 'arch' ]]; then
+		_spotify_archlinux
+	else
+		_INFO 'pkg_not_found' 'spotify'; return 1
+	fi
+	
+	if _WHICH 'spotify'; then
+		_INFO 'pkg_sucess' 'spotify'
+		return 0
+	else
+		_INFO 'pkg_instalation_failed' 'spotify'
+		return 1
 	fi
 }
 
@@ -347,19 +406,15 @@ _vlc()
 _Midia_All()
 {
 	if [[ -z "$install_yes" ]]; then
-		green "Instalar todos os pacotes da categória 'Midia' [${Yellow}s${Reset}/${Red}n${Reset}]?: "
-		read -t 10 -n 1 sn
-		echo ' '
-		[[ "${sn,,}" == 's' ]] || {
-			green "Abortando"
-			return 0
-		}
+		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 	fi
 	_codecs
 	_celluloid
 	_cinema
 	_gnome_mpv
 	_parole
+	_smplayer
+	_spotify
 	_totem
 	_vlc
 }

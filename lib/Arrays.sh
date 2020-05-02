@@ -62,6 +62,13 @@ array_libreoffice_dirs=(
 "$Dir_User_Bin/libreoffice-amd64.AppImage" # .AppImage
 )
 
+# Etcher
+array_etcher_dirs=( 
+	"$Dir_Root_Applications/balena-etcher-electron.desktop"  # .desktop
+	"/opt/etcher-amd64.AppImage"                             # .AppImage
+	"/usr/bin/balena-etcher-electron"                        # Link simbólico
+)
+
 # Papirus
 array_papirus_dirs=(
 	"$Dir_User_Icons/Papirus-Dark" 
