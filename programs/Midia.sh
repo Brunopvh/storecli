@@ -288,7 +288,7 @@ function _spotify_debian()
 	white "Adicionando keyserver e repositório"
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45
 	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
-	sudo apt update
+	_APT update
 	_package_man_distro 'spotify-client'
 }
 
@@ -299,7 +299,7 @@ function _spotify_ubuntu()
 	curl -sSL https://download.spotify.com/debian/pubkey.gpg | sudo apt-key add - 
 	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
 	sudo apt-get update 
- 	_package_man_cli 'spotify-client'
+ 	_package_man_distro 'spotify-client'
 }
 
 function _spotify_archlinux()

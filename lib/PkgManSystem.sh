@@ -69,16 +69,42 @@ _BROKE()
 	# sudo apt install --yes --force-yes -f 
 }
 
+_DPKG()
+{
+	# Função para executar dpkg --install
+	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+
+	[[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
+	[[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
+	[[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
+
+	if sudo dpkg "$@"; then
+		return 0
+	else
+		red "Gerenciador de pacotes [dpkg] retornou erro"
+		return 1
+	fi
+}
+
 _APT()
 {
 	# Antes de proseguir com a instalação devemos verificar se já 
 	# existe outro processo instalação com apt em execução para não
 	# causar erros.
+	# sudo rm /var/lib/dpkg/lock-frontend
+	# sudo rm /var/cache/apt/archives/lock
+	#
 	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
 	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
 
 	[[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
 	[[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
+	[[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
+	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
+	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
 
 	if sudo apt "$@"; then
 		return 0

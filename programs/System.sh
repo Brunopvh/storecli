@@ -171,15 +171,14 @@ function _stacer_debian()
 		return 0 
 	fi
 
-	sudo dpkg --install "$path_file"
-	_BROKE # Remover pacotes quebrados
+	_DPKG --install "$path_file"
 }
 
 
 function _stacer()
 {
 	case "$os_id" in
-		debian) _stacer_debian;;
+		debian|ubuntu) _stacer_debian;;
 		*) _package_man_distro stacer;;
 	esac
 }
@@ -302,9 +301,6 @@ function _virtualbox_bionic()
 
 function _virtualbox_buster()
 {
-	# sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox_2016.asc -O- | apt-key add -'
-	# sudo sh -c 'wget -q https://www.virtualbox.org/download/oracle_vbox.asc -O- | apt-key add -'
-	
 	if [[ "$os_id" != 'debian' ]]; then
 		return 1
 	fi
@@ -470,5 +466,6 @@ _System_All()
 	_compactadores
 	_firmware
 	_peazip
+	_stacer
 	_virtualbox
 }

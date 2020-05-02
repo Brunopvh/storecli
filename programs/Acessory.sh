@@ -61,17 +61,18 @@ function _etcher_archlinux()
 
 function _etcher_appimage()
 {
+	# Baixar o etcher AppImage em seguida mover para /opt e criar link simbólico em
+	# /usr/local/bin/ e configurar o arquivo .desktop
 	# https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage
+
 	local url='https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage'
 	local path_file="$Dir_Downloads/$(basename $url)"
 
 	_dow "$url" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
-		return 0 
-	fi
+	[[ "$download_only" == 'True' ]] && _INFO 'download_only' "$path_file" && return 0 
+	
 	
 	# Já instalado.
 	if _WHICH 'balena-etcher-electron'; then
@@ -99,7 +100,7 @@ function _etcher_appimage()
         echo "Type=Application"
     } | sudo tee -a "${array_etcher_dirs[0]}"
 
-    # Área de trabalho.
+  
 	white "Criando atalho na Área de trabalho"
 	cp -u "${array_etcher_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${array_etcher_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
@@ -217,10 +218,10 @@ function _woeusb_buster(){
 
 	local dir_woeusb="$dir_temp/WoeUSB"
 	local requeriments_woeusb_debian=(
-			'devscripts' 'equivs' 'libwxgtk3.0-dev' 'grub-pc-bin'
+			'devscripts' 'equivs' 'libwxgtk3.0-dev' 'grub-pc-bin' 'p7zip-full'
 		)
 
-	msg "Necessário instalar os seguintes pacotes: ${Yellow}${requeriments_woeusb_debian[@]}${Reset}"
+	msg "Necessário instalar os seguintes pacotes: ${requeriments_woeusb_debian[@]}"
 	_YESNO "Deseja proseguir" || return 1
 	
 
@@ -237,7 +238,7 @@ function _woeusb_buster(){
 		return 1
 	fi
 
-	green "Compilando." 
+	yellow "Compilando." 
 	sleep 1
 
 	cd "$dir_woeusb"
@@ -251,7 +252,7 @@ function _woeusb_buster(){
 	#==================================================================#
 	#========================= instalação do pacote .deb ==============#
 	cd ..
-	if sudo dpkg --install "$dir_temp/woeusb_1.0_amd64.deb"; then
+	if _DPKG --install "$dir_temp/woeusb_1.0_amd64.deb"; then
 		echo -e "$space_line"
 		_INFO 'pkg_sucess' 'WoeUSB'	
 	else
@@ -285,7 +286,8 @@ function _woeusb(){
 	if [[ "$os_codename" == 'buster' ]]; then
 		_woeusb_buster
 	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		_package_man_distro woeusb
+		#_package_man_distro woeusb
+		_woeusb_buster
 	elif [[ "$os_id" == 'fedora' ]]; then
 		_package_man_distro WoeUSB
 	else
