@@ -291,7 +291,7 @@ _config_archlinux_requeriments()
 	#_package_man_distro 'ntfs-3g'
 	#sudo modprobe fuse
 	
-	msg "Instalando: binutils"
+	white "Instalando: binutils"
 	_package_man_distro binutils
 
 	# Base-Devel
@@ -361,7 +361,7 @@ configure_all()
 
 	# Função _config_system_requeriments foi executada com sucesso prosseguir.
 	if ! grep -q 'requeriments OK' "$Config_File"; then
-		msg "Gravando log em [$Config_File]"
+		white "Gravando log em [$Config_File]"
 		echo 'requeriments OK' >> "$Config_File"
 	fi
 	return 0

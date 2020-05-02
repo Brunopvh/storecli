@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-04-12'
+VERSION='2020-05-02'
 #
 # https://www.torproject.org/pt-BR/download/
 # https://terminalroot.com.br/2015/08/45-exemplos-de-variaveis-e-arrays-em_19.html
@@ -298,9 +298,15 @@ _gpg_check()
 	gpg --output "$path_keyring" --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290
 
 	_msg "Executando [gpgv --keyring]"
-	gpgv --keyring "$path_keyring" "$tor_path_file_asc" "$tor_path_file" || return 1
-	echo -e "$space_line"
-	return 0
+	if gpgv --keyring "$path_keyring" "$tor_path_file_asc" "$tor_path_file"; then
+		echo -e "$space_line"
+		return 0
+	else
+		_red "Falha na verificação de integridade, deseja prosseguir com a instalação mesmo assim [s/n]?: "
+		read -t 10 -n 1 sn
+		[[ "${sn,,}" == 's' ]] || return 1
+		return 0
+	fi
 }
 
 

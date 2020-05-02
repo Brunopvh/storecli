@@ -190,7 +190,14 @@ function _stacer()
 
 function _virtualbox_extpack()
 {
-	msg "${Red}A${Reset}guarde${Red}"
+	# Após instalar o virtualbox no sistema, devemos executar esta
+	# função para instalar o pacote extensionpack (em qualquer distro)
+	# uma vez que está função funciona da mesma maneira em qualquer 
+	# distribuição linux. 
+	#   Baixa o pacote (extensionpack) instala o pacote usando o virtualbox
+	# e adiciona o usuário atual no grupo  vboxuser.
+	#
+	white "Aguarde"
 	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
 	local vb_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" <<< $(curl -sL "$vb_pag"))
 	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
@@ -198,8 +205,6 @@ function _virtualbox_extpack()
 
 	_dow "$vb_url" "$path_file" || return 1
 	
-	echo -e "${Reset}"
-
 	if [[ "$download_only" == 'True' ]]; then
 		_INFO 'download_only' "$path_file"
 		return 0 
@@ -211,8 +216,8 @@ function _virtualbox_extpack()
 
 	_YESNO "Deseja adicionar $USER ao grupo ${Green}vboxusers${Reset}" || return 1
 	
-	sudo gpasswd -a "$USER" vboxusers  
-	# sudo usermod -a -G vboxusers $USER	
+	#sudo gpasswd -a "$USER" vboxusers  
+	sudo usermod -a -G vboxusers $USER	
 }
 
 #-----------------------------------------------------#
@@ -253,41 +258,41 @@ function _virtualbox_fedora()
 
 #-----------------------------------------------------#
 
-function _virtualbox_bionic()
+function _virtualbox_ubuntu()
 {
-	local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib"
+	# Definir o conteudo do arquivo source.list apartir do codenome
+	# do sistema bionic/trica
+	
 	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 
-	if [[ "$os_codename" != 'bionic' ]] && [[ "$os_codename" != 'trica' ]]; then
-		yellow "Seu sistema não e baseado em Ubuntu Bionic"
-		return 1
-	fi
+	case "$os_codename" in
+		bionic|trica) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
+		*) red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
+	esac
 
+	
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	msg "Limpando o cache do (apt)"
-	sudo apt-get clean
+	white "Limpando o cache do (apt)"
+	_APT clean
 	sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 
-	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
-	if [[ "$?" == '0' ]]; then # Pular
-		msg "Repositório já disponível ${Green}'pulando'${Reset}"
-	else
-		yellow "Adicionando key [https://www.virtualbox.org/download/oracle_vbox_2016.asc]"
-		sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
+	#find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian bionic contrib$" 2> /dev/null
+	
+	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
+	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
 		
-		yellow "Adicionando key [https://www.virtualbox.org/download/oracle_vbox.asc]"
-		sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
+	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
+	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
 		
-		yellow "Adicionando repositório"
-		echo "$vbox_repo" | sudo tee "$vbox_file"
-	fi
-
+	echo -ne "Adicionando repositório "
+	echo "$vbox_repo" | sudo tee "$vbox_file"
+	
 	# Atualizar o cache 'apt update' apartit da função _APT.
 	_APT update 
 	
 	# Dependências
 	echo "$space_line"
-	msg "Instalando dependências"
+	white "Instalando dependências"
 	_package_man_distro 'module-assistant' 'build-essential' dkms
 	_package_man_distro linux-headers-$(uname -r)
 	
@@ -301,37 +306,42 @@ function _virtualbox_bionic()
 
 function _virtualbox_buster()
 {
+	# find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
+	# Definir o conteudo do arquivo source.list apartir do codenome do sistema	
+
 	if [[ "$os_id" != 'debian' ]]; then
 		return 1
 	fi
 
-	local vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
+	
 	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 
-	# Limpar o cache antes de adicionar as chaves (recomendado).
-	msg "Limpando o cache do (apt)"
-	sudo apt-get clean
-	sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+	case "$os_codename" in
+		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
+		*) red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
+	esac
 
 	
-	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
-	if [[ "$?" == '0' ]]; then # Pular
-		msg "Repositório já disponível ${Green}'pulando'${Reset}"
-	else
-		yellow "Adicionando key [https://www.virtualbox.org/download/oracle_vbox_2016.asc]"
-		sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
+	# Limpar o cache antes de adicionar as chaves (recomendado).
+	white "Limpando o cache do (apt)"
+	_APT clean
+	sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+	
+	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
+	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
 		
-		yellow "Adicionando key [https://www.virtualbox.org/download/oracle_vbox.asc]"
-		sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
+	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
+	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
 		
-		yellow "Adicionando repositório"
-		echo "$vbox_repo" | sudo tee "$vbox_file"
-	fi
-	_APT update # Atualizar o cache 'apt update' apartit da função _APT.
+	echo -ne "Adicionando repositório "
+	echo "$vbox_repo" | sudo tee "$vbox_file"
+	
+	# Atualizar o cache 'apt update' apartit da função _APT.
+	_APT update 
 	
 	# Dependências
 	echo "$space_line"
-	msg "Instalando dependências"
+	white "Instalando dependências"
 	_package_man_distro 'module-assistant' 'build-essential' dkms
 	_package_man_distro linux-headers-$(uname -r)
 	
@@ -339,6 +349,7 @@ function _virtualbox_buster()
 	echo -e "$space_line"
 	_package_man_distro 'virtualbox-6.0' || return 1
 	_virtualbox_extpack
+
 }
 
 #-----------------------------------------------------#
@@ -447,7 +458,7 @@ function _virtualbox()
 {
 	case "$os_id" in
 		debian) _virtualbox_buster;;
-		linuxmint|ubuntu) _virtualbox_bionic;;
+		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
 		arch) _virtualbox_linux_run;;	
 		*) _INFO 'pkg_not_found' 'virtualbox'; return 1;;	

@@ -440,7 +440,7 @@ _tor_debian()
 		local tor_repos='deb https://deb.torproject.org/torproject.org buster main'
 	fi
 
-	green "Importando chaves"
+	yellow "Importando chaves"
 	#sudo sh -c 'curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import'
 	if ! curl -sSL "$tor_asc" | sudo gpg --import; then
 		red "Falha ao tentar importar [$tor_asc]"
@@ -448,12 +448,12 @@ _tor_debian()
 	fi
 	sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' || return 1
 
-	green "Adicionando repositório"
+	yellow "Adicionando repositório"
 	echo "$tor_repos" | sudo tee "$tor_file_list"
-	sudo apt update
+	_APT update
 
-	green "Instalando tor deb.torproject.org-keyring"
-	sudo sh -c 'apt update; apt install -y tor deb.torproject.org-keyring' || return 1
+	yellow "Instalando tor deb.torproject.org-keyring"
+	_package_man_distro tor deb.torproject.org-keyring
 }
 
 
@@ -548,7 +548,7 @@ _install_teamviewer_debian()
 		return 0 
 	fi
 	_package_man_distro "${array_tw_debian[@]}" || return 1
-	sudo dpkg --install "$path_file"
+	_DPKG --install "$path_file"
 	_BROKE # Remover pacotes quebrados.
 }
 

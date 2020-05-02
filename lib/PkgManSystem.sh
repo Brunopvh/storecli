@@ -11,7 +11,7 @@ _loop_pid()
 	# do sistema está em execução, por exemplo um outro processo de instalação
 	# de pacotes, como o "apt install" ou "pacman install" por exemplo, o pid
 	# deve ser passado como argumento $1 da função. Enquanto esse processo existir
-	# o loop ira bloquar a exucução deste script, que será retomada assim que o
+	# o loop ira bloquar a execução deste script, que será retomada assim que o
 	# processo informado for encerrado.
 	local array_chars=('\' '|' '/' '-')
 	local num_char='0'
@@ -24,7 +24,7 @@ _loop_pid()
 
 		Char="${array_chars[$num_char]}"		
 		echo -ne "Aguardando processo com pid [$Pid] finalizar [${Char}]\r"
-		sleep 0.3
+		sleep 0.25
 		
 		num_char="$(($num_char+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
