@@ -203,15 +203,11 @@ _config_ubuntu_requeriments()
 	done
 
 	# Instalar utilitários para python2.
-	for c in "${array_python2_ubuntu[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			return 1
-			break
-		fi
-	done
-
+	case "$os_codename" in 
+		focal) _package_man_distro 'python' 'python-pip-whl' 'python-setuptools' || return 1;;
+		*) _package_man_distro 'python' 'python-pip' 'python-setuptools' || return 1;;
+	esac
+	
 	# Instalar utilitários para python3.
 	for c in "${array_python3_debian[@]}"; do
 		yellow "Instalando: $c"

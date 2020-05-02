@@ -423,7 +423,8 @@ function _virtualbox_linux_run()
 	# que está expressa no url de download "vbox_url_run".
 	#
 	# Selecionar 5 caracteres apartir do 43 - para obter somente o
-	# número da versão atual.
+	# número da versão atual - leia sobre expanção de variaveis em 
+	# shell script.
 	vbox_version="${vbox_url_run:43:5}" 
 	
 	# Definir o url de download do arquivo com as hashs de seu

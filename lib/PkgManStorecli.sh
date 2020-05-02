@@ -14,7 +14,7 @@ _packmanager_storecli()
 		case "$1" in
 			-d|--downloadonly) echo -en "\r";;
 			-y|--yes) echo -en "\r";;
-			*) msg "Instalando $(SPACE_TEXT Instalando) $1";; 
+			*) white "Instalando $(SPACE_TEXT Instalando)-> $1";; 
 		esac
 		 
 
