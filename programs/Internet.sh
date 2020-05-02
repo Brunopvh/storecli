@@ -186,7 +186,7 @@ function _megasync_suse_tumbleweed()
 
 function _megasync_debian()
 {
-	#sudo sh -c 'wget https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key -O - | apt-key add -'
+	# https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key
 	# find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
 	local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
 	local mega_file_list="/etc/apt/sources.list.d/megasync.list"
@@ -206,36 +206,43 @@ function _megasync_debian()
 
 function _megasync_ubuntu()
 {
+	# find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.*Ubuntu_18\.04" 2> /dev/null
 	# https://mega.nz/linux/MEGAsync/xUbuntu_19.10/
 	# https://mega.nz/linux/MEGAsync/
-	#
+	
 	local url_libraw16='http://archive.ubuntu.com/ubuntu/pool/main/libr/libraw/libraw16_0.18.8-1ubuntu0.3_amd64.deb'
 	local mega_file_list="/etc/apt/sources.list.d/megasync.list"
-	path_libraw="$dir_user_cache/$(basename $url_libraw16)" # Requerimento para ubutnu 19.10
+	path_libraw="$Dir_Downloads/$(basename $url_libraw16)" # Requerimento para ubutnu 19.10
 
-	if [[ "$os_codename" == 'bionic' ]] || [[ "$sysname" == 'linuxmint19' ]]; then # Ubuntu 18.04
-		local mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
-		local mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key'
-		
-	elif [[ "$os_codename" == 'eoan' ]]; then # Ubuntu 19.10
-		local mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
-		local mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_19.10/Release.key'
-		_dow "$url_libraw16" "$path_libraw" || return 1 
-		msg "Instalando [$path_libraw]"
-		sudo dpkg --install "$path_libraw" || return 1
-	else
-		_INFO 'pkg_not_found' 'opera' 
-		return 1
-	fi
+	case "$os_codename" in
+		bionic|trica) 
+			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
+			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key'
+			;;
+		eoan)
+			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
+			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_19.10/Release.key'
+			_dow "$url_libraw16" "$path_libraw" || return 1 
+			white "Instalando: $path_libraw"
+			_DPKG --install "$path_libraw" || return 1
+			;;
+		focal)
+			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_20.04/ ./"
+			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_20.04/Release.key'
+			;;
+		*)
+			_INFO 'pkg_not_found' 'megasync' 
+			return 1
+			;;
+	esac
 
-	#find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.*Ubuntu_18\.04" 2> /dev/null
-	msg "Adicionando repositório [$mega_repos_ubuntu]"
-	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list"
-
-	msg "Adicionando key [$mega_url_key]"
-	curl -sSL "$mega_url_key" -o- | sudo apt-key add -	
-	sudo apt update 
-	_package_man_distro libc-ares2 libmediainfo0v5 
+	echo -ne "Adicionando key: "
+	curl -sSL "$mega_url_key" -o- | sudo apt-key add -
+	
+	echo -ne "Adicionando repositório: "
+	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list"	
+	_APT update 
+	_package_man_distro 'libc-ares2' libmediainfo0v5 
 	_package_man_distro megasync
 }
 
@@ -946,23 +953,27 @@ _youtube_dlgui_pip()
 
 _youtube_dlgui_ubuntu()
 {
+	# https://github.com/MrS0m30n3/youtube-dl-gui.git
+	
 	# Ubuntu e Linuxmint.
-	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'trica' ]]; then
-		_youtube_dlgui_pip || return 1
-		return 0
-	elif [[ "$os_codename" == 'eoan' ]]; then
-		_package_man_distro 'python-wxgtk3.0' gettext || return 1
-	else
-		_INFO 'pkg_not_found' 'youtube-dlg-gui'
-		return 1
-	fi
-	# Ubuntu eoan.
-	_python_twodict_github || return 1
-	#_gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
-	#cd "$dir_temp/youtube-dl-gui"
-	#sudo python2 setup.py install || return 1
-	_youtube_dlgui_compile || return 1
-	return 0	
+	case "$os_codename" in
+		bionic|trica) 
+				_youtube_dlgui_pip 
+				return 0
+				;;
+				
+		eoan|focal)
+				_package_man_distro 'python-wxgtk3.0' gettext || return 1
+				_python_twodict_github || return 1
+				_youtube_dlgui_compile || return 1
+				return 0
+				;;	
+				
+		*)
+			_INFO 'pkg_not_found' 'youtube-dlg-gui'	
+			return 1 
+			;;
+	esac	
 }
 
 
@@ -988,11 +999,8 @@ _youtube_dlgui_tumbleweed()
 
 _youtube_dlgui_fedora()
 {
-	_package_man_distro python2-wxpython || return 1
+	_package_man_distro 'python2-wxpython' || return 1
 	_python_twodict_github || return 1
-	#_gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
-	#cd "$dir_temp/youtube-dl-gui"
-	#sudo python2 setup.py install || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
 }
@@ -1001,27 +1009,24 @@ _youtube_dlgui_fedora()
 _youtube_dlgui_debian()
 {
 	# Testado apenas no debian 10.
-	if [[ "$os_codename" != 'buster' ]]; then
-		_INFO 'pkg_not_found' 'youtube-dlg-gui'
-		return 1
-	fi
-	_package_man_distro python-wxgtk3.0 gettext python-twodict || return 1
-	
-	#_gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
-	#cd "$dir_temp/youtube-dl-gui"
-	#sudo python2 setup.py install || return 1
-	_youtube_dlgui_compile || return 1
-	return 0
+	case "$os_codename" in
+		buster)
+			_package_man_distro 'python-wxgtk3.0' 'python-twodict' gettext || return 1
+			_youtube_dlgui_compile || return 1
+			return 0
+			;;
+		*)
+			_INFO 'pkg_not_found' 'youtube-dlg-gui'
+			return 1
+			;;	
+	esac
 }
 
 
 _youtube_dlgui_archlinux()
 {
-	_package_man_distro python2-wxpython3 || return 1
+	_package_man_distro 'python2-wxpython3' || return 1
 	_python_twodict_github || return 1
-	#_gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
-	#cd "$dir_temp/youtube-dl-gui"
-	#sudo python2 setup.py install || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
 }
@@ -1050,8 +1055,7 @@ _youtube_dlgui()
 		*) _INFO 'pkg_not_found' 'youtube-dl-gui'; return 1;;
 	esac
 
-	# Criar arquivo .desktop.
-	msg "Criando arquivo .desktop"
+	white "Criando arquivo .desktop"
 
 	arq_ytdl='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 	echo '[Desktop Entry]' | sudo tee "$arq_ytdl"
@@ -1066,7 +1070,7 @@ _youtube_dlgui()
 		echo "Categories=Internet;Network;"
 	} | sudo tee -a "$arq_ytdl"
 
-	msg "Criando atalho na Área de Trabalho"
+	white "Criando atalho na Área de Trabalho"
 
 	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
