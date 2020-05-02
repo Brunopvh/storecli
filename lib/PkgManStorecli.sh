@@ -68,6 +68,7 @@ _packmanager_storecli()
 			codecs) _codecs;;
 			'gnome-mpv') _gnome_mpv;;
 			smplayer) _smplayer;;
+			spotify) _spotify;;
 			parole) _parole;;
 			totem) _totem;;
 			vlc) _vlc;;

@@ -249,16 +249,6 @@ function _cinema()
 }
 
 #=====================================================#
-# Parole
-#=====================================================#
-function _parole()
-{
-	_package_man_distro parole	
-}
-
-#-----------------------------------------------------#
-
-#=====================================================#
 # Gnome mpv
 #=====================================================#
 function _gnome_mpv()
@@ -272,6 +262,13 @@ function _gnome_mpv()
 	fi
 }
 
+#=====================================================#
+# Parole
+#=====================================================#
+function _parole()
+{
+	_package_man_distro parole	
+}
 
 #=====================================================#
 # Smplayer
@@ -279,6 +276,39 @@ function _gnome_mpv()
 function _smplayer()
 {
 	_package_man_distro smplayer
+}
+
+#=====================================================#
+# Spotify
+#=====================================================#
+function _spotify_debian()
+{
+	# https://wiki.debian.org/spotify
+	# 
+	white "Adicionando keyserver e repositório"
+	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45
+	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
+	sudo apt update
+	_package_man_distro 'spotify-client'
+}
+
+function _spotify_ubuntu()
+{
+	# https://www.spotify.com/br/download/linux/
+	white "Adicionando keyserver e repositório"
+	curl -sSL https://download.spotify.com/debian/pubkey.gpg | sudo apt-key add - 
+	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
+	sudo apt-get update 
+ 	_package_man_cli 'spotify-client'
+}
+
+function _spotify()
+{
+	if [[ "$os_id" == 'debian' ]]; then
+		_spotify_debian
+	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+		_spotify_ubuntu
+	fi
 }
 
 #=====================================================#

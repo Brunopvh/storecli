@@ -5,31 +5,31 @@
 
 #=============================================================#
 
-_apt_process_look()
+_loop_pid()
 {
-	# '/var/cache/apt/archives/lock'
-
-	local array_time_chars=('\' '|' '/' '-')
+	# Esta função serve para executar um loop enquanto um determinado processo
+	# do sistema está em execução, por exemplo um outro processo de instalação
+	# de pacotes, como o "apt install" ou "pacman install" por exemplo, o pid
+	# deve ser passado como argumento $1 da função. Enquanto esse processo existir
+	# o loop ira bloquar a exucução deste script, que será retomada assim que o
+	# processo informado for encerrado.
+	local array_chars=('\' '|' '/' '-')
 	local num_char='0'
+	local Pid="$1"
 
-	while [[ $(ps aux | grep 'root.*apt' | egrep '(install|upgrade)') ]]; do
-		
-		local _pid=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade)' | awk '{print $2}')
-		local _char="${array_time_chars[$num_char]}"
-
-		if [[ -z "$_pid" ]]; then
+	while true; do
+		if [[ $(ps aux | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
 			break
-		else
-			echo -ne "Aguardando processo apt finalizar pid [$_pid] [${_char}]\r"
-			sleep 0.3
 		fi
 
+		Char="${array_chars[$num_char]}"		
+		echo -ne "Aguardando processo com pid [$Pid] finalizar [${Char}]\r"
+		sleep 0.3
+		
 		num_char="$(($num_char+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
-
 	done
-	echo -e "Aguardando processo apt finalizar pid [$_pid] [${_char}]"
-	echo "Finalizado"
+	echo -e "Aguardando processo com pid [$Pid] ${Yellow}finalizado${Reset} [${Char}]"	
 }
 
 
@@ -125,7 +125,14 @@ _BROKE()
 
 _APT()
 {
-	[[ $(ps aux | grep 'root.*apt' | egrep '(install|upgrade)') ]] && _apt_process_look
+	# Antes de proseguir com a instalação devemos verificar se já 
+	# existe outro processo instalação com apt em execução para não
+	# causar erros.
+	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+
+	[[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
+	[[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
 
 	if sudo apt "$@"; then
 		return 0
@@ -158,7 +165,8 @@ _ZYPPER()
 
 _PACMAN()
 {
-	[[ $(ps aux | grep 'root.*pacman' | egrep '(-S|y)') ]] && _pacman_process_look
+	Pid_Pacman_Install=$(ps aux | grep 'root.*pacman' | egrep -m 1 '(-S|y)' | awk '{print $2}')
+	[[ ! -z $Pid_Pacman_Install ]] && _loop_pid "$Pid_Pacman_Install"
 
 	if sudo pacman "$@"; then
 		return 0
