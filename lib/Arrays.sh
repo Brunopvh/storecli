@@ -197,6 +197,7 @@ array_midia=(
 	'celluloid'
 	'cinema'
 	'codecs'
+	'spotify'
 	'gnome-mpv'
 	'parole'
 	'smplayer'
