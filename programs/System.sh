@@ -256,68 +256,20 @@ function _virtualbox_fedora()
 	_virtualbox_extpack 
 }
 
-#-----------------------------------------------------#
 
-function _virtualbox_ubuntu()
-{
-	# Definir o conteudo do arquivo source.list apartir do codenome
-	# do sistema bionic/trica
-	
-	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
-
-	case "$os_codename" in
-		bionic|trica) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
-		*) red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
-	esac
-
-	
-	# Limpar o cache antes de adicionar as chaves (recomendado).
-	white "Limpando o cache do (apt)"
-	_APT clean
-	sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
-
-	#find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian bionic contrib$" 2> /dev/null
-	
-	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
-	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
-		
-	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
-	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
-		
-	echo -ne "Adicionando repositório "
-	echo "$vbox_repo" | sudo tee "$vbox_file"
-	
-	# Atualizar o cache 'apt update' apartit da função _APT.
-	_APT update 
-	
-	# Dependências
-	echo "$space_line"
-	white "Instalando dependências"
-	_package_man_distro 'module-assistant' 'build-essential' dkms
-	_package_man_distro linux-headers-$(uname -r)
-	
-	# Virtualbox 6.0
-	echo -e "$space_line"
-	_package_man_distro 'virtualbox-6.0' || return 1
-	_virtualbox_extpack
-}
-
-#-----------------------------------------------------#
-
-function _virtualbox_buster()
+function _virtualbox_debian()
 {
 	# find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
 	# Definir o conteudo do arquivo source.list apartir do codenome do sistema	
 
-	if [[ "$os_id" != 'debian' ]]; then
-		return 1
-	fi
-
-	
+	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
+	local path_libvpx="$Dir_Downloads/$(basename $url_libvpx)"
+	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
 	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
+		bionic|trica|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
 
@@ -341,15 +293,20 @@ function _virtualbox_buster()
 	
 	# Dependências
 	echo "$space_line"
-	white "Instalando dependências"
-	_package_man_distro 'module-assistant' 'build-essential' dkms
+	
+	#_package_man_distro libvpx6 
+	_package_man_distro 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	_package_man_distro linux-headers-$(uname -r)
 	
-	# Virtualbox 6.0
+	if [[ "$os_codename" == 'focal' ]]; then
+		_dow "$url_libvpx" "$path_libvpx" || return 1
+		_check_sum "$path_libvpx" "$sum_libvpx" || return 1
+		_DPKG --install "$path_libvpx" || _BROKE
+	fi
+	
 	echo -e "$space_line"
 	_package_man_distro 'virtualbox-6.0' || return 1
 	_virtualbox_extpack
-
 }
 
 #-----------------------------------------------------#
@@ -392,9 +349,10 @@ function _virtualbox_archlinux()
 }
 
 #-----------------------------------------------------#
-# Virtualbox para qualquer Linux.
+
 function _virtualbox_linux_run()
 {
+	# Virtualbox para qualquer Linux.
 	# Encontar os urls de downloads do executável .run (dor virtualbox)
 	# e o arquivo que contém as hashs sha256 para cada versão do virtualbox
 	#
@@ -455,11 +413,11 @@ function _virtualbox_linux_run()
 
 #-----------------------------------------------------#
 
+
 function _virtualbox()
 {
 	case "$os_id" in
-		debian) _virtualbox_buster;;
-		linuxmint|ubuntu) _virtualbox_ubuntu;;
+		debian|linuxmint|ubuntu) _virtualbox_debian;;
 		fedora) _virtualbox_fedora;;
 		arch) _virtualbox_linux_run;;	
 		*) _INFO 'pkg_not_found' 'virtualbox'; return 1;;	

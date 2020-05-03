@@ -406,7 +406,7 @@ _vlc()
 _Midia_All()
 {
 	if [[ -z "$install_yes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
+		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
 	fi
 	_codecs
 	_celluloid
