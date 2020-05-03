@@ -9,11 +9,11 @@ source "$Lib_Platform"
 
 # Utilitários de linha de comando para distribuições Linux.
 array_cli_linux=(
-'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python2' 'xterm' 'zenity'
+'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python2' 'xterm' 
 )
 
 array_cli_ubuntu=(
-'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python' 'xterm' 'zenity'
+'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python' 'xterm' 
 )
 
 # Utilitários de linha de comando para sistemas baseados em debian.

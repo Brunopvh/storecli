@@ -106,8 +106,8 @@ source "$Lib_ShowInfo"
 source "$Lib_CliUtils"
 source "$Lib_PkgManStorecli"
 source "$Lib_Unpack"
-source "$Lib_Curl"
-#source "$Lib_Wget"
+#source "$Lib_Curl"
+source "$Lib_Wget"
 source "$Lib_PkgManSystem"
 source "$Lib_CheckSum"
 source "$Lib_CheckGpg"
@@ -132,7 +132,7 @@ space_line='-----------------------------------------------'
 # inicia ele irá procurar por este arquivo é também irá verificar
 # se o conteudo do arquivo tem as seguintes informações 
 Config_File="$HOME/.config/storecli_script.conf"
-[[ ! -f "$Config_File" ]] && echo ' ' > "$Config_File"
+[[ ! -f "$Config_File" ]] && touch "$Config_File"
 
 
 
@@ -164,10 +164,14 @@ if [[ $(id -u) == '0' ]]; then
 fi
 
 # Verificar se o usuário atual é adiministrador.
-#if [[ $(sudo id -u) != '0' ]]; then
-#	red "Você não é adiministrador, portanto só poderá instalar/remover pacotes na sua HOME"
-#	read -p "Pressione enter: " enter
-#fi
+_isroot()
+{
+	if [[ $(sudo id -u) == '0' ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
 
 
 #=============================================================#
@@ -237,7 +241,7 @@ _install_update_storecli()
 _check_update_storecli
 
 # Limpar o diretóri temporário sempre ao iniciar
-cd "$dir_temp" && rm -rf *
+cd "$dir_temp" && rm -rf * 2> /dev/null || sudo rm -rf *
 
 for c in "${@}"; do
 	case "$c" in

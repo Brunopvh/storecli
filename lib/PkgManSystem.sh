@@ -115,6 +115,16 @@ _APT()
 }
 
 
+_RPM()
+{
+	if sudo rpm "$@"; then
+		return 0
+	else
+		red "[_RPM] retornou erro"
+		return 1
+	fi
+}
+
 _DNF()
 {
 	if sudo dnf "$@"; then

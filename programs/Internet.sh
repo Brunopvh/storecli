@@ -859,7 +859,7 @@ _python_twodict_github()
 {
 	# Instalar python twodict direto do github.
 	_gitclone 'https://github.com/MrS0m30n3/twodict.git' || return 1
-	msg "Compilando python2 twodict"
+	white "Executando: python2 setup.py"
 
 	cd "$dir_temp/twodict"
 	if _WHICH 'python2'; then
@@ -879,6 +879,26 @@ _python_twodict_github()
 		_INFO 'pkg_instalation_failed' 'python twodict'
 		return 1
 	fi
+	echo -e "$space_line"
+}
+
+_wxpython()
+{
+	# https://github.com/wxWidgets/Phoenix
+	# https://wxpython.org/pages/downloads/
+	# https://sourceforge.net/projects/wxpython/files/wxPython/
+	
+	local url_wxpython='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.1.1/wxPython-src-3.0.1.1.tar.bz2/download'
+	local path_file="$Dir_Downloads/wxpython.tar.bz2"
+	
+	_dow "$url_wxpython" "$path_file" || return 1
+	_unpack "$path_file" || return 1
+	cd "$Dir_Unpck"
+	mv $(ls -d wx*) wxpython
+	cd wxpython
+	chmod +x *
+	./configure
+	
 }
 
 # Baixar e compilar youtube-dl-gui
@@ -977,6 +997,38 @@ _youtube_dlgui_ubuntu()
 }
 
 
+_youtube_dlgui_fedora()
+{
+	# https://fedora.pkgs.org/31/fedora-x86_64/python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm.html
+	# https://wiki.wxpython.org/How%20to%20install%20wxPython
+	#
+	# Apartir da versão 32 do Fedora o pacote python2-wxpython3 não está mais
+	# disponível no repositório, sendo necessário baixar o pacote do repositório
+	# Fedora 31 e instalar usando o comando "rpm --install".
+	#
+	local f_packages='https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/31/Everything/x86_64/os/Packages/p'
+	local wxpython_rpm='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
+	local url="$f_packages/$wxpython_rpm"
+	local path_file="$Dir_Downloads/$wxpython_rpm"
+	
+	# Instalar python2-wxpython3
+	case "$os_version" in
+		31) _package_man_distro 'python2-wxpython' || return 1;;
+		32) 
+			_package_man_distro 'wxGTK3-media' || return 1
+			_dow "$url" "$path_file" || return 1
+			yellow "Instalando: $path_file"
+			_RPM --install "$path_file"
+			;;
+	esac
+	
+	_python_twodict_github || return 1
+	_youtube_dlgui_compile || return 1
+	return 0
+}
+
+
+
 _youtube_dlgui_tumbleweed()
 {
 	# https://software.opensuse.org/download/package?package=youtube-dl-gui&project=openSUSE%3AFactory
@@ -995,14 +1047,6 @@ _youtube_dlgui_tumbleweed()
 		_INFO 'pkg_instalation_failed' 'youtube-dl-gui'
 		return 1
 	fi
-}
-
-_youtube_dlgui_fedora()
-{
-	_package_man_distro 'python2-wxpython' || return 1
-	_python_twodict_github || return 1
-	_youtube_dlgui_compile || return 1
-	return 0
 }
 
 

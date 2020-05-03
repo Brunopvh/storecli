@@ -29,7 +29,7 @@ _dow()
 
 	# O arquivo solicitado já existe
 	if [[ -f "$path_file" ]]; then
-		msg "Arquivo encontrado em [$path_file]"
+		white "Arquivo encontrado em [$path_file]"
 		return 0
 	fi
 
