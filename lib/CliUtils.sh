@@ -56,7 +56,7 @@ array_python3_debian=(
 
 # Python2 FreeBSD
 array_python_freebsd=(
-'py27-pip-19.1.1' 'py27-pip-tools-4.1.0'
+'python27' 'py27-pip-19.1.1' 'py27-pip-tools-4.1.0'
 )
 
 # Python3 FreeBSD

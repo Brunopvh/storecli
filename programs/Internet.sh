@@ -919,7 +919,12 @@ _youtube_dlgui_compile()
 	cd "$Dir_Unpack"/youtube-dl-gui-master || return 1
 	echo -e "$space_line"
 	yellow "Compilando youtube-dl-gui"
-	sudo python2 setup.py install || return 1
+	if _WHICH python2; then
+		sudo python2 setup.py install || return 1
+	elif _WHICH python2.7; then
+		sudo python2 setup.py install || return 1
+	fi
+		
 	return 0
 }
 
@@ -1078,7 +1083,8 @@ _youtube_dlgui_archlinux()
 _youtube_dlgui_freebsd()
 {
 	# freebsd-12.0-release sudo pkg install py27-wxPython30
-	sudo pkg install py27-wxPython30 || return 1
+	yellow "Instalando: py27-wxPython30"
+	_package_man_distro py27-wxPython30 || return 1
 	_python_twodict_github || return 1
 	_gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
 	cd "$dir_temp/youtube-dl-gui"
@@ -1094,7 +1100,7 @@ _youtube_dlgui()
 		ubuntu) _youtube_dlgui_ubuntu || return 1;;
 		fedora) _youtube_dlgui_fedora || return 1;;
 		arch) _youtube_dlgui_archlinux || return 1;;
-		freebsd) _youtube_dlgui_freebsd || return 1;;
+		'12.1-STABLE'|'12.1-RELEASE') _youtube_dlgui_freebsd || return 1;;
 		opensuse-tumbleweed) _youtube_dlgui_tumbleweed || return 1;;
 		*) _INFO 'pkg_not_found' 'youtube-dl-gui'; return 1;;
 	esac

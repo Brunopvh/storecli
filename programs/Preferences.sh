@@ -145,16 +145,16 @@ function _papirus()
 	cd "$Dir_Unpack/papirus"
 
 	green "Instalando Papirus-Dark"
-	mv Papirus-Dark "$Dir_User_Icons/"
+	cp -R -v Papirus-Dark "$Dir_User_Icons/"
 
 	green "Instalando Papirus"
-	mv Papirus "$Dir_User_Icons/"
+	cp -R -v Papirus "$Dir_User_Icons/"
 	
 	green "Instalando Papirus-Light"
-	mv Papirus-Light "$Dir_User_Icons/"
+	cp -R -v Papirus-Light "$Dir_User_Icons/"
 
 	green "Instalando ePapirus"
-	mv ePapirus "$Dir_User_Icons/"
+	cp -R -v ePapirus "$Dir_User_Icons/"
 	
 	for dir in "${array_papirus_dirs[@]}"; do
 		if [[ -d "$dir" ]]; then
