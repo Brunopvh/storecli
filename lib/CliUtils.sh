@@ -23,7 +23,7 @@ array_cli_debian=(
 
 # FreeBSD
 array_cli_freebsd=(
-'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip'
+'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip' 'python3' 'python2.7'
 )
 
 #=============================================================#
@@ -368,12 +368,22 @@ configure_all()
 
 _check_cli_utils()
 {
-	for c in "${array_cli_linux[@]}"; do
-		if ! _WHICH "$c"; then
-			red "Falha $space_line [$c]"
-			red "Execute: $(basename $0) --configure"
-			#break
-		fi
-	done
+	if [[ "$os_type" == 'Linux' ]]; then # Linux
+		for c in "${array_cli_linux[@]}"; do
+			if ! _WHICH "$c"; then
+				red "Falha $space_line [$c]"
+				red "Execute: $(basename $0) --configure"
+				#break
+			fi
+		done
+	elif [[ "$os_type" == 'FreeBSD' ]]; then # FreeBSD/GhostBSD
+		for c in "${array_cli_freebsd[@]}"; do
+			if ! _WHICH "$c"; then
+				red "Falha $space_line [$c]"
+				red "Execute: $(basename $0) --configure"
+				#break
+			fi
+		done
+	fi
 	return 0
 }

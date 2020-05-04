@@ -23,16 +23,13 @@ sysname='NoNe'
 #=============================================#
 os_type=$(uname -s)
 
-if [[ -L '/etc/os-release' ]]; then
-	file_release='/etc/os-release'
 
-elif [[ -f '/usr/lib/os-release' ]]; then
-	file_release='/usr/lib/os-release'
-
-elif [[ -f '/usr/local/etc/os-release' ]]; then
+if [[ -f '/usr/local/etc/os-release' ]]; then
 	file_release='/usr/local/etc/os-release'
-
+elif [[ "$os_type" == 'Linux' ]]; then
+	file_release='/etc/os-release'
 fi
+
 
 #=============================================#
 # os_id
