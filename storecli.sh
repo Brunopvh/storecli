@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_03_rev1'
+VERSION='2020_05_03_rev3'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -240,8 +240,44 @@ _install_update_storecli()
 # Verificar por atualizações.
 _check_update_storecli
 
-# Limpar o diretóri temporário sempre ao iniciar
-cd "$dir_temp" && rm -rf * 2> /dev/null || sudo rm -rf *
+# Função para remover diretórios que o usuário não tem permissão de escrita.
+_RMDIR()
+{
+	if [[ -z $1 ]]; then
+		return 1
+	fi
+	
+	LocalDir=$(pwd)
+	if [[ $(echo "${LocalDir:0:4}") != '/tmp' ]]; then # Expansão de variáveis.
+		red "CUIDADO: $1"
+		return 1
+	fi
+	
+	white "Necessário ser ${Red}'root'${Reset} para executar: sudo rm -rf $1"
+	if ! _isroot; then
+		red "Você não é root"
+		return 1
+	fi
+	sudo rm -rf "$1"
+}
+
+# Limpar o diretório temporário sempre ao iniciar
+_clear_temp_dirs()
+{
+	cd /tmp; cd "$dir_temp"
+	for X in $(ls); do
+		white "Limpando: $X"
+		rm -rf "$X" 2> /dev/null || _RMDIR "$X"
+	done
+	
+	cd "$Dir_Unpack" 
+	for X in $(ls); do
+		white "Limpando: $X"
+		rm -rf "$X" 2> /dev/null || _RMDIR "$X"
+	done
+}
+
+_clear_temp_dirs
 
 for c in "${@}"; do
 	case "$c" in
