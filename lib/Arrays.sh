@@ -101,6 +101,12 @@ array_peazip_dirs=(
 '/opt/peazip-amd64' # Dir peazip
 )
 
+# Refind
+array_refind_dirs=(
+"/opt/refind"   # Diretório
+"$Dir_Root_bin/refind-install"              # Script
+)
+
 # Teamviewer
 array_teamviewer_dirs=(
 '/opt/teamviewer'
@@ -215,6 +221,8 @@ array_sistema=(
 	'firmware-realtek'
 	'gparted'
 	'peazip'
+	'refind'
+	'stacer'
 	'virtualbox'
 )
 

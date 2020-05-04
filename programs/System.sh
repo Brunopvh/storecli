@@ -154,6 +154,67 @@ _peazip()
 }
 
 #=====================================================#
+# Refind
+#=====================================================#
+function _refind_zip()
+{
+	# https://sourceforge.net/projects/refind/postdownload
+	# http://www.rodsbooks.com/refind/
+	# http://www.rodsbooks.com/refind/installing.html
+	# https://sourceforge.net/p/refind/code/ci/master/tree/
+	local url_rpm='https://ufpr.dl.sourceforge.net/project/refind/0.6.11/refind-0.6.11-1.x86_64.rpm'
+	local url_zip='https://sourceforge.net/projects/refind/files/0.12.0/refind-bin-0.12.0.zip/download'
+	local path_file="$Dir_Downloads/refind-bin-0.12.0.zip"
+	
+	_dow "$url_zip" "$path_file" || return 1
+	
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+	
+	# Já instalado.
+	if _WHICH 'refind-install'; then
+		_INFO 'pkg_are_instaled' 'refind-install'
+		return 0
+	fi
+	
+	_unpack "$path_file" || return 1
+	cd "$Dir_Unpack"
+	mv $(ls -d refind*) refind
+	sudo mv refind "${array_refind_dirs[0]}"
+	
+	# Criar script para execução
+	echo '#!/usr/bin/env bash' | sudo tee "${array_refind_dirs[1]}"
+	{
+		echo "cd ${array_refind_dirs[0]}"
+		echo "./refind-install \$@"
+	} | sudo tee -a "${array_refind_dirs[1]}"
+	
+	sudo chmod -R +x "${array_refind_dirs[0]}"
+	sudo chmod a+x "${array_refind_dirs[1]}"
+	
+}
+
+function _refind()
+{
+	case "$os_id" in
+		debian|ubuntu|linuxmint|arch) _package_man_distro refind;;
+		*) _refind_zip;;
+	esac
+	
+	if _WHICH 'refind-install'; then
+		_INFO 'pkg_sucess' 'refind-install'
+		return 0
+	else
+		_INFO 'pkg_instalation_failed' 'refind-install'
+		return 1
+	fi
+}
+
+
+#=====================================================#
 # Stacer
 #=====================================================#
 function _stacer_debian()

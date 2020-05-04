@@ -18,8 +18,7 @@ _gitclone()
 
 	cd '/tmp'
 	cd "$dir_temp" || return 1
-	rm -rf  * 2> /dev/null || sudo rm -rf *
-
+	
 	if [[ -z $1 ]]; then
 		red "Use _gitclone <repo.git>"
 		return 1

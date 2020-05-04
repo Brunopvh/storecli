@@ -23,8 +23,7 @@ _unpack()
 
 	cd /tmp
 	cd "$Dir_Unpack" || return 1
-	rm -rf  * 2> /dev/null || sudo rm -rf *
-
+	
 	# Prosseguir.
 	local path_file="$1"
 

@@ -79,6 +79,7 @@ _packmanager_storecli()
 			compactadores) _compactadores;;
 			gparted) _gparted;;
 			peazip) _peazip;;
+			refind) _refind;;
 			stacer) _stacer;;
 			virtualbox) _virtualbox;;
 
