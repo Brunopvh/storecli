@@ -23,7 +23,7 @@ array_cli_debian=(
 
 # FreeBSD
 array_cli_freebsd=(
-'git' 'curl' 'wget' 'xterm' 'gawk' 'unzip' 'python3' 'python2.7'
+'curl' 'wget' 'git' 'gawk' 'xterm' 'unzip'
 )
 
 #=============================================================#
@@ -299,7 +299,6 @@ _config_archlinux_requeriments()
 }
 
 #=============================================================#
-
 # Usar as funções acima para instalar as dependências de acordo
 # com cada sistema.
 _config_system_requeriments()
@@ -313,9 +312,9 @@ _config_system_requeriments()
 		_config_fedora_requeriments || return 1
 	elif [[ "$os_id" == 'arch' ]]; then
 		_config_archlinux_requeriments || return 1
-	elif [[ "$os_id" == '12.1-RELEASE' ]]; then
-		_config_freebsd_requeriments || return 1
-	elif [[ "$os_id" == '12.1-STABLE' ]]; then
+	elif [[ "$os_id" == '12.1-RELEASE' ]]; then     # FreeBSD 12.1
+		_config_freebsd_requeriments || return 1   
+	elif [[ "$os_id" == '12.1-STABLE' ]]; then      # GhostBSD
 		_config_freebsd_requeriments || return 1
 	else
 		red "Seu sistema não é suportado [$os_id]"
@@ -368,22 +367,26 @@ configure_all()
 
 _check_cli_utils()
 {
-	if [[ "$os_type" == 'Linux' ]]; then # Linux
-		for c in "${array_cli_linux[@]}"; do
-			if ! _WHICH "$c"; then
-				red "Falha $space_line [$c]"
-				red "Execute: $(basename $0) --configure"
-				#break
-			fi
-		done
-	elif [[ "$os_type" == 'FreeBSD' ]]; then # FreeBSD/GhostBSD
-		for c in "${array_cli_freebsd[@]}"; do
-			if ! _WHICH "$c"; then
-				red "Falha $space_line [$c]"
-				red "Execute: $(basename $0) --configure"
-				#break
-			fi
-		done
+	# Sempre que o programa executar sem o argumento --ignore-cli
+	# Verificar os requerimentos de linha de comando.
+	
+	if [[ ! -x $(which wget 2> /dev/null) ]]; then
+		red "Falha (wget - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which curl 2> /dev/null) ]]; then
+		red "Falha (curl - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which git 2> /dev/null) ]]; then
+		red "Falha (git - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which awk 2> /dev/null) ]]; then
+		red "Falha (awk - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which unzip 2> /dev/null) ]]; then
+		red "Falha (unzip - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which xterm 2> /dev/null) ]]; then
+		red "Falha xterm - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which python2 2> /dev/null) ]] && [[ ! -x $(which python2.7 2> /dev/null) ]]; then
+		red "Falha (python2 - execute $(basename $0) --configure) para solucionar este problema"
+	elif [[ ! -x $(which python3 2> /dev/null) ]] && [[ ! -x $(which python3.7 2> /dev/null) ]]; then
+		red "Falha (python3 - execute $(basename $0) --configure) para solucionar este problema"
 	fi
+			
 	return 0
 }
