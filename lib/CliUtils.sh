@@ -74,11 +74,11 @@ _config_python()
 	msg "Instalando módulos python3"
 	echo -e "$space_line"
 	if _WHICH 'pip3'; then
-		pip3 install wheel --user || return 1 
-		pip3 install wget --user || return 1
+		pip3 install wheel --user
+		pip3 install wget --user 
 	elif _WHICH 'pip'; then
-		pip install whell --user || return 1
-		pip install wget --user || return 1
+		pip install whell --user 
+		pip install wget --user 
 	else
 		red "Instale o pacote 'pip'"
 	fi
@@ -110,7 +110,7 @@ _config_freebsd_requeriments()
 		yellow "Instalando: $c"
 		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
-			return 1
+			#return 1
 			break
 		fi
 	done
@@ -121,7 +121,7 @@ _config_freebsd_requeriments()
 		yellow "Instalando: $c"
 		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
-			return 1
+			#return 1
 			break
 		fi
 	done
@@ -315,6 +315,8 @@ _config_system_requeriments()
 		_config_archlinux_requeriments || return 1
 	elif [[ "$os_id" == '12.1-RELEASE' ]]; then
 		_config_freebsd_requeriments || return 1
+	elif [[ "$os_id" == '12.1-STABLE' ]]; then
+		_config_freebsd_requeriments || return 1
 	else
 		red "Seu sistema não é suportado [$os_id]"
 		return 1
@@ -369,8 +371,8 @@ _check_cli_utils()
 	for c in "${array_cli_linux[@]}"; do
 		if ! _WHICH "$c"; then
 			red "Falha $space_line [$c]"
-			return 1
-			break
+			red "Execute: $(basename $0) --configure"
+			#break
 		fi
 	done
 	return 0
