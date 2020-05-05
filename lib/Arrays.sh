@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
 #
+# Este módulo/lib tem informações na forma de lista/arrays sobre
+# os programas disponíveis para instalação e também sobre os 
+# diretórios e arquivos de alguns programas depois de instalados
+# no sistema, principalmente dos programas instalados via TAR.GZ
+# muitos tem básicamente os arquivos .PNG, .DESKTOP, .BIN, etc
+# para facilitar a remoção destes pacotes (storecli remove <pacote>)
+# na propria instalação este script usa estes arrays para mover os 
+# arquivos e diretório (em $HOME/.local/bin, /opt, /usr/local/bin)
+#
+# EX:
+#   Na instalação do editor sublime-text, ele e descompactado
+# no diretório de descompactação (variável "$Dir_Unpack") e
+# em seguida cada arquivo e movido para seu destino especifico
+# .desktop, .icon, .bin, etc todos estes caminhos absolutos estão 
+# no array "$array_sublime_dirs" que é usado tanto para instalção 
+# quanto para remoção deste pacote - (storecli install sublime-texte -
+# storecli remove sublime-text).
 #
 
 #=============================================================#
@@ -80,9 +97,9 @@ array_papirus_dirs=(
 # Pycharm
 array_pycharm_dirs=( 
 "$Dir_User_Application/pycharm.desktop" # Lançador .desktop.
-"$Dir_User_Icons/pycharm.png" # Icone png.
-"$Dir_User_Bin/pycharm" # Atalho para execução.
-"$Dir_User_Bin/pycharm-community" # Diretório de instalação.
+"$Dir_User_Icons/pycharm.png"           # Icone png.
+"$Dir_User_Bin/pycharm"                 # Atalho para execução.
+"$Dir_User_Bin/pycharm-community"       # Diretório de instalação.
 )
 
 # Sublime-text

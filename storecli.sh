@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_04_rev5'
+VERSION='2020_05_04_rev7'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -14,6 +14,77 @@ VERSION='2020_05_04_rev5'
 # sistemas: Debian, Ubuntu, LinuxMint, Fedora e ArchLinux. É util para ser 
 # utilizado em uma pós formatação para instalar NAVEGADORES, CODECS, IDEs,
 # ferrramentas para linha de comando entre outros ultilitários para desktop.  
+#
+#----------------------- USO BÁSICO -------------------------------#
+# storecli --help
+# storecli --list
+# storecli install <pacote>
+# storecli remove <pacote>
+# storecli --update -----------------------> Instala a ultima versão do 'storecli' disponível no github
+# storecli --configure --------------------> Instala dependências do storecli	
+# storecli --ignore-cli install <pacote> --> Instala um pacote sem verificar as dependências do storecli
+# 
+#
+#----------------------- DEPENDÊNCIAS ------------------------------#
+# Alguns progras precisam ser baixados via curl ou wget, como por 
+# exemplo chaves de assinatura digital e pacotes tar.gz, tar.xz etc
+# outros precisam do python versão 2 e 3.
+#    Para evitar erros na instalação dos pacotes este programa checa todas
+# as dependências de linha de comando ao iniciar, só não e verificado os 
+# módulos do python, porem quando a função (_config_system_requeriments)
+# e executada com sucesso, ou seja, retorna status '0' é gravado um log
+# no arquivo da váriavel "Config_File" com o valor 'requeriments OK' 
+# atraves de um "grep" neste arquivo e possível saber se a função _config_system_requeriments
+# foi executada pelo menos uma vez para que não seja necessário repetir
+# a execução da mesma toda vez que o programa iniciar.
+#
+# LISTA de pacotes cli
+#   wget curl git unzip xterm python2|python2.7 python3 awk|gawk
+#
+#
+# LISTA python e módulos
+#   python2 python3 python-setuptools python3-setuptools pip3 pip
+#
+#----------------------- ESQUELETO DO PROGRAMA -----------------------#
+# 1 - Detectar o diretório do script principal (storcli.sh)
+# 2 - Atribuir variáveis para o diretório atual (dirname) e para
+#     libs e scripts, importar as libs/módulos.
+# 3 - Verificar se o Kernel do sistema é linux ou freebsd e checar
+#     se o programa está sendo executado pelo 'root'. Neste caso
+#     o programa irá encerrar pois não pode ser executado pelo root.
+# 4 - Verificar se todos os pacotes de linha de comando estão disponíveis
+#     no sitema com a função "_check_cli_utils" que está no arquivo CliUtils.sh
+#     se faltar algum requerimeto a função que instala os requerimetos 
+#     será executada automáticament (_config_system_requeriments).
+#     
+#        Para evitar esta verificação basta passar o argumento --ignore-cli
+#     exemplo:
+#        storecli --ignore-cli install <vscode> - porém isto podera causar 
+#     erro dependendo do pacote que você pretende instalar. 
+#
+# INSTALAÇÃO DOS PROGRAMAS
+#   A função que gerencia os módulos para baixar, descompactar e instalar 
+# os programas está no arquivo "PkgManStorecli.sh" (_packmanager_storecli)
+# EX:
+#   se o usuáro executar (storecli install telegram) o argumento install que está
+#   no arquivo storecli.sh passa todos os parametros seguintes para a função 
+#   (_packmanager_storecli) que por sua vez executa a função _telegram.
+#
+#
+# storecli install telegram -> _packmanager_storecli telegram -> _telegram =====> (Comandos e funções)
+# |    storecli.sh          |      PkgManStorecli.sh          | Internet.sh | ==> (Arquivos)
+#
+#
+# storecli install vscode -> _packmanager_storecli vscode -> _vscode   ======> (Comandos e funções)
+# |    storecli.sh        |      PkgManStorecli.sh        |   Dev.sh  | ==> (Arquivos)
+#
+#
+# storecli install etcher -> _packmanager_storecli etcher -> _etcher     ======> (Comandos e funções)
+# # |    storecli.sh      |      PkgManStorecli.sh        | Acessory.sh | ==> (Arquivos)
+#
+#
+# storecli install youtube-dl-gui -> _packmanager_storecli youtube-dl-gui -> _youtube_dlgui =====> (Comandos e funções)
+# |    storecli.sh                |            PkgManStorecli.sh          |   Internet.sh   | ==> (Arquivos)
 #
 #
 ##---------------------- REFERÊNCIAS --------------------------------#
@@ -210,9 +281,9 @@ _WHICH()
 #    Ex storecli --ignore-cli install <pacote>
 #=============================================================#
 if [[ "$1" != '--ignore-cli' ]]; then
-	_check_cli_utils || {
+	if ! _check_cli_utils; then
 		configure_all || exit 1
-	}
+	fi
 fi
 
 # Se a string 'requeriments OK' não estiver no arquivo de configuração
@@ -261,9 +332,10 @@ _RMDIR()
 	sudo rm -rf "$1"
 }
 
-# Limpar o diretório temporário sempre ao iniciar
+
 _clear_temp_dirs()
 {
+	# Limpar o diretório temporário sempre ao iniciar
 	cd /tmp; cd "$dir_temp"
 	for X in $(ls); do
 		white "Limpando: $X"
@@ -307,3 +379,5 @@ else
 	usage
 	#"$Dir_Storecli/gui.sh"
 fi
+
+

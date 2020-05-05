@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #
+# Este módulo e usado para instalar as dependências deste programa
+# storecli --configure
 #
 
 source "$Lib_Arrays"
@@ -71,7 +73,7 @@ array_python3_freebsd=(
 _config_python()
 {
 	echo -e "$space_line"
-	msg "Instalando módulos python3"
+	white "Executando: [_config_python]"
 	echo -e "$space_line"
 	if _WHICH 'pip3'; then
 		pip3 install wheel --user
@@ -314,7 +316,7 @@ _config_system_requeriments()
 		_config_archlinux_requeriments || return 1
 	elif [[ "$os_id" == '12.1-RELEASE' ]]; then     # FreeBSD 12.1
 		_config_freebsd_requeriments || return 1   
-	elif [[ "$os_id" == '12.1-STABLE' ]]; then      # GhostBSD
+	elif [[ "$os_id" == '12.1-STABLE' ]]; then      # GhostBSD -> freebsd12.1-stable
 		_config_freebsd_requeriments || return 1
 	else
 		red "Seu sistema não é suportado [$os_id]"

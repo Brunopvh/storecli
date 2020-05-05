@@ -69,6 +69,14 @@ function _etcher_archlinux()
 	#sudo pacman -U $(ls etcher*.tar.*)
 }
 
+function _etcher_fedora()
+{
+	# https://github.com/balena-io/etcher
+	white "Adicionando repositório"
+	sudo curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
+	_package_man_distro 'balena-etcher-electron'
+}
+
 function _etcher_appimage()
 {
 	# Baixar o etcher AppImage em seguida mover para /opt e criar link simbólico em
@@ -129,6 +137,7 @@ function _etcher()
 {
 	case "$os_id" in
 		ubuntu|debian) _etcher_ubuntu;;
+		fedora) _etcher_fedora;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
 	esac
