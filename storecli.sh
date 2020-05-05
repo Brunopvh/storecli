@@ -309,7 +309,7 @@ _install_update_storecli()
 }
 
 # Verificar por atualizações.
-_check_update_storecli
+_check_update_storecli 
 
 # Função para remover diretórios que o usuário não tem permissão de escrita.
 _RMDIR()
