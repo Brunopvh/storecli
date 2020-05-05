@@ -24,8 +24,8 @@ _gitclone()
 		return 1
 	fi
 
-	msg "Clonando [$1]"
-	msg "Destino [$(pwd)]"
+	white "Clonando [$1]"
+	white "Destino [$(pwd)]"
 	if git clone "$1"; then
 		return 0
 	else

@@ -43,15 +43,12 @@ _unpack()
 		return 1
 	fi
 
-	msg "Descomprimindo [$path_file]"
-	#msg "Destino [$Dir_Unpack]"
+	white "Descomprimindo [$path_file]"
+	white "Destino [$Dir_Unpack]"
 	cd "/tmp"
 
-	# Limpar o diretório antes da descompressão.
-	cd "$Dir_Unpack" && sudo rm -rf *
 
-	# Descomprimir.
-	
+	# Descomprimir.	
 	case "$type_file" in
 		'tar.gz') tar -zxvf "$path_file" -C "$Dir_Unpack" 1> /dev/null;;
 		'tar.bz2') tar -jxvf "$path_file" -C "$Dir_Unpack" 1> /dev/null;;
