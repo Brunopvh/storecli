@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_04_rev7'
+VERSION='2020_05_05_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -80,7 +80,7 @@ VERSION='2020_05_04_rev7'
 #
 #
 # storecli install etcher -> _packmanager_storecli etcher -> _etcher     ======> (Comandos e funções)
-# # |    storecli.sh      |      PkgManStorecli.sh        | Acessory.sh | ==> (Arquivos)
+# |    storecli.sh      |      PkgManStorecli.sh        | Acessory.sh | ==> (Arquivos)
 #
 #
 # storecli install youtube-dl-gui -> _packmanager_storecli youtube-dl-gui -> _youtube_dlgui =====> (Comandos e funções)

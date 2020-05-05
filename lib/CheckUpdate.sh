@@ -39,6 +39,12 @@ function _check_update_storecli()
 	msg "Versão do github: $new_version"
 	if [[ "$VERSION" == "$new_version" ]]; then
 		msg "Não existem atualizações disponíveis"
+		# Deletar linha que contém o dia da ultima verificação.
+		sed -i '/^day_update/d' "$Config_File"
+		
+		# Gravar o dia atual no arquivo de configuração para indicar
+		# que a busca por atualização foi executada hoje.
+		echo -e "day_update $day" >> "$Config_File"
 		return 1
 	else
 		msg "Versão local ${Yellow}$VERSION${Reset}"
