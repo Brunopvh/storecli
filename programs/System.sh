@@ -300,13 +300,25 @@ function _virtualbox_fedora()
 		'patch'
 	)
 
-	yellow "Adicionando repositório [http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo]"
-	sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
-	
 	_package_man_distro "${array_vb_fedora[@]}"
 	_package_man_distro $(rpm -qa kernel | sort -V | tail -n 1) 
 	_package_man_distro kernel-devel-$(uname -r)
-	_package_man_distro 'VirtualBox-6.0' || return 1
+
+	_dow "https://www.virtualbox.org/download/oracle_vbox.asc" "$Dir_Downloads/oracle_vbox.asc"
+	yellow "Importando: $Dir_Downloads/oracle_vbox.asc"
+	sudo rpm --import "$Dir_Downloads/oracle_vbox.asc"
+	
+	case "$os_version" in # Fedora 31/Fedora 32
+		31)
+		yellow "Adicionando repositório [http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo]"
+		sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+		_package_man_distro 'VirtualBox-6.0' || return 1
+		;;
+		
+		32)
+		_virtualbox_linux_run || return 1
+		;;
+	esac
 
 	# Módulos
 	msg "Configurando módulos"
