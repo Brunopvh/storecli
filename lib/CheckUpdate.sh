@@ -1,10 +1,18 @@
 #!/usr/bin/env bash
 #
-# Este módulo serve para verificar e instalar atualizações do scritp storecli
+# Este módulo serve para verificar e instalar atualizações do script storecli
 #
+
+function _install_update_storecli()
+{
+	_ping || return 1
+	"$Script_Setup_Storecli" || return 1
+	return 0
+}
 
 function _check_update_storecli()
 {
+	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)" || return 1
 	local url_storecli='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
 	local storecli_temp="$dir_temp/storecli.sh"
 
@@ -54,7 +62,6 @@ function _check_update_storecli()
 	# Instalar nova versão
 	_YESNO "Deseja baixar e instalar a atualização" || return 1
 	_install_update_storecli || return 1
-
 	
 	# Deletar linha que contém o dia da ultima verificação.
 	sed -i '/^day_update/d' "$Config_File"

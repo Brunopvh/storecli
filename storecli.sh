@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_06_rev2'
+VERSION='2020_05_06_rev3'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -166,6 +166,7 @@ export Script_root=$(basename $(readlink -f "$0"))
 export Script_TorBrowser="$Dir_Storecli_Scripts/tor.sh"
 export Script_AddRepo="$Dir_Storecli_Scripts/addrepo.sh"
 export Script_ohmybash="$Dir_Storecli_Scripts/ohmybash.run"
+export Script_Setup_Storecli="$Dir_Storecli/setup.sh"
 
 
 #=============================================================#
@@ -299,16 +300,8 @@ fi
 
 
 #=============================================================#
-# Instalar ultima versão do programa disponível no github
+# # Verificar por atualizações.
 #=============================================================#
-_install_update_storecli()
-{
-	_ping || return 1
-	sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)" || return 1
-	return 0
-}
-
-# Verificar por atualizações.
 _check_update_storecli 
 
 # Função para remover diretórios que o usuário não tem permissão de escrita.
