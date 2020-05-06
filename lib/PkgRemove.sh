@@ -2,29 +2,6 @@
 #
 #
 
-_delete_all_old()
-{
-	# $1 = array com vários arquivos e diretórios a serem removidos.
-	while [[ $1 ]]; do
-
-		# Verificar se $1 existe
-		if [[ -d "$1" ]] || [[ -f "$1" ]] || [[ -L "$1" ]] || [[ -x "$1" ]]; then
-			# Presica ser root?.
-			if [[ -w "$1" ]] && [[ -w $(dirname "$1") ]]; then 
-				msg "Removendo: $1"
-				rm -rf "$1"
-			else
-				echo -ne "[>] Necessário ser ${Yellow}'root'${Reset} para remover: [$1]"
-				sudo rm -rf "$1" && echo ' OK removido'
-			fi
-		else
-			red "Não encontrado: $1"
-		fi
-		shift
-	done
-}
-
-
 _delete_all()
 {
 	# $1 = array com vários arquivos e diretórios a serem removidos.
@@ -34,7 +11,7 @@ _delete_all()
 		if [[ -d "$1" ]] || [[ -f "$1" ]] || [[ -L "$1" ]] || [[ -x "$1" ]]; then
 			echo -ne "[>] Deletando: $1 "
 			if rm -rf "$1" 2> /dev/null; then
-				echo "OK"
+				echo -e "${Yellow}OK${Reset}"
 			else
 				echo -e "Necessário ser ${Red}'root'${Reset} para executar: sudo rm -rf $1"
 				sudo rm -rf "$1"

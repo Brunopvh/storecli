@@ -115,7 +115,7 @@ function _papirus()
 	#------------------- Instruções para instalação ---------------------#
 	# https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
 	# https://github.com/PapirusDevelopmentTeam/papirus-icon-theme/archive/master.zip
-	# "https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/install.sh"
+	# https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/install.sh
 	# https://github.com/PapirusDevelopmentTeam
 
 	local url_papirus_master="$github/PapirusDevelopmentTeam/papirus-icon-theme/archive/master.zip"
@@ -145,16 +145,16 @@ function _papirus()
 	cd "$Dir_Unpack/papirus"
 
 	green "Instalando Papirus-Dark"
-	cp -R -v Papirus-Dark "$Dir_User_Icons/"
+	cp -R Papirus-Dark "$Dir_User_Icons/"
 
 	green "Instalando Papirus"
-	cp -R -v Papirus "$Dir_User_Icons/"
+	cp -R Papirus "$Dir_User_Icons/"
 	
 	green "Instalando Papirus-Light"
-	cp -R -v Papirus-Light "$Dir_User_Icons/"
+	cp -R Papirus-Light "$Dir_User_Icons/"
 
 	green "Instalando ePapirus"
-	cp -R -v ePapirus "$Dir_User_Icons/"
+	cp -R ePapirus "$Dir_User_Icons/"
 	
 	for dir in "${array_papirus_dirs[@]}"; do
 		if [[ -d "$dir" ]]; then
