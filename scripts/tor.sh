@@ -1,7 +1,18 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-05-05'
+VERSION='2020-05-06'
 #
+#-----------------------| INFO |-------------------------------#
+# Este script baixa e instala a ultima versão do no em qualquer
+# distribuição linux. 
+#  Requerimentos:
+#     bash curl 
+#
+#-----------------------| GITHUB |-----------------------------#
+# https://github.com/Brunopvh/torbrowser
+# git clone https://github.com/Brunopvh/torbrowser.git
+#
+#-----------------------| Projeto Tor |-----------------------#
 # https://www.torproject.org/pt-BR/download/
 # https://terminalroot.com.br/2015/08/45-exemplos-de-variaveis-e-arrays-em_19.html
 # 

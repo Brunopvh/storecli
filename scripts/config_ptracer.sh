@@ -4,10 +4,11 @@
 #-------------------------------------------------------#
 # FONTES
 #-------------------------------------------------------#
+# https://www.netacad.com/portal/resources/packet-tracer
 # https://www.vivaolinux.com.br/dica/Como-extrair-e-instalar-pacotes-deb-sem-o-DPKG
 # https://packages.debian.org/jessie/amd64/libssl1.0.0/download
 # https://packages.debian.org/pt-br/jessie/amd64/libpng12-0/download 
-#
+# 
 #-------------------------------------------------------#
 # libcrypto.so.1.0.0
 # libpng12.so.0
@@ -244,6 +245,11 @@ main()
 	_Curl "$url_libpng12" "$file_libpng12" || return 1
 	_Curl "$url_libssl" "$file_libssl" || return 1
 
+	if [ ! -d '/opt/pt/bin/' ]; then
+		red "Instale Cisco Packettracer em '/opt/pt'"
+		return 1
+	fi
+
 	# Configurar as libs
 	config_libs || return 1
 	
@@ -252,7 +258,7 @@ main()
 #=======================================================#
 
 main
-
+echo "$Reset"
 
 
 
