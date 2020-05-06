@@ -309,11 +309,11 @@ function _codeblocks()
 #=====================================================#
 function _pycharm()
 {
-#local url_pycharm='https://download.jetbrains.com/python/pycharm-community-2019.1.2.tar.gz'
-local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2019.3.3.tar.gz'
-local path_file="$Dir_Downloads/$(basename $url_pycharm)"
-local hash_pycharm='ad796856195b574534ba6f9b49edad175b99465b5536d520c3e442527f63c353'
-
+	#local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2019.3.3.tar.gz'
+	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.1.tar.gz'
+	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
+	local path_file="$Dir_Downloads/$(basename $url_pycharm)"
+	
 	_dow "$url_pycharm" "$path_file" || return 1
 
 	# Somente baixar
@@ -328,22 +328,18 @@ local hash_pycharm='ad796856195b574534ba6f9b49edad175b99465b5536d520c3e442527f63
 		return 0 
 	fi
 
-	# Lib ShaSum.sh
 	_check_sum "$path_file" "$hash_pycharm" || return 1
-
 	_unpack "$path_file" || return 1
-
-	msg "Instalando"
 
 	cd "$Dir_Unpack" 
 	mv $(ls -d pycharm*) "${array_pycharm_dirs[3]}" 1> /dev/null
 	cp -u "${array_pycharm_dirs[3]}"/bin/pycharm.png "${array_pycharm_dirs[1]}"
 
-# Criar atalho para execução na linha de comando.
-touch "${array_pycharm_dirs[2]}"
-echo "#!/usr/bin/env bash" > "${array_pycharm_dirs[2]}"
-echo -e "\ncd ${array_pycharm_dirs[3]}/bin/ && ./pycharm.sh" >> "${array_pycharm_dirs[2]}"
-chmod +x "${array_pycharm_dirs[2]}"
+	# Criar atalho para execução na linha de comando.
+	touch "${array_pycharm_dirs[2]}"
+	echo "#!/usr/bin/env bash" > "${array_pycharm_dirs[2]}"
+	echo -e "\ncd ${array_pycharm_dirs[3]}/bin/ && ./pycharm.sh" >> "${array_pycharm_dirs[2]}"
+	chmod +x "${array_pycharm_dirs[2]}"
 
 	# Criar arquivo .desktop
 	green "Criando arquivo .desktop"

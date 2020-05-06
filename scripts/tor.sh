@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-05-02'
+VERSION='2020-05-05'
 #
 # https://www.torproject.org/pt-BR/download/
 # https://terminalroot.com.br/2015/08/45-exemplos-de-variaveis-e-arrays-em_19.html
 # 
 
 
-Red='\033[1;31m'
-Green='\033[1;32m'
-Yellow='\033[1;93m'
-White='\033[1;37m'
+Red='\033[0;31m'
+Green='\033[0;32m'
+Yellow='\033[0;33m'
+White='\033[0;37m'
 Reset='\033[m'
 
 #=============================================================#
@@ -60,6 +60,8 @@ cat << EOF
 EOF
 exit 0
 }
+
+[[ -z $1 ]] && usage
 
 space_line='-----------------------------------------------'
 
@@ -152,7 +154,7 @@ tor_domain='https://dist.torproject.org/torbrowser'
 tor_html=$(grep -m 1 'torbrowser.*linux.*64.*tar' <<< $(curl -sSL "$tor_page"))
 tor_server_dir=$(echo "$tor_html" | sed 's/.*="//g;s/">.*//g')
 tor_file_name="$(basename $tor_server_dir)"
-tor_version="${tor_server_dir:17:5}" # Versão os 5 primeiros caracteres apartir da posição 17.
+tor_version=$(echo "$tor_server_dir" | cut -d '/' -f 4)
 tor_url_dow="$tor_domain/$tor_version/$tor_file_name" # Formar a URL apartir dos dados obtidos.
 tor_url_asc="${tor_url_dow}.asc"
 
@@ -215,7 +217,7 @@ _CURL()
 	_msg "Baixando [$url]"
 	_msg "Destino [$file]"
 
-	if curl -SL "$url" -o "$file"; then
+	if curl -# -SL "$url" -o "$file"; then
 		return 0
 	else
 		_red "Falha no download"
@@ -266,7 +268,7 @@ _gpg_check()
 	# gpg --auto-key-locate nodefault,wkd --locate-keys torbrowser@torproject.org
 	# gpg --output ./tor.keyring --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290
 	#
-	local url_asc_tor='https://openpgpkey.torproject.org/.well-known/openpgpkey/torproject.org/hu/kounek7zrdx745qydx6p59t9mqjpuhdf'
+	local url_tor_key='https://openpgpkey.torproject.org/.well-known/openpgpkey/torproject.org/hu/kounek7zrdx745qydx6p59t9mqjpuhdf'
 	local path_keyring="$dir_temp/tor.keyring"
 
 	# Verificar se gpg está instalado no sistema.
@@ -285,24 +287,32 @@ _gpg_check()
 
 	# Remover arquivo .keyring antigo se existir.
 	if [[ -f "$path_keyring" ]]; then rm "$path_keyring"; fi
-
-	_msg "Importando key"
-	if ! curl -LSs "$url_asc_tor" -o- | gpg --import -; then
-		_red "Falha"
-	fi
-
-	echo -e "$space_line"
+	if [[ -f "$tor_path_file_asc" ]]; then rm "$tor_path_file_asc"; fi
+	
 	_CURL "$tor_url_asc" "$tor_path_file_asc" || return 1
+	
+	echo -ne "[>] Importando key "
+	if curl -Ss "$url_tor_key" -o - | gpg --import - 1> /dev/null 2>&1; then
+		echo "OK"
+	else
+		echo ' '
+		_red "Falha gpg --import"
+	fi
+	
+	
+	_msg "Gerando arquivo: $path_keyring"	
+	gpg --output "$path_keyring" --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290 || {
+		_red "Falha ao tentar gerar o arquivo tor.keyring"
+		return 1
+	}
 
-	_msg "Gerando arquivo [tor.keyring]"	
-	gpg --output "$path_keyring" --export 0xEF6E286DDA85EA2A4BA7DE684E2C6E8793298290
-
-	_msg "Executando [gpgv --keyring]"
-	if gpgv --keyring "$path_keyring" "$tor_path_file_asc" "$tor_path_file"; then
-		echo -e "$space_line"
+	echo -ne "[>] Executando: gpgv --keyring "
+	if gpgv --keyring $path_keyring $tor_path_file_asc $tor_path_file 1> /dev/null 2>&1; then
+		echo "OK"
 		return 0
 	else
-		_red "Falha na verificação de integridade, deseja prosseguir com a instalação mesmo assim [s/n]?: "
+		echo ' '
+		_red "Falha na verificação de integridade, prosseguir com a instalação mesmo assim [s/n]?: "
 		read -t 10 -n 1 sn
 		[[ "${sn,,}" == 's' ]] || return 1
 		return 0
@@ -313,11 +323,10 @@ _gpg_check()
 _install_tor()
 {
 	if _WHICH 'torbrowser'; then
-		_msg "TorBrowser já instalao use ${Yellow}--remove${Reset} para desinstalar"
+		_msg "TorBrowser já instalado use ${Yellow}--remove${Reset} para desinstalar"
 		return 0
 	fi
 
-	#_uninstall 
 	_CURL "$tor_url_dow" "$tor_path_file" || return 1
 
 	for a in "${@}"; do
@@ -331,7 +340,7 @@ _install_tor()
 	_gpg_check || return 1
 	_unpack || return 1
 
-	_msg "Instalando"
+	_msg "Instalando em: ${array_tor_dirs[tor_destination]}"
 	cd "$dir_unpack"
 	mv $(ls -d tor-*) "${array_tor_dirs[tor_destination]}"
 	chmod -R u+x "${array_tor_dirs[tor_destination]}"

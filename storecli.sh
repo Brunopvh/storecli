@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_05_rev3'
+VERSION='2020_05_05_rev5'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -177,8 +177,8 @@ source "$Lib_ShowInfo"
 source "$Lib_CliUtils"
 source "$Lib_PkgManStorecli"
 source "$Lib_Unpack"
-#source "$Lib_Curl"
-source "$Lib_Wget"
+source "$Lib_Curl"
+#source "$Lib_Wget"
 source "$Lib_PkgManSystem"
 source "$Lib_CheckSum"
 source "$Lib_CheckGpg"
