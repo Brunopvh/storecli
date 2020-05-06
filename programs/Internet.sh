@@ -1020,7 +1020,7 @@ _youtube_dlgui_fedora()
 	case "$os_version" in
 		31) _package_man_distro 'python2-wxpython' || return 1;;
 		32) 
-			_package_man_distro 'wxGTK3-media' || return 1
+			_package_man_distro 'wxGTK3-media' 'python3-wxpython4.x86_64' || return 1
 			_dow "$url" "$path_file" || return 1
 			yellow "Instalando: $path_file"
 			_RPM --install "$path_file"
