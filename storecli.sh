@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_06_rev3'
+VERSION='2020_05_07_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -163,7 +163,8 @@ export Programs_Office="$Dir_Programs/Office.sh"
 #=============================================================#
 export Script_config_path="$Dir_Storecli_Scripts/config_path.sh"
 export Script_root=$(basename $(readlink -f "$0"))
-export Script_TorBrowser="$Dir_Storecli_Scripts/tor.sh"
+#export Script_TorBrowser="$Dir_Storecli_Scripts/tor.sh"
+export Script_TorBrowser="$HOME/.local/bin/tor-install.sh"
 export Script_AddRepo="$Dir_Storecli_Scripts/addrepo.sh"
 export Script_ohmybash="$Dir_Storecli_Scripts/ohmybash.run"
 export Script_Setup_Storecli="$Dir_Storecli/setup.sh"

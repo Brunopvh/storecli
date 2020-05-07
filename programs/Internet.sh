@@ -780,6 +780,13 @@ _tixati_tar()
 #=============================================================#
 _torbrowser()
 {
+	local master_script_torbrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+	if ! _WHICH "$Script_TorBrowser"; then
+		white "Instalando o script: $Script_TorBrowser"
+		curl -sSL "$master_script_torbrowser" -o "$Script_TorBrowser"
+		chmod u+x "$Script_TorBrowser"
+	fi
+
 	if [[ "$download_only" == 'True' ]]; then
 		"$Script_TorBrowser" --downloadonly
 	else
