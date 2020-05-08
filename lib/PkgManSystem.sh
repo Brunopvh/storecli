@@ -171,6 +171,16 @@ _PKG()
 	fi
 }
 
+_FLATPAK()
+{
+	if flatpak "$@"; then
+		return 0
+	else
+		red "Falha: flatpak $@"
+		return 1
+	fi
+}
+
 #=============================================================#
 
 _package_man_distro_remove()

@@ -349,6 +349,32 @@ function _spotify_archlinux()
 	sudo install -Dm644 /usr/share/spotify/icons/spotify-linux-512.png /usr/share/pixmaps/spotify-client.png
 }
 
+function _spotify_fedora()
+{
+	# https://www.spotify.com/br/download/linux/
+	# https://flathub.org/apps/details/com.spotify.Client
+	# flatpak install flathub com.spotify.Client
+	# https://docs.fedoraproject.org/en-US/quick-docs/installing-spotify/
+	# flatpak run com.spotify.Client
+
+	local FlatpakRepoSpotity='flathub https://flathub.org/repo/flathub.flatpakrepo'
+
+	if ! _WHICH flatpak; then
+		_package_man_distro flatpak
+	fi
+
+	echo -ne "[>] Executando: remote-add --if-not-exists $FlatpakRepoSpotity "
+	if flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo; then
+		echo -e "${Yellow}OK${Reset}"
+	else
+		echo ' '
+		red "Falha"
+	fi
+
+	_FLATPAK install flathub com.spotify.Client || return 1
+
+}
+
 function _spotify()
 {
 	if [[ "$os_id" == 'debian' ]]; then
@@ -357,6 +383,8 @@ function _spotify()
 		_spotify_ubuntu
 	elif [[ "$os_id" == 'arch' ]]; then
 		_spotify_archlinux
+	elif [[ "$os_id" == 'fedora' ]]; then
+		_spotify_fedora
 	else
 		_INFO 'pkg_not_found' 'spotify'; return 1
 	fi
