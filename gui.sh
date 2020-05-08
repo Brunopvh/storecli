@@ -1,34 +1,35 @@
 #!/usr/bin/env bash
 #
 #
+#--------------------------------------------------------#
+# Este programa é um GUI gráfico com o zenity para o script
+# storecli
 #
 #
-#
-VERSION='2020-04-05 rev9'
+VERSION_GUI='2020-05-07'
 #
 
-#clear
+clear
 
 #=============================================================#
 # Diretórios
 #=============================================================#
-export readonly Dir_Store_Gui=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
-export Dir_Store_Lib="$Dir_Store_Gui/lib"
-export dir_temp="/tmp/$USER/temp_dir"; mkdir -p "$dir_temp"
-export Dir_Bin="$HOME/.local/bin"; mkdir -p "$Dir_Bin"
+export readonly Dir_Storecli=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
+export Dir_Storecli_Lib="$Dir_Storecli/lib"
+export dir_temp="/tmp/space_storecli_$USER/temp"; mkdir -p "$dir_temp"
+export Dir_User_Bin="$HOME/.local/bin"; mkdir -p "$Dir_User_Bin"
 
 #=============================================================#
 # Libs
 #=============================================================#
-export Lib_Colors="$Dir_Store_Lib/Colors.sh"
+export Lib_Colors="$Dir_Storecli_Lib/Colors.sh"
+export Lib_Platform="$Dir_Storecli_Lib/Platform.sh"
 
 #=============================================================#
 # Scripts
 #=============================================================#
-#Script_Storecli="$Dir_Bin/storecli-amd64/storecli.sh"
-Script_Storecli="$Dir_Store_Gui/storecli.sh"
-Script_Install_Storecli="$dir_temp/setup_storecli.sh"
-Script_Setup_Gui="$Dir_Store_Gui/setup.sh"
+Script_Storecli="$Dir_Storecli/storecli.sh"
+Script_Installer_Storecli="$Dir_Storecli/setup.sh"
 
 #=============================================================#
 # Importar
@@ -40,7 +41,6 @@ source "$Lib_Colors"
 #=============================================================#
 github='https://github.com'  
 raw='https://raw.github.com'
-url_setup_gui="$raw/Brunopvh/apps-buster/master/scripts/setup_gui.sh"
 
 space_line='--------------------------------------'
 
@@ -52,9 +52,9 @@ if [[ $(id -u) == '0' ]]; then
 	exit 1
 fi
 
-# Válidar se o Kernel e Linux.
-if [[ $(uname -s) != 'Linux' ]]; then
-	red "Seu sistema não é Linux"
+# Válidar se o Kernel e Linux ou FreeBSD.
+if [[ $(uname -s) != 'Linux' ]] && [[ $(uname -s) != 'FreeBSD' ]]; then
+	red "Execute este programa em sistemas Linux ou FreeBSD."
 	exit 1
 fi
 
@@ -66,33 +66,41 @@ fi
 
 #=============================================================#
 # Verificar conexão com a internet.
-yellow "Aguardando conexão"
-if ping -c 2 8.8.8.8 1> /dev/null; then
-	yellow "Conectado"
-else
-	red "Falha - AVISO: você está OFF-LINE"
-	read -p "Pressione enter: " enter
-fi
+_ping()
+{
+	echo -ne "[>] Aguardando conexão "
+
+	if ping -c 2 8.8.8.8 1> /dev/null; then
+		echo "[Conectado]"
+		return 0
+	else
+		echo ' '
+		red "Falha - AVISO: você está OFF-LINE"
+		read -p "Pressione enter: " enter
+		return 1
+	fi
+}
+
+_ping
 
 #=============================================================#
 # Instalar o script storecli se ele não estiver disponível.
 if [[ ! -x "$Script_Storecli" ]]; then
-	msg "Instalando script [storecli]"
+	white "Instalando script storecli"
 	sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)" || {
-		red "Falha ao tentar instalar [storecli]"
+		red "Falha ao tentar instalar storecli"
 		exit 1
 	}
 fi
 
 #=============================================================#
 
-# Verificar se e necessário configurar o script storecli.
-Config_File="$HOME/.config/storecli.conf"
-if [[ ! -f "$Config_File" ]]; then echo ' ' >> "$Config_File"; fi
+Config_File="$HOME/.config/storecli_script.conf"
+[[ ! -f "$Config_File" ]] && touch "$Config_File"
 
 # Se não encontrar a linha 'requeriments false' no arquivo "Config_File"
 # então executar storecli --configure.
-grep -q 'requeriments false' "$Config_File" || {
+grep -q 'requeriments OK' "$Config_File" || {
 	storecli --configure
 }
 
@@ -122,9 +130,10 @@ _zenity_dialog_list()
 }
 
 
-
-# Listas com as opções para serem selecionadas nas caixas de dialogo com o zenity.
-
+#=============================================================#
+# Listas com as opções para serem selecionadas nas caixas de 
+# dialogo com o zenity.
+#=============================================================#
 
 # Lista de opções a ser exibida no menu principal
 list_main_menu=(
@@ -142,6 +151,7 @@ list_main_menu=(
 # Lista de opções para categoria acessórios.
 list_menu_acessory=(
 	'TRUE Voltar'
+	'FALSE etcher'
 	'FALSE gnome-disk'
     'FALSE veracrypt'
     'FALSE woeusb'
@@ -190,6 +200,7 @@ list_menu_midia=(
 	'TRUE Voltar'
 	'FALSE celluloid'
 	'FALSE codecs'
+	'FALSE spotify'
     'FALSE gnome-mpv'
     'FALSE parole'
     'FALSE smplayer'
@@ -206,6 +217,8 @@ list_menu_system=(
     'FALSE firmware-ralink'
     'FALSE firmware-realtek'
     'FALSE peazip'
+    'FALSE refind'
+    'FALSE stacer'
     'FALSE virtualbox'
 )
 
@@ -215,7 +228,38 @@ list_menu_preferences=(
 	'FALSE papirus'
     'FALSE ohmybash'
     'FALSE ohmyzsh'
-    'FALSE sierra'
+)
+
+#=============================================================#
+# Gnome Shell Extensões
+#=============================================================#
+
+# Fedora
+list_menu_gnome_extensions_fedora=(
+	'gnome-tweaks' 
+	'gnome-shell-extension-topicons-plus'
+	'gnome-shell-extension-drive-menu' 
+	'gnome-shell-extension-dash-to-dock.noarch'
+	'gnome-backgrounds-extras'
+	'verne-backgrounds-gnome'
+)
+
+
+# OpenSuse
+list_menu_gnome_extensions_suse=(
+	'gnome-tweaks' 
+)
+
+# ArchLinux
+list_menu_gnome_extensions_archlinux=(
+	'gnome-tweaks' 'gnome-backgrounds'
+)
+
+# Debian
+list_menu_gnome_extensions_debian=(
+	'gnome-tweaks' 
+	'gnome-shell-extension-top-icons-plus' 
+	'gnome-shell-extension-dashtodock'
 )
 
 #=============================================================#
@@ -242,7 +286,8 @@ menu_acessory(){
 		} 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
+			etcher) storecli_args etcher;;
 			'gnome-disk') storecli_args gnome-disk;;
 			veracrypt) storecli_args veracrypt;;
 			woeusb) storecli_args woeusb;;
@@ -353,6 +398,7 @@ menu_midia(){
 			Voltar) msg "Voltando..."; break;;
 			celluloid) storecli_args celluloid;;
 			codecs) storecli_args codecs;;
+			spotify) storecli_args spotify;;
 			gnome-mpv) storecli_args gnome-mpv;;
 			parole) storecli_args parole;;
 			smplayer) storecli_args smplayer;;
@@ -385,6 +431,8 @@ menu_system(){
 			firmware-ralink) storecli_args firmware-ralink;;
 			firmware-realtek) storecli_args firmware-realtek;;
 			peazip) storecli_args peazip;;
+			refind) storecli_args refind;;
+			stacer) storecli_args stacer;;
 			virtualbox) storecli_args virtualbox;;
 		esac
 		echo -e "Menu Sistema"
@@ -410,12 +458,10 @@ menu_preferences(){
 			papirus) storecli_args papirus;;
 			ohmybash) storecli_args ohmybash;;
 			ohmyzsh) storecli_args ohmyzsh;;
-			sierra) storecli_args sierra;;
 		esac
 		echo -e "Menu Preferências"
 	done
 }
-
 
 
 main(){
@@ -460,10 +506,9 @@ EOF
 if [[ ! -z $1 ]]; then
 	case "$1" in
 		--help) usage; exit;;
-		--version) echo -e "$(basename $0) V${VERSION}"; exit;;
+		--version) echo -e "$(basename $0) V${VERSION_GUI}"; exit;;
 		--upgrade) 
-				sudo "$Script_Setup_Gui"
-				sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)"
+				sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 				exit
 				;;
 

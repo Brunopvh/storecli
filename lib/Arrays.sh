@@ -279,5 +279,7 @@ array_gnome_shell_archlinux=(
 
 # Debian
 array_gnome_shell_debian=(
-	'gnome-tweaks' 'gnome-shell-extension-top-icons-plus' 'gnome-shell-extension-dashtodock'
+	'gnome-tweaks' 
+	'gnome-shell-extension-top-icons-plus' 
+	'gnome-shell-extension-dashtodock'
 )

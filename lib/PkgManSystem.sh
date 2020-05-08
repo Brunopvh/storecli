@@ -33,41 +33,6 @@ _loop_pid()
 }
 
 
-#=============================================================#
-# Remover pacotes quebrados em sistemas debian.
-#=============================================================#
-_BROKE()
-{
-	if [[ ! -x $(command -v apt 2> /dev/null) ]]; then
-		yellow "Esta opção só está disponivel para sistemas baseados em Debian"
-		return 0
-	fi
-
-	
-	echo -e "$space_line"
-	msg "Executando [apt-get clean; apt-get remove -y; apt-get autoremove -y]"
-	if ! sudo sh -c 'apt-get clean; apt-get remove -y; apt-get autoremove -y'; then
-		red "Falha: apt-get clean; apt-get remove -y; apt-get autoremove -y"
-	fi
-
-	echo -e "$space_line"
-	msg "Executando [apt install -f -y; dpkg --configure -a]"
-	if ! sudo sh -c 'apt install -f -y; dpkg --configure -a'; then
-		red "Falha: apt install -f -y; dpkg --configure -a"
-	fi
-
-	echo -e "$space_line"
-	msg "Executando [apt --fix-broken install]"
-	if ! sudo sh -c 'apt --fix-broken install'; then
-		red "Falha: apt --fix-broken install"
-	fi
-
-	echo -e "$space_line"
-	msg "Executando [apt update]"
-	sudo apt update
-	msg "OK"
-	# sudo apt install --yes --force-yes -f 
-}
 
 _DPKG()
 {
@@ -110,8 +75,42 @@ _APT()
 		return 0
 	else
 		red "Gerenciador de pacotes [apt] retornou erro"
+		red "Linha de comando: sudo apt $@"
 		return 1
 	fi
+}
+
+#=============================================================#
+# Remover pacotes quebrados em sistemas debian.
+#=============================================================#
+_BROKE()
+{
+	if [[ ! -x $(command -v apt 2> /dev/null) ]]; then
+		yellow "Esta opção só está disponivel para sistemas baseados em Debian"
+		return 0
+	fi
+
+	
+	local RunAptCmd=(
+		clean
+		remove
+		autoremove
+		'install -y -f'
+		'--fix-broken install'
+	)
+	
+	yellow "Executando: dpkg --configure -a"
+	_DPKG --configure -a
+	
+	for X in "${RunAptCmd[@]}"; do
+		yellow "Executando: apt $X"
+		if ! _APT "$X"; then
+			red "Falha: apt $X"
+			sleep 0.5
+		fi
+	done
+
+	# sudo apt install --yes --force-yes -f 
 }
 
 
@@ -140,7 +139,7 @@ _ZYPPER()
 	if sudo zypper "$@"; then
 		return 0
 	else
-		red "Gerenciador de pacotes [dnf] retornou erro"
+		red "Gerenciador de pacotes [zypper] retornou erro"
 		return 1
 	fi
 }
@@ -276,19 +275,19 @@ _package_man_distro()
 	#---------------------------------------------------------#
 	# Instalação normal.
 	#---------------------------------------------------------#
-	if [[ -f '/etc/debian_version' ]]; then # Debia/apt
+	if [[ -f '/etc/debian_version' ]]; then           # Debia/apt
 		if _APT install "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$os_id" == 'fedora' ]]; then # Fedora/dnf
+	elif [[ "$os_id" == 'fedora' ]]; then            # Fedora/dnf
 		if _DNF install "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$os_id" == 'arch' ]]; then # ArchLinux/pacman
+	elif [[ "$os_id" == 'arch' ]]; then              # ArchLinux/pacman
 		if _PACMAN -S --needed "$@"; then
 			return 0
 		else
@@ -300,7 +299,7 @@ _package_man_distro()
 		else
 			return 1
 		fi
-	elif [[ -x $(which pkg 2> /dev/null) ]]; then # FreeBSD/pkg
+	elif [[ -x $(which pkg 2> /dev/null) ]]; then    # FreeBSD/pkg
 		if _PKG install "$@"; then
 			return 0
 		else
