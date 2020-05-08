@@ -10,6 +10,7 @@
 
 Red="\033[0;31m"
 Green="\033[0;32m"
+CBGreen='\033[5;32m'
 Yellow="\033[0;33m"
 White="\033[0;37m"
 Reset="\033[0m"
@@ -193,7 +194,7 @@ main()
 	_unpack "$path_file_repo" || return 1
 	_install || return 1
 	
-	_msg "Instalando com sucesso $(storecli --version)"
+	_msg "OK execute: $(printf $CBGreen)storecli --help$(printf $Reset)"
 }
 
 
