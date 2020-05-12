@@ -14,7 +14,7 @@ function _chromium_lang()
 	local lang=$(set | grep -m 1 '^LANG=' | sed 's/.*=//g')
 	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
 
-	msg "Instalando pacote de idioma para chromium"
+	white "Instalando pacote de idioma para chromium"
 	case "$os_id" in
 		debian) _package_man_distro 'chromium-l10n';;
 		ubuntu) _package_man_distro 'chromium-browser-l10n';;
@@ -74,12 +74,12 @@ function _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
 	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
-	msg "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
+	white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	#sudo sh -c 'wget -q -O- https://dl.google.com/linux/linux_signing_key.pub | apt-key add -'
 	curl -sSL 'https://dl.google.com/linux/linux_signing_key.pub' | sudo apt-key add -
 
 	#find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
-	msg "Adicionando repositório"
+	white "Adicionando repositório"
 	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
 
 	# sudo apt install libu2f-udev
@@ -103,10 +103,10 @@ function _google_chrome_fedora()
 function _google_chrome_tumbleweed()
 {
 	# wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
-	msg "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
+	white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
-	msg "Adicionando repositório [http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google]"
+	white "Adicionando repositório [http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google]"
 	sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google || return 1
 	_package_man_distro 'google-chrome-stable'
 }
@@ -172,14 +172,14 @@ function _megasync_suse_tumbleweed()
 {
 	# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
 
-	msg "Adicionando key [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key]"
+	white "Adicionando key [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key]"
 	sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key || return 1
 	
-	msg "Adicionando repositório [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA]"
+	white "Adicionando repositório [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA]"
 	sudo zypper ar -f https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA || return 1
 	sudo zypper ref
 
-	msg "Instalando megasync"
+	white "Instalando megasync"
 	_package_man_distro megasync || return 1	
 }
 
@@ -196,9 +196,9 @@ function _megasync_debian()
 		return 1
 	fi
 
-	msg "Adicionando key [https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key]"	
+	white "Adicionando key [https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key]"	
 	curl -sSL 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
-	msg "Adicionando repositório"
+	white "Adicionando repositório"
 	echo "$mega_repos" | sudo tee "$mega_file_list"
 	sudo apt update
 	_package_man_distro megasync || return 1
@@ -250,7 +250,7 @@ function _megasync_ubuntu()
 
 function _megasync_fedora()
 {
-	msg "Importando key [https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key]"
+	white "Importando key [https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key]"
 	sudo rpm --import https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key
 
 	echo '[MEGAsync]' | sudo tee /etc/yum.repos.d/megasync.repo
@@ -347,16 +347,16 @@ function _opera_stable_debian()
 	local opera_repo='deb [arch=amd64] https://deb.opera.com/opera-stable/ stable non-free'
 	local opera_file='/etc/apt/sources.list.d/opera-stable.list'
 	
-	msg "Importando key"
+	white "Importando key"
 	sudo sh -c 'curl -sSL http://deb.opera.com/archive.key | apt-key add -' || return 1
 	#sudo sh -c 'wget -q -O- http://deb.opera.com/archive.key | apt-key add -'
 
 	find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
 
 	if [[ $? == '0' ]]; then
-		msg "Repositório já está disponível 'pulando'"
+		white "Repositório já está disponível 'pulando'"
 	else
-		msg "Adicionando repositório"
+		white "Adicionando repositório"
 		echo "$opera_repo" | sudo tee "$opera_file"
 	fi
 	sudo apt update
@@ -370,10 +370,10 @@ function _opera_stable_fedora()
 	# https://www.blogopcaolinux.com.br/2017/07/Instalando-o-Opera-no-openSUSE-e-no-Fedora.html
 	# https://rpm.opera.com/manual.html
 
-	msg "Importando key"
+	white "Importando key"
 	sudo rpm --import https://rpm.opera.com/rpmrepo.key || return 1
 
-	msg "Adicionando repositório"
+	white "Adicionando repositório"
 	echo '[opera]' | sudo tee /etc/yum.repos.d/opera.repo
 	{
 		echo "name=Opera packages"
@@ -408,7 +408,7 @@ function _opera_stable_suse()
 		echo "keeppackages=0"
 	} | sudo tee -a /etc/zypp/repos.d/opera.repo
 
-	msg "Syncronizando repositórios"
+	white "Syncronizando repositórios"
 	sudo zypper ref
 	_package_man_distro 'opera-stable'  || return 1
 }
@@ -703,7 +703,7 @@ _tixati_tar()
 	local path_file="$Dir_Downloads/$(basename $tixati_url_bin)"
 	local path_file_asc="$Dir_Downloads/$(basename $tixati_url_bin).asc"
 
-	msg "Importando key tixati"
+	white "Importando key tixati"
 	curl -sSL https://www.tixati.com/tixati.key -o- | gpg --import || return 1
 
 	_dow "$tixati_url_key" "$path_file_asc" || return 1
@@ -788,7 +788,7 @@ _torbrowser()
 	fi
 
 	if [[ "$download_only" == 'True' ]]; then
-		"$Script_TorBrowser" --downloadonly
+		"$Script_TorBrowser" --install --downloadonly
 	else
 		"$Script_TorBrowser" --install
 	fi
@@ -845,7 +845,7 @@ _youtube_dl()
 		return 0
 	fi
 
-	msg "Instalando youtube-dl em ~/.local/bin"
+	white "Instalando youtube-dl em ~/.local/bin"
 	cp -u "$path_file" "$Dir_User_Bin"/youtube-dl
 	chmod a+x "$Dir_User_Bin"/youtube-dl
 
@@ -889,23 +889,55 @@ _python_twodict_github()
 	echo -e "$space_line"
 }
 
-_wxpython()
+_youtube_dlgui_file_desktop_user()
 {
-	# https://github.com/wxWidgets/Phoenix
-	# https://wxpython.org/pages/downloads/
-	# https://sourceforge.net/projects/wxpython/files/wxPython/
-	
-	local url_wxpython='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.1.1/wxPython-src-3.0.1.1.tar.bz2/download'
-	local path_file="$Dir_Downloads/wxpython.tar.bz2"
-	
-	_dow "$url_wxpython" "$path_file" || return 1
-	_unpack "$path_file" || return 1
-	cd "$Dir_Unpck"
-	mv $(ls -d wx*) wxpython
-	cd wxpython
-	chmod +x *
-	./configure
-	
+	# Criar arquivo .desktop na HOME para o usuario atual.
+	white "Criando arquivo .desktop"
+
+	file_desktop_tubedl_gui=~/.local/share/applications/youtube-dl-gui.desktop
+	echo '[Desktop Entry]' > "$file_desktop_tubedl_gui"
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=Youtube-Dl-Gui"
+		echo "Exec=youtube-dl-gui"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Icon=youtube-dl-gui"
+		echo "Type=Application"
+		echo "Categories=Internet;Network;"
+	} >> "$file_desktop_tubedl_gui"
+
+	white "Criando atalho na Área de Trabalho"
+
+	chmod u+x "$arq_ytdl"
+	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
+	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
+}
+
+_youtube_dlgui_file_desktop_root()
+{
+	# Criar arquivo desktop para todos os usuarios.
+	local file_desktop_tubedl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
+
+	yellow "Criando arquivo .desktop"
+	echo '[Desktop Entry]' | sudo tee "$file_desktop_tubedl_gui"
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=Youtube-Dl-Gui"
+		echo "Exec=youtube-dl-gui"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Icon=youtube-dl-gui"
+		echo "Type=Application"
+		echo "Categories=Internet;Network;"
+	} | sudo tee -a "$file_desktop_tubedl_gui"
+
+	yellow "Criando atalho na Área de Trabalho"
+
+	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
 }
 
 # Baixar e compilar youtube-dl-gui
@@ -926,12 +958,15 @@ _youtube_dlgui_compile()
 	cd "$Dir_Unpack"/youtube-dl-gui-master || return 1
 	echo -e "$space_line"
 	yellow "Compilando youtube-dl-gui"
+	
 	if _WHICH python2; then
 		sudo python2 setup.py install || return 1
 	elif _WHICH python2.7; then
 		sudo python2 setup.py install || return 1
 	fi
 		
+	# Criar o arquivo .desktop após compilar o programa.
+	_youtube_dlgui_file_desktop_root
 	return 0
 }
 
@@ -943,36 +978,10 @@ _youtube_dlgui_pip()
 	# sudo apt install youtube-dlg --yes
 	#
 
-	case "$os_id" in
-		ubuntu|linuxmint) echo -e "\r";;
-		*) _INFO 'pkg_not_found' 'youtube-dlg-gui'; return 1;;
-	esac
-
 	_package_man_distro 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
 	pip install youtube-dlg || return 1
 
-	# Criar arquivo .desktop.
-	msg "Criando arquivo .desktop"
-
-	arq_ytdl=~/.local/share/applications/youtube-dl-gui.desktop
-	echo '[Desktop Entry]' > "$arq_ytdl"
-	{
-		echo "Encoding=UTF-8"
-		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=youtube-dl-gui"
-		echo "Version=1.0"
-		echo "Terminal=false"
-		echo "Icon=youtube-dl-gui"
-		echo "Type=Application"
-		echo "Categories=Internet;Network;"
-	} >> "$arq_ytdl"
-
-	msg "Criando atalho na Área de Trabalho"
-
-	chmod u+x "$arq_ytdl"
-	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
-	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
+	_youtube_dlgui_file_desktop_user
 	
 	if _WHICH 'youtube-dl-gui'; then
 		_INFO 'pkg_sucess' 'youtube-dl-gui'
@@ -991,7 +1000,7 @@ _youtube_dlgui_ubuntu()
 	case "$os_codename" in
 		bionic|trica) 
 				_youtube_dlgui_pip 
-				return 0
+				return
 				;;
 				
 		eoan|focal)
@@ -1108,30 +1117,9 @@ _youtube_dlgui()
 		fedora) _youtube_dlgui_fedora || return 1;;
 		arch) _youtube_dlgui_archlinux || return 1;;
 		'12.1-STABLE'|'12.1-RELEASE') _youtube_dlgui_freebsd || return 1;;
-		opensuse-tumbleweed) _youtube_dlgui_tumbleweed || return 1;;
+		'opensuse-tumbleweed') _youtube_dlgui_tumbleweed || return 1;;
 		*) _INFO 'pkg_not_found' 'youtube-dl-gui'; return 1;;
 	esac
-
-	white "Criando arquivo .desktop"
-
-	arq_ytdl='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
-	echo '[Desktop Entry]' | sudo tee "$arq_ytdl"
-	{
-		echo "Encoding=UTF-8"
-		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=youtube-dl-gui"
-		echo "Version=1.0"
-		echo "Terminal=false"
-		echo "Icon=youtube-dl-gui"
-		echo "Type=Application"
-		echo "Categories=Internet;Network;"
-	} | sudo tee -a "$arq_ytdl"
-
-	white "Criando atalho na Área de Trabalho"
-
-	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
 	
 	echo -e "$space_line"
 	if _WHICH 'youtube-dl-gui'; then

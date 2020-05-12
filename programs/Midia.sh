@@ -372,7 +372,7 @@ function _spotify_fedora()
 	fi
 
 	_FLATPAK install flathub com.spotify.Client || return 1
-
+	return 0
 }
 
 function _spotify()
@@ -389,13 +389,6 @@ function _spotify()
 		_INFO 'pkg_not_found' 'spotify'; return 1
 	fi
 	
-	if _WHICH 'spotify'; then
-		_INFO 'pkg_sucess' 'spotify'
-		return 0
-	else
-		_INFO 'pkg_instalation_failed' 'spotify'
-		return 1
-	fi
 }
 
 #=====================================================#

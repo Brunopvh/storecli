@@ -42,6 +42,8 @@ function _bluetooth()
 	done
 }
 
+
+
 #=====================================================#
 # Compactadores
 #=====================================================#
@@ -115,8 +117,8 @@ _peazip()
 
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
-			_INFO 'download_only' "$path_file"
-			return 0 
+		_INFO 'download_only' "$path_file"
+		return 0 
 	fi
 		
 	if _WHICH 'peazip'; then
