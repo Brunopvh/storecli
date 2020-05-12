@@ -1,23 +1,47 @@
 #!/usr/bin/env bash
 #
 #
-# V='2020-02-23'
+VERSION='2020-05-11'
 #
 
-esp='-------------------'
-space_line='======================================'
 
-function _msg(){
-	echo -e "=> $@"
+Red='\033[0;31m'
+Green='\033[0;32m'
+Yellow='\033[0;33m'
+White='\033[0;37m'
+Reset='\033[0m'
+
+#=============================================================#
+_msg()
+{
+	echo -e "${CWhite}[>] $@${Reset}"
 }
 
-function _white(){
-	echo -e "\033[1;37m=> $@\033[m"
+_red()
+{
+	echo -e "${CSRed}[!] $@${Reset}"
 }
 
-_yellow(){
-	echo -e "\033[1;93m[+] $@\033[m"
+_green()
+{
+	echo -e "${CGreen}[+] $@${Reset}"
 }
+
+_yellow()
+{
+	echo -e "${CYellow}[*] $@${Reset}"
+}
+
+_white()
+{
+	echo -e "${CWhite}[>] $@${Reset}"
+}
+
+
+space_line='==========================================='
+
+
+#=============================================================#
 
 function usage()
 {
@@ -25,7 +49,6 @@ cat <<EOF
   Use: $(basename $(readlink -f $0)) --distro-repos
     --debian-repos             Habilitar repositórios em debian buster
     --fedora-repos             Habilitar repositórios no fedora
-    --arch-repos               Habilitar repositórios no archlinux
     --tumblewee-repos          Adicionar repostórios extras para OpenSuse Tumbleweed
 EOF
 }
@@ -33,7 +56,7 @@ EOF
 #============================================================#
 # Repositórios fedora
 #============================================================#
-function _install_repos_fedora()
+function _addrepo_fedora()
 {
 	# sudo dnf repolist
 	# sudo dnf repository-packages fedora list
@@ -50,15 +73,15 @@ function _install_repos_fedora()
 	local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
 
 	echo "$space_line"
-	_msg "Adicionando os seguintes repositórios: "
-	sleep 1
-	_msg "rpmfusion-free-release-$(rpm -E %fedora)"
-	_msg "rpmfusion-nonfree-release-$(rpm -E %fedora)"
-	_msg "fedora-workstation-repositories"
+	_white "Adicionando os seguintes repositórios: "
+	_white "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	_white "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm"
+	_white "fedora-workstation-repositories"
+	echo "$space_line"
 
-	sudo dnf install -y fedora-workstation-repositories || return 1
-	sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm" || return 1
-	sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" || return 1
+	sudo dnf install -y "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	sudo dnf install -y "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" 
+	sudo dnf install -y fedora-workstation-repositories 
 }
 
 #============================================================#
@@ -99,19 +122,19 @@ function _addrepo_buster(){
 	local code_name=$(grep -m 1 'VERSION_CODENAME=' /etc/os-release | sed 's/.*=//g')
 	local debian_repo='deb http://deb.debian.org/debian buster main contrib non-free'
 
-	[[ "$code_name" == 'buster' ]] || {
-		_msg "[!] Seu sistema não é 'Debian Buster'. Saindo"
+	if [[ "$code_name" != 'buster' ]]; then
+		_red "[!] Seu sistema não é 'Debian Buster'. Saindo"
 		return 1
-	}
+	fi
 
-	# 
-	_msg "Adicionar o seguinte repositório [$debian_repo] em: /etc/apt/sources.list?: "
-	read -p "Prosseguir? [s/n]: " _sn
+	 
+	_msg "Adicionar [$debian_repo] em: /etc/apt/sources.list?: "
+	read -n 15 -p "Prosseguir? [s/n]: " _sn
 
-	[[ "$_sn" == 's' ]] || {
-		_msg "Abortando..."
+	if [[ "$_sn" != 's' ]]; then
+		_red "Abortando..."
 		return 1
-	}
+	fi
 
 	if ! grep '^deb.*debian.*main' /etc/apt/sources.list | grep -q "^deb.*main contrib non-free$"; then
 		_white "Adicionando"
@@ -164,9 +187,8 @@ if [[ ! -z $1 ]]; then
 
 	while [[ $1 ]]; do
 		case "$1" in
-			--fedora-repos) _install_repos_fedora;;
+			--fedora-repos) _addrepo_fedora;;
 			--debian-repos) _addrepo_buster;;
-			--arch-repos) _addrepo_arch;;
 			--tumbleweed-repos) _addrepo_tumbleweed;;
 			-h|--help) usage;;
 			*) usage;;
