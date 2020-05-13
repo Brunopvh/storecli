@@ -129,7 +129,7 @@ function _addrepo_buster(){
 
 	 
 	_msg "Adicionar [$debian_repo] em: /etc/apt/sources.list?: "
-	read -n 15 -p "Prosseguir? [s/n]: " _sn
+	read -t 15 -p "Prosseguir? [s/n]: " _sn
 
 	if [[ "$_sn" != 's' ]]; then
 		_red "Abortando..."
