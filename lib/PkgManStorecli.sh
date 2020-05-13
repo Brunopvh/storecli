@@ -29,7 +29,7 @@ _packmanager_storecli()
 			woeusb) _woeusb;;
 
 #----------- Desenvolvimento -------------------------------#
-			Dev) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
+			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
 			'android-studio') _android_studio;;
 			pycharm) _pycharm;;
 			sublime-text) _sublime_text;;
@@ -37,7 +37,7 @@ _packmanager_storecli()
 			vscode) _vscode;;
 
 #----------- Office -----------------------------------------#
-			Office) _Office_All;;
+			Escritorio) _Office_All;;
 			atril) _atril;;
 			'fontes-ms') _fontes_microsoft;;
 			libreoffice) _libreoffice;;

@@ -652,6 +652,7 @@ _telegram()
 
 
 	# Instalar gconf2.
+	white "Instalando gconf2"
 	if _WHICH 'zypper'; then # Suse
 		_package_man_distro gconf2
 	elif _WHICH 'dnf'; then # Fedora
@@ -675,9 +676,9 @@ _telegram()
 	_unpack "$path_file" || return 1
 
 	cd "$Dir_Unpack" 
-	mv -v $(ls -d Telegra*) "$Dir_User_Bin/telegram-amd64" 1> /dev/null
-	chmod -R 755 "$Dir_User_Bin/telegram-amd64"
-	ln -sf "$Dir_User_Bin/telegram-amd64/Telegram" "$Dir_User_Bin/telegram"
+	mv -v $(ls -d Telegra*) "${array_telegram_dirs[3]}" 1> /dev/null
+	chmod -R 755 "${array_telegram_dirs[3]}"
+	ln -sf "${array_telegram_dirs[3]}"/Telegram "${array_telegram_dirs[2]}"
 	telegram&
 
 	if _WHICH 'telegram'; then
@@ -781,11 +782,13 @@ _tixati_tar()
 _torbrowser()
 {
 	local master_script_torbrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+
 	if ! _WHICH "$Script_TorBrowser"; then
 		white "Instalando o script: $Script_TorBrowser"
 		curl -sSL "$master_script_torbrowser" -o "$Script_TorBrowser"
 		chmod u+x "$Script_TorBrowser"
 	fi
+
 
 	if [[ "$download_only" == 'True' ]]; then
 		"$Script_TorBrowser" --install --downloadonly
@@ -965,7 +968,7 @@ _youtube_dlgui_compile()
 		sudo python2 setup.py install || return 1
 	fi
 		
-	# Criar o arquivo .desktop após compilar o programa.
+	# Criar o arquivo ".desktop" após compilar o programa.
 	_youtube_dlgui_file_desktop_root
 	return 0
 }

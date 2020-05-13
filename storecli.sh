@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_11_rev2'
+VERSION='2020_05_12_rev3'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -47,11 +47,14 @@ VERSION='2020_05_11_rev2'
 #
 #----------------------- ESQUELETO DO PROGRAMA -----------------------#
 # 1 - Detectar o diretório do script principal (storcli.sh)
+#
 # 2 - Atribuir variáveis para o diretório atual (dirname) e para
 #     libs e scripts, importar as libs/módulos.
+#
 # 3 - Verificar se o Kernel do sistema é linux ou freebsd e checar
 #     se o programa está sendo executado pelo 'root'. Neste caso
 #     o programa irá encerrar pois não pode ser executado pelo root.
+#
 # 4 - Verificar se todos os pacotes de linha de comando estão disponíveis
 #     no sitema com a função "_check_cli_utils" que está no arquivo CliUtils.sh
 #     se faltar algum requerimeto a função que instala os requerimetos 
@@ -164,7 +167,7 @@ export Programs_Office="$Dir_Programs/Office.sh"
 export Script_config_path="$Dir_Storecli_Scripts/config_path.sh"
 export Script_root=$(basename $(readlink -f "$0"))
 #export Script_TorBrowser="$Dir_Storecli_Scripts/tor.sh"
-export Script_TorBrowser="$HOME/.local/bin/tor-install.sh"
+export Script_TorBrowser="$HOME/.local/bin/tor-setup.sh"
 export Script_AddRepo="$Dir_Storecli_Scripts/addrepo.sh"
 export Script_ohmybash="$Dir_Storecli_Scripts/ohmybash.run"
 export Script_Setup_Storecli="$Dir_Storecli/setup.sh"

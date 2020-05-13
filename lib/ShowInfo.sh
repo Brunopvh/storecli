@@ -5,12 +5,13 @@
 # pacotes disponíveis para instalação entre outros.
 #   Qualquer nova informção sobre ajuda ou um novo pacote que for
 # implementado neste script e necessário incluir o nome do pacote no 
-# arquivo de "Arrays.sh" que automaticamente o novo pacote será exibido
+# arquivo "Arrays.sh" que automaticamente o novo pacote será exibido
 # quando o usuario executar storecli -l|--list
 #
 
 usage()
 {
+echo ' '
 cat << EOF
     Use: $Script_root -b|-c|-h|-l|-u|-v
          $Script_root install <pacote>
@@ -30,9 +31,16 @@ cat << EOF
        install <pacote>              Instala um pacote.
 
 
-             Opções para install [-d|--downloadonly] somente baixa o(s) pacote(s).
+       Opções para install -d|--downloadonly somente baixa o(s) pacote(s).
              $Script_root install -d torbrowser 
-             $Script_root install --downloadonly pycharm 
+             $Script_root install --downloadonly pycharm
+
+       Instalando vários pacotes:
+             $Script_root install etcher sublime-text google-chrome youtube-dl-gui virtualbox
+
+       Instalando uma categoria/grupo de pacotes:
+             $Script_root install Acessorios Desenvolvimento Escritorio Internet
+
 EOF
 }
 
@@ -154,7 +162,7 @@ function _YESNO()
 	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
 	
 	echo -en "[>] $@ [${Yellow}s${Reset}/${Red}n${Reset}]?: "
-	read -t 10 -n 1 sn
+	read -t 15 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then

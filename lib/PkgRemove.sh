@@ -38,6 +38,7 @@ _pack_remove()
 			pycharm) _delete_all "${array_pycharm_dirs[@]}";;
 			refind) _delete_all "${array_refind_dirs[@]}";;
 			'sublime-text') _delete_all "${array_sublime_dirs[@]}";;
+			telegram)  _delete_all "${array_telegram_dirs[@]}";;
 			tixati) _delete_all "${array_tixati_dirs[@]}";;
 			torbrowser) "$Script_TorBrowser" --remove;;
 			veracrypt) sudo veracrypt-uninstall.sh;;

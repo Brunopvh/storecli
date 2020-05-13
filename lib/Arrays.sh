@@ -144,9 +144,9 @@ array_teamviewer_dirs=(
 # Telegram
 array_telegram_dirs=(
 "$Dir_User_Application/telegramdesktop.desktop" # .desktop
-"$Dir_User_Icons/telegram.png" # .png
-"$Dir_User_Bin/telegram" # bin
-"$Dir_User_Bin/telegram-amd64" # Dir 
+"$Dir_User_Icons/telegram.png"                  # .png
+"$Dir_User_Bin/telegram"                        # bin
+"$Dir_User_Bin/telegram-amd64"                  # Dir 
 )
 
 # Tixati

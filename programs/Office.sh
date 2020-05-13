@@ -130,8 +130,10 @@ function _libreoffice()
 _Office_All()
 {
 	if [[ -z "$install_yes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Office'" || return 0
+		_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
 	fi
+	_atril
+	_fontes_microsoft
 	_libreoffice_appimage
 	_libreoffice
 }
