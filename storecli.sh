@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_12_rev3'
+VERSION='2020_05_13_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -304,9 +304,24 @@ fi
 
 
 #=============================================================#
-# # Verificar por atualizações.
+# Verificar por atualizações.
 #=============================================================#
 _check_update_storecli 
+
+#=============================================================#
+# Função para executar comandos com o "sudo".
+#=============================================================#
+_SUDO()
+{
+	white "${Yellow}A${Reset}utênticação necessária para executar: sudo $@"
+	if sudo "$@"; then
+		return 0
+	else
+		red "Falha: sudo $@"
+		return 1
+	fi
+}
+
 
 # Função para remover diretórios que o usuário não tem permissão de escrita.
 _RMDIR()
@@ -317,28 +332,26 @@ _RMDIR()
 	
 	LocalDir=$(pwd)
 	if [[ $(echo "${LocalDir:0:4}") != '/tmp' ]]; then # Expansão de variáveis.
-		red "CUIDADO: $1"
+		red "CUIDADO: rm -rf $1"
 		return 1
 	fi
 	
-	white "Necessário ser ${Red}'root'${Reset} para executar: sudo rm -rf $1"
-	if ! _isroot; then
-		red "Você não é root"
-		return 1
-	fi
-	sudo rm -rf "$1"
+	_SUDO rm -rf "$1"
 }
 
 
 _clear_temp_dirs()
 {
 	# Limpar o diretório temporário sempre ao iniciar
-	cd /tmp; cd "$dir_temp"
+	cd /tmp
+	cd "$dir_temp"
+	
 	for X in $(ls); do
 		white "Limpando: $X"
 		rm -rf "$X" 2> /dev/null || _RMDIR "$X"
 	done
 	
+
 	cd "$Dir_Unpack" 
 	for X in $(ls); do
 		white "Limpando: $X"

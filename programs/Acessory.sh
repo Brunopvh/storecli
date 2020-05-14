@@ -365,6 +365,7 @@ function _woeusb_ubuntu()
 	cd "$dir_temp" && sudo rm -rf * 
 }
 
+
 function _woeusb_github()
 {
 	# Clonar o repositório e compilar o pacote
@@ -376,21 +377,46 @@ function _woeusb_github()
 
 	_gitclone "$github_woeusb" || return 1
 	chmod -R +x "$dir_woeusb" 
+	
+	case "$os_id" in
+		arch) _package_man_distro 'wxgtk3' 'lib32-wxgtk2';;
+		*) yellow "Instale wx-config no seu sistema";;
+	esac
+
 	cd "$dir_woeusb"
-
-
-	if [[ "$os_id" == 'arch' ]]; then 
-		_package_man_distro 'wxgtk3' 'lib32-wxgtk2'
-	else
-		yellow "Instale wx-config no seu sistema"
+	yellow "Executando: ./setup-development-environment.bash"
+	if ! ./setup-development-environment.bash; then
+		red "Falha: ./setup-development-environment"
+		return 1
 	fi
 
-	yellow "Executando: ./setup-development-environment.bash"; ./setup-development-environment.bash
-	yellow "Executando: autoreconf --force --install"; autoreconf --force --install
-	yellow "Executando: ./configure"; ./configure
-	yellow "Executando: make"; make
-	yellow "Executando: make install"; sudo make install
 
+	yellow "Executando: autoreconf --force --install"
+	if ! autoreconf --force --install; then
+		red "Falha: autoreconf --force --install"
+		return 1
+	fi
+
+
+	yellow "Executando: ./configure" 
+	if ! ./configure; then
+		red "Falha: ./configure"
+		return 1
+	fi
+
+
+	yellow "Executando: make" 
+	if ! make; then
+		red "Falha: make"
+		return 1
+	fi
+
+
+	yellow "Executando: make install"
+	if ! sudo make install; then
+		red "Falha: sudo make install"
+		return 1
+	fi
 }
 
 
@@ -399,6 +425,7 @@ function _woeusb()
 	case "$os_id" in
 		debian) _woeusb_debian;;
 		ubuntu|linuxmint) _woeusb_ubuntu;;
+		fedora) _package_man_distro 'WoeUSB.x86_64';;
 		*) _woeusb_github;;
 	esac
 		
