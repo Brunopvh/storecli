@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_13_rev1'
+VERSION='2020_05_13_rev4'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -200,17 +200,28 @@ source "$Programs_Gnomeshell"
 source "$Programs_Preferences"
 source "$Programs_Office"
 
-
-space_line='-----------------------------------------------'
-
+#=============================================================#
+# Arquivos de configuração e Log.
+#=============================================================#
 # O arquivo de configuração e gravado apenas quando a instalação
 # dos requirimentos são instaladas no sistema. Quando o programa 
 # inicia ele irá procurar por este arquivo é também irá verificar
 # se o conteudo do arquivo tem as seguintes informações 
 Config_File="$HOME/.config/storecli_script.conf"
-[[ ! -f "$Config_File" ]] && touch "$Config_File"
+LogFile="$HOME/.cache/storecli_Log.log"
+LogErro="$HOME/.cache/storecli_Erro.log"
+
+touch "$Config_File"
+touch "$LogFile"
+touch "$LogErro"
 
 
+space_line='-----------------------------------------------'
+
+echo -e "$space_line" >> "$LogFile"
+echo -e "Programa executado em [ $(date) ]" >> "$LogFile"
+echo -e "$space_line" >> "$LogFile"
+echo ' ' >> "$LogFile"
 
 #=============================================================#
 # Válidar se o Kernel e Linux.
@@ -367,7 +378,7 @@ for c in "${@}"; do
 		-y|--yes) export install_yes='True';;
 	esac
 done
-
+ 
 
 if [[ ! -z $1 ]]; then
 	# Mostrar o tipo de sistema.
@@ -386,8 +397,8 @@ if [[ ! -z $1 ]]; then
 		shift
 	done
 else
-	usage
-	#"$Dir_Storecli/gui.sh"
+	#usage
+	"$Dir_Storecli/gui.sh"
 fi
 
 

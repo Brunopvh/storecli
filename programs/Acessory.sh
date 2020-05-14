@@ -385,28 +385,28 @@ function _woeusb_github()
 
 	cd "$dir_woeusb"
 	yellow "Executando: ./setup-development-environment.bash"
-	if ! ./setup-development-environment.bash; then
+	if ! ./setup-development-environment.bash 2>> "$LogErro"; then
 		red "Falha: ./setup-development-environment"
 		return 1
 	fi
 
 
 	yellow "Executando: autoreconf --force --install"
-	if ! autoreconf --force --install; then
+	if ! autoreconf --force --install 2>> "$LogErro"; then
 		red "Falha: autoreconf --force --install"
 		return 1
 	fi
 
 
 	yellow "Executando: ./configure" 
-	if ! ./configure; then
+	if ! ./configure 2>> "$LogErro"; then
 		red "Falha: ./configure"
 		return 1
 	fi
 
 
 	yellow "Executando: make" 
-	if ! make; then
+	if ! make 2>> "$LogErro"; then
 		red "Falha: make"
 		return 1
 	fi

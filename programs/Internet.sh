@@ -704,8 +704,14 @@ _tixati_tar()
 	local path_file="$Dir_Downloads/$(basename $tixati_url_bin)"
 	local path_file_asc="$Dir_Downloads/$(basename $tixati_url_bin).asc"
 
-	white "Importando key tixati"
-	curl -sSL https://www.tixati.com/tixati.key -o- | gpg --import || return 1
+	echo -ne "Importando key tixati "
+	if curl -sSL https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
+		echo -e "${Yellow}OK${Reset}"
+	else
+		echo ' '
+		red "Falha: gpg --import"
+		return 1
+	fi
 
 	_dow "$tixati_url_key" "$path_file_asc" || return 1
 	_dow "$tixati_url_bin" "$path_file" || return 1
@@ -735,14 +741,14 @@ _tixati_tar()
 
 	# Gpg
 	if ! _verify_sig "$path_file_asc" "$path_file"; then
-		rm "$path_file" 2> /dev/null
-		rm "$path_file_asc" 2> /dev/null 
+		rm "$path_file" 2>> "$LogErro"
+		rm "$path_file_asc" 2>> "$LogErro"
 		return 1
 	fi
 	_unpack "$path_file" || return 1
 
 	cd "$Dir_Unpack" 
-	mv $(ls -d tixati*) "$Dir_Unpack/tixati-amd64" 1> /dev/null
+	mv $(ls -d tixati*) "$Dir_Unpack/tixati-amd64" 1>> "$LogFile"
 	chmod -R a+x "$Dir_Unpack/tixati-amd64"
 	sudo mv "$Dir_Unpack/tixati-amd64" /opt/ 
 

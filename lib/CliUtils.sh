@@ -11,7 +11,7 @@ source "$Lib_Platform"
 
 # Utilitários de linha de comando para distribuições Linux.
 array_cli_linux=(
-'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python2' 'xterm' 
+'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python2' 'xterm' 'zenity' 
 )
 
 array_cli_ubuntu=(
@@ -25,7 +25,7 @@ array_cli_debian=(
 
 # FreeBSD
 array_cli_freebsd=(
-'curl' 'wget' 'git' 'gawk' 'xterm' 'unzip'
+'curl' 'wget' 'git' 'gawk' 'xterm' 'unzip' 'zenity'
 )
 
 #=============================================================#

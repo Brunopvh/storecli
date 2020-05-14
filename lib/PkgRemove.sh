@@ -13,8 +13,9 @@ _delete_all()
 			if rm -rf "$1" 2> /dev/null; then
 				echo -e "${Yellow}OK${Reset}"
 			else
-				echo -e "Necessário ser ${Red}'root'${Reset} para executar: sudo rm -rf $1"
-				sudo rm -rf "$1"
+				#echo -e "Necessário ser ${Red}'root'${Reset} para executar: sudo rm -rf $1"
+				echo ' '
+				_SUDO rm -rf "$1"
 			fi
 		else
 			red "Não encontrado: $1"

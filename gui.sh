@@ -6,17 +6,16 @@
 # storecli
 #
 #
-VERSION_GUI='2020-05-07'
+VERSION_GUI='2020-05-13'
 #
 
-clear
 
 #=============================================================#
 # Diretórios
 #=============================================================#
 export readonly Dir_Storecli=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
 export Dir_Storecli_Lib="$Dir_Storecli/lib"
-export dir_temp="/tmp/space_storecli_$USER/temp"; mkdir -p "$dir_temp"
+export dir_temp="/tmp/storecli_$USER/temp"; mkdir -p "$dir_temp"
 export Dir_User_Bin="$HOME/.local/bin"; mkdir -p "$Dir_User_Bin"
 
 #=============================================================#
@@ -42,7 +41,7 @@ source "$Lib_Colors"
 github='https://github.com'  
 raw='https://raw.github.com'
 
-space_line='--------------------------------------'
+space_line='-----------------------------------------'
 
 
 #=============================================================#
