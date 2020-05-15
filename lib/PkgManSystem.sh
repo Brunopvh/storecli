@@ -104,7 +104,7 @@ _BROKE()
 	_APT install -y -f
 
 	yellow "Executando: apt --fix-broken install"
-	_APT --fix-broken installl
+	_APT --fix-broken install
 	
 	# sudo apt install --yes --force-yes -f 
 }
