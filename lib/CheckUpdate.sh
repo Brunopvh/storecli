@@ -25,9 +25,9 @@ function _check_update_storecli()
 	# hoje for igual o dia da ultima verificação então esta função deve ser encerrada
 	# 
 
-	# dia de hoje - usar o sed para apagar strings e utilizar apenas números.
-	#day=$(date | sed "s/[a-z]\+//g;s/  //" | cut -d ' ' -f 1)                           
-	day=$(date | awk '{print $2}')	
+	# dia de hoje - usar o sed para apagar strings e utilizar apenas números.                       
+	#day=$(date | awk '{print $2}')	
+	day=$(date +%d)
 
 	# dia em que a ultima busca por atualizaçãoes por executada.
 	day_update=$(grep -m 1 "day_update" "$Config_File" | cut -d' ' -f 2 2> /dev/null)
