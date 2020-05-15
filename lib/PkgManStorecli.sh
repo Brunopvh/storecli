@@ -52,6 +52,7 @@ _packmanager_storecli()
 			'opera-stable') _opera_stable;;
 			proxychains) _proxychains;;
 			qbittorrent) _qbittorrent;;
+			skype) _skype;;
 			teamviewer) _teamviewer;;
 			telegram) _telegram;;
 			tixati) _tixati_tar;;

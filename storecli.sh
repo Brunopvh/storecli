@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_13_rev4'
+VERSION='2020_05_14_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -222,6 +222,9 @@ echo -e "$space_line" >> "$LogFile"
 echo -e "Programa executado em [ $(date) ]" >> "$LogFile"
 echo -e "$space_line" >> "$LogFile"
 echo ' ' >> "$LogFile"
+
+echo -e "$space_line" >> "$LogErro"
+echo ' ' >> "$LogErro"
 
 #=============================================================#
 # Válidar se o Kernel e Linux.

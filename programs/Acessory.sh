@@ -423,7 +423,7 @@ function _woeusb_github()
 function _woeusb()
 {
 	case "$os_id" in
-		debian) _woeusb_debian;;
+		debian)_woeusb_ubuntu;;
 		ubuntu|linuxmint) _woeusb_ubuntu;;
 		fedora) _package_man_distro 'WoeUSB.x86_64';;
 		*) _woeusb_github;;

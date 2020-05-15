@@ -493,6 +493,37 @@ _qbittorrent()
 }
 
 #=============================================================#
+# Skype
+#=============================================================#
+_skype_debian()
+{
+	# https://www.blogopcaolinux.com.br/2017/06/Instalando-Skype-no-Debian-e-Ubuntu.html
+	local skype_repo='deb [arch=amd64] https://repo.skype.com/deb stable main'
+	local skype_url_key='https://repo.skype.com/data/SKYPE-GPG-KEY'
+
+	echo -ne "[>] Adicionando: https://repo.skype.com/data/SKYPE-GPG-KEY "
+	if ! curl -sSL "$skype_url_key" -o- | sudo apt-key add -; then
+		echo ' '
+		red "Falha: apt-key add"
+		return 1
+	fi
+	
+	echo -ne "[>] Adicionando: "
+	echo "$skype_repo" | sudo tee /etc/apt/sources.list.d/skype-stable.list
+	_APT update
+	_package_man_distro skypeforlinux
+}
+
+
+_skype()
+{
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _skype_debian;;
+		*) _INFO 'pkg_not_found' 'skype';;
+	esac
+}
+
+#=============================================================#
 # TeamViewer
 #=============================================================#
 # Requeriments teamviewer Debian/Ubuntu/Mint

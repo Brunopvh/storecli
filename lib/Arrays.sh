@@ -206,6 +206,7 @@ array_internet=(
 	'opera-stable'
 	'proxychains'
 	'qbittorrent'
+	'skype'
 	'teamviewer'
 	'telegram'
 	'tixati'
