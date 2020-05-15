@@ -91,25 +91,21 @@ _BROKE()
 	fi
 
 	
-	local RunAptCmd=(
-		clean
-		remove
-		autoremove
-		'install -y -f'
-		'--fix-broken install'
-	)
-	
 	yellow "Executando: dpkg --configure -a"
 	_DPKG --configure -a
-	
-	for X in "${RunAptCmd[@]}"; do
-		yellow "Executando: apt $X"
-		if ! _APT "$X"; then
-			red "Falha: apt $X"
-			sleep 0.5
-		fi
-	done
 
+	yellow "Executando: apt clean"
+	_APT clean
+
+	yellow "Executando: apt remove"
+	_APT remove
+	
+	yellow "Executando: apt install -y -f"
+	_APT install -y -f
+
+	yellow "Executando: apt --fix-broken install"
+	_APT --fix-broken installl
+	
 	# sudo apt install --yes --force-yes -f 
 }
 
