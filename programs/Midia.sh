@@ -95,7 +95,7 @@ function _codecs_debian()
 	_check_sum "$path_file" "$hash_wcodecs" || return 1
 	
 	echo -e "$space_line"
-	msg "Instalando [$path_file]"
+	white "Instalando [$path_file]"
 	sudo dpkg --install "$path_file" || return 1
 }
 

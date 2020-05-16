@@ -15,13 +15,13 @@ function _bluetooth()
 
 	_package_man_distro bluez 'bluez-firmware' 'bluez-hcidump'
 	echo -e "$space_line"
-	msg "1 - ${Green}G${Reset}NOME"
-	msg "2 - ${Green}K${Reset}DE"
-	msg "3 - ${Green}L${Reset}XDE/${Green}X${Reset}FCE/${Green}L${Reset}XQT/${Green}M${Reset}ATE"
+	white "1 - ${Green}G${Reset}NOME"
+	white "2 - ${Green}K${Reset}DE"
+	white "3 - ${Green}L${Reset}XDE/${Green}X${Reset}FCE/${Green}L${Reset}XQT/${Green}M${Reset}ATE"
 	
 	while true; do
 
-		msg "Selecione a sua interface gráfica: ${Green}(1 / 2 / 3): ${Reset}" 
+		white "Selecione a sua interface gráfica: ${Green}(1 / 2 / 3): ${Reset}" 
 		read -t 10 -n 1 desktop; echo ' '
 
 		case "${desktop,,}" in
@@ -29,7 +29,7 @@ function _bluetooth()
 			2) _package_man_distro bluedevil;;
 			3) _package_man_distro blueman;;
 			*) 
-			msg "Opição inválida, você pode ${Green}repetir${Reset} ou ${Red}cancelar${Reset} [r/c]: " 
+			white "Opição inválida, você pode ${Green}repetir${Reset} ou ${Red}cancelar${Reset} [r/c]: " 
 			read -t 10 -n 1 input; echo ' '
 			if [[ "${input,,}" == 'r' ]]; then
 				continue	
@@ -323,7 +323,7 @@ function _virtualbox_fedora()
 	esac
 
 	# Módulos
-	msg "Configurando módulos"
+	white "Configurando módulos"
 	sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
 	sudo sh -c '/sbin/vboxconfig'
 
@@ -411,7 +411,7 @@ function _virtualbox_archlinux()
 
 	# /etc/modules-load.d/virtualbox.conf
 	# sudo depmod -a
-	msg "Configurando módulos"
+	white "Configurando módulos"
 	sudo /sbin/rcvboxdrv setup
 	sudo /sbin/vboxconfig
 	sudo modprobe vboxdrv

@@ -93,7 +93,7 @@ _config_python()
 _config_freebsd_requeriments()
 {
 	echo -e "$space_line"
-	msg "Executando [_config_freebsd_requeriments]"
+	white "Executando [_config_freebsd_requeriments]"
 	echo -e "$space_line"
 
 	# Instalar ferramentas de linha de comando.
@@ -137,7 +137,7 @@ _config_freebsd_requeriments()
 _config_fedora_requeriments()
 {
 	echo -e "$space_line"
-	msg "Executando [_config_fedora_requeriments]"
+	white "Executando [_config_fedora_requeriments]"
 	echo -e "$space_line"
 
 	# Instalar ferramentas de linha de comando.
@@ -279,10 +279,10 @@ _config_debian_requeriments()
 # ArchLinux
 _config_archlinux_requeriments()
 {
-	msg "Instalando: ${array_cli_linux[@]}"
+	white "Instalando: ${array_cli_linux[@]}"
 	_package_man_distro "${array_cli_linux[@]}" || return 1
 
-	msg "Instalando: python3 python-pip python-setuptools"
+	white "Instalando: python3 python-pip python-setuptools"
 	_package_man_distro python3 python-pip python-setuptools
 
 	# Suporte ao NTFS - sudo pacman -S ntfs-3g 
@@ -293,7 +293,7 @@ _config_archlinux_requeriments()
 	_package_man_distro binutils
 
 	# Base-Devel
-	# msg "Instalando: base-devel"
+	# white "Instalando: base-devel"
 	#_package_man_distro 'base-devel'
 
 	# xdpinfo

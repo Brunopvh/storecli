@@ -62,7 +62,7 @@ function _android_studio_zip()
 
 	_unpack "$path_file" || return 1
 
-	msg "Instalando android studio em ~/.local/bin"
+	white "Instalando android studio em ~/.local/bin"
 	cd "$Dir_Unpack" 
 	mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
 	cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png

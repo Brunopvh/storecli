@@ -38,11 +38,11 @@ _dow()
 		return 0
 	fi
 
-	msg "Baixando [$url]"
+	white "Baixando [$url]"
 	if [[ -z "$path_file" ]]; then
 		_CURL -C - -SL -O "$url" && return 0
 	else
-		msg "Destino [$path_file]"
+		white "Destino [$path_file]"
 		_CURL -C - -SL "$url" -o "$path_file" && return 0
 	fi
 

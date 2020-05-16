@@ -94,28 +94,28 @@ function _gnome_shell_extensions()
 	if _WHICH "dnf"; then            # RedHat
 		for c in "${array_gnome_shell_fedora[@]}"; do
 			echo -e "$space_line"
-			msg "Instalando: $c"
+			white "Instalando: $c"
 			_package_man_distro "$c"
 		done
 
 	elif _WHICH "zypper"; then       # Suse
 		for c in "${array_gnome_shell_suse[@]}"; do
 			echo -e "$space_line"
-			msg "Instalando: $c"
+			white "Instalando: $c"
 			_package_man_distro "$c" 
 		done
 
 	elif _WHICH "pacman"; then       # ArchLinux
 		for c in "${array_gnome_shell_archlinux[@]}"; do
 			echo -e "$space_line"
-			msg "Instalando: $c"
+			white "Instalando: $c"
 			_package_man_distro "$c"
 		done
 
 	elif _WHICH "apt"; then          # Debian
 		for c in "${array_gnome_shell_debian[@]}"; do
 			echo -e "$space_line"
-			msg "Instalando: $c"
+			white "Instalando: $c"
 			_package_man_distro "$c"
 		done
 

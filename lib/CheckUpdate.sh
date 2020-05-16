@@ -36,7 +36,7 @@ function _check_update_storecli()
 		return 0
 	fi  
 
-	msg "Procurando por atualização no github aguarde"
+	white "Procurando por atualização no github aguarde"
 
 	# Baixar o arquivo principal que contém a ultima versão do github.
 	curl -# -fsSL "$url_storecli" -o "$dir_temp/storecli.sh" || return 1
@@ -45,9 +45,9 @@ function _check_update_storecli()
 	new_version=$(grep -m 1 ^'VERSION=' "$storecli_temp" | sed "s/VERSION=//g;s/'//g")
 	
 	# Comparar veresão atual com a versão do programa no github.
-	msg "Versão do github: $new_version"
+	white "Versão do github: $new_version"
 	if [[ "$VERSION" == "$new_version" ]]; then
-		msg "Não existem atualizações disponíveis"
+		white "Não existem atualizações disponíveis"
 		# Deletar linha que contém o dia da ultima verificação.
 		sed -i '/^day_update/d' "$Config_File"
 		
@@ -56,7 +56,7 @@ function _check_update_storecli()
 		echo -e "day_update $day" >> "$Config_File"
 		return 1
 	else
-		msg "Versão local ${Yellow}$VERSION${Reset}"
+		white "Versão local ${Yellow}$VERSION${Reset}"
 	fi
 
 	# Instalar nova versão

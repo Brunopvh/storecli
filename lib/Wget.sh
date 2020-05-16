@@ -30,15 +30,15 @@ _dow()
 
 	# O arquivo solicitado já existe
 	if [[ -f "$path_file" ]]; then
-		msg "Arquivo encontrado em [$path_file]"
+		white "Arquivo encontrado em [$path_file]"
 		return 0
 	fi
 
-	msg "Baixando [$url]"
+	white "Baixando [$url]"
 	if [[ -z "$path_file" ]]; then
 		_WGET -c "$url" && return 0
 	else
-		msg "Destino [$path_file]"
+		white "Destino [$path_file]"
 		_WGET -c "$url" -O "$path_file" && return 0
 	fi
 

@@ -23,7 +23,7 @@
 # Diretórios que devem ser compartilhados com os outros scripts e libs.
 #=============================================================#
 dir_temp="/tmp/storecli_$USER/temp"
-Dir_Unpack="/tmp/space_storecli_$USER/unpack"
+Dir_Unpack="/tmp/storecli_$USER/unpack"
 Dir_User_Bin="$HOME/.local/bin"
 Dir_User_Themes="$HOME/.themes"
 Dir_User_Application="$HOME/.local/share/applications"
@@ -252,9 +252,10 @@ array_wine=(
 
 # Preferencias
 array_preferencias=(
-'papirus'
-'ohmybash'
-'ohmyzsh'
+	'ohmybash'
+	'ohmyzsh'
+	'papirus'
+	'sierra'
 )
 
 # Gnome Shell Extensões

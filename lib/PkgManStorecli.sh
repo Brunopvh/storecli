@@ -88,6 +88,7 @@ _packmanager_storecli()
 			ohmybash) _ohmybash;;			
 			ohmyzsh) _ohmyzsh;;
 			papirus) _papirus;;
+			sierra) _sierra;;
 		
 
 

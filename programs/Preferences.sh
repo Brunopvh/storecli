@@ -4,40 +4,6 @@
 
 github='https://github.com'
 
-#-----------------------------------------------------#
-
-function _hacking_parrot()
-{
-# https://github.com/hanstnt1382/hacking_Parrot
-# https://www.gnome-look.org/p/1328048/
-# https://www.gnome-look.org/p/1328048/startdownload?file_id=1575222720&file_name=hacking_Parrot.tar.gz&file_type=application/x-gzip&file_size=752852
-local url_hacking_parrot='https://dllb2.pling.com/api/files/download/id/1575222720/s/884ec5309b0fefb4a8fac0c7b83ac279f2991595266e3bb92413a3ba164ed25f515ac617ebe667575c18ecd09c9876c5cff3fa5d40747c031e3d9204b0df5d10/t/1575245823/c/884ec5309b0fefb4a8fac0c7b83ac279f2991595266e3bb92413a3ba164ed25f515ac617ebe667575c18ecd09c9876c5cff3fa5d40747c031e3d9204b0df5d10/lt/download/hacking_Parrot.tar.gz'
-local path_file="$Dir_Downloads/$(basename $url_hacking_parrot)"
-
-	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
-		return 0 
-	fi
-
-	_unpack "$path_file" || return 1
-
-	if [[ -d ~/.themes/hacking_Parrot ]]; then 
-		rm -rf ~/.themes/hacking_Parrot
-	fi
-
-	cd "$Dir_Unpack" 
-	mv $(ls -d hacking*) ~/.themes
-	if [[ "$?" == '0' ]]; then
-		_INFO 'pkg_sucess' 'code'
-		return 0
-	else
-		_INFO 'pkg_instalation_failed' 'code'
-		return 1
-	fi
-}
-
-#-----------------------------------------------------#
 
 #=====================================================#
 # OhMyBash
@@ -78,9 +44,9 @@ function _ohmybash()
 	fi
 
 	_unpack "$path_file" || return 1
-	msg "Instalando temas para ${Yellow}ohmybash${Reset} em: $HOME/.bash/themes"
+	white "Instalando temas para ${Yellow}ohmybash${Reset} em: $HOME/.bash/themes"
 	cp -ru "$Dir_Unpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
-	msg "OK"
+	white "OK"
 
 	#echo 'OSH_THEME="rjorgenson"' >> "$HOME/.bashrc"
 	if ! grep -q "^OSH_THEME.*rjorgenson" "$HOME/.bashrc"; then
@@ -109,8 +75,15 @@ function _ohmyzsh()
 #=====================================================#
 # Papirus
 #=====================================================#
+function _papirus_debian()
+{
+	# sudo apt install libreoffice-style-papirus
+	#
+	_package_man_distro 'papirus-icon-theme'
+}
 
-function _papirus()
+
+function _papirus_github()
 {
 	#------------------- Instruções para instalação ---------------------#
 	# https://github.com/PapirusDevelopmentTeam/papirus-icon-theme
@@ -165,6 +138,13 @@ function _papirus()
 	done
 }
 
+function _papirus()
+{
+	case "$os_id" in
+		debian) _papirus_debian;;
+		*) _papirus_github;;
+	esac
+}
 
 #=====================================================#
 # Tema Sierra
@@ -173,12 +153,53 @@ function _papirus()
 function _sierra()
 {
 	# https://github.com/vinceliuice/Sierra-gtk-theme
-	github_sierra="$github/vinceliuice/Sierra-gtk-theme"
-	_gitclone "$github_sierra" || return 1
+	# https://github.com/vinceliuice/Sierra-gtk-theme#flathub
+	#----------------------------------------------------------------------#
+	#
+	# Flathub
+	# Light Theme flatpak install flathub org.gtk.Gtk3theme.High-Sierra
+	# Dark Theme flatpak install flathub org.gtk.Gtk3theme.High-Sierra-Dark
+	#----------------------------------------------------------------------#
+	#
+	# Suse
+	# sudo zypper ar obs://X11:common:Factory/sierra-gtk-theme x11
+    # sudo zypper ref
+    # sudo zypper in sierra-gtk-theme
+	#----------------------------------------------------------------------#
+	#
+	
+	local github_sierra="$github/vinceliuice/Sierra-gtk-theme"
+	local url_sierra='https://github.com/vinceliuice/Sierra-gtk-theme/archive/master.tar.gz'
+	local path_file="$Dir_Downloads/sierra_gtk_theme.tar.gz"
+	#_gitclone "$github_sierra" || return 1
 
-	msg "Aguarde"
-	cd "$dir_temp" 
-	cd Sierra-gtk-theme 
+	_dow "$url_sierra" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+	_unpack "$path_file" || return 1
+
+	case "$os_id" in
+		fedora) 
+				_package_man_distro 'gtk-murrine-engine' 'gtk2-engines'
+				;;
+
+		arch) 
+				_package_man_distro 'gtk-engine-murrine' 'gtk-engines'
+				;;
+
+		debian|ubuntu|linuxmint) 
+				_package_man_distro 'gtk2-engines-murrine' 'gtk2-engines-pixbuf'
+				;;
+	esac
+
+	cd "$Dir_Unpack"
+	mv $(ls -d Sierra*) sierra_theme 
+	cd sierra_theme
 	chmod +x install.sh
-	./install.sh
+	./install.sh --color dark
 }

@@ -29,7 +29,7 @@ _delete_all()
 _pack_remove()
 {
 	while [[ $1 ]]; do
-		msg "${Red}R${Reset}emovendo $(SPACE_TEXT Removendo) $1"
+		white "${Red}R${Reset}emovendo $(SPACE_TEXT Removendo) $1"
 
 		case "$1" in
 			android-studio) _delete_all "${array_android_studio_dirs[@]}";;

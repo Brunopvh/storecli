@@ -148,7 +148,7 @@ function _etcher()
 #=====================================================#
 function _gnome_disk()
 {
-	#msg "Instalando $(SPACE_TEXT Instalando) gnome-disk-utility"
+	#white "Instalando $(SPACE_TEXT Instalando) gnome-disk-utility"
 	_package_man_distro 'gnome-disk-utility'
 }
 
@@ -240,7 +240,7 @@ function _woeusb_debian(){
 			'devscripts' 'equivs' 'libwxgtk3.0-dev' 'grub-pc-bin' 'p7zip-full'
 		)
 
-	msg "Necessário instalar os seguintes pacotes: ${requeriments_woeusb_debian[@]}"
+	white "Necessário instalar os seguintes pacotes: ${requeriments_woeusb_debian[@]}"
 	_YESNO "Deseja proseguir" || return 1
 	
 
