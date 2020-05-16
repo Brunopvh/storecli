@@ -110,7 +110,6 @@ echo -e "$(basename $0) V${VERSION}"
 partition_efi="$1"
 partiton_root="$2"
 
-# url_appsbuster='https://github.com/Brunopvh/apps-buster/archive/master.tar.gz'
 url_storecli='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 
 # Verificar conexão com a internet.

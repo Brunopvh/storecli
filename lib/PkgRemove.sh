@@ -9,11 +9,11 @@ _delete_all()
 
 		# Verificar se $1 existe
 		if [[ -d "$1" ]] || [[ -f "$1" ]] || [[ -L "$1" ]] || [[ -x "$1" ]]; then
-			echo -ne "[>] Deletando: $1 "
-			if rm -rf "$1" 2> /dev/null; then
+			
+			echo -ne "[>] ${Yellow}D${Reset}eletando: $1 "
+			if rm -rf "$1" 2>> "$LogErro"; then
 				echo -e "${Yellow}OK${Reset}"
 			else
-				#echo -e "Necessário ser ${Red}'root'${Reset} para executar: sudo rm -rf $1"
 				echo ' '
 				_SUDO rm -rf "$1"
 			fi

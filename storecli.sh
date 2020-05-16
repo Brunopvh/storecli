@@ -3,10 +3,12 @@
 #
 #
 #
-VERSION='2020_05_16_rev1'
+VERSION='2020_05_16_rev2'
+#
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+#
 #
 #----------------------- SOBRE O PROGRAMA --------------------------#
 #   Este script serve para automatizar/facilitar a instalação de softwares
@@ -14,6 +16,7 @@ VERSION='2020_05_16_rev1'
 # sistemas: Debian, Ubuntu, LinuxMint, Fedora e ArchLinux. É util para ser 
 # utilizado em uma pós formatação para instalar NAVEGADORES, CODECS, IDEs,
 # ferrramentas para linha de comando entre outros ultilitários para desktop.  
+#
 #
 #----------------------- USO BÁSICO -------------------------------#
 # storecli --help
@@ -74,16 +77,20 @@ VERSION='2020_05_16_rev1'
 #   (_packmanager_storecli) que por sua vez executa a função _telegram.
 #
 #
+#
 # storecli install telegram -> _packmanager_storecli telegram -> _telegram =====> (Comandos e funções)
 # |    storecli.sh          |      PkgManStorecli.sh          | Internet.sh | ==> (Arquivos)
+#
 #
 #
 # storecli install vscode -> _packmanager_storecli vscode -> _vscode   ======> (Comandos e funções)
 # |    storecli.sh        |      PkgManStorecli.sh        |   Dev.sh  | ==> (Arquivos)
 #
 #
+#
 # storecli install etcher -> _packmanager_storecli etcher -> _etcher     ======> (Comandos e funções)
 # |    storecli.sh      |      PkgManStorecli.sh        | Acessory.sh | ==> (Arquivos)
+#
 #
 #
 # storecli install youtube-dl-gui -> _packmanager_storecli youtube-dl-gui -> _youtube_dlgui =====> (Comandos e funções)
@@ -91,12 +98,17 @@ VERSION='2020_05_16_rev1'
 #
 #
 ##---------------------- REFERÊNCIAS --------------------------------#
+# Viva Ao Linux
 # https://www.vivaolinux.com.br/dica/Instalando-o-Etcher-no-LMDE-4-Debbie
-# http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
 # https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-Arch-com-Git
 # https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
+#
+# Blog Opção Linux
 # https://www.blogopcaolinux.com.br/2016/12/Instalando-o-Spotify-no-openSUSE-e-no-Fedora.html
 # https://www.blogopcaolinux.com.br/2017/11/Guia-pos-instalacao-Fedora-27-Workstation.html
+#
+# Outros
+# http://shellscriptx.blogspot.com/2016/12/utilizando-expansao-de-variaveis.html
 #
 # Dica rápida: Como buscar recursivamente usando o grep
 # https://terminalroot.com.br/2017/01/como-buscar-recursivamente-usando-o-grep.html
@@ -117,8 +129,6 @@ VERSION='2020_05_16_rev1'
 # http://shellscriptx.blogspot.com/2017/03/criando-bot-do-telegram-em-shell-script-com-shellbot.html
 #
 
-
-#clear
 
 #=============================================================#
 # Diretórios
@@ -240,6 +250,8 @@ if [[ ! -x $(which sudo 2> /dev/null) ]]; then
 fi
 
 #=============================================================#
+# Parametros que não precisam de verificação para serem exibidos
+# ao usuário.
 case "$1" in
 	-h|--help) usage; exit 0;;
 	-v|--version) echo -e "$Script_root $VERSION"; exit 0;;
@@ -254,6 +266,7 @@ if [[ $(id -u) == '0' ]]; then
 fi
 
 # Verificar se o usuário atual é adiministrador.
+# 
 _isroot()
 {
 	if [[ $(sudo id -u) == '0' ]]; then
@@ -296,8 +309,10 @@ _WHICH()
 #=============================================================#
 # Verificar se todos os utilitários de linha de comando 
 # estão instalados - esta função será IGNORADA caso o parametro
-# $1 for igual a '--ignore-cli'. 
-#    Ex storecli --ignore-cli install <pacote>
+# $1 for igual a '--ignore-cli' exemplo:
+#   
+#     storecli --ignore-cli install <pacote>
+#
 #=============================================================#
 if [[ "$1" != '--ignore-cli' ]]; then
 	if ! _check_cli_utils; then
@@ -306,7 +321,9 @@ if [[ "$1" != '--ignore-cli' ]]; then
 fi
 
 # Se a string 'requeriments OK' não estiver no arquivo de configuração
-# significa que a função de configuração (configura_all) ainda não foi executada
+# significa que a função de configuração (configura_all) ainda não foi
+# executada no sistema atual, ou seja, se o GREP abaixo retornar status
+# diferente de '0' a função configure_all será invocada.
 if [[ "$1" != '--ignore-cli' ]]; then
 	grep -q 'requeriments OK' "$Config_File" || {
 		configure_all || exit 1
@@ -323,7 +340,7 @@ fi
 _check_update_storecli 
 
 #=============================================================#
-# Função para executar comandos com o "sudo".
+# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
 #=============================================================#
 _SUDO()
 {
@@ -362,14 +379,14 @@ _clear_temp_dirs()
 	
 	for X in $(ls); do
 		white "Limpando: $X"
-		rm -rf "$X" 2> /dev/null || _RMDIR "$X"
+		rm -rf "$X" 2>> "$LogErro" || _RMDIR "$X"
 	done
 	
 
 	cd "$Dir_Unpack" 
 	for X in $(ls); do
 		white "Limpando: $X"
-		rm -rf "$X" 2> /dev/null || _RMDIR "$X"
+		rm -rf "$X" 2>> "$LogErro" || _RMDIR "$X"
 	done
 }
 
@@ -400,7 +417,7 @@ if [[ ! -z $1 ]]; then
 		shift
 	done
 else
-	#usage
+	usage
 	"$Dir_Storecli/gui.sh"
 fi
 

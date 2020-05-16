@@ -1,13 +1,20 @@
 #!/usr/bin/env bash
 #
+#---------------------------------------------------------------#
+# Este script tem a finalidade de adicionar repositórios adicionais
+# em alguns sistemas, como por exemplo repositórios não livres para
+# Debian e Fedora.
+#---------------------------------------------------------------#
 #
-VERSION='2020-05-11'
+#
+VERSION='2020-05-16'
 #
 
 
 Red='\033[0;31m'
 Green='\033[0;32m'
 Yellow='\033[0;33m'
+Blue='\033[1;34m'
 White='\033[0;37m'
 Reset='\033[0m'
 
@@ -19,26 +26,31 @@ _msg()
 
 _red()
 {
-	echo -e "${CSRed}[!] $@${Reset}"
+	echo -e "${Red}[!] $@${Reset}"
 }
 
 _green()
 {
-	echo -e "${CGreen}[+] $@${Reset}"
+	echo -e "${Green}[+] $@${Reset}"
 }
 
 _yellow()
 {
-	echo -e "${CYellow}[*] $@${Reset}"
+	echo -e "${Yellow}[*] $@${Reset}"
+}
+
+_blue()
+{
+	echo -e "${Blue}[+] $@${Reset}"
 }
 
 _white()
 {
-	echo -e "${CWhite}[>] $@${Reset}"
+	echo -e "${White}[>] $@${Reset}"
 }
 
 
-space_line='==========================================='
+space_line='===================================================='
 
 
 #=============================================================#
@@ -52,6 +64,11 @@ cat <<EOF
     --tumblewee-repos          Adicionar repostórios extras para OpenSuse Tumbleweed
 EOF
 }
+
+if [[ $(id -u) != '0' ]]; then
+	_red "Você precisar ser o root. Execute: sudo $(readlink -f $0)"
+	exit 1
+fi
 
 #============================================================#
 # Repositórios fedora
@@ -118,40 +135,37 @@ function _addrepo_tumbleweed(){
 #============================================================#
 # Repositórios debian 10
 #============================================================#
-function _addrepo_buster(){
-	local code_name=$(grep -m 1 'VERSION_CODENAME=' /etc/os-release | sed 's/.*=//g')
-	local debian_repo='deb http://deb.debian.org/debian buster main contrib non-free'
+function _addrepo_debian(){
+	local codename=$(grep -m 1 'VERSION_CODENAME=' /etc/os-release | sed 's/.*=//g')
+	local debian_repo="deb http://deb.debian.org/debian $codename main contrib non-free"
 
-	if [[ "$code_name" != 'buster' ]]; then
-		_red "[!] Seu sistema não é 'Debian Buster'. Saindo"
-		return 1
-	fi
+	echo -e "${Blue}$space_line${Reset}"
+	_yellow "Deseja adicionar o repositório: $debian_repo [${Green}s${Reset}/${Red}n${Blue}]?: "
+	echo -e "${Blue}$space_line${Reset}"
+	read -n 1 -t 15 sn 
+	echo ' '
 
-	 
-	_msg "Adicionar [$debian_repo] em: /etc/apt/sources.list?: "
-	read -t 15 -p "Prosseguir? [s/n]: " _sn
-
-	if [[ "$_sn" != 's' ]]; then
-		_red "Abortando..."
-		return 1
+	if [[ "${sn,,}" != 's' ]]; then
+		_msg "${Yellow}A${Reset}bortando"
+		exit 0	
 	fi
 
 	if ! grep '^deb.*debian.*main' /etc/apt/sources.list | grep -q "^deb.*main contrib non-free$"; then
-		_white "Adicionando"
-		sudo sh -c "echo 'deb http://deb.debian.org/debian buster main contrib non-free' >> /etc/apt/sources.list"
+		_white "Adicionando: $debian_repo"
+		echo "$debian_repo" >> /etc/apt/sources.list
 	fi
 
-	grep -q 'deb http://deb.debian.org/debian buster main' /etc/apt/sources.list && {
+	grep -q "^deb http://deb.debian.org/debian $codename main" /etc/apt/sources.list && {
 		_white "Removendo repositório [main] duplicado"
-		sudo sed -i "/^deb http:\/\/deb.debian.org\/debian buster main\$/d" /etc/apt/sources.list
+		sed -i "/^deb http:\/\/deb.debian.org\/debian $codename main\$/d" /etc/apt/sources.list
 	}
 
-	grep -q 'deb http://deb.debian.org/debian buster contrib non-free' /etc/apt/sources.list && {
+	grep -q "^deb http://deb.debian.org/debian $codename contrib non-free" /etc/apt/sources.list && {
 		_white "Removendo repositório [contrib non-free] duplicado"
-		sudo sed -i "/^deb http:\/\/deb.debian.org\/debian buster contrib non-free\$/d" /etc/apt/sources.list
+		sudo sed -i "/^deb http:\/\/deb.debian.org\/debian $codename contrib non-free\$/d" /etc/apt/sources.list
 	}
 
-	sudo apt update
+	apt update
 
 }
 
@@ -188,7 +202,7 @@ if [[ ! -z $1 ]]; then
 	while [[ $1 ]]; do
 		case "$1" in
 			--fedora-repos) _addrepo_fedora;;
-			--debian-repos) _addrepo_buster;;
+			--debian-repos) _addrepo_debian;;
 			--tumbleweed-repos) _addrepo_tumbleweed;;
 			-h|--help) usage;;
 			*) usage;;

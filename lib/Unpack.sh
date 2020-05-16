@@ -43,8 +43,8 @@ _unpack()
 		return 1
 	fi
 
-	white "Descomprimindo [$path_file]"
-	white "Destino [$Dir_Unpack]"
+	white "Descomprimindo: $path_file"
+	echo -ne "[>] Destino: $Dir_Unpack "
 	cd "/tmp"
 
 
@@ -59,11 +59,12 @@ _unpack()
 	esac
 
 	if [[ "$?" == '0' ]]; then
+		echo -e "${Yellow}OK${Reset}"
 		return 0
 	else
 		red "Funçao [_unpack] retornou erro"
 		red "Removendo [$path_file]"
-		rm -rf "$path_file"
+		_clear_temp_dirs
 		return 1
 	fi
 }

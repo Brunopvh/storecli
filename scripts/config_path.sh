@@ -3,7 +3,8 @@
 # Este script serve para inserir os diretórios que contém binário na
 # HOME('~/bin' e '~/.local/bin') na variável PATH do usuario atual.
 #
-# V='2020-04-02'
+VERSION='2020-05-16'
+#
 
 # NÃO pode ser root.
 [ $(id -u) -eq 0 ] && {
@@ -67,3 +68,4 @@ main()
 }
 
 main
+
