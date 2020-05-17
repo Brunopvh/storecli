@@ -8,6 +8,7 @@
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 
+
 Red="\033[0;31m"
 Green="\033[0;32m"
 CBGreen='\033[5;32m'
@@ -15,7 +16,7 @@ Yellow="\033[0;33m"
 White="\033[0;37m"
 Reset="\033[0m"
 
-space_line='------------------------------------------'
+space_line='------------------------------------------------'
 
 _msg()
 {
@@ -66,7 +67,7 @@ dir_unpack="$dir_temp/unpack"
 
 mkdir -p "$dir_temp"
 mkdir -p "$dir_unpack"
-mkdir -p "$dir_storecli"
+#mkdir -p "$dir_storecli"
 
 path_file_repo="$dir_temp/storecli.tar.gz"
 
@@ -94,7 +95,7 @@ _download_repo()
 {
 	_msg "Baixando [$url_master]"
 	_msg "Destino [$path_file_repo]"
-	if ! curl -# -SL "$url_master" -o "$path_file_repo"; then
+	if ! curl -sSL "$url_master" -o "$path_file_repo"; then
 		_red "Falha no download"
 		return 1
 	fi
@@ -107,7 +108,6 @@ _RMDIR()
 	# Remove um arquivo ou diretório informado no parametro $1
 	# $1 = arquivo/diretório
 
-	#sudo -k
 	while [ $1 ]; do
 		_red "Removendo: $1"
 		rm -rf "$1"
@@ -141,17 +141,12 @@ _unpack()
 
 	local path_file="$1"
 
-	_msg "Descomprimindo: $path_file"
-	#_msg "Destino: $dir_unpack"
-	cd "/tmp"
-
 	# Limpar o diretório antes da descompressão.
-	# _msg "Limpando diretório: $dir_unpack"
-	# cd "$dir_unpack" && sudo rm -rf *
+	cd "/tmp"
 	cd "$dir_unpack" && rm -rf *
-
 	
 	# Descomprimir
+	_msg "Descomprimindo: $path_file"
 	tar -zxvf "$path_file" -C "$dir_unpack" 1> /dev/null
 
 	if [ $? -eq 0 ]; then
@@ -168,12 +163,12 @@ _install()
 {
 	_msg "Instalando em: $dir_storecli"
 	cd "$dir_unpack"
-	mv $(ls -d storecli*) "$dir_storecli"
+	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
 	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
 	ln -sf "$dir_storecli"/gui.sh "$path_link_gui"   # Link do gui
 
 	chmod -R a+x "$dir_storecli"
-	chmod a+x "$path_link" || return 1
+	chmod a+x "$path_link" 
 	chmod a+x "$path_link_gui"
 	
 	if _WHICH 'storecli'; then
@@ -194,7 +189,9 @@ main()
 	_unpack "$path_file_repo" || return 1
 	_install || return 1
 	
-	_msg "OK execute: $(printf $CBGreen)storecli --help$(printf $Reset)"
+	echo "$space_line"
+	_msg "Execute: $(printf $CBGreen)storecli --help$(printf $Reset)"
+	echo "$space_line"
 }
 
 

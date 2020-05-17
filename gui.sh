@@ -6,7 +6,7 @@
 # storecli
 #
 #
-VERSION_GUI='2020-05-13'
+VERSION_GUI='2020-05-17'
 #
 
 
@@ -80,7 +80,7 @@ _ping()
 	fi
 }
 
-_ping
+#_ping
 
 #=============================================================#
 # Instalar o script storecli se ele não estiver disponível.
@@ -93,16 +93,6 @@ if [[ ! -x "$Script_Storecli" ]]; then
 fi
 
 #=============================================================#
-
-Config_File="$HOME/.config/storecli_script.conf"
-[[ ! -f "$Config_File" ]] && touch "$Config_File"
-
-# Se não encontrar a linha 'requeriments false' no arquivo "Config_File"
-# então executar storecli --configure.
-grep -q 'requeriments OK' "$Config_File" || {
-	storecli --configure
-}
-
 # É necessário incluir o diretório de binários do usuário na 
 # variável PATH se ainda não estiver incluso.
 if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
@@ -114,12 +104,12 @@ fi
 _zenity_dialog_list()
 {
 	# $1 = Lista com opções a serem exibidas na caixa de dialogo
-	# Os parametros já são fixos e está com formatação padrão o que
+	# Os parametros já são fixos e estão com formatação padrão o que
 	# será alterado ao longo do programa é a lista de exibição ou seja
-	# o primerio argumento dessa função ("$1") que será passado como 
+	# o primeiro argumento dessa função ("$1") que será passado como 
 	# ultimo parâmetro para o zenity ("$@").
 	if [[ -z $1 ]]; then
-		red "Parametros incorretos detectado na função [_zenity_dialog_list]"
+		red "Parametros incorretos detectados na função [_zenity_dialog_list]"
 		return 1
 	fi
 
@@ -144,8 +134,9 @@ list_main_menu=(
 	"FALSE Midia"
 	"FALSE Sistema"
 	"FALSE Preferencias"
+	"FALSE Ferramentas"
 )
-# "FALSE Wine"
+
 
 # Lista de opções para categoria acessórios.
 list_menu_acessory=(
@@ -185,6 +176,7 @@ list_menu_internet=(
 	'FALSE opera-stable'
 	'FALSE proxychains'
 	'FALSE qbittorrent'
+	'FALSE skype'
 	'FALSE teamviewer'
 	'FALSE telegram'
 	'FALSE tixati'
@@ -262,15 +254,26 @@ list_menu_gnome_extensions_debian=(
 )
 
 #=============================================================#
-# Função para instalação dos pacotes vis 'storecli'.
+# Menu mais opções.
+#=============================================================#
+list_menu_tools=(
+	'TRUE Voltar'
+	'FALSE Atualizar_este_script'
+	'FALSE Remover_pacotes_quebrados'
+	'FALSE Instalar_dependencias'
+)
+
+#=============================================================#
+# Função para instalação dos pacotes com o script 'storecli'.
+#=============================================================#
 storecli_args()
 {
-	"$Script_Storecli" install -y "$@"
+	"$Script_Storecli" install "$@"
 }
 
 #=============================================================#
 # Funções das categorias.
-
+#=============================================================#
 menu_acessory(){
 	echo -e "$space_line"
 	echo -e "Menu Acessórios"
@@ -278,11 +281,11 @@ menu_acessory(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_acessory[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi
 
 		case "$option" in
 			Voltar) white "Voltando..."; break;;
@@ -302,11 +305,11 @@ menu_dev(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_development[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$option" in
 			Voltar) msg "Voltando..."; break;;
@@ -328,11 +331,11 @@ menu_office(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_office[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$option" in
 			Voltar) msg "Voltando..."; break;;
@@ -353,11 +356,11 @@ menu_internet(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_internet[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$option" in
 			Voltar) msg "Voltando..."; break;;
@@ -367,6 +370,7 @@ menu_internet(){
 			'opera-stable') storecli_args opera-stable;;
 			proxychains) storecli_args proxychains;;
 			qbittorrent) storecli_args qbittorrent;;
+			skype) storecli_args skype;;
 			teamviewer) storecli_args teamviewer;;
 			telegram) storecli_args telegram;;
 			tixati) storecli_args tixati;;
@@ -387,11 +391,11 @@ menu_midia(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_midia[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$option" in
 			Voltar) msg "Voltando..."; break;;
@@ -415,11 +419,11 @@ menu_system(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_system[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$option" in
 			Voltar) msg "Voltando..."; break;;
@@ -446,11 +450,11 @@ menu_preferences(){
 	while true; do
 		option=$(_zenity_dialog_list "${list_menu_preferences[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$option" in
 			Voltar) msg "Voltando..."; break;;
@@ -462,6 +466,29 @@ menu_preferences(){
 	done
 }
 
+menu_tools()
+{
+	echo -e "$space_line"
+	echo -e "Menu Ferramentas"
+	
+	while true; do
+		option=$(_zenity_dialog_list "${list_menu_tools[*]}")
+
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
+			red "Abortando"
+			return 1
+		fi 
+
+		case "$option" in
+			Voltar) msg "Voltando..."; break;;
+			Atualizar_este_script) "$Script_Storecli" --upgrade;;
+			Remover_pacotes_quebrados) "$Script_Storecli" --broke;;
+			Instalar_dependencias) "$Script_Storecli" --configure;;
+		esac
+		echo -e "Menu Ferramentas"
+	done
+}
 
 main(){
 	echo -e "$space_line"
@@ -470,11 +497,11 @@ main(){
 	while true; do
 		category=$(_zenity_dialog_list "${list_main_menu[*]}")
 
-		# Provavelmente o usuário CANCELOU.
-		[[ "$?" == '0' ]] || {
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
 			red "Abortando"
 			return 1
-		} 
+		fi 
 
 		case "$category" in
 			Sair) msg "Saindo..."; break;;
@@ -485,6 +512,7 @@ main(){
 			Midia) menu_midia;;
 			Sistema) menu_system;;
 			Preferencias) menu_preferences;;
+			Ferramentas) menu_tools;;
 		esac
 		echo -e "Menu Principal"
 	done
@@ -507,7 +535,7 @@ if [[ ! -z $1 ]]; then
 		--help) usage; exit;;
 		--version) echo -e "$(basename $0) V${VERSION_GUI}"; exit;;
 		--upgrade) 
-				sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+				"$Script_Storecli" --upgrade
 				exit
 				;;
 
