@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_16_rev2'
+VERSION='2020_05_16_rev3'
 #
 #
 #---------------------- INSTALAÇÃO --------------------------------#
@@ -417,7 +417,7 @@ if [[ ! -z $1 ]]; then
 		shift
 	done
 else
-	usage
+	#usage
 	"$Dir_Storecli/gui.sh"
 fi
 

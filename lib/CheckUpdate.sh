@@ -5,6 +5,7 @@
 
 function _install_update_storecli()
 {
+	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	_ping || return 1
 	"$Script_Setup_Storecli" || return 1
 	return 0
@@ -12,21 +13,11 @@ function _install_update_storecli()
 
 function _check_update_storecli()
 {
-	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)" || return 1
+	# Esta função deve procurar por atualizações.
 	local url_storecli='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
-	local storecli_temp="$dir_temp/storecli.sh"
+	local file_storecli_version="$Dir_Downloads/storecli.sh"
 
-	# Este programa deve procurar por atualizações uma vez por dia
-	# sendo assim após verificar por atualizações no dia de hoje
-	# esse dia sera gravado no arquivo de configuração, indicando que a buscar
-	# por atualização já foi feita hoje não será gravada a data completa, apenas o
-	# dia, pois assim se o dia gravado no arquivo de configuração for diferente
-	# do dia de hoje, a busca por atualização deve ser executada, se o dia de
-	# hoje for igual o dia da ultima verificação então esta função deve ser encerrada
-	# 
-
-	# dia de hoje - usar o sed para apagar strings e utilizar apenas números.                       
-	#day=$(date | awk '{print $2}')	
+	# dia atual                      	
 	day=$(date +%d)
 
 	# dia em que a ultima busca por atualizaçãoes por executada.
@@ -34,18 +25,24 @@ function _check_update_storecli()
 
 	if [[ "$day" == "$day_update" ]]; then
 		return 0
+	elif [[ -f "$file_storecli_version" ]]; then
+		rm "$file_storecli_version"
 	fi  
+
 
 	white "Procurando por atualização no github aguarde"
 
 	# Baixar o arquivo principal que contém a ultima versão do github.
-	curl -# -fsSL "$url_storecli" -o "$dir_temp/storecli.sh" || return 1
+	if ! curl -fsSL "$url_storecli" -o "$file_storecli_version"; then
+		red "Falha ao buscar atualização"
+		return 1
+	fi
 
-	# Procurar a versão atual no arquivo.
-	new_version=$(grep -m 1 ^'VERSION=' "$storecli_temp" | sed "s/VERSION=//g;s/'//g")
+	# Procurar a versão do github no arquivo baixado.
+	new_version=$(grep -m 1 ^'VERSION=' "$file_storecli_version" | sed "s/VERSION=//g;s/'//g")
 	
 	# Comparar veresão atual com a versão do programa no github.
-	white "Versão do github: $new_version"
+	white "Versão local ${Green}$VERSION${Reset} versão do github ${Yellow}$new_version${Reset}"
 	if [[ "$VERSION" == "$new_version" ]]; then
 		white "Não existem atualizações disponíveis"
 		# Deletar linha que contém o dia da ultima verificação.
@@ -56,11 +53,10 @@ function _check_update_storecli()
 		echo -e "day_update $day" >> "$Config_File"
 		return 1
 	else
-		white "Versão local ${Yellow}$VERSION${Reset}"
+		white "Nova versão disponível"
 	fi
 
-	# Instalar nova versão
-	_YESNO "Deseja baixar e instalar a atualização" || return 1
+	
 	_install_update_storecli || return 1
 	
 	# Deletar linha que contém o dia da ultima verificação.
