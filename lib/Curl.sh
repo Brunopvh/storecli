@@ -40,12 +40,23 @@ _dow()
 
 	white "Baixando [$url]"
 	if [[ -z "$path_file" ]]; then
-		_CURL -C - -SL -O "$url" && return 0
+		_CURL -C - -SL -O "$url"
 	else
 		white "Destino [$path_file]"
-		_CURL -C - -SL "$url" -o "$path_file" && return 0
+		_CURL -C - -SL "$url" -o "$path_file"
 	fi
 
-	red "Função [_dow] retornou erro"
-	return 1
+
+
+	if [[ "$?" == '0' ]]; then
+		return 0
+	elif [[ "$?" == '130' ]]; then
+		red "Cancelado com Ctrl c"
+	else
+		red "Função [_dow] retornou erro"
+	fi
+
+
+	rm "$path_file"
+	return 1	
 }

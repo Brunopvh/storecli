@@ -42,7 +42,15 @@ function _bluetooth()
 	done
 }
 
-
+ _brightnessctl()
+ {
+ 	# https://linuxdicasesuporte.blogspot.com/2018/11/controle-de-brilho-da-tela-por-linha-de_5.html
+ 	case "$os_id" in
+ 		debian|ubuntu|linuxmint) _package_man_distro brightnessctl;;
+		arch) _package_man_distro brightnessctl;;
+		fedora) _package_man_distro brightnessctl;;
+	esac
+ }
 
 #=====================================================#
 # Compactadores
@@ -77,6 +85,7 @@ function _compactadores()
 		return 1
 	fi
 }
+
 
 #=====================================================#
 # Debian Firmwares

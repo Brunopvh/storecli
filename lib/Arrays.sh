@@ -233,10 +233,6 @@ array_midia=(
 array_sistema=(
 	'bluetooth'
 	'compactadores'
-	'firmware-atheros'
-	'firmware-linux-nonfree'
-	'firmware-ralink'
-	'firmware-realtek'
 	'gparted'
 	'peazip'
 	'refind'

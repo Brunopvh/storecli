@@ -492,7 +492,7 @@ menu_tools()
 
 main(){
 	echo -e "$space_line"
-	echo -e "Menu Principal"
+	white "Menu Principal"
 	
 	while true; do
 		category=$(_zenity_dialog_list "${list_main_menu[*]}")
@@ -514,7 +514,7 @@ main(){
 			Preferencias) menu_preferences;;
 			Ferramentas) menu_tools;;
 		esac
-		echo -e "Menu Principal"
+		white "Menu Principal"
 	done
 }
 

@@ -36,12 +36,21 @@ _dow()
 
 	white "Baixando [$url]"
 	if [[ -z "$path_file" ]]; then
-		_WGET -c "$url" && return 0
+		_WGET -c "$url"
 	else
 		white "Destino [$path_file]"
-		_WGET -c "$url" -O "$path_file" && return 0
+		_WGET -c "$url" -O "$path_file"
 	fi
 
-	red "Função [_dow] retornou erro"
+
+	if [[ "$?" == '0' ]]; then
+		return 0
+	elif [[ "$?" == '130' ]]; then
+		red "Cancelado com Ctrl c"
+	else
+		red "Função [_dow] retornou erro"
+	fi
+	
+	rm "$path_file"
 	return 1
 }

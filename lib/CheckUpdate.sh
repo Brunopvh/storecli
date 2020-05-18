@@ -44,7 +44,6 @@ function _check_update_storecli()
 	# Comparar veresão atual com a versão do programa no github.
 	white "Versão local ${Green}$VERSION${Reset} versão do github ${Yellow}$new_version${Reset}"
 	if [[ "$VERSION" == "$new_version" ]]; then
-		white "Não existem atualizações disponíveis"
 		# Deletar linha que contém o dia da ultima verificação.
 		sed -i '/^day_update/d' "$Config_File"
 		
@@ -53,7 +52,7 @@ function _check_update_storecli()
 		echo -e "day_update $day" >> "$Config_File"
 		return 1
 	else
-		white "Nova versão disponível"
+		white "Atualizando para versão: $new_version"
 	fi
 
 	
