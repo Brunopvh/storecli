@@ -31,6 +31,7 @@ _packmanager_storecli()
 #----------- Desenvolvimento -------------------------------#
 			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
 			'android-studio') _android_studio;;
+			codeblocks) _codeblocks;;
 			pycharm) _pycharm;;
 			sublime-text) _sublime_text;;
 			vim) _vim;;
