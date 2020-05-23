@@ -312,7 +312,7 @@ menu_dev(){
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			'android-studio') storecli_args android-studio;;
 			codeblocks) storecli_args codeblocks;;
 			pycharm) storecli_args pycharm;;
@@ -338,7 +338,7 @@ menu_office(){
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			atril) storecli_args atril;;
 			fontes-ms) storecli_args fontes-ms;;
 			libreoffice) storecli_args libreoffice;;
@@ -363,7 +363,7 @@ menu_internet(){
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			chromium) storecli_args chromium;;
 			google-chrome) storecli_args google-chrome;;
 			megasync) storecli_args megasync;;
@@ -398,7 +398,7 @@ menu_midia(){
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			celluloid) storecli_args celluloid;;
 			codecs) storecli_args codecs;;
 			spotify) storecli_args spotify;;
@@ -426,7 +426,7 @@ menu_system(){
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			bluetooth) storecli_args bluetooth;;
 			compactadores) storecli_args compactadores;;
 			firmware-atheros) storecli_args firmware-atheros;;
@@ -457,7 +457,7 @@ menu_preferences(){
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			papirus) storecli_args papirus;;
 			ohmybash) storecli_args ohmybash;;
 			ohmyzsh) storecli_args ohmyzsh;;
@@ -481,7 +481,7 @@ menu_tools()
 		fi 
 
 		case "$option" in
-			Voltar) msg "Voltando..."; break;;
+			Voltar) white "Voltando..."; break;;
 			Atualizar_este_script) "$Script_Storecli" --upgrade;;
 			Remover_pacotes_quebrados) "$Script_Storecli" --broke;;
 			Instalar_dependencias) "$Script_Storecli" --configure;;
@@ -504,7 +504,7 @@ main(){
 		fi 
 
 		case "$category" in
-			Sair) msg "Saindo..."; break;;
+			Sair) white "Saindo..."; break;;
 			Acessorios) menu_acessory;;
 			Desenvolvimento) menu_dev;;
 			Escritorio) menu_office;;

@@ -35,8 +35,6 @@ _android_sdktools()
 function _android_studio_zip()
 {
 	# https://developer.android.com/studio
-	#local url='https://dl.google.com/dl/android/studio/ide-zips/3.5.2.0/android-studio-ide-191.5977832-linux.tar.gz'
-	#local soma='f838486ce847db802bdaf1163059033934146c6ccdcdaa9a398bd85cda348d4d' # sha256sum
 	local url='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
 	local hash_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
 	local path_file="$Dir_Downloads/$(basename $url)"
@@ -55,11 +53,9 @@ function _android_studio_zip()
 		return 0
 	fi
 
-	# Lib Check_sum.sh
+	
 	echo -e "$space_line"
 	_check_sum "$path_file" "$hash_studio" || return 1
-
-
 	_unpack "$path_file" || return 1
 
 	white "Instalando android studio em ~/.local/bin"
@@ -68,7 +64,7 @@ function _android_studio_zip()
 	cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
 	chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
 
-	# .desktop
+	# arquivo de configuração ".desktop"
 	green "Criando arquivo .desktop"
 	echo '[Desktop Entry]' > "${array_android_studio_dirs[0]}"
 	{
@@ -117,57 +113,42 @@ function _android_studio_debian()
 
 	#------------------------------------------------------------#
 	# debian virt utils
-	local array_virt_debian=(
-		qemu-kvm libvirt-clients libvirt-daemon-system
+	local virtual_debian_requeriments=(
+		'qemu-kvm' 'libvirt-clients' 'libvirt-daemon-system'
 	)
 
 	# Debian lib utils.
-	local array_libutils_debian=(
-		lib32z1 lib32stdc++6 lib32gcc1 lib32ncurses6 lib32tinfo6 libc6-i386
+	local libs_debian_requeriments=(
+		lib32z1 'lib32stdc++6' lib32gcc1 lib32ncurses6 lib32tinfo6 'libc6-i386'
 	)
 
-	#------------------------------------------------------------#
-	# ubuntu virt utils
-	local array_virt_ubuntu=(
-		qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
-	)
 
-	# Ubuntu lib utils.
-	local array_libutils_ubuntu=(
-		lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386
-	)
-	#------------------------------------------------------------#
-
-	sudo apt update
-	echo -e "$space_line"
-	green "Instalando: openjdk-8-jdk"
-	_package_man_distro 'openjdk-8-jdk'
+	_APT update
+	green "Instalando: openjdk-11-jdk"
+	_package_man_distro 'openjdk-11-jdk'
 
 	#-----------------------------------------------------#
-	for c in "${array_virt_debian[@]}"; do
-		echo -e "$space_line"
-		green "Instalando: $c"
-		if !_package_man_distro "$c"; then
+	for c in "${virtual_debian_requeriments[@]}"; do
+		yellow "Instalando: $c"
+		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
-			sleep 2
-			#return 1; break				
+			sleep 1			
 		fi
 	done
 	
 	#-----------------------------------------------------#
-	for c in "${array_libutils_debian[@]}"; do
-		echo -e "$space_line"
-		green "Instalando: $c"
+	for c in "${libs_debian_requeriments[@]}"; do
+		yellow "Instalando: $c"
 		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
-			sleep 2
+			sleep 1
 		fi
 	done
 	#-----------------------------------------------------#
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	green "Adicionando $USER aos grupos: ${Yellow}libvirt${Reset} | ${Yellow}libvirt-qemu${Reset}" 
-	sudo adduser "$USER" libvirt
-	sudo adduser "$USER" libvirt-qemu
+	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
+	_SUDO adduser "$USER" libvirt
+	_SUDO adduser "$USER" 'libvirt-qemu'
 
 	_android_studio_zip || return 1
 }
@@ -189,46 +170,42 @@ function _android_studio_ubuntu()
 
 	#------------------------------------------------------------#
 	# ubuntu virt utils
-	local array_virt_ubuntu=(
-		qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils
+	local virtual_ubuntu_requeriments=(
+		'qemu-kvm' 'libvirt-bin' 'ubuntu-vm-builder' 'bridge-utils'
 	)
 
 	# Ubuntu lib utils.
-	local array_libutils_ubuntu=(
-		lib32z1 lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386
+	local libs_ubuntu_requeriments=(
+		lib32z1 lib32ncurses5 'lib32stdc++6' lib32gcc1 lib32tinfo5 'libc6-i386'
 	)
 	#------------------------------------------------------------#
 
-	sudo apt update
-	echo -e "$space_line"
-	green "Instalando: openjdk-8-jdk"
+	_APT update
+	yellow "Instalando: openjdk-8-jdk"
 	_package_man_distro 'openjdk-8-jdk'
 
 	#-----------------------------------------------------#
-	for c in "${array_virt_ubuntu[@]}"; do
-		echo -e "$space_line"
-		green "Instalando: $c"
-		if !_package_man_distro "$c"; then
+	for c in "${virtual_ubuntu_requeriments[@]}"; do
+		yellow "Instalando: $c"
+		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
-			sleep 2
-			#return 1; break				
+			sleep 1			
 		fi
 	done
 	
 	#-----------------------------------------------------#
-	for c in "${array_libutils_ubuntu[@]}"; do
-		echo -e "$space_line"
-		green "Instalando: $c"
+	for c in "${libs_ubuntu_requeriments[@]}"; do
+		yellow "Instalando: $c"
 		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
-			sleep 2
+			sleep 1
 		fi
 	done
 	#-----------------------------------------------------#
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	green "Adicionando $USER aos grupos: ${Yellow}libvirt${Reset} | ${Yellow}libvirt-qemu${Reset}" 
-	sudo adduser "$USER" libvirt
-	sudo adduser "$USER" libvirt-qemu
+	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
+	_SUDO adduser "$USER" libvirt
+	_SUDO adduser "$USER" libvirt-qemu
 
 	_android_studio_zip || return 1
 }

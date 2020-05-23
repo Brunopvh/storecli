@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_05_22_rev1'
+VERSION='2020_05_23_rev1'
 #
 #
 #---------------------- INSTALAÇÃO --------------------------------#
@@ -224,9 +224,6 @@ LogErro="$HOME/.cache/storecli_Erro.log"
 touch "$Config_File"
 touch "$LogFile"
 touch "$LogErro"
-
-
-space_line='-----------------------------------------------'
 
 echo -e "$space_line" >> "$LogFile"
 echo -e "Programa executado em [ $(date) ]" >> "$LogFile"

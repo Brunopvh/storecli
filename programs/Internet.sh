@@ -495,23 +495,21 @@ _qbittorrent()
 #=============================================================#
 # Skype
 #=============================================================#
+
 _skype_debian()
 {
-	# https://www.blogopcaolinux.com.br/2017/06/Instalando-Skype-no-Debian-e-Ubuntu.html
-	local skype_repo='deb [arch=amd64] https://repo.skype.com/deb stable main'
-	local skype_url_key='https://repo.skype.com/data/SKYPE-GPG-KEY'
+	local skype_url='https://go.skype.com/skypeforlinux-64.deb'
+	local path_file="$Dir_Downloads/$(basename $skype_url)"
 
-	echo -ne "[>] Adicionando: https://repo.skype.com/data/SKYPE-GPG-KEY "
-	if ! curl -sSL "$skype_url_key" -o- | sudo apt-key add -; then
-		echo ' '
-		red "Falha: apt-key add"
-		return 1
+	_dow "$skype_url" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
 	fi
-	
-	echo -ne "[>] Adicionando: "
-	echo "$skype_repo" | sudo tee /etc/apt/sources.list.d/skype-stable.list
-	_APT update
-	_package_man_distro skypeforlinux
+
+	_DPKG --install "$path_file" || return 1
 }
 
 
