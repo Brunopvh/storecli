@@ -31,8 +31,8 @@ function _ohmybash()
 		_YESNO "Instalar o pacote ohmybash" || return 0
 	fi
 
-	# Executar script de instalação que está no diretório scripts.
-	"$Script_ohmybash" 
+	# Executar o script de instalação de ohmybash.
+	"$Script_ohmybash"
 
 	mkdir -p "$HOME/.bash/themes"
 	_dow "$ohmybash_master" "$path_file" || return 1
@@ -44,19 +44,45 @@ function _ohmybash()
 	fi
 
 	_unpack "$path_file" || return 1
-	white "Instalando temas para ${Yellow}ohmybash${Reset} em: $HOME/.bash/themes"
-	cp -ru "$Dir_Unpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
-	white "OK"
+	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
+	cp -R -u "$Dir_Unpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
+	
+	_YESNO "Gostaria de habilitar um tema para ohmybash" || return 1
 
-	#echo 'OSH_THEME="rjorgenson"' >> "$HOME/.bashrc"
-	if ! grep -q "^OSH_THEME.*rjorgenson" "$HOME/.bashrc"; then
-		green "Configurando tema rjorgenson para ohmybash"
-		echo 'OSH_THEME="rjorgenson"' >> "$HOME/.bashrc"
-	fi
+	yellow "1 => bakke"
+	yellow "2 => bobby"
+	yellow "3 => bobby-python"
+	yellow "4 => emperor"
+	yellow "5 => mairan"
+	yellow "6 => rjorgenson"
+	read -n 1 -t 15 -p "Selecione um numero correspondente a opção desejada: " option
+	echo ' '
+
+	case "$option" in
+		1) option='bakke';;
+		2) option='bobby';;
+		3) option='bobby-python';;
+		4) option='emperor';;
+		5) option='mairan';;
+		6) option='rjorgenson';;
+		*) red "Opção incorreta saindo"; return 1;;
+	esac
+
+	white "Habilitando o tema $option para ohmybash"
+	case "$option" in
+		bakke) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
+		bobby) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
+		'bobby-python') sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
+		emperor) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
+		mairan) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
+		rjorgenson) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
+	esac
+	
 }
 
-#-----------------------------------------------------#
-
+#=====================================================#
+# ohmyzsh
+#=====================================================#
 function _ohmyzsh()
 {
 	# sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
@@ -78,7 +104,6 @@ function _ohmyzsh()
 function _papirus_debian()
 {
 	# sudo apt install libreoffice-style-papirus
-	#
 	_package_man_distro 'papirus-icon-theme'
 }
 
@@ -171,7 +196,6 @@ function _sierra()
 	local github_sierra="$github/vinceliuice/Sierra-gtk-theme"
 	local url_sierra='https://github.com/vinceliuice/Sierra-gtk-theme/archive/master.tar.gz'
 	local path_file="$Dir_Downloads/sierra_gtk_theme.tar.gz"
-	#_gitclone "$github_sierra" || return 1
 
 	_dow "$url_sierra" "$path_file" || return 1
 
