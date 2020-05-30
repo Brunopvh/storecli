@@ -321,7 +321,7 @@ function _virtualbox_fedora()
 	
 	case "$os_version" in # Fedora 31/Fedora 32
 		31)
-		yellow "Adicionando repositório [http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo]"
+		white "Adicionando repositório [http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo]"
 		sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 		_package_man_distro 'VirtualBox-6.0' || return 1
 		;;
@@ -361,7 +361,7 @@ function _virtualbox_debian()
 	# Limpar o cache antes de adicionar as chaves (recomendado).
 	white "Limpando o cache do (apt)"
 	_APT clean
-	sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+	#sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
 	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
