@@ -203,6 +203,7 @@ list_menu_system=(
 	'TRUE Voltar'
 	'FALSE bluetooth'
     'FALSE compactadores'
+    'FALSE gparted'
     'FALSE peazip'
     'FALSE refind'
     'FALSE stacer'
@@ -429,6 +430,7 @@ menu_system(){
 			firmware-linux-nonfree) storecli_args firmware-linux-nonfree;;
 			firmware-ralink) storecli_args firmware-ralink;;
 			firmware-realtek) storecli_args firmware-realtek;;
+			gparted) storecli_args gparted;;
 			peazip) storecli_args peazip;;
 			refind) storecli_args refind;;
 			stacer) storecli_args stacer;;
