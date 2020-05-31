@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-05-29'
+VERSION='2020-05-30'
 # 
 # Uso:
 # $0 -t /dev/sdX -e /dev/sdaE -h /dev/sdaH -r /dev/sdaR -b /sdaB
@@ -75,7 +75,8 @@ _space_text()
 
 _msg()
 {
-	num="${#1}"         # Tamanho da string 1 que será passado para função '_space_text'.
+	num="${#1}" # Tamanho da string 1 que será passado para função '_space_text'.
+
 	echo -ne "${CYellow}[>] ${1} " 
 	_space_text "$num"  # Echoar o espaçamento.
 	echo -e "${CGreen} $2${CReset}"
@@ -113,7 +114,6 @@ cat << EOF
      Use:
       $(basename "$0") -t <device> -r <partition>
 
-
       -b          BOOT, partição para /boot (OPCIONAL).
       -e          EFI, partição para /boot/efi (Usar apenas em sistemas efi).
       -H          HOME, partição para /home (OPICIONAL).
@@ -123,7 +123,7 @@ cat << EOF
       -h          Mostra ajuda
 
           Supondo que você queira instalar o sistema em /dev/sda com a partição efi
-          em /dev/sda2 e com raiz em /dev/sda3 o comando seria o seguinte:
+          em /dev/sda2 e com raiz em /dev/sda3 use o comando:
 
           $(basename "$0") -t /dev/sda -e /dev/sda2 -r /dev/sda3
 
@@ -133,14 +133,14 @@ EOF
 
 function _YESNO()
 {
-	echo -ne " > ${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: ${CReset}"
+	echo -ne "[>] ${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: ${CReset}"
 	read -t 15 -n 1 yesno
 	echo ' '
 
 	case "${yesno,,}" in
 		s|S|y|Y) return 0;;
 		n|N) return 1;;
-		*) _red "Opção inválida: $yesno";;
+		*) _red "Opção inválida: $yesno"; return 1;;
 	esac 
 }
 
@@ -159,7 +159,7 @@ url_storecli='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 url_archutils='https://github.com/Brunopvh/storecli/archive/scripts/archutils.sh'
 
 declare -A DiskInfoTarget
-DiskInfoTarget=()
+DiskInfoTarget=() # Array com informações do disco selecionado para instalação.
 CliArguments=()
 
 OPTIND=1
@@ -207,12 +207,12 @@ parse_table_disk()
 {
 	# Se a tabela de partição do disco for GPT e o usuário não informar uma partição
 	# para efi será exibida uma mensagem de erro.
-	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]] && [[ -z "${DiskInfoTarget[partition_efi]}" ]]; then
+	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]] && [[ ! -e "${DiskInfoTarget[partition_efi]}" ]]; then
 		_red "O disco selecionado tem tabela de partição do tipo (gpt) informe uma partição para usar (EFI)"
 		exit 1
 	fi
 
-	if [[ "${DiskInfoTarget[disk_table]}" != 'gpt' ]] && [[ ! -z "${DiskInfoTarget[partition_efi]]}" ]]; then
+	if [[ "${DiskInfoTarget[disk_table]}" != 'gpt' ]] && [[ ! -z "${DiskInfoTarget[partition_efi]}" ]]; then
 		_red "O disco selecionado NÃO tem tabela de partição do tipo (GPT) você não pode usar (EFI)"
 		exit 1
 	fi
@@ -223,7 +223,7 @@ parse_table_disk()
 _ping()
 {
 	# Verificar conexão com a internet.
-	echo -ne "[>] Aguardando conexão "
+	echo -ne "[>] Aguardando conexão $(_space_text 18) "
 	if ping -c 2 8.8.8.8 1> /dev/null; then
 		echo "[Conectado]"
 	else
@@ -288,7 +288,7 @@ pkgs_gnomeshell=(
 _ismount()
 {
 	# Se o dispositivo estiver montado retorna '0', se não retorna '1'.
-	# USE _ismount "$1"
+	# Use _ismount "$1"
 	local partition="$1"
 
 	# Uma partição montada do tipo /dev/sdXy tem 9 caracteres validar o tamanho de caracteres.
@@ -297,7 +297,7 @@ _ismount()
 		return 1
 	fi
 
-	# Procurar o ponto de montagem
+	# Procurar o ponto de montagem no arquivo /proc/mounts
 	proc_partition_device=$(grep "$partition" '/proc/mounts' | awk '{print $1}')
 
 	if [[ "$proc_partition_device" == "$partition" ]]; then
@@ -312,19 +312,18 @@ _UMOUNT_PARTITION()
 {
 	# Desmontar uma partição montada.
 	# $1 = partição a ser desmontada
-	# USE _UMOUNT_DEV "$1"
+	# USE _UMOUNT_PARTITION "$1"
 	local partition="$1"
 
 	_msg "Desmontando: " "$partition"
 	
 	if ! _ismount "$partiton"; then
-		_red "Partição não montada: $patition"
-		return 1
+		return 0
 	fi
 
 	# Desmontar
 	if umount "$partiton"; then
-		_yellow "Desmontado com sucesso: $patition"
+		_yellow "$patition desmontada com sucesso"
 		return 0
 	else
 		_red "Falha ao tentar desmontar: $partiton"
@@ -346,6 +345,7 @@ _MOUNT_PARTITION()
 		return 0
 	else
 		_red "Erro: mount $partition $mount_point"
+		sleep 0.5
 		return 1
 	fi
 }
@@ -357,15 +357,18 @@ _FORMAT_FAT()
 	# mkfs -t vfat /dev/sdb1
 	# eject /dev/sdb1
 	# USE _FORMAT_FAT device
+	
+	if ! _YESNO "Deseja formatar $1 como sistema de arquivos fat32"; then
+		return 0
+	fi
 
-	# Desmontar caso esteja montado
+	# Desmontar a partição a ser formatada caso esteja montada.
 	if _ismount "$1"; then 
 		_UMOUNT_PARTITION "$1" || return 1
 	fi
-	
-	_yellow "Formatando $1 como FAT32"
 	mkfs.vfat -F32 "$1"
 }
+
 
 _FORMAT_EXT4()
 {
@@ -374,8 +377,21 @@ _FORMAT_EXT4()
 	local device="$1"
 	local label="$2"
 
-	_yellow "Formatando $1 como ext4"
-	mkfs.ext4 -L "$label" "$device"
+	if ! _YESNO "Deseja formatar $device como ext4"; then
+		return 0
+	fi
+
+	# Desmontar caso esteja montado
+	if _ismount "$device"; then 
+		_UMOUNT_PARTITION "$device" || return 1
+	fi
+
+
+	if [[ "$label" ]]; then
+		mkfs.ext4 -L "$label" "$device"
+	else
+		mkfs.ext4 "$device"
+	fi
 }
 
 
@@ -384,29 +400,21 @@ _configure_partition_efi()
 	# Configurar EFI em discos gpt
 	[[ ! -e "${DiskInfoTarget[partition_efi]}" ]] && return 0
 
-	if _YESNO "Deseja formatar ${DiskInfoTarget[partition_efi]} como FAT32"; then
-		_YESNO "Tem certeza que deseja formatar ${DiskInfoTarget[partition_efi]}" && {
-			_FORMAT_FAT "${DiskInfoTarget[partition_efi]}"
-		}
-	fi
-
+	_FORMAT_FAT "${DiskInfoTarget[partition_efi]}"
+	
 	_yellow "Criando /mnt/boot/efi"
 	mkdir -p "/mnt/boot/efi"
-	_yellow "Montando partição EFI ${DiskInfoTarget[partition_efi]} em /mnt/boot/efi"
 	_MOUNT_PARTITION "${DiskInfoTarget[partition_efi]}" "/mnt/boot/efi" || return 1 
 	return 0
 }
 
 _configure_partition_boot()
 {
-	# Se o usuário informar uma partição para /boot ela sera montada com o comado abaixo.
+	# Se o usuário informar uma partição para /boot será montada na partição especificada.
 	[[ ! -e "${DiskInfoTarget[partition_boot]}" ]] && return 0
 
-	# Formatar partição /home 
-	if _YESNO "Deseja formatar ${DiskInfoTarget[partition_boot]} como EXT4"; then 
-		_FORMAT_EXT4 "${DiskInfoTarget[partition_home]}" 'ARCHBOOT'
-	fi
-
+	# Formatar e montar a partição /boot.
+	_FORMAT_EXT4 "${DiskInfoTarget[partition_boot]}" 'ARCHBOOT'
 	_MOUNT_PARTITION "${DiskInfoTarget[partition_boot]}" '/mnt/boot' || return 1
 	return 0
 }
@@ -416,59 +424,50 @@ _configure_partition_home()
 	# Se o usuário informar uma partição para /home ela sera montada com o comado abaixo.
 	[[ ! -e "${DiskInfoTarget[partition_home]}" ]] && return 0	
 
-	# Formatar partição /home 
-	if _YESNO "Deseja formatar ${DiskInfoTarget[partition_root]} como EXT4"; then 
-		_FORMAT_EXT4 "${DiskInfoTarget[partition_home]}" 'ARCHHOME'
-	fi
-
+	# Formatar e montar a partição /home.
+	_FORMAT_EXT4 "${DiskInfoTarget[partition_home]}" 'ARCHHOME'
 	_MOUNT_PARTITION "${DiskInfoTarget[partition_home]}" '/mnt/home' || return 1
 	return 0
-
 }
 
 _configure_base_system()
 {
-	# Formatar as partições, montar diretórios, 
-	if _YESNO "Deseja formatar ${DiskInfoTarget[partition_root]} como EXT4"; then 
-		_FORMAT_EXT4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX'
-	fi
-
 	_yellow "Criando diretórios" 
 	mkdir -p /mnt
 	mkdir -p /mnt/boot
 	mkdir -p /mnt/home
-	_yellow "Montando ${DiskInfoTarget[partition_root]} em /mnt"
+
+	# Formatar a partição raiz '/'. 
+	_FORMAT_EXT4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX'
 	_MOUNT_PARTITION "${DiskInfoTarget[partition_root]}" '/mnt' || return 1
-
-
+	
 	_configure_partition_home || return 1
 	_configure_partition_boot || return 1
 	_configure_partition_efi || return 1
 
-	
 	# Loadkeys
 	_yellow "Configurando teclado como abnt2"
 	loadkeys br-abnt2
 
 	_yellow "Configurando idioma pt_BR.UTF-8"
-	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen
+	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 2> "$LogErro"
+	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 2> "$LogErro"
 
 	_yellow "Configurando horário do sistema"
 	timedatectl set-ntp true
 
 	# Pacstrap
-	_yellow "Executando: pacstrap /mnt base base-devel linux 'linux-firmware"
+	_yellow "Executando: pacstrap /mnt base base-devel linux linux-firmware"
 	if ! pacstrap /mnt base 'base-devel' linux 'linux-firmware'; then
 		_red "Erro: pacstrap"
 		return 1
 	fi
 
 	# Configuar FSTAB.
-	_yellow "Configurando fstab [genfstab -U -p /mnt >> /mnt/etc/fstab]"
+	_yellow "Executando: genfstab -U -p /mnt >> /mnt/etc/fstab"
 	genfstab -p /mnt >> /mnt/etc/fstab
 
 	_yellow "Executando: arch-chroot /mnt /bin/bash"
-	echo -e "$space_line"
 	_green "Execute os comandos a seguir para proxima fase"
 	_green "curl -LS $url_archutils -o archutils.sh"
 	_green "chmod +x archutils.sh; ./archutils.sh"
@@ -479,23 +478,19 @@ _configure_base_system()
 
 _configure_pos_base()
 {
-	# PART 2
-	# Configurar idioma
-	#
 	# /usr/share/zoneinfo/America/Porto_Velho
-	
 	# Configurar horário de Porto Velho/RO
 	_yellow "Executando: ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime"
 	ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime
 
 	# Idioma pt_BR.UTF-8
-	#_yellow "Criando backup de /etc/locale.gen em /etc/locale.gen.backup"
-	#cp '/etc/locale.gen' '/etc/locale.gen.backup' # Criar backup
+	# _yellow "Criando backup de /etc/locale.gen em /etc/locale.gen.backup"
+	# cp '/etc/locale.gen' '/etc/locale.gen.backup' # Criar backup
 
-	_yellow "Executando  sed -i 's/# pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen"
-	sed -i 's/#pt_BR.UTF-8 UTF-8/pt_BR.UTF-8 UTF-8/g' '/etc/locale.gen'
+	_yellow "Configurando: /etc/locale.gen"
+	sed -i 's/#pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen
 
-	_yellow "Configurando: pt_BR.UTF-8 em /etc/locale.conf"
+	_yellow "Configurando: /etc/locale.conf"
 	echo 'LANG="pt_BR.UTF-8"' > '/etc/locale.conf'
 
 	_yellow "Configurando: KEYMAP=br-abnt2 em /etc/vconsole.conf"
@@ -505,15 +500,14 @@ _configure_pos_base()
 	locale-gen
 
 	# Hostname
-	_yellow "Digite um HOSTENAME para sua máquina: "
-	read host_name
+	_yellow "Digite um HOSTENAME para sua máquina: "; read host_name
 	_yellow "Usando este hostname $host_name"
 	echo "$host_name" > '/etc/hostname'
 
 	_yellow "Configurando /etc/hosts"
 	echo '127.0.0.1	localhost.localdomain	localhost' >> '/etc/hosts'
 	echo '::1	localhost.localdomain	localhost' >> '/etc/hosts'
-	echo -e "127.0.0.1	${hname}.localdomain	$hname" >> '/etc/hosts'
+	echo -e "127.0.0.1	${host_name}.localdomain	$host_name" >> '/etc/hosts'
 
 	_yellow "Executando pacman -Syy"
 	pacman -Syy
@@ -524,11 +518,11 @@ _configure_pos_base()
 		_PACMAN "$pkg"
 	done
 
-	echo -e "$space_line"
 	_green "Para finalizar defina sua senha de ${Red}root${Reset} com o comando passwd"
 	_green "Também e recomendado habilitar o multilib em /etc/pacman.conf"
 	_green "Em seguida execute este programa novamente e escolha a opição 3 no menu"
 }
+
 
 _install_grub_mbr()
 {
@@ -538,7 +532,7 @@ _install_grub_mbr()
 	_yellow "Instalando: grub os-prober"
 	_PACMAN grub 'os-prober' || return 1
  
-	_yellow "Executando: grub-install ${DiskInfoTarget[instalation_disk]} --target=i386-pc --bootloader-id=ArchLinux --recheck"
+	_yellow "Instalando grub em: ${DiskInfoTarget[instalation_disk]}"
 	grub-install "${DiskInfoTarget[instalation_disk]}" --target=i386-pc --bootloader-id=ArchLinux --recheck || return 1
 
 	_yellow "Executando grub-mkconfig -o /boot/grub/grub.cfg"
@@ -548,6 +542,7 @@ _install_grub_mbr()
 	return 0
 }
 
+
 _install_grub_efi()
 {
 	# grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
@@ -556,7 +551,7 @@ _install_grub_efi()
 	_yellow "Instalando: grub os-prober efibootmgr"
 	_PACMAN grub 'os-prober' efibootmgr || return 1
  
-	_yellow "Executando: grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=ArchLinux --recheck"
+	_yellow "Instalando grub em: ${DiskInfoTarget[instalation_disk]}"
 	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck || return 1
 
 	_yellow "Executando grub-mkconfig -o /boot/grub/grub.cfg"
@@ -565,6 +560,7 @@ _install_grub_efi()
 	_yellow "Execute este programa novamente e selecione a opição 4 no menu"
 	return 0
 }
+
 
 _install_grub()
 {
@@ -598,9 +594,6 @@ _install_gnome()
 		_PACMAN "$c" || return 1
 	done
 
-	#_yellow "Instalando: ${array_laptop_utils[@]}"
-	#pacman -S "${array_laptop_utils[@]}"
-
 	_configure_systemctls
 
 	echo -e "$space_line"
@@ -625,7 +618,7 @@ main()
 	_msg "Ponto de montagem / " "${DiskInfoTarget[partition_root]}"
 	[[ -e "${DiskInfoTarget[partition_home]}" ]] && _msg "Ponto de montagem /home " "${DiskInfoTarget[partition_home]}"
 	[[ -e "${DiskInfoTarget[partition_boot]}" ]] && _msg "Ponto de montagem /boot " "${DiskInfoTarget[partition_boot]}"
-	[[ -e "${DiskInfoTarget[partition_efi]}" ]] && _msg "Ponto de montagem /boot/efi " "${DiskInfoTarget[DiskInfoTarget[partition_efi]]}"
+	[[ -e "${DiskInfoTarget[partition_efi]}" ]] && _msg "Ponto de montagem /boot/efi " "${DiskInfoTarget[partition_efi]}"
 
 
 	if ! _YESNO "Deseja prosseguir"; then
