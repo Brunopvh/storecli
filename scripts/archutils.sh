@@ -197,7 +197,7 @@ function parse_disk_partitions()
 
 
 	fdisk -l "${DiskInfoTarget[instalation_disk]}" > "$FileTemp"
-	DiskInfoTarget[disk_table]=$(egrep -m 1 '(Tipo|Type)' "$FileTemp" | cut -d ':' -f 2 | sed 's/ //g')
+	DiskInfoTarget[disk_table]=$(egrep -m 1 '(Tipo|Type|type)' "$FileTemp" | cut -d ':' -f 2 | sed 's/ //g')
 	DiskInfoTarget[disk_len]=$(egrep -m 1 '(Disco|Disk)' "$FileTemp" | awk '{print $3,$4}')
 	DiskInfoTarget[disk_len]="${DiskInfoTarget[disk_len]%%\,}"
 }
@@ -237,10 +237,10 @@ _ping()
 _PACMAN()
 {
 	# _PACMAN -S --needed "$@"
-	if pacman -S --needed "$@"; then
+	if pacman -S --noconfirm --needed "$@"; then
 		return 0
 	else
-		red "Erro: pacman $@"
+		_red "Erro: pacman $@"
 		return 1
 	fi
 }
@@ -263,6 +263,9 @@ pkgs_cli_utils=(
 	'curl'
 	'git'
 	'vim'
+	'ttf-dejavu' 
+	'ttf-liberation' 
+	'noto-fonts'
 )
 
 pkgs_laptop_utils=(
@@ -577,24 +580,30 @@ _configure_systemctl()
 {
 	# systemctl status NetworkManager
 	# systemctl start NetworkManager
-	# systemctl enable NetwokrManager
+	# systemctl enable NetworkManager
 	# systemctl enable gdm
 
 	#_yellow "Executando: systemctl status NetworkManager"
 	_yellow "systemctl start NetworkManager"; systemctl start NetworkManager
-	_yellow "systemctl enable NetwokrManager"; systemctl enable NetwokrManager
+	_yellow "systemctl enable NetworkManager"; systemctl enable NetworkManager
 	_yellow "systemctl enable gdm"; systemctl enable gdm
 }
 
 _install_gnome()
 {
+	for X in "${pks_cli_utils[@]}"; do
+		_yellow "Instalando: $X"
+		_PACMAN "$X"
+	done
+
+
 	for c in "${pkgs_gnomeshell[@]}"; do
 		echo -e "$scpace_line"
 		_yellow "Instalando: $c"
-		_PACMAN "$c" || return 1
+		_PACMAN "$c"
 	done
 
-	_configure_systemctls
+	_configure_systemctl
 
 	echo -e "$space_line"
 	_yellow "Execute as ações a seguir manualmente"

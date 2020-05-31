@@ -28,8 +28,9 @@ function _topicons_plus_github()
 
 	_package_man_distro make
 
+	cd "$Dir_Unpack"
 	mv $(ls -d Top*) "$Dir_Unpack"/topicons_plus
-	cd "$Dir_Unpack"/topicons_plus
+	cd topicons_plus
 	echo -e "$space_line"
 	# make install
 	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
