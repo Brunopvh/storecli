@@ -156,7 +156,7 @@ LogInfo="$TempDir/Info.log"
 LogErro="$TempDir/Erro.log"
 FileTemp="$TempDir/Tempfile.txt"
 url_storecli='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
-url_archutils='https://github.com/Brunopvh/storecli/archive/scripts/archutils.sh'
+url_archutils='https://raw.github.com/Brunopvh/storecli/master/scripts/archutils.sh'
 
 declare -A DiskInfoTarget
 DiskInfoTarget=() # Array com informações do disco selecionado para instalação.
