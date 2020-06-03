@@ -57,8 +57,8 @@ class AddRepo:
 			line = str(lines_content_conf[num]).replace('\n', '')
 			
 			if (line == str('#[multilib]')) or (line == str('[multilib]')):
-				numLineMirrorLis = int(num + 1) # Linha que está em baixo do [multilib]
-				lines_content_conf[numLineMirrorLis] = 'Include = /etc/pacman.d/mirrorlist\n'
+				numLineMirrorList = int(num + 1) # Linha que está em baixo do [multilib]
+				lines_content_conf[numLineMirrorList] = 'Include = /etc/pacman.d/mirrorlist\n'
 				lines_content_conf[num] = '[multilib]\n'
 
 		

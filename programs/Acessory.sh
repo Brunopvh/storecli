@@ -110,10 +110,11 @@ function _etcher_appimage()
 	{
         echo "Name=BalenaEtcher"
         echo "Comment=Flash OS images to SD cards and USB drives, safely and easily"
-        echo "Version=1.0"
+        echo "Version=1.5.81"
         echo "Icon=balena-etcher-electron"
         echo "Exec=${array_etcher_dirs[2]}"
         echo "Terminal=false"
+        echo "Keywords=etcher;flash;usb;"
         echo "Categories=Utility;"
         echo "Type=Application"
     } | sudo tee -a "${array_etcher_dirs[0]}"
@@ -123,6 +124,10 @@ function _etcher_appimage()
 	cp -u "${array_etcher_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${array_etcher_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
 	cp -u "${array_etcher_dirs[0]}" ~/Desktop/ 2> /dev/null 
+
+	if _WHICH 'gtk-update-icon-cache'; then
+		sudo 'gtk-update-icon-cache'
+	fi
 
 	if _WHICH 'balena-etcher-electron'; then
 		_INFO 'pkg_sucess' 'balena-etcher-electron'
@@ -230,89 +235,23 @@ function _veracrypt()
 }
 
 #=====================================================#
-# WoeUsb
+# ==================>>> WoeUsb <<<====================#
 #=====================================================#
-function _woeusb_debian(){
-	github_woeusb="https://github.com/slacka/WoeUSB.git"
 
-	local dir_woeusb="$dir_temp/WoeUSB"
-	local requeriments_woeusb_debian=(
-			'devscripts' 'equivs' 'libwxgtk3.0-dev' 'grub-pc-bin' 'p7zip-full'
-		)
-
-	white "Necessário instalar os seguintes pacotes: ${requeriments_woeusb_debian[@]}"
-	_YESNO "Deseja proseguir" || return 1
-	
-
-	_APT update || return 1
-	_package_man_distro "${requeriments_woeusb_debian[@]}" || return 1
-
-	cd "$dir_temp" && sudo rm -rf *  # Limpar o diretório temporário.
-	_gitclone "$github_woeusb" || return 1
-
-	ls -hl "$dir_woeusb"/debian/changelog || return 1
-
-	if ! sudo sed -i 's/(@@WOEUSB_VERSION@@)/(1.0)/g' "$dir_woeusb"/debian/changelog; then
-		red "Falha ao tentar configurar o arquivo: $dir_woeusb/debian/changelog"
-		return 1
-	fi
-
-	yellow "Compilando." 
-	sleep 1
-
-	cd "$dir_woeusb"
-	sudo sh -c 'dpkg-buildpackage -uc -b' || { 
-		red "Falha ao tentar compilar o WoeUSB"
-		return 1 
-	}
-
-	echo -e "$space_line"
-
-	#==================================================================#
-	#========================= instalação do pacote .deb ==============#
-	cd ..
-	if _DPKG --install "$dir_temp/woeusb_1.0_amd64.deb"; then
-		echo -e "$space_line"
-		_INFO 'pkg_sucess' 'WoeUSB'	
-	else
-		_BROKE # Remover pacotes quebrados.
-		echo -e "$space_line"
-		_INFO 'pkg_instalation_failed' 'WoeUSB'
-		cd "$dir_temp" && sudo rm -rf *
-		return 1
-	fi
-
-	#===============================================================#
-	#======================== salvar o arquivo .deb ? ==============#
-
-	green "Deseja salvar o arquivo woeusb_1.0_amd64.deb [${Yellow}s${Reset}/${Red}n${Reset}]?: "
-	read -t 10 -n 1 sn
-
-	if [[ -z "$install_yes" ]]; then
-		[[ "${sn,,}" == 's' ]] && {
-		mkdir -p "$HOME/Downloads"
-		echo -e "$space_line"
-		cp -vu "$dir_temp/woeusb_1.0_amd64.deb" "$HOME"/Downloads/woeusb_1.0_amd64.deb
-		green "Arquivo salvo em: [$HOME/Downloads/woeusb_1.0_amd64.deb]"
-	}
-	fi
-
-	cd "$dir_temp" && sudo rm -rf *
-}
-
-
-function _woeusb_ubuntu()
+# Debian/Ubuntu/Mint
+function _woeusb_debian()
 {
-	# Instalar dependencias e em seguida baixar o codigo fonte e compilar
+	# Instalar dependências, baixar o programa e compilar o código fonte.
 	# libwxgtk3.0-gtk3-dev
+	local woeusbRequeriments=('devscripts' 'equivs'  'grub-pc-bin' 'p7zip-full')
 	local github_woeusb="https://github.com/slacka/WoeUSB.git"
 	local dir_woeusb="$dir_temp/WoeUSB"
 		
 	_APT update || return 1
 	
-	yellow "Instalando: 'devscripts' 'equivs'  'grub-pc-bin' 'p7zip-full'"
-	if ! _package_man_distro 'devscripts' 'equivs'  'grub-pc-bin' 'p7zip-full'; then
-		red "Falha: 'devscripts' 'equivs'  'grub-pc-bin' 'p7zip-full'"
+	yellow "Instalando: ${woeusbRequeriments[@]}"
+	if ! _package_man_distro "${woeusbRequeriments[@]}"; then
+		red "Falha: ${woeusbRequeriments[@]}"
 		return 1
 	fi
 	
@@ -329,6 +268,7 @@ function _woeusb_ubuntu()
 	cd "$dir_woeusb"
 	yellow "Executando: ./setup-development-environment.bash"; ./setup-development-environment.bash
 	yellow "Executando: dpkg-buildpackage -uc -b -d"
+	
 	if ! sudo dpkg-buildpackage -uc -b -d; then
 		red "Falha ao tentar compilar o WoeUSB"
 		cd /tmp && cd "$dir_temp" && sudo rm -rf *
@@ -337,7 +277,6 @@ function _woeusb_ubuntu()
 
 	echo -e "$space_line"
 
-	#==================================================================#
 	# Instalação do pacote .deb
 	# O pacote .deb será gerado um diretório atrás do diretório de 
 	# compilação, ou seja cd ..
@@ -361,31 +300,26 @@ function _woeusb_ubuntu()
 		cp -vu "$dir_temp/woeusb_amd64.deb" "$HOME"/Downloads/woeusb_amd64.deb
 		white "Arquivo salvo em: $HOME/Downloads/woeusb_amd64.deb"
 	fi
-
-	cd "$dir_temp" && sudo rm -rf * 
 }
 
 
-function _woeusb_github()
+
+function _woeusb_archlinux()
 {
 	# Clonar o repositório e compilar o pacote
-	# Requerimentos para compilar o pacote:
-	# wx-config|wxGTK-devel dh-autoreconf devscripts
+	# Requerimentos para archlinux wx-config|wxGTK-devel dh-autoreconf devscripts
 
 	local github_woeusb="https://github.com/slacka/WoeUSB.git"
 	local dir_woeusb="$dir_temp/WoeUSB"
 
-	case "$os_id" in
-		arch) 
-			sudo "$Dir_Storecli_Scripts"/addrepo.py --repo arch || return 1	
-			_package_man_distro 'wxgtk3' 'lib32-wxgtk2'
-			;;
+	# Habilitar repositório [multilib] em /etc/pacman.conf
+	if ! sudo "$Dir_Storecli_Scripts"/addrepo.py --repo arch; then
+		red "Falha: $Dir_Storecli_Scripts/addrepo.py"
+	fi	
 
-		*) 
-			yellow "Instale wx-config no seu sistema"
-			;;
-	esac
-
+	# Instalar requerimentos antes de compilar
+	_package_man_distro 'wxgtk3' 'lib32-wxgtk2'
+			
 	_gitclone "$github_woeusb" || return 1
 	chmod -R +x "$dir_woeusb" 
 
@@ -426,12 +360,63 @@ function _woeusb_github()
 }
 
 
+function _woeusb_github()
+{
+	# Clonar o repositório e compilar o pacote
+	# Requerimentos para compilar o pacote:
+	# wx-config|wxGTK-devel dh-autoreconf devscripts
+
+	local github_woeusb="https://github.com/slacka/WoeUSB.git"
+	local dir_woeusb="$dir_temp/WoeUSB"
+
+	_gitclone "$github_woeusb" || return 1
+	chmod -R +x "$dir_woeusb"
+
+	yellow "Instale wx-config no seu sistema"
+	cd "$dir_woeusb"
+
+	yellow "Executando: ./setup-development-environment.bash"
+	if ! ./setup-development-environment.bash 2>> "$LogErro"; then
+		red "Falha: ./setup-development-environment"
+		return 1
+	fi
+
+
+	yellow "Executando: autoreconf --force --install"
+	if ! autoreconf --force --install 2>> "$LogErro"; then
+		red "Falha: autoreconf --force --install"
+		return 1
+	fi
+
+
+	yellow "Executando: ./configure" 
+	if ! ./configure 2>> "$LogErro"; then
+		red "Falha: ./configure"
+		return 1
+	fi
+
+
+	yellow "Executando: make" 
+	if ! make 2>> "$LogErro"; then
+		red "Falha: make"
+		return 1
+	fi
+
+
+	yellow "Executando: make install"
+	if ! sudo make install; then
+		red "Falha: sudo make install"
+		return 1
+	fi
+}
+
+
 function _woeusb()
 {
 	case "$os_id" in
-		debian)_woeusb_ubuntu;;
-		ubuntu|linuxmint) _woeusb_ubuntu;;
+		debian|ubuntu|linuxmint) _woeusb_debian;;
 		fedora) _package_man_distro 'WoeUSB.x86_64';;
+		arch) _woeusb_archlinux;;
 		*) _woeusb_github;;
 	esac
 		
