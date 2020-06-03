@@ -370,18 +370,24 @@ function _woeusb_github()
 {
 	# Clonar o repositório e compilar o pacote
 	# Requerimentos para compilar o pacote:
-	#   wx-config|wxGTK-devel dh-autoreconf devscripts
+	# wx-config|wxGTK-devel dh-autoreconf devscripts
 
 	local github_woeusb="https://github.com/slacka/WoeUSB.git"
 	local dir_woeusb="$dir_temp/WoeUSB"
 
+	case "$os_id" in
+		arch) 
+			sudo "$Dir_Storecli_Scripts"/addrepo.py --repo arch || return 1	
+			_package_man_distro 'wxgtk3' 'lib32-wxgtk2'
+			;;
+
+		*) 
+			yellow "Instale wx-config no seu sistema"
+			;;
+	esac
+
 	_gitclone "$github_woeusb" || return 1
 	chmod -R +x "$dir_woeusb" 
-	
-	case "$os_id" in
-		arch) _package_man_distro 'wxgtk3' 'lib32-wxgtk2';;
-		*) yellow "Instale wx-config no seu sistema";;
-	esac
 
 	cd "$dir_woeusb"
 	yellow "Executando: ./setup-development-environment.bash"

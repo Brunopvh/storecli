@@ -18,10 +18,14 @@ Blue='\033[1;34m'
 White='\033[0;37m'
 Reset='\033[0m'
 
+space_line='===================================================='
+
 #=============================================================#
 _msg()
 {
+	echo -e "$space_line"
 	echo -e "${CWhite}[>] $@${Reset}"
+	echo -e "$space_line"
 }
 
 _red()
@@ -50,25 +54,22 @@ _white()
 }
 
 
-space_line='===================================================='
-
-
 #=============================================================#
 
 function usage()
 {
 cat <<EOF 
   Use: $(basename $(readlink -f $0)) --distro-repos
-    --debian-repos             Habilitar repositórios em debian buster
+    --debian-repos             Habilitar repositórios no debian buster
     --fedora-repos             Habilitar repositórios no fedora
     --tumblewee-repos          Adicionar repostórios extras para OpenSuse Tumbleweed
 EOF
 }
 
-if [[ $(id -u) != '0' ]]; then
-	_red "Você precisar ser o root. Execute: sudo $(readlink -f $0)"
-	exit 1
-fi
+#if [[ $(id -u) != '0' ]]; then
+#	_red "Você precisar ser o root. Execute: sudo $(readlink -f $0)"
+#	exit 1
+#fi
 
 #============================================================#
 # Repositórios fedora
@@ -146,7 +147,7 @@ function _addrepo_debian(){
 	echo ' '
 
 	if [[ "${sn,,}" != 's' ]]; then
-		_msg "${Yellow}A${Reset}bortando"
+		_white "${Yellow}A${Reset}bortando"
 		exit 0	
 	fi
 
@@ -172,28 +173,7 @@ function _addrepo_debian(){
 #============================================================#
 # Repositórios ArchLinux
 #============================================================#
-function _addrepo_arch(){
 
-	# Linha onde está a string multibli.
-	local num_line=$(grep -n '^\#\[multilib\]' /etc/pacman.conf | sed 's/:.*//g')
-	local num_line_repo="$(($num_line+1))"
-
-	echo -e "$space_line"
-	read -p "Deseja habilitar o repositório [multilib] [s/n]?: " sn
-	[[ "${sn,,}" == 's' ]] || {
-		_msg "Abortando"
-		return 1
-	}
-
-	# Descomentar as linhas abaixo com o sed.
-	sudo sed -i "s|^\#\[multilib\]\$|[multilib]|" /etc/pacman.conf
-	sudo sed -i "s|^\#Include = \/etc\/pacman.d\/mirrorlist\$|Include = \/etc\/pacman.d\/mirrorlist|" /etc/pacman.conf
-
-	_msg "Sincronizando repositórios"
-	# listar todos os pacotes no repositório multilib.
-	# pacman -Sl
-	sudo pacman -Sy
-}
 
 #============================================================#
 
@@ -201,8 +181,8 @@ if [[ ! -z $1 ]]; then
 
 	while [[ $1 ]]; do
 		case "$1" in
-			--fedora-repos) _addrepo_fedora;;
 			--debian-repos) _addrepo_debian;;
+			--fedora-repos) _addrepo_fedora;;
 			--tumbleweed-repos) _addrepo_tumbleweed;;
 			-h|--help) usage;;
 			*) usage;;

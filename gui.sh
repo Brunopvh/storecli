@@ -13,36 +13,33 @@ VERSION_GUI='2020-05-17'
 #=============================================================#
 # Diretórios
 #=============================================================#
-export readonly Dir_Storecli=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
-export Dir_Storecli_Lib="$Dir_Storecli/lib"
-export dir_temp="/tmp/storecli_$USER/temp"; mkdir -p "$dir_temp"
-export Dir_User_Bin="$HOME/.local/bin"; mkdir -p "$Dir_User_Bin"
+export readonly Dir_Root_Storecli=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
+export Dir_Root_Storecli_Lib="$Dir_Root_Storecli/lib"
 
 #=============================================================#
 # Libs
 #=============================================================#
-export Lib_Colors="$Dir_Storecli_Lib/Colors.sh"
-export Lib_Platform="$Dir_Storecli_Lib/Platform.sh"
+export Lib_Colors="$Dir_Root_Storecli_Lib/Colors.sh"
+export Lib_Platform="$Dir_Root_Storecli_Lib/Platform.sh"
+export Lib_Arrays="$Dir_Root_Storecli_Lib/Arrays.sh"
 
 #=============================================================#
 # Scripts
 #=============================================================#
-Script_Storecli="$Dir_Storecli/storecli.sh"
-Script_Installer_Storecli="$Dir_Storecli/setup.sh"
+Script_Storecli="$Dir_Root_Storecli/storecli.sh"
+Script_Installer_Storecli="$Dir_Root_Storecli/setup.sh"
 
 #=============================================================#
 # Importar
 #=============================================================#
 source "$Lib_Colors"
+source "$Lib_Arrays"
 
 #=============================================================#
 # Urls
 #=============================================================#
 github='https://github.com'  
 raw='https://raw.github.com'
-
-space_line='-----------------------------------------'
-
 
 #=============================================================#
 # Usuário não pode ser o root.
@@ -79,8 +76,6 @@ _ping()
 		return 1
 	fi
 }
-
-#_ping
 
 #=============================================================#
 # Instalar o script storecli se ele não estiver disponível.
@@ -171,6 +166,7 @@ list_menu_office=(
 list_menu_internet=(
 	'TRUE Voltar'
 	'FALSE chromium'
+	'FALSE firefox'
 	'FALSE google-chrome'
 	'FALSE megasync'
 	'FALSE opera-stable'
@@ -265,7 +261,8 @@ list_menu_tools=(
 #=============================================================#
 storecli_args()
 {
-	"$Script_Storecli" install "$@"
+	# Argumentos usados para instalação.
+	"$Script_Storecli" install -y "$@"
 }
 
 #=============================================================#
@@ -362,6 +359,7 @@ menu_internet(){
 		case "$option" in
 			Voltar) white "Voltando..."; break;;
 			chromium) storecli_args chromium;;
+			firefox) storecli_args firefox;;
 			google-chrome) storecli_args google-chrome;;
 			megasync) storecli_args megasync;;
 			'opera-stable') storecli_args opera-stable;;

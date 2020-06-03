@@ -14,7 +14,7 @@ VERSION='2020-05-30'
 # caso queira instalar o sistema em apenas uma partição use: $0 -t <disk> -r <partição>
 # ou em sistemas EFI use: $0 -e <partição> -r <partição>
 #
-##----------------------------------------------------------------#
+#----------------------------------------------------------------#
 # pacstrap /mnt base #base-devel
 # genfstab -U -p /mnt >> /mnt/etc/fstab
 # 
@@ -41,6 +41,11 @@ VERSION='2020-05-30'
 #
 # Fontes para o Sistema
 # sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
+#
+#----------------------------------------------------------------#
+# Arquivos de configuração pacman.
+#----------------------------------------------------------------#
+# 
 #
 #------------------------------------------------------------------#
 # REFERÊNCIAS
