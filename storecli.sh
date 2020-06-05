@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_06_03_rev1'
+VERSION='2020_06_04_rev1'
 #
 #
 #---------------------- INSTALAÇÃO --------------------------------#
@@ -192,8 +192,8 @@ source "$Lib_ShowInfo"
 source "$Lib_CliUtils"
 source "$Lib_PkgManStorecli"
 source "$Lib_Unpack"
-#source "$Lib_Curl"
-source "$Lib_Wget"
+source "$Lib_Curl"
+#source "$Lib_Wget"
 source "$Lib_PkgManSystem"
 source "$Lib_CheckSum"
 source "$Lib_CheckGpg"

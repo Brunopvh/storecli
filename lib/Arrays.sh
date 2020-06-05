@@ -86,6 +86,14 @@ array_etcher_dirs=(
 	"/usr/bin/balena-etcher-electron"                        # Link simbólico
 )
 
+# Etcher
+declare -A array_stacer_dirs
+array_stacer_dirs=( 
+	[stacer_file_desktop]="$Dir_Root_Applications/stacer.desktop"  # .desktop
+	[stacer_file_appimage]="/opt/stacer.AppImage"        # .AppImage
+	[stacer_link]="$Dir_Root_bin/stacer"                          # Link simbólico
+)
+
 # Papirus
 array_papirus_dirs=(
 	"$Dir_User_Icons/Papirus-Dark" 

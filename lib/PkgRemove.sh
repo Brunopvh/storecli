@@ -38,6 +38,7 @@ _pack_remove()
 			peazip) _delete_all "${array_peazip_dirs[@]}";;
 			pycharm) _delete_all "${array_pycharm_dirs[@]}";;
 			refind) _delete_all "${array_refind_dirs[@]}";;
+			stacer) _delete_all "${array_stacer_dirs[@]}";;
 			'sublime-text') _delete_all "${array_sublime_dirs[@]}";;
 			telegram)  _delete_all "${array_telegram_dirs[@]}";;
 			tixati) _delete_all "${array_tixati_dirs[@]}";;

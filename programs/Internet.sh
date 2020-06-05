@@ -973,9 +973,9 @@ _youtube_dlgui_file_desktop_root()
 
 	yellow "Criando atalho na Área de Trabalho"
 
-	cp -u "$arq_ytdl" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "$arq_ytdl" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "$arq_ytdl" ~/Desktop/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
 }
 
 # Baixar e compilar youtube-dl-gui

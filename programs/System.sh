@@ -246,13 +246,60 @@ function _stacer_debian()
 	_DPKG --install "$path_file"
 }
 
+_stacer_fedora()
+{
+	_package_man_distro stacer	
+}
+
+
+_stacer_archlinux()
+{
+	# https://aur.archlinux.org/packages/stacer/
+	# https://github.com/oguzhaninan/Stacer
+	# https://github.com/oguzhaninan/Stacer/releases
+	#
+	# qt5-charts hicolor-icon-theme qt5-declarative qt5-declarative qt5-tools ccache
+
+	local url_appimage='https://github.com/oguzhaninan/Stacer/releases/download/v1.1.0/Stacer-1.1.0-x64.AppImage'
+	local path_file="$Dir_Downloads/Stacer-1.1.0-x64.AppImage"
+	
+	_package_man_distro 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
+	
+	_dow "$url_appimage" "$path_file" || return 1
+	sudo cp "$path_file" "${array_stacer_dirs[stacer_file_appimage]}"
+	sudo chmod a+x "${array_stacer_dirs[stacer_file_appimage]}"
+	sudo ln -sf "${array_stacer_dirs[stacer_file_appimage]}" "${array_stacer_dirs[stacer_link]}"
+
+	# Criar arquivo '.desktop'
+	yellow "Criando arquivo .desktop"
+	echo '[Desktop Entry]' | sudo tee "${array_stacer_dirs[stacer_file_desktop]}"
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=Stacer"
+		echo "Exec=stacer"
+		echo "Comment=Linux System Optimizer and Monitoring"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Icon=stacer"
+		echo "Keywords=stacer;monitor;"
+		echo "Type=Application"
+		echo "Categories=Utility;System;"
+	} | sudo tee -a "${array_stacer_dirs[stacer_file_desktop]}"
+
+	yellow "Criando atalho na Área de Trabalho"
+	# sudo chmod +rwx "${array_stacer_dirs[stacer_file_desktop]}"
+	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/Desktop/ 2> /dev/null
+}
+
 
 function _stacer()
 {
 	case "$os_id" in
-		debian|ubuntu) _stacer_debian;;
-		arch) _INFO pkg_not_found stacer;;
-		*) _package_man_distro stacer;;
+		debian|ubuntu|linuxmint) _stacer_debian;;
+		arch) _stacer_archlinux;;
+		*) _INFO pkg_not_found stacer;;
 	esac
 }
 
