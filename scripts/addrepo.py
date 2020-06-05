@@ -8,6 +8,7 @@ from os import path, geteuid, makedirs, remove, system
 from shutil import copyfile
 from time import sleep
 
+__version__ = '2020-06-05'
 
 # Cores
 CRed='\033[0;31m'
@@ -52,7 +53,7 @@ class OsInfo:
 	def get_id(cls):
 		for line in cls.releaseLines:
 			if line[0:3] == 'ID=':
-				os_id = str(line[3:])
+				os_id = str(line[3:]).replace('\n', '')
 				return os_id
 				break
 
@@ -69,8 +70,19 @@ class OsInfo:
 		return os_codename
 
 class AddRepo:
-	
-	def archlinux():
+	# Obter o nome é codinome do sistema.
+	os_id = OsInfo.get_id()
+	os_codename = OsInfo.get_codename()
+
+	def __init__(self):
+		pass
+
+	def archlinux(self):
+		# Verificar se o sistema e ArchLinux.
+		if self.os_id != 'arch':
+			print(f'{CRed}[!] Seu sistema não é ArchLinux{CReset}')
+			return
+		
 		# Criar backup do arquivo /etc/pacman.conf se ainda não existir
 		# um backup.
 		if path.isfile('/etc/pacman.conf.copia') == True:
@@ -107,11 +119,12 @@ class AddRepo:
 		system('pacman -Sy')
 			
 
-	def debian():
-		# Obter o nome é codinome do sistema.
-		os_id = OsInfo.get_id()
-		os_codename = OsInfo.get_codename()
-
+	def debian(self):
+		# Verificar se o sistema e Debian.
+		if self.os_id != 'debian':
+			print(f'{CRed}[!] Seu sistema não é Debin{CReset}')
+			return
+		
 		debianRepoMain = str((f'deb http://deb.debian.org/debian {os_codename} main'))
 		debianRepoContrib = str((f'deb http://deb.debian.org/debian {os_codename} contrib'))
 		debianRepoNonfree = str((f'deb http://deb.debian.org/debian {os_codename} non-free'))
@@ -137,12 +150,8 @@ class AddRepo:
 				print(f'{CYellow}[+] Removendo repositório main contrib non-free duplicado{CReset}')
 				del contentSources[num]
 
-			#if line == debianMainContribNonfree:
-			#	MainContribNonfree = 'True'
-			
 			num += 1
 
-		#if MainContribNonfree != 'True':
 		contentSources.append(debianMainContribNonfree)
 
 		# Gravar o novo conteúdo em um arquivo temporário.
@@ -159,7 +168,7 @@ class AddRepo:
 		print(f'{CYellow}[+] Atualizando repostórios {CReset}')
 		system('apt update')
 
-	def fedora():
+	def fedora(self):
 		# sudo dnf repolist
 		# sudo dnf repository-packages fedora list
 		# sudo dnf repository-packages fedora list available
@@ -170,6 +179,11 @@ class AddRepo:
 		# sudo dnf --disablerepo=fedora-extras install grafana
 		# dnf --best upgrade
 		# 
+
+		# Verificar se o sistema e Fedora.
+		if self.os_id != 'fedora':
+			print(f'{CRed}[!] Seu sistema não é Fedora{CReset}')
+			return
 
 		repoFusionFree = 'https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release'
 		repoFusionNonFree = 'https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
@@ -186,13 +200,10 @@ class AddRepo:
 
 parser = argparse.ArgumentParser(description='Habilita repostório em distribuições Linux.')
 
-__version__ = '2020-06-04'
-
-
 parser.add_argument(
 	'-v', '--version', 
 	action='version', 
-	version="%(prog)s ("+__version__+")"
+	version=(f"%(prog)s {__version__}")
 	)
 
 parser.add_argument(
@@ -219,6 +230,8 @@ if args.usage:
 elif args.distro:
 
 	if args.distro == 'arch':
-		AddRepo.archlinux()
+		AddRepo().archlinux()
 	elif args.distro == 'debian':
-		AddRepo.debian()
+		AddRepo().debian()
+	elif args.distro == 'fedora':
+		AddRepo().fedora()
