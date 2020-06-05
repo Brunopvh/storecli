@@ -116,8 +116,8 @@ function _papirus_github()
 	# https://raw.githubusercontent.com/PapirusDevelopmentTeam/papirus-icon-theme/master/install.sh
 	# https://github.com/PapirusDevelopmentTeam
 
-	local url_papirus_master="$github/PapirusDevelopmentTeam/papirus-icon-theme/archive/master.zip"
-	local path_file="$Dir_Downloads/papirus.zip"
+	local url_papirus_master="$github/PapirusDevelopmentTeam/papirus-icon-theme/archive/master.tar.gz"
+	local path_file="$Dir_Downloads/papirus.tar.gz"
 
 	_dow "$url_papirus_master" "$path_file" || return 1
 
@@ -139,9 +139,8 @@ function _papirus_github()
 
 	_unpack "$path_file" || return 1
 	cd "$Dir_Unpack"
-	mv  $(ls -d papirus-*) "$Dir_Unpack/papirus"
-	cd "$Dir_Unpack/papirus"
-
+	mv  $(ls -d papirus-*) papirus
+	cd papirus
 	green "Instalando Papirus-Dark"
 	cp -R Papirus-Dark "$Dir_User_Icons/"
 

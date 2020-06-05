@@ -41,10 +41,6 @@ VERSION='2020-05-30'
 #
 # Fontes para o Sistema
 # sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
-#
-#----------------------------------------------------------------#
-# Arquivos de configuração pacman.
-#----------------------------------------------------------------#
 # 
 #
 #------------------------------------------------------------------#
@@ -139,7 +135,7 @@ EOF
 function _YESNO()
 {
 	echo -ne "[>] ${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: ${CReset}"
-	read -t 15 -n 1 yesno
+	read -t 30 -n 1 yesno
 	echo ' '
 
 	case "${yesno,,}" in
@@ -169,7 +165,7 @@ CliArguments=()
 
 OPTIND=1
 num=0
-#<<EOF
+
 while getopts :b:e:H:r:t:h Arg; do
 	case "$Arg" in
 		b) DiskInfoTarget[partition_boot]="$OPTARG";;    # /boot - Opcional
@@ -183,10 +179,7 @@ while getopts :b:e:H:r:t:h Arg; do
 	esac
 	CliArguments[$num]="$OPTARG"
 	num+=1
-	#shift $((--OPTIND))
-	#CliOptitonalArguments="$@"
 done
-#EOF
  
 #=======================================================#
 
