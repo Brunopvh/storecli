@@ -251,6 +251,7 @@ function _stacer()
 {
 	case "$os_id" in
 		debian|ubuntu) _stacer_debian;;
+		arch) _INFO pkg_not_found stacer;;
 		*) _package_man_distro stacer;;
 	esac
 }
