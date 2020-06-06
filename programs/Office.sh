@@ -49,11 +49,9 @@ function _libreoffice_appimage()
 		return 0
 	fi
 
-	#_check_sum "$path_file" "$hash_libreoffice" || return 1
-
 	# .desktop
 	green "Criando arquivo .desktop"
-	echo '[Desktop Entry]' | tee "${array_libreoffice_dirs[0]}"
+	echo '[Desktop Entry]' | tee "${array_libreoffice_dirs[file_desktop]}" 1> "$LogFile"
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=LibreOffice AppImage"
@@ -64,19 +62,18 @@ function _libreoffice_appimage()
 		echo "Keywords=libreoffice;editor;office;"
 		echo "Type=Application"
 		echo "Categories=Office;WordProcessor;"
-	} | tee -a "${array_libreoffice_dirs[0]}"
+	} | tee -a "${array_libreoffice_dirs[file_desktop]}" 1> "$LogFile"
 
-	cp -u "$path_file" "${array_libreoffice_dirs[1]}"
-	ln -sf "$Dir_User_Bin/libreoffice-amd64.AppImage" "$Dir_User_Bin/libreoffice-appimage"
-	chmod u+x "${array_libreoffice_dirs[1]}"
-	chmod u+x "${array_libreoffice_dirs[0]}"
-	ln -sf "$Dir_User_Bin/libreoffice-amd64.AppImage" "$Dir_User_Bin/libreoffice-appimage"
-	chmod u+x "$Dir_User_Bin/libreoffice-appimage"
+	cp -u "$path_file" "${array_libreoffice_dirs[file_appimage]}"
+	ln -sf "${array_libreoffice_dirs[file_appimage]}" "${array_libreoffice_dirs[link_execution]}"
+	chmod u+x "${array_libreoffice_dirs[file_appimage]}"
+	chmod u+x "${array_libreoffice_dirs[file_desktop]}" 
+	chmod u+x "${array_libreoffice_dirs[link_execution]}"
 
 	green "Criando atalho na Área de trabalho"
-	cp -u "${array_libreoffice_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_libreoffice_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "${array_libreoffice_dirs[0]}" ~/Desktop/ 2> /dev/null
+	cp -u "${array_libreoffice_dirs[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${array_libreoffice_dirs[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${array_libreoffice_dirs[file_desktop]}" ~/Desktop/ 2> /dev/null
 
 	if _WHICH 'libreoffice-appimage'; then
 		_INFO 'pkg_sucess' 'libreoffice-appimage'

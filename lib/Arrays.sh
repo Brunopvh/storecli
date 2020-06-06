@@ -74,9 +74,11 @@ array_android_studio_dirs=(
 )
 
 # Libreoffice AppImage.
+declare -A array_libreoffice_dirs
 array_libreoffice_dirs=(
-"$Dir_User_Application/libreoffice.desktop" # .desktop
-"$Dir_User_Bin/libreoffice-amd64.AppImage" # .AppImage
+	[file_desktop]="$Dir_User_Application/libreoffice.desktop" # .desktop
+	[file_appimage]="$Dir_User_Bin/libreoffice-amd64.AppImage" # .AppImage
+	[link_execution]="$Dir_User_Bin/libreoffice-appimage"      # Link para execução
 )
 
 # Etcher
