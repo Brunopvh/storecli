@@ -32,22 +32,35 @@ _pack_remove()
 		white "${Red}R${Reset}emovendo $(SPACE_TEXT Removendo) $1"
 
 		case "$1" in
-			android-studio) _delete_all "${array_android_studio_dirs[@]}";;
+#-----------------------| ACESSÓRIOS |------------------------------------------#
 			etcher) _delete_all "${array_etcher_dirs[@]}";;
-			papirus) _delete_all "${array_papirus_dirs[@]}";;
-			peazip) _delete_all "${array_peazip_dirs[@]}";;
+			veracrypt) sudo veracrypt-uninstall.sh;;
+			woeusb) _package_man_distro remove woeusb;;
+
+#-----------------------| DEV |-------------------------------------------------#
+			android-studio) _delete_all "${array_android_studio_dirs[@]}";;
 			pycharm) _delete_all "${array_pycharm_dirs[@]}";;
-			refind) _delete_all "${array_refind_dirs[@]}";;
-			stacer) _delete_all "${array_stacer_dirs[@]}";;
 			'sublime-text') _delete_all "${array_sublime_dirs[@]}";;
+			vscode) _delete_all "${array_vscode_dirs[@]}";;
+
+#-----------------------| ESCRITÓRIO |------------------------------------------#
+			libreoffice-appimage) _delete_all "${array_libreoffice_dirs[@]}";;
+			papirus) _delete_all "${array_papirus_dirs[@]}";;
+
+#-----------------------| MIDIA |-----------------------------------------------#
+			vlc) _package_man_distro remove vlc;;
+
+#-----------------------| INTERNET |--------------------------------------------#
 			telegram)  _delete_all "${array_telegram_dirs[@]}";;
 			tixati) _delete_all "${array_tixati_dirs[@]}";;
 			torbrowser) "$Script_TorBrowser" --remove;;
-			veracrypt) sudo veracrypt-uninstall.sh;;
-			vlc) _package_man_distro remove vlc;;
-			vscode) _delete_all "${array_vscode_dirs[@]}";;
-			woeusb) _package_man_distro remove woeusb;;
 			'youtube-dl') _delete_all "$Dir_User_Bin/youtube-dl";;
+
+#-----------------------| SISTEMA |---------------------------------------------#
+			peazip) _delete_all "${array_peazip_dirs[@]}";;
+			refind) _delete_all "${array_refind_dirs[@]}";;
+			stacer) _delete_all "${array_stacer_dirs[@]}";;
+			
 			*) red "Não foi possivel remover: $1";;
 		esac
 		shift

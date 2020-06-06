@@ -3,8 +3,7 @@
 #
 #
 #--------------------| INFO |-----------------------------------------#
-# Este script foi criado para baixar e instalar o Navegador Tor em
-# sistemas Linux e Windows.
+# Este script baixa e instala o Navegador Tor em sistemas Linux e Windows.
 #
 #--------------------| REQUISITOS |------------------------------------#
 # python 3.7 ou +

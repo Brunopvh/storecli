@@ -61,6 +61,7 @@ function _libreoffice_appimage()
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=libreoffice"
+		echo "Keywords=libreoffice;editor;office;"
 		echo "Type=Application"
 		echo "Categories=Office;WordProcessor;"
 	} | tee -a "${array_libreoffice_dirs[0]}"
