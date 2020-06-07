@@ -61,6 +61,14 @@ export array_root_dirs=(
 	"$Dir_Root_bin"
 )
 
+# Criar diretórios do root.
+for dir in "${array_root_dirs[@]}"; do
+	if [[ ! -d "$dir" ]]; then
+		white "Criando: $dir"
+		sudo mkdir -p "$dir"
+	fi
+done
+
 #=============================================================#
 # Arrays com informações sobre alguns pacotes.
 #=============================================================#
@@ -76,6 +84,14 @@ array_android_studio_dirs=(
 # Libreoffice AppImage.
 declare -A array_libreoffice_dirs
 array_libreoffice_dirs=(
+	[file_desktop]="$Dir_Root_Applications/libreoffice-appimage.desktop"   # .desktop
+	[file_appimage]="/opt/libreoffice-amd64.AppImage"                      # .AppImage
+	[link_execution]="$Dir_Root_bin/libreoffice-appimage"                  # Link para execução
+)
+
+# Libreoffice AppImage.
+declare -A array_libreoffice_dirs_old
+array_libreoffice_dirs_old=(
 	[file_desktop]="$Dir_User_Application/libreoffice.desktop" # .desktop
 	[file_appimage]="$Dir_User_Bin/libreoffice-amd64.AppImage" # .AppImage
 	[link_execution]="$Dir_User_Bin/libreoffice-appimage"      # Link para execução

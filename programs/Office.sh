@@ -50,27 +50,28 @@ function _libreoffice_appimage()
 	fi
 
 	# .desktop
-	green "Criando arquivo .desktop"
-	echo '[Desktop Entry]' | tee "${array_libreoffice_dirs[file_desktop]}" 1> "$LogFile"
+	yellow "Criando arquivo .desktop"
+	echo '[Desktop Entry]' | sudo tee "${array_libreoffice_dirs[file_desktop]}" 1> "$LogFile"
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=LibreOffice AppImage"
-		echo "Exec=${array_libreoffice_dirs[1]}"
+		echo "Exec=${array_libreoffice_dirs[link_execution]}"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=libreoffice"
 		echo "Keywords=libreoffice;editor;office;"
 		echo "Type=Application"
 		echo "Categories=Office;WordProcessor;"
-	} | tee -a "${array_libreoffice_dirs[file_desktop]}" 1> "$LogFile"
+	} | sudo tee -a "${array_libreoffice_dirs[file_desktop]}" 1> "$LogFile"
 
-	cp -u "$path_file" "${array_libreoffice_dirs[file_appimage]}"
-	ln -sf "${array_libreoffice_dirs[file_appimage]}" "${array_libreoffice_dirs[link_execution]}"
-	chmod u+x "${array_libreoffice_dirs[file_appimage]}"
-	chmod u+x "${array_libreoffice_dirs[file_desktop]}" 
-	chmod u+x "${array_libreoffice_dirs[link_execution]}"
+	yellow "Copiando arquivos"
+	sudo cp -u "$path_file" "${array_libreoffice_dirs[file_appimage]}"
+	sudo ln -sf "${array_libreoffice_dirs[file_appimage]}" "${array_libreoffice_dirs[link_execution]}"
+	sudo chmod a+x "${array_libreoffice_dirs[file_appimage]}"
+	# sudo chmod u+x "${array_libreoffice_dirs[file_desktop]}" 
+	sudo chmod a+x "${array_libreoffice_dirs[link_execution]}"
 
-	green "Criando atalho na Área de trabalho"
+	yellow "Criando atalho na Área de trabalho"
 	cp -u "${array_libreoffice_dirs[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${array_libreoffice_dirs[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${array_libreoffice_dirs[file_desktop]}" ~/Desktop/ 2> /dev/null
