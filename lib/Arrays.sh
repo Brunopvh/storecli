@@ -89,14 +89,6 @@ array_libreoffice_dirs=(
 	[link_execution]="$Dir_Root_bin/libreoffice-appimage"                  # Link para execução
 )
 
-# Libreoffice AppImage.
-declare -A array_libreoffice_dirs_old
-array_libreoffice_dirs_old=(
-	[file_desktop]="$Dir_User_Application/libreoffice.desktop" # .desktop
-	[file_appimage]="$Dir_User_Bin/libreoffice-amd64.AppImage" # .AppImage
-	[link_execution]="$Dir_User_Bin/libreoffice-appimage"      # Link para execução
-)
-
 # Etcher
 array_etcher_dirs=( 
 	"$Dir_Root_Applications/balena-etcher-electron.desktop"  # .desktop
