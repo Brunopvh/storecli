@@ -25,17 +25,17 @@ _msg()
 
 _red()
 {
-	echo "$(printf $Red)[!] $@$(printf $Reset)"
+	echo "$(printf $Red)[!]$(printf $Reset) $@"
 }
 
 _green()
 {
-	echo "$(printf $Green)[*] $@$(printf $Reset)"
+	echo "$(printf $Green)[*]$(printf $Reset) $@"
 }
 
 _yellow()
 {
-	echo "$(printf $Yellow)[+] $@$(printf $Reset)"
+	echo "$(printf $Yellow)[+]$(printf $Reset) $@"
 }
 
 #----------------------------------------------------------#
@@ -190,7 +190,7 @@ main()
 	_install || return 1
 	
 	echo "$space_line"
-	_msg "Execute: $(printf $CBGreen)storecli --help$(printf $Reset)"
+	_yellow "Execute: $(printf $Yellow)storecli --help$(printf $Reset)"
 	echo "$space_line"
 }
 
