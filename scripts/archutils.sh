@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-05-30'
+VERSION='2020-06-16'
 # 
 # Uso:
 # $0 -t /dev/sdX -e /dev/sdaE -h /dev/sdaH -r /dev/sdaR -b /sdaB
@@ -169,7 +169,7 @@ num=0
 while getopts :b:e:H:r:t:h Arg; do
 	case "$Arg" in
 		b) DiskInfoTarget[partition_boot]="$OPTARG";;    # /boot - Opcional
-		e) DiskInfoTarget[partition_efi]="$OPTARG";;    # /efi - Opcional se for do tipo MBR.
+		e) DiskInfoTarget[partition_efi]="$OPTARG";;     # /efi - Opcional se for do tipo MBR.
 		H) DiskInfoTarget[partition_home]="$OPTARG";;    # /home - Opcional
 		r) DiskInfoTarget[partition_root]="$OPTARG";;    # /
 		t) DiskInfoTarget[instalation_disk]="$OPTARG";;  # disco - /dev/sda, /dev/sdb, /dev/sdc
@@ -292,8 +292,8 @@ _ismount()
 	# Use _ismount "$1"
 	local partition="$1"
 
-	# Uma partição montada do tipo /dev/sdXy tem 9 caracteres validar o tamanho de caracteres.
-	if [[ "${#partition}" < '9' ]]; then 
+	
+	if ! ls "$1" 1> /dev/null 2&>1; then 
 		_red "Informe uma partição do tipo /dev/sdXy"
 		return 1
 	fi
