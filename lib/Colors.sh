@@ -69,22 +69,22 @@ msg()
 
 red()
 {
-	echo -e "${CSRed}[!] $@${Reset}"
+	echo -e "${CSRed}[!]${Reset} $@"
 }
 
 green()
 {
-	echo -e "${CGreen}[*] $@${Reset}"
+	echo -e "${CGreen}[*]${Reset} $@"
 }
 
 yellow()
 {
-	echo -e "${CYellow}[+] $@${Reset}"
+	echo -e "${CYellow}[+]${Reset} $@"
 }
 
 white()
 {
-	echo -e "${CSWhite}[>] $@${Reset}"
+	echo -e "${CSWhite}[>]${Reset} $@"
 }
 
 #=============================================================#

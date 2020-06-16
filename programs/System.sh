@@ -368,7 +368,7 @@ function _virtualbox_fedora()
 	sudo rpm --import "$Dir_Downloads/oracle_vbox.asc"
 	
 	white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
-	sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	sudo sh -c 'curl -s -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 	
 	case "$os_version" in
 		31) _package_man_distro 'VirtualBox-6.0' || return 1;;
@@ -388,8 +388,7 @@ function _virtualbox_fedora()
 function _virtualbox_debian()
 {
 	# find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
-	# Definir o conteudo do arquivo source.list apartir do codenome do sistema	
-
+		
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
 	local path_libvpx="$Dir_Downloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
@@ -405,7 +404,7 @@ function _virtualbox_debian()
 	# Limpar o cache antes de adicionar as chaves (recomendado).
 	white "Limpando o cache do (apt)"
 	_APT clean
-	#sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
 	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1

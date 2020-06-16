@@ -441,14 +441,17 @@ _tor_debian()
 	local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
 	local tor_file_list='/etc/apt/sources.list.d/torproject.list'
 
-	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tina' ]]; then  # Ubuntu
+	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tina' ]]; then  # Ubuntu bionic
 		local tor_repos='deb https://deb.torproject.org/torproject.org bionic main'
-	elif [[ "$os_codename" == 'buster' ]]; then # Debian
+	elif [[ "$os_codename" == 'buster' ]]; then # Debian buster
 		local tor_repos='deb https://deb.torproject.org/torproject.org buster main'
+	else
+		_INFO 'pkg_not_found' 'tor'
+		return
 	fi
 
 	yellow "Importando chaves"
-	#sudo sh -c 'curl https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc | gpg --import'
+	
 	if ! curl -sSL "$tor_asc" | sudo gpg --import; then
 		red "Falha ao tentar importar [$tor_asc]"
 		return 1
@@ -908,9 +911,9 @@ _python_twodict_github()
 
 	cd "$dir_temp/twodict"
 	if _WHICH 'python2'; then
-		sudo python2 setup.py install
+		sudo python2 setup.py install 1>> "$LogFile"
 	elif _WHICH 'python2.7'; then
-		sudo python2.7 setup.py install
+		sudo python2.7 setup.py install 1>> "$LogFile"
 	else
 		red "Falha: Instale o python2"
 		return 1
@@ -959,7 +962,7 @@ _youtube_dlgui_file_desktop_root()
 	local file_desktop_tubedl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 
 	yellow "Criando arquivo .desktop"
-	echo '[Desktop Entry]' | sudo tee "$file_desktop_tubedl_gui"
+	echo '[Desktop Entry]' | sudo tee "$file_desktop_tubedl_gui" 1>> "$LogFile"
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
@@ -969,7 +972,7 @@ _youtube_dlgui_file_desktop_root()
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | sudo tee -a "$file_desktop_tubedl_gui"
+	} | sudo tee -a "$file_desktop_tubedl_gui" 1>> "$LogFile"
 
 	yellow "Criando atalho na Área de Trabalho"
 
@@ -998,9 +1001,9 @@ _youtube_dlgui_compile()
 	yellow "Compilando youtube-dl-gui"
 	
 	if _WHICH python2; then
-		sudo python2 setup.py install || return 1
+		sudo python2 setup.py install 1>> "$LogFile" || return 1
 	elif _WHICH python2.7; then
-		sudo python2 setup.py install || return 1
+		sudo python2 setup.py install 1>> "$LogFile" || return 1
 	fi
 		
 	# Criar o arquivo ".desktop" após compilar o programa.
@@ -1077,7 +1080,7 @@ _youtube_dlgui_fedora()
 			_package_man_distro 'wxGTK3-media' 'python3-wxpython4.x86_64' || return 1
 			_dow "$url" "$path_file" || return 1
 			yellow "Instalando: $path_file"
-			_RPM --install "$path_file"
+			_RPM --install "$path_file" 
 			;;
 	esac
 	
