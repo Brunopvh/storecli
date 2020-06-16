@@ -344,7 +344,7 @@ function _virtualbox_extpack()
 
 function _virtualbox_fedora()
 {
-	local array_vb_fedora=(
+	local requeriments_vb_fedora=(
 		'libgomp' 
 		'glibc-headers' 
 		'glibc-devel' 
@@ -359,7 +359,7 @@ function _virtualbox_fedora()
 		'patch'
 	)
 
-	_package_man_distro "${array_vb_fedora[@]}"
+	_package_man_distro "${requeriments_vb_fedora[@]}"
 	_package_man_distro $(rpm -qa kernel | sort -V | tail -n 1) 
 	_package_man_distro kernel-devel-$(uname -r)
 
@@ -367,18 +367,14 @@ function _virtualbox_fedora()
 	yellow "Importando: $Dir_Downloads/oracle_vbox.asc"
 	sudo rpm --import "$Dir_Downloads/oracle_vbox.asc"
 	
-	case "$os_version" in # Fedora 31/Fedora 32
-		31)
-		white "Adicionando repositório [http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo]"
-		sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
-		_package_man_distro 'VirtualBox-6.0' || return 1
-		;;
-		
-		32)
-		_virtualbox_linux_run || return 1
-		;;
+	white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
+	sudo sh -c 'curl -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	
+	case "$os_version" in
+		31) _package_man_distro 'VirtualBox-6.0' || return 1;;
+		32) _package_man_distro 'VirtualBox-6.1' || return 1;;
 	esac
-
+	
 	# Módulos
 	white "Configurando módulos"
 	sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
@@ -474,7 +470,7 @@ function _virtualbox_archlinux()
 	sudo modprobe vboxdrv
 
 	# Configuração para carregar o módulo durante o boot.
-	#sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
+	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
 
 	# Instalar o pacote ExtensionPack.
 	_virtualbox_extpack 
