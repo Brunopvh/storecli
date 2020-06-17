@@ -53,7 +53,7 @@ array_python2_debian=(
 
 # Python3 debian
 array_python3_debian=( 
-'python3' 'python3-pip' 'python3-setuptools'
+'python3' 'python3-pip' 'python3-setuptools' 'python3-tk'
 )
 
 # Python2 FreeBSD
@@ -73,7 +73,7 @@ array_python3_freebsd=(
 _config_python()
 {
 	echo -e "$space_line"
-	white "Executando: [_config_python]"
+	yellow "Executando: [_config_python]"
 	echo -e "$space_line"
 	if _WHICH 'pip3'; then
 		pip3 install wheel --user
@@ -212,7 +212,9 @@ _config_ubuntu_requeriments()
 	
 	# Instalar utilitários para python3.
 	for c in "${array_python3_debian[@]}"; do
+		echo -e "$space_line"
 		yellow "Instalando: $c"
+		echo -e "$space_line"
 		if ! _package_man_distro "$c"; then
 			red "Falha: $c"
 			return 1

@@ -25,6 +25,7 @@ _packmanager_storecli()
 #----------- Acessorios ------------------------------------#
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
+			gnome-disk) _gnome_disk;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 

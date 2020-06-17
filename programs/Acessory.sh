@@ -83,7 +83,8 @@ function _etcher_appimage()
 	# /usr/local/bin/ e configurar o arquivo .desktop
 	# https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage
 
-	local url='https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage'
+	#local url='https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage'
+	local url='https://github.com/balena-io/etcher/releases/download/v1.5.99/balenaEtcher-1.5.99-x64.AppImage'
 	local path_file="$Dir_Downloads/$(basename $url)"
 
 	_dow "$url" "$path_file" || return 1
