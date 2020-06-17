@@ -56,6 +56,11 @@ array_python3_debian=(
 'python3' 'python3-pip' 'python3-setuptools' 'python3-tk'
 )
 
+# Python3 Fedora
+array_python3_fedora=(
+'python3' 'python3-pip' 'python3-setuptools' 'python3-tkinter.x86_64'
+)
+
 # Python2 FreeBSD
 array_python_freebsd=(
 'python27' 'py27-pip-19.1.1' 'py27-pip-tools-4.1.0'
@@ -141,36 +146,26 @@ _config_fedora_requeriments()
 	echo -e "$space_line"
 
 	# Instalar ferramentas de linha de comando.
-	for c in "${array_cli_linux[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			return 1
-			break
-		fi
-	done
+	yellow "Instalando: ${array_cli_linux[@]}"
+	if ! _package_man_distro "${array_cli_linux[@]}"; then
+		red "Falha: ${array_cli_linux[@]}"
+		return 1
+	fi
 	
-
 	# Instalar utilitários para python2.
-	for c in "${array_python2_debian[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			return 1
-			break
-		fi
-	done
-
-
-	# Instalar utilitários para python3.
-	for c in "${array_python3_debian[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			return 1
-			break
-		fi
-	done
+	yellow "Instalando: ${array_python2_debian[@]}" 
+	if ! _package_man_distro "${array_python2_debian[@]}"; then
+		red "Falha: ${array_python2_debian[@]}"
+		return 1
+	fi
+	
+	# Instalar utilitários para python3 no fedora.
+	yellow "Instalando: ${array_python3_fedora[@]}"
+	
+	if ! _package_man_distro "${array_python3_fedora[@]}"; then
+		red "Falha: ${array_python3_fedora[@]}"
+		return 1
+	fi
 	return 0
 }
 
@@ -285,21 +280,21 @@ _config_archlinux_requeriments()
 	_package_man_distro "${array_cli_linux[@]}" || return 1
 
 	white "Instalando: python3 python-pip python-setuptools"
-	_package_man_distro python3 python-pip python-setuptools
+	_package_man_distro python3 'python-pip' 'python-setuptools'
 
 	# Suporte ao NTFS - sudo pacman -S ntfs-3g 
-	#_package_man_distro 'ntfs-3g'
-	#sudo modprobe fuse
+	# _package_man_distro 'ntfs-3g'
+	# sudo modprobe fuse
 	
 	white "Instalando: binutils"
 	_package_man_distro binutils
 
 	# Base-Devel
 	# white "Instalando: base-devel"
-	#_package_man_distro 'base-devel'
+	# _package_man_distro 'base-devel'
 
 	# xdpinfo
-	# sudo pacman -S xorg-xdpyinfo
+	# _package_man_distro 'xorg-xdpyinfo'
 }
 
 #=============================================================#

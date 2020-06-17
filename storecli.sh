@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_06_16_rev2'
+VERSION='2020_06_17_rev1'
 #
 #
 #---------------------- INSTALAÇÃO --------------------------------#
@@ -414,8 +414,9 @@ if [[ ! -z $1 ]]; then
 		shift
 	done
 else
-	#usage
+	# usage
 	"$Dir_Storecli/gui.sh"
+	#"$Dir_Storecli/pygui.py"
 fi
 
 
