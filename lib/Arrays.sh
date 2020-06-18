@@ -214,21 +214,24 @@ array_escritorio=(
 'libreoffice-appimage'
 )
 
-
-# Internet
-array_internet=(
+# Browser
+array_browser=(
 	'chromium'
 	'firefox'
 	'google-chrome'
-	'megasync'
 	'opera-stable'
+	'torbrowser'
+)	
+
+# Internet
+array_internet=(
+	'megasync'
 	'proxychains'
 	'qbittorrent'
 	'skype'
 	'teamviewer'
 	'telegram'
 	'tixati'
-	'torbrowser'
 	'uget'
 	'youtube-dl'
 	'youtube-dl-gui'

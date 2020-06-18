@@ -110,6 +110,10 @@ echo " Escritorio: "
 for a in "${array_escritorio[@]}"; do echo "     $a"; done
 echo ' '
 
+echo " Browser:  "
+for a in "${array_browser[@]}"; do echo "     $a"; done
+echo ' '
+
 echo " Internet:  "
 for a in "${array_internet[@]}"; do echo "     $a"; done
 echo ' '

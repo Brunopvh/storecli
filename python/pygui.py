@@ -19,6 +19,7 @@ storecli -> Abre com o GUI zenity
 
 import os
 import sys
+from subprocess import getstatusoutput
 from tkinter import *
 
 __version__ = '2020-06-16'
@@ -42,6 +43,11 @@ from midia import WinMidia
 from system import WinSystem
 from preference import WinPreference
 from gnomeshell import WinGshell
+
+if int(getstatusoutput('which storecli 2> /dev/null')[0]) != int('0'):
+	print('[+] Instalando a ultima versão do script storecli')
+	print('[+] Github do programa: https://raw.github.com/Brunopvh/storecli')
+	os.system('sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"')
 
 class WinHome: 
 
