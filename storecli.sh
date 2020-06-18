@@ -403,8 +403,8 @@ if [[ ! -z $1 ]]; then
 	
 	while [[ $1 ]]; do
 		case "$1" in
-			install) shift; _packmanager_storecli "$@";;
-			remove) shift; _pack_remove "$@";;
+			install) shift; _packmanager_storecli "$@"; exit;;
+			remove) shift; _pack_remove "$@"; exit;;
 
 			-b|--broke) _BROKE;;
 			-c|--configure) configure_all;;

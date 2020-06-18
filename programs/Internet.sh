@@ -59,8 +59,9 @@ _firefox()
 {
 	case "$os_id" in
 		arch) _package_man_distro firefox;;
-		debian) _package_man_distro firefox-esr;;
+		debian) _package_man_distro 'firefox-esr';;
 		ubuntu) _package_man_distro firefox;;
+		fedora) _package_man_distro 'firefox.x86_64' 'mozilla-ublock-origin.noarch';;
 		*) _INFO 'pkg_not_found' 'firefox'; return 1;;
 	esac
 
