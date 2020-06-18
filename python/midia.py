@@ -110,7 +110,6 @@ class WinMidia:
 							font=self.fontPadrao, 
 							width=5,
 							height=self.heightPadrao,
-							
 							)
 		self.info_celluloid.pack(side=RIGHT)
 

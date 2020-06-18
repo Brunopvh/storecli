@@ -56,12 +56,13 @@ class WinDevelopment:
 # Criação dos botões
 #=========================================================#
 
-		self.msg_opcao = Button(self.Container1)
-		self.msg_opcao["text"]= "Clique em um programa\npara instalar"
-		self.msg_opcao["width"] = 25
-		self.msg_opcao["background"] = "green"
-		self.msg_opcao["font"] = ("Calibri", "12")
-		self.msg_opcao.pack()
+		self.msg_show_info = Label(self.Container1)
+		self.msg_show_info['text'] = ''
+		self.msg_show_info['width'] = 30
+		self.msg_show_info['height'] = 3
+		self.msg_show_info['background'] = "green"
+		self.msg_show_info['font'] = ('Calibri', '12')
+		self.msg_show_info.pack()
 
 		
 		self.botao_voltar = Button(self.Container1)
@@ -84,7 +85,18 @@ class WinDevelopment:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.android_studio.pack()
+		self.android_studio.pack(side=LEFT)
+
+		self.info_android_studio = Button(self.Container2)
+		self.info_android_studio.configure(
+							text='info',
+							command=self.show_info_android_studio, 
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=5,
+							height=self.heightPadrao,
+							)
+		self.info_android_studio.pack(side=RIGHT)
 
 		self.codeblocks = Button(self.Container3)
 		self.codeblocks.configure(
@@ -95,7 +107,19 @@ class WinDevelopment:
 								width=self.widthPadrao,
 								height=self.heightPadrao,
 								)
-		self.codeblocks.pack()
+		self.codeblocks.pack(side=LEFT)
+
+		self.info_codeblocks = Button(self.Container3)
+		self.info_codeblocks.configure(
+							text='info',
+							command=self.show_info_codeblocks, 
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=5,
+							height=self.heightPadrao,
+							)
+		self.info_codeblocks.pack(side=RIGHT)
+
 
 		self.pycharm = Button(self.Container4)
 		self.pycharm.configure(
@@ -106,7 +130,18 @@ class WinDevelopment:
 								width=self.widthPadrao,
 								height=self.heightPadrao,
 								)
-		self.pycharm.pack()
+		self.pycharm.pack(side=LEFT)
+
+		self.info_pycharm = Button(self.Container4)
+		self.info_pycharm.configure(
+							text='info',
+							command=self.show_info_pycharm, 
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=5,
+							height=self.heightPadrao,
+							)
+		self.info_pycharm.pack(side=RIGHT)
 
 		self.sublime_text = Button(self.Container5)
 		self.sublime_text.configure(
@@ -117,18 +152,42 @@ class WinDevelopment:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.sublime_text.pack()
+		self.sublime_text.pack(side=LEFT)
+
+		self.info_sublime_text = Button(self.Container5)
+		self.info_sublime_text.configure(
+							text='info',
+							command=self.show_info_sublime_text, 
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=5,
+							height=self.heightPadrao,
+							)
+		self.info_sublime_text.pack(side=RIGHT)
+
 
 		self.vim = Button(self.Container6)
 		self.vim.configure(
-							text="vim", 							
+							text='vim', 							
 							command=self.install_vim,
 							background=self.backgroundPadrao, 
 							font=self.fontPadrao, 
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.vim.pack()
+		self.vim.pack(side=LEFT)
+
+		self.info_vim = Button(self.Container6)
+		self.info_vim.configure(
+							text='info',
+							command=self.show_info_vim, 
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=5,
+							height=self.heightPadrao,
+							)
+		self.info_vim.pack(side=RIGHT)
+
 
 		self.vscode = Button(self.Container7)
 		self.vscode.configure(
@@ -139,7 +198,18 @@ class WinDevelopment:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.vscode.pack()
+		self.vscode.pack(side=LEFT)
+
+		self.info_vscode = Button(self.Container7)
+		self.info_vscode.configure(
+							text='info',
+							command=self.show_info_vscode, 
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=5,
+							height=self.heightPadrao,
+							)
+		self.info_vscode.pack(side=RIGHT)
 
 
 	def close_windows(self):
@@ -148,19 +218,37 @@ class WinDevelopment:
 	def install_android_studio(self):
 		system('storecli install --yes android_studio')
 
+	def show_info_android_studio(self):
+		self.msg_show_info['text'] = 'android_studio'
+
 	def install_codeblocks(self):
 		system('storecli install --yes codeblocks')
+
+	def show_info_codeblocks(self):
+		self.msg_show_info['text'] = 'codeblocks'
 
 	def install_pycharm(self):
 		system('storecli install --yes pycharm')
 
+	def show_info_pycharm(self):
+		self.msg_show_info['text'] = 'pycharm'
+
 	def install_sublime_text(self):
 		system('storecli install --yes sublime-text')
+
+	def show_info_sublime_text(self):
+		self.msg_show_info['text'] = 'Editor de texto'
 
 	def install_vim(self):
 		system('storecli install --yes vim')
 
+	def show_info_vim(self):
+		self.msg_show_info['text'] = 'Vim e um editor de texto'
+
 	def install_vscode(self):
 		system('storecli install --yes vscode')
+
+	def show_info_vscode(self):
+		self.msg_show_info['text'] = 'Visual Studio Code\ne um editor de texto\nmultiplataforma da microsoft'
 
 
