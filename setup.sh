@@ -165,11 +165,11 @@ _install()
 	cd "$dir_unpack"
 	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
 	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
-	ln -sf "$dir_storecli"/gui.sh "$path_link_gui"   # Link do gui
+	#ln -sf "$dir_storecli"/gui.sh "$path_link_gui"   # Link do gui
 
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
-	chmod a+x "$path_link_gui"
+	#chmod a+x "$path_link_gui"
 	
 	if _WHICH 'storecli'; then
 		return 0
