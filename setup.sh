@@ -54,11 +54,9 @@ url_master="${url_proj}/archive/master.tar.gz"
 if [ $(id -u) -eq 0 ]; then
 	dir_storecli="/opt/storecli-amd64"
 	path_link='/usr/local/bin/storecli'
-	path_link_gui='/usr/local/bin/gui-storecli'
 else
 	dir_storecli="$HOME/.local/bin/storecli-amd64"
 	path_link="$HOME/.local/bin/storecli"
-	path_link_gui="$HOME/.local/bin/gui-storecli"
 fi
 
 
@@ -165,11 +163,8 @@ _install()
 	cd "$dir_unpack"
 	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
 	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
-	#ln -sf "$dir_storecli"/gui.sh "$path_link_gui"   # Link do gui
-
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
-	#chmod a+x "$path_link_gui"
 	
 	if _WHICH 'storecli'; then
 		return 0
