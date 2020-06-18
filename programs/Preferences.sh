@@ -32,6 +32,7 @@ function _ohmybash()
 	fi
 
 	# Download do instalador e dos temas para OhMybash
+	if [[ -f "$ohmybash_installer" ]]; then rm "$ohmybash_installer"; fi
 	_dow "$url_installer" "$ohmybash_installer" || return 1
 	_dow "$ohmybash_master" "$path_file" || return 1
 
@@ -55,7 +56,7 @@ function _ohmybash()
 	yellow "2 => bobby"
 	yellow "3 => bobby-python"
 	yellow "4 => emperor"
-	yellow "5 => mairan"
+	yellow "5 => mairan (recomendado)"
 	yellow "6 => rjorgenson"
 	read -n 1 -t 15 -p "Selecione um numero correspondente a opção desejada: " option
 	echo ' '
@@ -79,6 +80,7 @@ function _ohmybash()
 		mairan) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
 		rjorgenson) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
 	esac
+	white "OK"
 	
 }
 
