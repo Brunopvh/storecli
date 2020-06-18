@@ -37,6 +37,7 @@ from acessory import WinAcessory
 from development import WinDevelopment
 from office import WinOffice
 from internet import WinInternet
+from browser import WinBrowser
 from midia import WinMidia							
 from system import WinSystem
 from preference import WinPreference
@@ -101,6 +102,11 @@ class WinHome:
 		self.Container9["padx"] = self.padxPadrao
 		self.Container9.pack()
 
+		self.Container10 = Frame(master)
+		self.Container10["pady"] = self.padyPadrao
+		self.Container10["padx"] = self.padxPadrao
+		self.Container10.pack()
+
 
 		self.msg_opcao = Button(self.Container1)
 		self.msg_opcao["text"]= "Clique em uma\ncatgória"
@@ -145,7 +151,7 @@ class WinHome:
 
 		self.buttonOffice = Button(self.Container4)
 		self.buttonOffice.configure(
-								text="Escritório", 
+								text='Escritório', 
 								command=self.wind_office,
 								background=self.backgroundPadrao, 
 								font=self.fontPadrao, 
@@ -154,9 +160,20 @@ class WinHome:
 								)
 		self.buttonOffice.pack()
 
-		self.buttonInternet = Button(self.Container5)
+		self.buttonBrowser = Button(self.Container5)
+		self.buttonBrowser.configure(
+							text='Navegadores', 							
+							command=self.wind_browser,
+							background=self.backgroundPadrao, 
+							font=self.fontPadrao, 
+							width=self.widthPadrao,
+							height=self.heightPadrao,
+							)
+		self.buttonBrowser.pack()
+
+		self.buttonInternet = Button(self.Container6)
 		self.buttonInternet.configure(
-							text="Internet", 							
+							text='Internet', 							
 							command=self.wind_internet,
 							background=self.backgroundPadrao, 
 							font=self.fontPadrao, 
@@ -165,7 +182,7 @@ class WinHome:
 							)
 		self.buttonInternet.pack()
 
-		self.buttonMidia = Button(self.Container6)
+		self.buttonMidia = Button(self.Container7)
 		self.buttonMidia.configure(
 							text="Midia", 							
 							command=self.wind_midia,
@@ -176,7 +193,7 @@ class WinHome:
 							)
 		self.buttonMidia.pack()
 
-		self.buttonSystem = Button(self.Container7)
+		self.buttonSystem = Button(self.Container8)
 		self.buttonSystem.configure(
 							text="Sistema", 							
 							command=self.wind_system,
@@ -187,7 +204,7 @@ class WinHome:
 							)
 		self.buttonSystem.pack()
 
-		self.buttonPreference = Button(self.Container8)
+		self.buttonPreference = Button(self.Container9)
 		self.buttonPreference.configure(
 							text="preferencias", 							
 							command=self.wind_prefence,
@@ -198,7 +215,7 @@ class WinHome:
 							)
 		self.buttonPreference.pack()
 
-		self.buttonGshell = Button(self.Container9)
+		self.buttonGshell = Button(self.Container10)
 		self.buttonGshell.configure(
 							text="Gnome Shell", 							
 							command=self.wind_gnomeshell,
@@ -225,6 +242,11 @@ class WinHome:
 		self.newWindow = Toplevel(self.master)
 		self.newWindow.title('Escritório')
 		self.app = WinOffice(self.newWindow)
+
+	def wind_browser(self):
+		self.newWindow = Toplevel(self.master)
+		self.newWindow.title('Navegadores')
+		self.app = WinBrowser(self.newWindow)
 
 	def wind_internet(self):
 		self.newWindow = Toplevel(self.master)
@@ -256,5 +278,5 @@ class WinHome:
 root = Tk()
 app = WinHome(root) 
 root.title('Menu Principal')
-root.geometry("290x440")
+root.geometry("290x460")
 root.mainloop() 

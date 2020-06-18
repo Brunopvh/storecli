@@ -97,14 +97,14 @@ class WinInternet:
 # Criação dos botões
 #=========================================================#
 
-		self.msg_opcao = Button(self.Container1)
-		self.msg_opcao["text"]= "Clique em um programa\npara instalar"
-		self.msg_opcao["width"] = 25
-		self.msg_opcao["background"] = "green"
-		self.msg_opcao["font"] = ("Calibri", "12")
-		self.msg_opcao.pack()
+		self.msg_show_info = Label(self.Container1)
+		self.msg_show_info['text'] = ''
+		self.msg_show_info['width'] = 30
+		self.msg_show_info['height'] = 3
+		self.msg_show_info['background'] = "green"
+		self.msg_show_info['font'] = ('Calibri', '12')
+		self.msg_show_info.pack()
 
-		
 		self.botao_voltar = Button(self.Container1)
 		self.botao_voltar["command"] = self.close_windows
 		self.botao_voltar['text'] = 'Voltar'
@@ -116,40 +116,7 @@ class WinInternet:
 								)
 		self.botao_voltar.pack()
 
-		self.chromium = Button(self.Container2)
-		self.chromium.configure(
-							text='chromium',
-							command=self.install_chromium, 
-							background=self.backgroundPadrao, 
-							font=self.fontPadrao, 
-							width=self.widthPadrao,
-							height=self.heightPadrao,
-							)
-		self.chromium.pack()
-
-		self.firefox = Button(self.Container3)
-		self.firefox.configure(
-								text='firefox', 
-								command=self.install_firefox,
-								background=self.backgroundPadrao, 
-								font=self.fontPadrao, 
-								width=self.widthPadrao,
-								height=self.heightPadrao,
-								)
-		self.firefox.pack()
-
-		self.google_chrome = Button(self.Container4)
-		self.google_chrome.configure(
-								text="google-chrome", 
-								command=self.install_google_chrome,
-								background=self.backgroundPadrao, 
-								font=self.fontPadrao, 
-								width=self.widthPadrao,
-								height=self.heightPadrao,
-								)
-		self.google_chrome.pack()
-
-		self.megasync = Button(self.Container5)
+		self.megasync = Button(self.Container1)
 		self.megasync.configure(
 							text="megasync", 							
 							command=self.install_megasync,
@@ -158,20 +125,21 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.megasync.pack()
+		self.megasync.pack(side=LEFT)
 
-		self.opera_stable = Button(self.Container6)
-		self.opera_stable.configure(
-							text='opera-stable', 							
-							command=self.install_opera_stable,
-							background=self.backgroundPadrao, 
-							font=self.fontPadrao, 
-							width=self.widthPadrao,
-							height=self.heightPadrao,
-							)
-		self.opera_stable.pack()
+		self.info_megasync = Button(self.Container1)
+		self.info_megasync.configure(
+								text='info', 
+								command=self.show_info_megasync,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_megasync.pack(side=RIGHT)
+		
 
-		self.qbittorrent = Button(self.Container7)
+		self.qbittorrent = Button(self.Container2)
 		self.qbittorrent.configure(
 							text='qbittorrent', 							
 							command=self.install_qbittorrent,
@@ -180,9 +148,21 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.qbittorrent.pack()
+		self.qbittorrent.pack(side=LEFT)
 
-		self.skype = Button(self.Container8)
+		self.info_qbittorrent = Button(self.Container2)
+		self.info_qbittorrent.configure(
+								text='info', 
+								command=self.show_info_qbittorrent,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_qbittorrent.pack(side=RIGHT)
+
+
+		self.skype = Button(self.Container3)
 		self.skype.configure(
 							text='skype', 							
 							command=self.install_skype,
@@ -191,9 +171,20 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.skype.pack()
+		self.skype.pack(side=LEFT)
 
-		self.teamviewer = Button(self.Container9)
+		self.info_skype = Button(self.Container3)
+		self.info_skype.configure(
+								text='info', 
+								command=self.show_info_skype,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_skype.pack(side=RIGHT)
+
+		self.teamviewer = Button(self.Container4)
 		self.teamviewer.configure(
 							text='teamviewer', 							
 							command=self.install_teamviewer,
@@ -202,9 +193,21 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.teamviewer.pack()
+		self.teamviewer.pack(side=LEFT)
 
-		self.telegram = Button(self.Container10)
+		self.info_teamviewer = Button(self.Container4)
+		self.info_teamviewer.configure(
+								text='info', 
+								command=self.show_info_teamviewer,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_teamviewer.pack(side=RIGHT)
+
+
+		self.telegram = Button(self.Container5)
 		self.telegram.configure(
 							text='telegram', 							
 							command=self.install_telegram,
@@ -213,9 +216,21 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.telegram.pack()
+		self.telegram.pack(side=LEFT)
 
-		self.tixati = Button(self.Container11)
+		self.info_telegram = Button(self.Container5)
+		self.info_telegram.configure(
+								text='info', 
+								command=self.show_info_telegram,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_telegram.pack(side=RIGHT)
+
+
+		self.tixati = Button(self.Container6)
 		self.tixati.configure(
 							text='tixati', 							
 							command=self.install_tixati,
@@ -224,20 +239,21 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.tixati.pack()
+		self.tixati.pack(side=LEFT)
 
-		self.torbrowser = Button(self.Container12)
-		self.torbrowser.configure(
-							text='torbrowser', 							
-							command=self.install_torbrowser,
-							background=self.backgroundPadrao, 
-							font=self.fontPadrao, 
-							width=self.widthPadrao,
-							height=self.heightPadrao,
-							)
-		self.torbrowser.pack()
+		self.info_tixati = Button(self.Container6)
+		self.info_tixati.configure(
+								text='info', 
+								command=self.show_info_tixati,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_tixati.pack(side=RIGHT)
 
-		self.uget = Button(self.Container13)
+
+		self.uget = Button(self.Container7)
 		self.uget.configure(
 							text='uget', 							
 							command=self.install_uget,
@@ -246,9 +262,20 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.uget.pack()
+		self.uget.pack(side=LEFT)
 
-		self.youtube_dl = Button(self.Container14)
+		self.info_uget = Button(self.Container7)
+		self.info_uget.configure(
+								text='info', 
+								command=self.show_info_uget,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_uget.pack(side=RIGHT)
+
+		self.youtube_dl = Button(self.Container8)
 		self.youtube_dl.configure(
 							text='youtube-dl', 							
 							command=self.install_youtube_dl,
@@ -257,9 +284,22 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.youtube_dl.pack()
+		self.youtube_dl.pack(side=LEFT)
 
-		self.youtube_dl_gui = Button(self.Container15)
+		self.info_youtube_dl = Button(self.Container8)
+		self.info_youtube_dl.configure(
+								text='info', 
+								command=self.show_info_youtube_dl,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_youtube_dl.pack(side=RIGHT)
+
+
+
+		self.youtube_dl_gui = Button(self.Container9)
 		self.youtube_dl_gui.configure(
 							text='youtube-dl-gui', 							
 							command=self.install_youtube_dl_gui,
@@ -268,52 +308,75 @@ class WinInternet:
 							width=self.widthPadrao,
 							height=self.heightPadrao,
 							)
-		self.youtube_dl_gui.pack()
+		self.youtube_dl_gui.pack(side=LEFT)
+
+		self.info_youtube_dl_gui = Button(self.Container9)
+		self.info_youtube_dl_gui.configure(
+								text='info', 
+								command=self.show_info_youtube_dl_gui,
+								background=self.backgroundPadrao, 
+								font=self.fontPadrao, 
+								width=5,
+								height=self.heightPadrao,
+								)
+		self.info_youtube_dl_gui.pack(side=RIGHT)
 
 
 	def close_windows(self):
 		self.master.destroy()
-	
-	def install_chromium(self):
-		system('storecli install --yes chromium')
-
-	def install_firefox(self):
-		system('storecli install --yes firefox')
-
-	def install_google_chrome(self):
-		system('storecli install --yes google-chrome')
 
 	def install_megasync(self):
 		system('storecli install --yes megasync')
 
-	def install_opera_stable(self):
-		system('storecli install --yes opera-stable')
+	def show_info_megasync(self):
+		self.msg_show_info['text'] = 'Megasync'
 
 	def install_qbittorrent(self):
 		system('storecli install --yes qbittorrent')
 
+	def show_info_qbittorrent(self):
+		self.msg_show_info['text'] = 'Qbittorrent e um gerenciador\nde bittorrent'
+
 	def install_skype(self):
 		system('storecli install --yes skype')
+
+	def show_info_skype(self):
+		self.msg_show_info['text'] = 'Skype'
 
 	def install_teamviewer(self):
 		system('storecli install --yes teamviewer')
 
+	def show_info_teamviewer(self):
+		self.msg_show_info['text'] = 'Teamviewer'
+
 	def install_telegram(self):
 		system('storecli install --yes telegram')
+
+	def show_info_telegram(self):
+		self.msg_show_info['text'] = 'Telegram'
 
 	def install_tixati(self):
 		system('storecli install --yes tixati')
 
-	def install_torbrowser(self):
-		system('storecli install --yes torbrowser')
+	def show_info_tixati(self):
+		self.msg_show_info['text'] = 'Tixati e um gerenciador\nde bittorrent'
 
 	def install_uget(self):
 		system('storecli install --yes uget')
 
+	def show_info_uget(self):
+		self.msg_show_info['text'] = 'Uget e um gerenciador\nde downloads'
+
 	def install_youtube_dl(self):
 		system('storecli install --yes youtube-dl')
 
+	def show_info_youtube_dl(self):
+		self.msg_show_info['text'] = 'youtube-dl baixa vídeos do\nyoutube via linha de comando'
+
 	def install_youtube_dl_gui(self):
 		system('storecli install --yes youtube-dl-gui')
+
+	def show_info_youtube_dl_gui(self):
+		self.msg_show_info['text'] = 'YoutubeDlGui e um GUI gráfico para\no youtube-dl'
 
 
