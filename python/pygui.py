@@ -201,7 +201,7 @@ class WinHome:
 
 		self.buttonSystem = Button(self.Container8)
 		self.buttonSystem.configure(
-							text="Sistema", 							
+							text='Sistema', 							
 							command=self.wind_system,
 							background=self.backgroundPadrao, 
 							font=self.fontPadrao, 
@@ -212,7 +212,7 @@ class WinHome:
 
 		self.buttonPreference = Button(self.Container9)
 		self.buttonPreference.configure(
-							text="preferencias", 							
+							text='Preferências', 							
 							command=self.wind_prefence,
 							background=self.backgroundPadrao, 
 							font=self.fontPadrao, 

@@ -32,7 +32,7 @@ function _ohmybash()
 	fi
 
 	# Download do instalador e dos temas para OhMybash
-	_dow "$url_installer" "ohmybash_installer" || return 1
+	_dow "$url_installer" "$ohmybash_installer" || return 1
 	_dow "$ohmybash_master" "$path_file" || return 1
 
 	# Somente baixar

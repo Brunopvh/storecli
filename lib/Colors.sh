@@ -82,6 +82,11 @@ yellow()
 	echo -e "${CYellow}[+]${Reset} $@"
 }
 
+blue()
+{
+	echo -e "${CBlue}[~]${Reset} $@"
+}
+
 white()
 {
 	echo -e "${CSWhite}[>]${Reset} $@"

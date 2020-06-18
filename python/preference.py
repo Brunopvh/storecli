@@ -178,7 +178,7 @@ class WinPreference:
 		self.master.destroy()
 	
 	def install_ohmybash(self):
-		system('storecli install --yes ohmyzsh')
+		system('storecli install --yes ohmybash')
 
 	def show_info_ohmybash(self):
 		self.msg_show_info['text'] = 'O Oh-My-Bash é um conjunto de\nestilização para seu terminal\ncom shell bash'
