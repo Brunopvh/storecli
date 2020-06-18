@@ -130,22 +130,10 @@ echo " Preferências: "
 for a in "${array_preferencias[@]}"; do echo "     $a"; done
 echo ' '
 
-# Algumas extensões do gnome não estão disponíveis nos repositórios
-# das distros da mesma maneira, por exemplo: No Debian e derivados 
-# podemos instalar várias extensões para o Gnome via APT INSTALL
-# no entanto no Archlinux e Fedora o número de extensões via
-# PACMAN INSTALL e DNF INSTALL e menor, sendo necessário instalção
-# das extensões atraves do código fonte no github - (Leia a LIB
-# programs/GnomeShell.sh) 
-echo " Gnome Shell Extensões pacote(gnome-extensions): "
-case "$os_id" in
-	debian|ubuntu) for a in "${array_gnome_shell_debian[@]}"; do echo "     $a"; done;; # Disponíveis para Debian
-	fedora) for a in "${array_gnome_shell_fedora[@]}"; do echo "     $a"; done;;        # Disponíveis para Fedora
-	arch) for a in "${array_gnome_shell_archlinux[@]}"; do echo "     $a"; done;;       # Disponíveis para Arch
-	suse) for a in "${array_gnome_shell_suse[@]}"; do echo "     $a"; done;;            # Disponíveis para Suse
-esac
-echo "     topicons-plus"
-echo "     dash-to-dock"
+echo " Gnome Shell: "
+for a in "${array_gnome_extensions[@]}"; do echo "     $a"; done
+echo ' '
+
 }
 
 #=============================================================#
@@ -162,7 +150,7 @@ function _YESNO()
 	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
 	
 	echo -en "[>] $@ [${Yellow}s${Reset}/${Red}n${Reset}]?: "
-	read -t 15 -n 1 sn
+	read -t 25 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then

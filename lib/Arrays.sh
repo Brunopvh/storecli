@@ -273,29 +273,12 @@ array_preferencias=(
 )
 
 # Gnome Shell Extensões
-# Fedora
-array_gnome_shell_fedora=(
-	'gnome-tweaks' 
-	'gnome-shell-extension-topicons-plus'
-	'gnome-shell-extension-drive-menu' 
-	'gnome-shell-extension-dash-to-dock.noarch'
-	'gnome-backgrounds-extras'
-	'verne-backgrounds-gnome'
-)
+array_gnome_extensions=(
+	'dash-to-dock'
+	'drive-menu'
+	'gnome-backgrounds'
+	'gnome-tweaks'
+	'topicons-plus'
+	)
 
-# OpenSuse
-array_gnome_shell_suse=(
-	'gnome-tweaks' 
-)
 
-# ArchLinux
-array_gnome_shell_archlinux=(
-	'gnome-tweaks' 'gnome-backgrounds'
-)
-
-# Debian
-array_gnome_shell_debian=(
-	'gnome-tweaks' 
-	'gnome-shell-extension-top-icons-plus' 
-	'gnome-shell-extension-dashtodock'
-)

@@ -13,17 +13,17 @@ function _ohmybash()
 	# github_ohmy_bash="https://github.com/ohmybash/oh-my-bash.git"
 	# https://github.com/ohmybash/oh-my-bash/wiki/Themes#agnoster
 	#
-	#
 	# Temas:
 	# I recommend the following:
-	# $ cd home
-	# $ mkdir -p .bash/themes/agnoster-bash
-	# $ git clone https://github.com/speedenator/agnoster-bash.git .bash/themes/agnoster-bash
+	# cd home
+	# mkdir -p .bash/themes/agnoster-bash
+	# git clone https://github.com/speedenator/agnoster-bash.git .bash/themes/agnoster-bash
 	# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
 	local path_file="$Dir_Downloads/ohmybash.zip"
-
+	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
+	local ohmybash_installer="$Dir_Downloads/ohmybash_installer.sh"
 
 	# Perguntar se o usuário deseja realmente instalar o pacote caso não exista
 	# o argumento '-y' ou --yes.
@@ -31,10 +31,8 @@ function _ohmybash()
 		_YESNO "Instalar o pacote ohmybash" || return 0
 	fi
 
-	# Executar o script de instalação de ohmybash.
-	"$Script_ohmybash"
-
-	mkdir -p "$HOME/.bash/themes"
+	# Download do instalador e dos temas para OhMybash
+	_dow "$url_installer" "ohmybash_installer" || return 1
 	_dow "$ohmybash_master" "$path_file" || return 1
 
 	# Somente baixar
@@ -45,6 +43,7 @@ function _ohmybash()
 
 	_unpack "$path_file" || return 1
 	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
+	mkdir -p "$HOME/.bash/themes"
 	cp -R -u "$Dir_Unpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
 	
 	_YESNO "Gostaria de habilitar um tema para ohmybash" || return 1

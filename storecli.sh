@@ -3,7 +3,7 @@
 #
 #
 #
-VERSION='2020_06_17_rev1'
+VERSION='2020_06_18_rev2'
 #
 #
 #---------------------- INSTALAÇÃO --------------------------------#
@@ -410,13 +410,16 @@ if [[ ! -z $1 ]]; then
 			-c|--configure) configure_all;;
 			-d|--downloadonly) export download_only='True';;
 			-u|--upgrade) _install_update_storecli; exit;;
+			-y|--yes) ;;
+			-d|--downloadonly) ;;
+			*) red "Comando não encontrado: $1";;
 		esac
 		shift
 	done
 else
 	# usage
-	"$Dir_Storecli/gui.sh"
-	#"$Dir_Storecli/pygui.py"
+	#"$Dir_Storecli/scripts/gui.sh"
+	"$Dir_Storecli/python/pygui.py"
 fi
 
 

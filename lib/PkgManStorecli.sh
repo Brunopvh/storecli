@@ -95,10 +95,11 @@ _packmanager_storecli()
 
 
 #----------- Gnome Extenções -------------------------------#
-			'gnome-extensions') _gnome_shell_extensions;;
-			'topicons-plus') _topicons_plus_github;;
-			'dash-to-dock') _dashtodock_github;;
-
+			'dash-to-dock') _dashtodock;;
+			'drive-menu') _drive_menu;;
+			'gnome-backgrounds') _gnome_backgrounds;;
+			'gnome-tweaks') _gnome_tweaks;;
+			'topicons-plus') _topicons_plus;;
 			*) _INFO 'pkg_not_found' "$1";;
 		esac
 		shift

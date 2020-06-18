@@ -7,42 +7,9 @@
 
 source "$Lib_Arrays"
 
-function _topicons_plus_github()
-{
-	# https://github.com/phocean/TopIcons-plus/archive/master.zip
-	# https://github.com/phocean/TopIcons-plus/archive/master.tar.gz
-	# https://github.com/phocean/TopIcons-plus
-
-	local url='https://github.com/phocean/TopIcons-plus/archive/master.tar.gz'
-	local path_file="$Dir_Downloads/topicons_plus.tar.gz"
-
-	_dow "$url" "$path_file" || return 1
-
-	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
-		return 0 
-	fi
-
-	_unpack "$path_file" || return 1
-
-	_package_man_distro make
-
-	cd "$Dir_Unpack"
-	mv $(ls -d Top*) "$Dir_Unpack"/topicons_plus
-	cd topicons_plus
-	echo -e "$space_line"
-	# make install
-	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
-
-	echo -e "$space_line"
-
-	if _YESNO "Deseja abrir a jenela de configuração para topicons-plus"; then
-		gnome-extensions prefs TopIcons@phocean.net
-	fi
-
-}
-
+#=============================================================#
+# Dash to dock
+#=============================================================#
 
 function _dashtodock_github()
 {
@@ -80,49 +47,88 @@ function _dashtodock_github()
 
 }
 
-
-function _gnome_shell_extensions()
+function _dashtodock()
 {
-	# Sessão desktop do usuário
-	user_session_desktop=$(set | grep '^XDG_SESSION_DESKTOP' | sed 's|.*=||g')
+	case "$os_id" in
+		fedora) _package_man_distro 'gnome-shell-extension-dash-to-dock.noarch';;
+		debian) _package_man_distro 'gnome-shell-extension-dashtodock';;
+		*) _dashtodock_github;;
+	esac
+}
 
+#=============================================================#
+# Drive Menu
+#=============================================================#
+function _drive_menu()
+{
+	case "$os_id" in
+		fedora) _package_man_distro 'gnome-shell-extension-drive-menu';;
+		*) _INFO 'pkg_not_found' 'drive-menu'; return 1;;
+	esac
+}
 
-	#----------------------------------------------------#
-	# Verifcar qual o gerenciador de pacotes da distro e instalar pacotes 
-	# e extenções do gnome-shell.
-	#----------------------------------------------------#
-	
-	if _WHICH "dnf"; then            # RedHat
-		for c in "${array_gnome_shell_fedora[@]}"; do
-			echo -e "$space_line"
-			white "Instalando: $c"
-			_package_man_distro "$c"
-		done
+#=============================================================#
+# Gnome Backgrounds
+#=============================================================#
+function _gnome_backgrounds()
+{
+	case "$os_id" in 
+		arch) _package_man_distro 'gnome-backgrounds';;
+		fedora) _package_man_distro 'gnome-backgrounds-extras' 'verne-backgrounds-gnome';;
+		*) _INFO 'pkg_not_found' 'gnome-backgrounds'; return 1;;
+	esac
+}
 
-	elif _WHICH "zypper"; then       # Suse
-		for c in "${array_gnome_shell_suse[@]}"; do
-			echo -e "$space_line"
-			white "Instalando: $c"
-			_package_man_distro "$c" 
-		done
+#=============================================================#
+# Top icons plus
+#=============================================================#
+function _topicons_plus_github()
+{
+	# https://github.com/phocean/TopIcons-plus/archive/master.zip
+	# https://github.com/phocean/TopIcons-plus/archive/master.tar.gz
+	# https://github.com/phocean/TopIcons-plus
 
-	elif _WHICH "pacman"; then       # ArchLinux
-		for c in "${array_gnome_shell_archlinux[@]}"; do
-			echo -e "$space_line"
-			white "Instalando: $c"
-			_package_man_distro "$c"
-		done
+	local url='https://github.com/phocean/TopIcons-plus/archive/master.tar.gz'
+	local path_file="$Dir_Downloads/topicons_plus.tar.gz"
 
-	elif _WHICH "apt"; then          # Debian
-		for c in "${array_gnome_shell_debian[@]}"; do
-			echo -e "$space_line"
-			white "Instalando: $c"
-			_package_man_distro "$c"
-		done
+	_dow "$url" "$path_file" || return 1
 
-	else
-		red "Falha"
-		return 1
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
 	fi
 
+	_unpack "$path_file" || return 1
+	_package_man_distro make
+
+	cd "$Dir_Unpack"
+	mv $(ls -d Top*) "$Dir_Unpack"/topicons_plus
+	cd topicons_plus
+	echo -e "$space_line"
+	# make install
+	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
+	echo -e "$space_line"
+
+	if _YESNO "Deseja abrir a jenela de configuração para topicons-plus"; then
+		gnome-extensions prefs TopIcons@phocean.net
+	fi
+
+}
+
+function _topicons_plus()
+{
+	case "$os_id" in
+		fedora) _package_man_distro 'gnome-shell-extension-topicons-plus';;
+		debian) _package_man_distro 'gnome-shell-extension-top-icons-plus';;
+		*) _topicons_plus_github;;
+	esac
+}
+
+#=============================================================#
+# Gnome tweaks
+#=============================================================#
+function _gnome_tweaks()
+{
+	_package_man_distro 'gnome-tweaks'
 }
