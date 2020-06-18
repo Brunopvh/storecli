@@ -41,7 +41,8 @@ function _ohmybash()
 		return 0 
 	fi
 
-	chmod +x "$ohmybash_installer"; "$ohmybash_installer"
+	chmod +x "$ohmybash_installer" 
+	"$ohmybash_installer"
 
 	_unpack "$path_file" || return 1
 	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
