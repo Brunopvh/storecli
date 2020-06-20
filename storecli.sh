@@ -356,12 +356,13 @@ _RMDIR()
 	if [[ -z $1 ]]; then
 		return 1
 	fi
-	
-	yellow "Removendo: $1"
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# A função _SUDO irá remover o arquivo/diretório.
-	rm -rf "$1" 2> /dev/null || _SUDO rm -rf "$1"
+	for i in "$@"; do
+		red "Removendo: $i"
+		rm -rf "$1" 2> /dev/null || _SUDO rm -rf "$i"
+	done
 
 }
 

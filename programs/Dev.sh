@@ -280,6 +280,103 @@ function _codeblocks()
 }
 
 #=====================================================#
+# Java
+#=====================================================#
+function _java_instalation_tarfile()
+{
+	# https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242050_3d5a2bb8f8d4428bbe94aed7ec7ae784
+	# https://www.java.com/pt_BR/download/linux_manual.jsp
+	# https://www.blogopcaolinux.com.br/2016/06/instalando-java-jre-oracle-no-ubuntu-manualmente.html
+
+	local url_javaTARGZ='https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242050_3d5a2bb8f8d4428bbe94aed7ec7ae784'
+	local path_file="$Dir_Downloads/java.tar.gz"
+
+	_dow "$url_javaTARGZ" "$path_file" || return 1
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+	_unpack "$path_file" || return 1
+
+	if [[ ! -d '/usr/lib/jre-oracle' ]]; then
+		_SUDO mkdir -p '/usr/lib/jre-oracle'
+	fi
+
+	cd '/usr/lib/jre-oracle' && _RMDIR $(ls)
+	cd "$Dir_Unpack"
+	mv $(ls -d jre*) jre-oracle
+	_SUDO cp -R 'jre-oracle' '/usr/lib/'
+
+	# Informar ao sistema onde o Oracle Java está localizado:
+	yellow "Executando: update-alternatives"
+	sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jre-oracle/bin/java" 1
+
+	# Definir como padrão
+	sudo update-alternatives --set java /usr/lib/jre-oracle/bin/java
+
+	# Habilitar plugin Java para firefox.
+	yellow "Habilitando plugin para Mozilla Firefox"
+	sudo mkdir -p /usr/lib/mozilla
+	sudo mkdir -p /usr/lib/mozilla/plugins
+	sudo update-alternatives --install "/usr/lib/mozilla/plugins/javaplugin.so" "javaplugin" "/usr/lib/jre-oracle/lib/amd64/libnpjp2.so" 3
+
+	yellow "Definindo como padrão"
+	sudo update-alternatives --set javaplugin '/usr/lib/jre-oracle/lib/amd64/libnpjp2.so'
+
+	green "Criando arquivo de configuração '.desktop'"
+	javaDesktopFile='/usr/share/applications/java-control.desktop'
+
+	echo '[Desktop Entry]' | sudo tee "$javaDesktopFile" 1> /dev/null
+	{
+		echo 'Encoding=UTF-8' 
+		echo 'Name=Java'
+		echo 'Comment=Java Control Panel'
+		echo "Exec=sh '/usr/lib/jre-oracle/bin/jcontrol'"
+		echo 'Icon=/usr/lib/jre-oracle/lib/desktop/icons/hicolor/48x48/apps/sun-jcontrol.png'
+		echo 'Terminal=false'
+		echo 'Type=Application'
+		echo 'Categories=Application;Settings;Java;X-Red-Hat-Base;X-Ximian-Settings;'
+	} | sudo tee -a "$javaDesktopFile" 1> /dev/null
+
+	green "Criando atalho na Área de trabalho"
+	cp -u "$javaDesktopFile" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$javaDesktopFile" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$javaDesktopFile" ~/Desktop/ 2> /dev/null
+}
+
+
+_java_instalation_debian()
+{
+	_package_man_distro 'openjdk-8-jre'
+}
+
+_java_instalation_rpm()
+{
+	# http://openjdk.java.net/install/
+	local url_javaRPM='https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242049_3d5a2bb8f8d4428bbe94aed7ec7ae784'
+	local path_file="$Dir_Downloads/java.rpm"
+
+	_dow "$url_javaRPM" "$path_file" || return 1
+
+	case "$os_id" in
+		fedora) _RPM --install "$path_file" || return 1;;
+		*) _INFO 'pkg_not_found' 'java';;
+	esac
+}
+
+
+function _java()
+{
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _java_instalation_debian;;
+		fedora) _java_instalation_tarfile;;
+		*) _java_instalation_tarfile;;
+	esac
+}
+
+#=====================================================#
 # Pycharm
 #=====================================================#
 function _pycharm()
