@@ -280,21 +280,6 @@ function _codeblocks()
 }
 
 #=====================================================#
-# Java
-#=====================================================#
-function _java()
-{
-	# https://www.java.com/pt_BR/download/help/linux_x64_install.xml
-	# https://sempreupdate.com.br/como-instalar-java-10-11-12-no-linux/
-	#
-	# apt install oracle-java12-installer
-	# apt install oracle-java12-set-default
-	#
-	red "A instalação do JAVA está em fase de desenvolvimento, e estará disponível em breve."
-}
-
-
-#=====================================================#
 # Pycharm
 #=====================================================#
 function _pycharm()

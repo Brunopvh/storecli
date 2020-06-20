@@ -1,10 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-#
-#
-VERSION='2020_06_19_rev1'
-#
+VERSION='2020_06_20_rev2'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -360,13 +357,12 @@ _RMDIR()
 		return 1
 	fi
 	
-	LocalDir=$(pwd)
-	if [[ $(echo "${LocalDir:0:4}") != '/tmp' ]]; then # Expansão de variáveis.
-		red "CUIDADO: rm -rf $1"
-		return 1
-	fi
-	
-	_SUDO rm -rf "$1"
+	yellow "Removendo: $1"
+
+	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
+	# A função _SUDO irá remover o arquivo/diretório.
+	rm -rf "$1" 2> /dev/null || _SUDO rm -rf "$1"
+
 }
 
 

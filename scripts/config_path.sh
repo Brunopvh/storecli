@@ -3,7 +3,7 @@
 # Este script serve para inserir os diretórios que contém binário na
 # HOME('~/bin' e '~/.local/bin') na variável PATH do usuario atual.
 #
-VERSION='2020-05-16'
+VERSION='2020-06-20'
 #
 
 # NÃO pode ser root.
@@ -32,6 +32,7 @@ path_bash()
 	# Continuar
 	echo "Configurando o arquivo [$HOME/.bashrc]"
 	echo "export PATH=$PATH" >> "$HOME/.bashrc"
+	source $HOME/.bashrc
 }
 
 path_zsh()
