@@ -181,12 +181,13 @@ function _megasync()
 #=============================================================#
 _tor_debian()
 {
+	# 
 	local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
 	local tor_file_list='/etc/apt/sources.list.d/torproject.list'
 
 	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tina' ]]; then  # Ubuntu bionic
 		local tor_repos='deb https://deb.torproject.org/torproject.org bionic main'
-	elif [[ "$os_codename" == 'buster' ]]; then # Debian buster
+	elif [[ "$os_codename" == 'buster' ]]; then                                  # Debian buster
 		local tor_repos='deb https://deb.torproject.org/torproject.org buster main'
 	else
 		_INFO 'pkg_not_found' 'tor'
@@ -207,6 +208,17 @@ _tor_debian()
 
 	yellow "Instalando tor deb.torproject.org-keyring"
 	_package_man_distro tor deb.torproject.org-keyring
+	_package_man_distro proxychains || return 1
+}
+
+_tor_fedora()
+{
+	case "$os_version" in
+		32) _package_man_distro tor;;
+		*) return;;
+	esac
+
+	_package_man_distro proxychains || return 1
 }
 
 
@@ -215,19 +227,11 @@ _tor_debian()
 #=============================================================#
 _proxychains()
 {
-	if [[ -x $(command -v zypper 2> /dev/null) ]]; then
-		_package_man_distro proxychains-ng || return 1
-
-	elif [[ -x $(command -v dnf 2>/dev/null) ]]; then
-		_package_man_distro proxychains || return 1
-
-	elif [[ -x $(command -v apt 2> /dev/null) ]]; then
-		_package_man_distro proxychains || return 1 
-		_tor_debian
-	else
-		_INFO 'pkg_not_found' 'proxychains'
-		return 1
-	fi
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _tor_debian;;
+		fedora) _tor_fedora;;
+		*) _INFO 'pkg_not_found' 'proxychains tor';;
+	esac
 }
 
 #=============================================================#

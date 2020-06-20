@@ -198,20 +198,21 @@ array_acessorios=(
 
 # Desenvolvimento
 array_dev=(
-'android-studio'
-'codeblocks'
-'pycharm'
-'sublime-text'
-'vim'
-'vscode'
+	'android-studio'
+	'codeblocks'
+	'java'
+	'pycharm'
+	'sublime-text'
+	'vim'
+	'vscode'
 )
 
 # Escritório
 array_escritorio=(
-'atril'
-'fontes-ms'
-'libreoffice'
-'libreoffice-appimage'
+	'atril'
+	'fontes-ms'
+	'libreoffice'
+	'libreoffice-appimage'
 )
 
 # Browser

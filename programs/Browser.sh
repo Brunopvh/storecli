@@ -262,7 +262,13 @@ esac
 _torbrowser()
 {
 	# Url do script de instalação do torbrowser.
-	local master_script_torbrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+	local url_master_script_torbrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+
+	if ! _WHICH "$Script_TorBrowser"; then
+		Script_TorBrowser="$dir_temp/tor.sh"
+		_dow "$url_master_script_torbrowser" "$Script_TorBrowser" || return 1
+		chmod +x "$Script_TorBrowser"
+	fi
 
 	if [[ "$download_only" == 'True' ]]; then
 		"$Script_TorBrowser" --install --downloadonly

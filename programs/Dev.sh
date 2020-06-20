@@ -217,14 +217,12 @@ function _android_studio_fedora()
 			'zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686'
 			)
 
-	for c in "${array_libs_fedora[@]}"; do
-		echo -e "$space_line"
-		green "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			sleep 2
-		fi
-	done
+	echo -e "$space_line"
+	green "Instalando: ${array_libs_fedora[@]}"
+	if ! _package_man_distro "${array_libs_fedora[@]}"; then
+		red "Falha: ${array_libs_fedora[@]}"
+		sleep 0.25
+	fi
 
 	_android_studio_zip || return 1
 	#_android_sdktools
@@ -280,6 +278,21 @@ function _codeblocks()
 		*) _INFO 'pkg_not_found' 'codeblocks'; return 1;;
 	esac
 }
+
+#=====================================================#
+# Java
+#=====================================================#
+function _java()
+{
+	# https://www.java.com/pt_BR/download/help/linux_x64_install.xml
+	# https://sempreupdate.com.br/como-instalar-java-10-11-12-no-linux/
+	#
+	# apt install oracle-java12-installer
+	# apt install oracle-java12-set-default
+	#
+	red "A instalação do JAVA está em fase de desenvolvimento, e estará disponível em breve."
+}
+
 
 #=====================================================#
 # Pycharm
