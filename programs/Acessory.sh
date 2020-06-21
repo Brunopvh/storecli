@@ -142,7 +142,7 @@ function _etcher_appimage()
 function _etcher()
 {
 	case "$os_id" in
-		ubuntu|debian) _etcher_ubuntu;;
+		ubuntu|linuxmint|debian) _etcher_ubuntu;;
 		fedora) _etcher_fedora;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
@@ -259,7 +259,7 @@ function _woeusb_debian()
 	
 	# Instalar libwxgtk3
 	case "$os_codename" in
-		buster|bionic|trica) _package_man_distro 'libwxgtk3.0-dev' || return 1;;
+		buster|bionic|tricia) _package_man_distro 'libwxgtk3.0-dev' || return 1;;
 		focal) _package_man_distro 'libwxgtk3.0-gtk3-dev' || return 1;;
 	esac
 	

@@ -396,7 +396,7 @@ function _virtualbox_debian()
 
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		bionic|trica|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
+		bionic|tricia|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
 

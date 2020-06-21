@@ -52,7 +52,7 @@ function _megasync_ubuntu()
 	path_libraw="$Dir_Downloads/$(basename $url_libraw16)" # Requerimento para ubutnu 19.10
 
 	case "$os_codename" in
-		bionic|trica) 
+		bionic|tricia) 
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_18.04/Release.key'
 			;;
@@ -185,7 +185,7 @@ _tor_debian()
 	local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
 	local tor_file_list='/etc/apt/sources.list.d/torproject.list'
 
-	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tina' ]]; then  # Ubuntu bionic
+	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then  # Ubuntu bionic
 		local tor_repos='deb https://deb.torproject.org/torproject.org bionic main'
 	elif [[ "$os_codename" == 'buster' ]]; then                                  # Debian buster
 		local tor_repos='deb https://deb.torproject.org/torproject.org buster main'
@@ -765,7 +765,7 @@ _youtube_dlgui_ubuntu()
 	
 	# Ubuntu e Linuxmint.
 	case "$os_codename" in
-		bionic|trica) 
+		bionic|tricia) 
 				_youtube_dlgui_pip 
 				return
 				;;
@@ -880,7 +880,7 @@ _youtube_dlgui()
 {
 	case "$os_id" in
 		debian) _youtube_dlgui_debian || return 1;;
-		ubuntu) _youtube_dlgui_ubuntu || return 1;;
+		ubuntu|linuxmint) _youtube_dlgui_ubuntu || return 1;;
 		fedora) _youtube_dlgui_fedora || return 1;;
 		arch) _youtube_dlgui_archlinux || return 1;;
 		'12.1-STABLE'|'12.1-RELEASE') _youtube_dlgui_freebsd || return 1;;
