@@ -86,8 +86,8 @@ _APT()
 	# [[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
 	# [[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
 	# [[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
-	[[ -f '/var/lib/dpkg/lock-frontend' ]] && _SUDO rm -rf '/var/lib/dpkg/lock-frontend'
-	[[ -f '/var/cache/apt/archives/lock' ]] && _SUDO rm -rf '/var/cache/apt/archives/lock'
+	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
+	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
 
 	if sudo apt "$@"; then
 		return 0
