@@ -183,6 +183,8 @@ _config_opensuseleap_requeriments()
 	yellow "Executando: _config_opensuseleap_requeriments"
 	echo "$space_line"
 
+	sudo zypper ref
+
 	# Instalar ferramentas de linha de comando.
 	yellow "Instalando: ${array_cli_linux[@]}"
 	if ! _package_man_distro "${array_cli_linux[@]}"; then

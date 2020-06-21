@@ -409,6 +409,7 @@ _vlc()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _package_man_distro vlc;;
+		'opensuse-leap') _package_man_distro vlc;;
 		fedora) _vlc_fedora;;
 		arch) _package_man_distro vlc;;
 	esac

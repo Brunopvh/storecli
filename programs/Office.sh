@@ -35,11 +35,12 @@ function _ubuntu_msttcorefonts()
 
 function _fontes_microsoft()
 {
+	# https://sempreupdate.com.br/como-instalar-fontes-microsoft-opensuse/
 	case "$os_id" in
 		linuxmint|ubuntu) _ubuntu_msttcorefonts;;
 		debian) _package_man_distro msttcorefonts 'ttf-mscorefonts-installer';;
 		fedora) _package_man_distro 'mscore-fonts';;
-		opensuse-tumbleweed) _package_man_distro fetchmsttfonts;;
+		'opensuse-tumbleweed'|'opensuse-leap') _package_man_distro fetchmsttfonts;;
 		*) _INFO 'pkg_not_found' 'fontes-ms'; return 1;;
 	esac
 }

@@ -151,6 +151,15 @@ _DNF()
 
 _ZYPPER()
 {
+
+	pidZypperInstall=$(ps aux | grep 'root.*zypper' | egrep -m 1 '(install)' | awk '{print $2}')
+
+	# Processo zypper install em execução no sistema.
+	while [[ ! -z $pidZypperInstall ]]; do
+		_loop_pid "$pidZypperInstall"
+		pidZypperInstall=$(ps aux | grep 'root.*zypper' | egrep -m 1 '(install)' | awk '{print $2}')
+	done
+
 	if sudo zypper "$@"; then
 		return 0
 	else
@@ -241,6 +250,13 @@ _package_man_distro()
 		fi
 	elif [[ "$download_only" == 'True' ]] && [[ "$os_id" == 'fedora' ]]; then
 		if _DNF install --downloadonly -y "$@"; then
+			_INFO 'download_only' "$@"
+			return 0
+		else
+			return 1
+		fi
+	elif [[ "$download_only" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then
+		if _ZYPPER download "$@"; then
 			_INFO 'download_only' "$@"
 			return 0
 		else

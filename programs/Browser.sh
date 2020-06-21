@@ -30,7 +30,7 @@ function _chromium()
 		ubuntu|linuxmint) _package_man_distro 'chromium-browser';;
 		fedora) _package_man_distro chromium;;
 		arch) _package_man_distro chromium;;
-		opensuse-tumbleweed) _package_man_distro chromium 'chromium-uget-integrator';; 
+		'opensuse-tumbleweed'|'opensuse-leap') _package_man_distro chromium;; 
 		freebsd12) _package_man_distro chromium;;
 		*) _INFO 'pkg_not_found' 'chromium'; return 1;;
 	esac
@@ -62,6 +62,7 @@ _firefox()
 		debian) _package_man_distro 'firefox-esr';;
 		ubuntu) _package_man_distro firefox;;
 		fedora) _package_man_distro 'firefox.x86_64' 'mozilla-ublock-origin.noarch';;
+		'opensuse-leap') _package_man_distro MozillaFirefox;;
 		*) _INFO 'pkg_not_found' 'firefox'; return 1;;
 	esac
 
@@ -265,7 +266,6 @@ _torbrowser()
 	local url_master_script_torbrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
 
 	if ! _WHICH "$Script_TorBrowser"; then
-		Script_TorBrowser="$dir_temp/tor.sh"
 		_dow "$url_master_script_torbrowser" "$Script_TorBrowser" || return 1
 		chmod +x "$Script_TorBrowser"
 	fi
