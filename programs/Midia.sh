@@ -59,7 +59,33 @@ function _codecs_tumbleweed()
 }
 
 #-----------------------------------------------------#
+function _codecs_opensuse_leap()
+{
+	if [[ "$os_version" != '15.1' ]]; then
+		return
+	fi
 
+	codecsOpesSuseLeap=(
+		ffmpeg 
+		lame 
+		gstreamer-plugins-bad 
+		gstreamer-plugins-ugly 
+		gstreamer-plugins-ugly-orig-addon 
+		gstreamer-plugins-libav 
+		libavdevice56 
+		libavdevice58 
+		libdvdcss2 
+		)
+
+	sudo zypper addrepo -f http://packman.inode.at/suse/openSUSE_Leap_15.1/ packman
+	sudo zypper addrepo -f http://opensuse-guide.org/repo/openSUSE_Leap_15.1/ dvd
+	sudo zypper ref
+	for i in "${codecsOpesSuseLeap[@]}"; do
+		_package_man_distro "$i"
+	done
+
+}
+#-----------------------------------------------------#
 function _codecs_ubuntu()
 {
 	_package_man_distro --install-recommends ffmpeg ffmpegthumbnailer
@@ -229,8 +255,9 @@ case "$os_id" in
 	linuxmint|ubuntu) _codecs_ubuntu;;
 	fedora) _codecs_fedora;;
 	'opensuse-tumbleweed') _codecs_tumbleweed;;
+	'opensuse-leap') _codecs_opensuse_leap;;
 	arch) _codecs_arch;;
-	*) _INFO 'pkg_not_found' 'chromium'; return 1;;
+	*) _INFO 'pkg_not_found' 'codecs'; return 1;;
 
 esac
 }

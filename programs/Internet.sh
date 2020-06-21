@@ -5,7 +5,7 @@
 # Cliente Mega Sync
 #=====================================================#
 
-function _megasync_suse_tumbleweed()
+function _megasync_opensuse_tumbleweed()
 {
 	# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
 
@@ -120,7 +120,14 @@ function _megasync_archlinux()
 
 	# Requerimentos para compilação no ArchLinux - libpdfium.
 	local array_mega_requeriments_archlinux=(
-		crypto++ c-ares libuv libmediainfo  qt5-tools swig doxygen lsb-release
+		'crypto++' 
+		'c-ares'
+		'lsb-release' 
+		'qt5-tools'
+		libuv 
+		libmediainfo   
+		swig 
+		doxygen 
 		)
 
 	# Baixar o pacote do repositório MEGA.
@@ -158,7 +165,7 @@ function _megasync()
 	fi
 
 	case "$os_id" in
-		opensuse-tumbleweed) _megasync_suse_tumbleweed;;
+		'opensuse-tumbleweed') _megasync_opensuse_tumbleweed;;
 		debian) _megasync_debian;;
 		linuxmint|ubuntu) _megasync_ubuntu;;
 		fedora) _megasync_fedora;;

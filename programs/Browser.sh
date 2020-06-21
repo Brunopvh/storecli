@@ -228,8 +228,7 @@ function _opera_stable_fedora()
 function _opera_stable_suse()
 {
 	# https://www.blogopcaolinux.com.br/2017/07/Instalando-o-Opera-no-openSUSE-e-no-Fedora.html
-	
-	#sudo zypper ref && sudo zypper up
+	# sudo zypper up  
 	sudo rpm --import https://rpm.opera.com/rpmrepo.key || return 1
 
 	echo '[opera]' | sudo tee /etc/zypp/repos.d/opera.repo
@@ -244,7 +243,7 @@ function _opera_stable_suse()
 		echo "keeppackages=0"
 	} | sudo tee -a /etc/zypp/repos.d/opera.repo
 
-	white "Syncronizando repositórios"
+	yellow "Syncronizando repositórios"
 	sudo zypper ref
 	_package_man_distro 'opera-stable'  || return 1
 }
@@ -256,7 +255,7 @@ function _opera_stable()
 case "$os_id" in
 	debian|linuxmint|ubuntu) _opera_stable_debian;;
 	fedora) _opera_stable_fedora;;
-	opensuse-tumbleweed) _opera_stable_suse;;
+	'opensuse-tumbleweed'|'opensuse-leap') _opera_stable_suse;;
 	*) _INFO 'pkg_not_found' 'opera'; return 1;;
 esac	
 

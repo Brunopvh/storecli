@@ -410,13 +410,13 @@ function _woeusb_github()
 		return 1
 	fi
 }
-
-
+	
 function _woeusb()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _woeusb_debian;;
 		fedora) _package_man_distro 'WoeUSB.x86_64';;
+		'opensuse-leap') _package_man_distro WoeUSB;;
 		arch) _woeusb_archlinux;;
 		*) _woeusb_github;;
 	esac

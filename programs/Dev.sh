@@ -1,34 +1,28 @@
 #!/usr/bin/env bash
 #
 #
-
-
 _android_sdktools()
 {
 	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
 	local url_sdktools='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
 	local url_commandline_tools='https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip'
+	local url_emulator='https://dl.google.com/android/repository/emulator-linux-6466327'
 
 	local path_sdktools="$Dir_Downloads/$(basename $url_sdktools)"
 	local path_commandline_tools="$Dir_Downloads/$(basename $url_commandline_tools)"
-
 	local hash_commandline_tools='f10f9d5bca53cc27e2d210be2cbc7c0f1ee906ad9b868748d74d62e10f2c8275'
 	local hash_skdtools=''
+	local JDKloaction="$HOME/.local/bin/android-studio/jre"
+	local SDKlocation="$HOME/Android/Sdk"
 
 	# Baixar skdtools.
-	_dow "$url_sdktools" "$path_sdktools" --curl
+	_dow "$url_sdktools" "$path_sdktools"
 
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
 		_INFO 'download_only' "$path_sdktools"
 		return 0 
 	fi
-
-	# Descomprimir skdtools.
-	_unpack "$path_sdktools" ||  return 1
-
-	#mkdir -p "$HOME/Android/SDK"
-
 }
 
 #-----------------------------------------------------#
@@ -228,18 +222,36 @@ function _android_studio_fedora()
 	#_android_sdktools
 }
 #-----------------------------------------------------#
+function _android_studio_opensuseleap()
+{
+	_package_man_distro 'java-1_8_0-openjdk-devel' 'qemu-kvm'
+
+	local requerimentsOpenSuse=(
+		'libstdc++6-32bit' 
+		'zlib-devel-32bit' 
+		'libncurses5-32bit' 
+		'libbz2-1-32bit'
+		)
+	yellow "Instalando: ${requerimentsOpenSuse[@]}"
+	_package_man_distro "${requerimentsOpenSuse[@]}"
+	_android_studio_zip
+}
+
+#-----------------------------------------------------#
 
 function _android_studio()
 {
 	# https://www.blogopcaolinux.com.br/2017/09/Instalando-Android-Studio-no-Debian-e-no-Ubuntu.html
+	# https://www.blogopcaolinux.com.br/2017/05/Instalando-Android-Studio-no-openSUSE-e-Fedora.html
 	# https://developer.android.com/studio/index.html#downloads
 
 	case "$os_id" in
 		debian) _android_studio_debian;;
 		linuxmint|ubuntu) _android_studio_ubuntu;;
+		'opensuse-leap') _android_studio_opensuseleap;;
 		fedora) _android_studio_fedora;;
 		arch) _android_archlinux;;
-		*) _INFO 'pkg_not_found' 'proxychains'; return 1;;
+		*) _INFO 'pkg_not_found' 'android-studio'; return 1;;
 	esac
 }
 
@@ -256,6 +268,7 @@ function _codeblocks_fedora()
 }
 
 #-----------------------------------------------------#
+
 function _codeblocks_archlinux()
 {
 	# https://www.archlinux.org/packages/community/x86_64/codeblocks/
