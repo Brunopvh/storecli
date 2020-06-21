@@ -281,7 +281,7 @@ _package_man_distro()
 			return 1
 		fi
 	elif [[ "$install_yes" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then
-		if _ZYPPER install "$@"; then
+		if _ZYPPER install -y "$@"; then
 			return 0
 		else
 			return 1

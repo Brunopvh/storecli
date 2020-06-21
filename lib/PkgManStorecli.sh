@@ -6,7 +6,8 @@
 _packmanager_storecli()
 {
 	if [[ -z $1 ]]; then
-		usage
+		#usage
+		usage_install_argument
 		return 1
 	fi
 

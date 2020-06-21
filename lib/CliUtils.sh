@@ -61,6 +61,11 @@ array_python3_fedora=(
 'python3' 'python3-pip' 'python3-setuptools' 'python3-tkinter.x86_64'
 )
 
+# Python3 Opensuse Leap
+array_python3_opensuseleap=(
+'python3' 'python3-pip' 'python3-setuptools' 'python3-tk'
+)
+
 # Python2 FreeBSD
 array_python_freebsd=(
 'python27' 'py27-pip-19.1.1' 'py27-pip-tools-4.1.0'
@@ -164,6 +169,40 @@ _config_fedora_requeriments()
 	
 	if ! _package_man_distro "${array_python3_fedora[@]}"; then
 		red "Falha: ${array_python3_fedora[@]}"
+		return 1
+	fi
+	return 0
+}
+
+#=============================================================#
+# Opensuse Leap
+#=============================================================#
+_config_opensuseleap_requeriments()
+{
+	echo "$space_line"
+	yellow "Executando: _config_opensuseleap_requeriments"
+	echo "$space_line"
+
+	# Instalar ferramentas de linha de comando.
+	yellow "Instalando: ${array_cli_linux[@]}"
+	if ! _package_man_distro "${array_cli_linux[@]}"; then
+		red "Falha: ${array_cli_linux[@]}"
+		red "Instale os pacotes acima manualmente, ou tente novamente com o comando: ${CYellow}$Script_root --configure${CReset}"
+		return 1	
+	fi
+
+	# Instalar utilitários para python2.
+	yellow "Instalando: ${array_python2_debian[@]}" 
+	if ! _package_man_distro "${array_python2_debian[@]}"; then
+		red "Falha: ${array_python2_debian[@]}"
+		return 1
+	fi
+	
+	# Instalar utilitários para python3 no fedora.
+	yellow "Instalando: ${array_python3_fedora[@]}"
+	
+	if ! _package_man_distro "${array_python3_opensuseleap[@]}"; then
+		red "Falha: ${array_python3_opensuseleap[@]}"
 		return 1
 	fi
 	return 0
@@ -309,6 +348,8 @@ _config_system_requeriments()
 		_config_ubuntu_requeriments || return 1
 	elif [[ "$os_id" == 'fedora' ]]; then
 		_config_fedora_requeriments || return 1
+	elif [[ "$os_id" == 'opensuse-leap' ]]; then
+		_config_opensuseleap_requeriments || return 1
 	elif [[ "$os_id" == 'arch' ]]; then
 		_config_archlinux_requeriments || return 1
 	elif [[ "$os_id" == '12.1-RELEASE' ]]; then     # FreeBSD 12.1

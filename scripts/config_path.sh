@@ -32,7 +32,7 @@ path_bash()
 	# Continuar
 	echo "Configurando o arquivo [$HOME/.bashrc]"
 	echo "export PATH=$PATH" >> "$HOME/.bashrc"
-	source $HOME/.bashrc
+	bash "source $HOME/.bashrc"
 }
 
 path_zsh()

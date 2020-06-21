@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020_06_21_rev1'
-#
+VERSION='2020_06_21_rev2'
+
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
@@ -173,7 +173,7 @@ export Programs_Office="$Dir_Programs/Office.sh"
 # Scripts
 #=============================================================#
 export Script_config_path="$Dir_Storecli_Scripts/config_path.sh"
-export Script_root=$(basename $(readlink -f "$0"))
+export Script_root=$(readlink -f "$0")
 export Script_TorBrowser="$Dir_Storecli_Scripts/tor.sh"
 #export Script_TorBrowser="$HOME/.local/bin/tor-setup.sh"
 export Script_AddRepo="$Dir_Storecli_Scripts/addrepo.sh"
@@ -410,6 +410,7 @@ if [[ ! -z $1 ]]; then
 			-u|--upgrade) _install_update_storecli; exit;;
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
+			--ignore-cli) ;;
 			*) red "Comando não encontrado: $1";;
 		esac
 		shift

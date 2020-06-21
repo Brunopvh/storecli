@@ -45,6 +45,17 @@ EOF
 }
 
 #=============================================================#
+usage_install_argument()
+{
+cat << EOF 
+   Use: $Script_root install <pacote1> <pacote2> <pacote3> ...
+        $Script_root --downloadonly|-d <pacote1> <pacote2> ...
+
+
+EOF
+}
+
+#=============================================================#
 
 _INFO()
 {

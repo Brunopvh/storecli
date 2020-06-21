@@ -12,11 +12,11 @@
 #
 
 os_type='NoNe'
-os_id='NoNe'
-os_release='NoNe'
-os_version='NoNe'
-os_codename='NoNe'
-sysname='NoNe'
+os_id=' '
+os_release=' '
+os_version=' '
+os_codename=' '
+sysname=' '
 
 #=============================================#
 # os_type - Kernel
@@ -39,7 +39,6 @@ if [[ $os_type == 'FreeBSD' ]]; then
 	
 elif [[ $os_type == 'Linux' ]]; then
 	os_id=$(grep '^ID=' "$file_release" | sed 's/.*=//g;s/\"//g') # debian/ubuntu/linuxmint/fedora....
-
 fi
 
 
@@ -51,7 +50,6 @@ if [[ "$file_release" ]]; then
 
 elif [[ "$os_type" == 'FreeBSD' ]]; then
 	os_version=$(uname -r)
-
 fi
 
 #=============================================#
@@ -59,7 +57,6 @@ fi
 #=============================================#
 if [[ "$file_release" ]]; then
 	os_release=$(grep -m 1 '^VERSION=' "$file_release" | sed 's/.*VERSION=//g;s/\"//g;s/(//g;s/)//g;s/ //g')
-
 fi
 
 
@@ -75,11 +72,9 @@ fi
 #=============================================#
 if [[ "$os_type" == 'Linux' ]]; then
 	sysname="${os_id}${os_version}"
-
 elif [[ "$os_type" == 'FreeBSD' ]]; then
 	sysname="$(uname)$(uname -r)"
 	sysname="${sysname,,}"
-
 fi
 
 
