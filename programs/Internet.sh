@@ -746,7 +746,7 @@ _youtube_dlgui_pip()
 	#
 
 	_package_man_distro 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
-	pip install youtube-dlg || return 1
+	pip install --user wheel 'youtube-dlg' || return 1
 
 	_youtube_dlgui_file_desktop_user
 	

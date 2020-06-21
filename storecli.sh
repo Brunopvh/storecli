@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020_06_20_rev4'
+VERSION='2020_06_20_rev5'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
