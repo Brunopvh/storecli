@@ -10,6 +10,11 @@ _packmanager_storecli()
 		return 1
 	fi
 
+	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
+	case "$os_codename" in
+		tina|tricia) export os_codename='bionic';;
+	esac
+
 	while [[ $1 ]]; do
 		case "$1" in
 			-d|--downloadonly) echo -en "\r";;

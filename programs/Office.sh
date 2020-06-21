@@ -12,11 +12,32 @@ function _atril()
 }
 
 #-----------------------------------------------------#
+function _ubuntu_msttcorefonts()
+{
+	#local url_msttcorefonts='http://mirrors.kernel.org/ubuntu/pool/multiverse/m/msttcorefonts/ttf-mscorefonts-installer_3.4+nmu1ubuntu2_all.deb'
+	local url_msttcorefonts='http://ftp.de.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.6_all.deb'
+	local url_msttcorefonts='http://ftp.us.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb'
+	local path_file="$Dir_Downloads/$(basename $url_msttcorefonts)"
+
+	_dow "$url_msttcorefonts" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+	_package_man_distro cabextract || return 1
+	_DPKG --install "$path_file" || return 1
+	return 0
+
+}
 
 function _fontes_microsoft()
 {
 	case "$os_id" in
-		debian|linuxmint|ubuntu) _package_man_distro msttcorefonts 'ttf-mscorefonts-installer';;
+		linuxmint|ubuntu) _ubuntu_msttcorefonts;;
+		debian) _package_man_distro msttcorefonts 'ttf-mscorefonts-installer';;
 		fedora) _package_man_distro 'mscore-fonts';;
 		opensuse-tumbleweed) _package_man_distro fetchmsttfonts;;
 		*) _INFO 'pkg_not_found' 'fontes-ms'; return 1;;

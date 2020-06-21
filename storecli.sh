@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020_06_20_rev5'
+VERSION='2020_06_21_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -394,16 +394,10 @@ for c in "${@}"; do
 		-y|--yes) export install_yes='True';;
 	esac
 done
-
-# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
-case "$os_codename" in
-	tina|tricia) export os_codename='bionic';;
-esac
  
-
 if [[ ! -z $1 ]]; then
 	# Mostrar o tipo de sistema.
-	white "Sistema: $(uname -s) $os_id"
+	white "Sistema: $os_id $os_version $os_codename"
 	
 	while [[ $1 ]]; do
 		case "$1" in
