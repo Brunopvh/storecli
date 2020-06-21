@@ -370,21 +370,21 @@ _check_cli_utils()
 	# Verificar os requerimentos de linha de comando.
 	
 	if [[ ! -x $(which wget 2> /dev/null) ]]; then
-		red "Falha (wget - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha wget - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which curl 2> /dev/null) ]]; then
-		red "Falha (curl - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha curl - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which git 2> /dev/null) ]]; then
-		red "Falha (git - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha git - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which awk 2> /dev/null) ]]; then
-		red "Falha (awk - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha (awk - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which unzip 2> /dev/null) ]]; then
-		red "Falha (unzip - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha (unzip - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which xterm 2> /dev/null) ]]; then
-		red "Falha xterm - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha: xterm - execute ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which python2 2> /dev/null) ]] && [[ ! -x $(which python2.7 2> /dev/null) ]]; then
-		red "Falha (python2 - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha (python2 - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	elif [[ ! -x $(which python3 2> /dev/null) ]] && [[ ! -x $(which python3.7 2> /dev/null) ]]; then
-		red "Falha (python3 - execute $(basename $0) --configure) para solucionar este problema"
+		red "Falha (python3 - execute  ${CYellow}$(readlink -f $0) --configure${CReset} para solucionar este problema"
 	fi
 			
 	return 0
