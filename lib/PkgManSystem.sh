@@ -65,11 +65,29 @@ _APT()
 	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
 	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
 
-	[[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
-	[[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
-	[[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
-	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
-	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
+	# Processo apt install em execução no sistema
+	while [[ ! -z $Pid_Apt_Install ]]; do
+		_loop_pid "$Pid_Apt_Install"
+		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+	done
+
+	# Processo apt systemd em execução no sistema
+	while [[ ! -z $Pid_Apt_Systemd ]]; do
+		_loop_pid "$Pid_Dpkg_Install"
+		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+	done
+
+	# Processo dpkg install em execução no sistema
+	while [[ ! -z $Pid_Dpkg_Install ]]; do
+		_loop_pid "$Pid_Dpkg_Install"
+		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+	done
+
+	# [[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
+	# [[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
+	# [[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
+	[[ -f '/var/lib/dpkg/lock-frontend' ]] && _SUDO rm -rf '/var/lib/dpkg/lock-frontend'
+	[[ -f '/var/cache/apt/archives/lock' ]] && _SUDO rm -rf '/var/cache/apt/archives/lock'
 
 	if sudo apt "$@"; then
 		return 0
