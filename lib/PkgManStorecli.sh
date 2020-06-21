@@ -52,20 +52,22 @@ _packmanager_storecli()
 			libreoffice) _libreoffice;;
 			libreoffice-appimage) _libreoffice_appimage;;
 
-#----------- Internet --------------------------------------#
-			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
+#----------- Browser --------------------------------------#
 			chromium) _chromium;;
 			firefox) _firefox;;
 			'google-chrome') _google_chrome;;
-			megasync) _megasync;;
 			'opera-stable') _opera_stable;;
+			torbrowser) _torbrowser;;
+
+#----------- Internet --------------------------------------#
+			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
+			megasync) _megasync;;
 			proxychains) _proxychains;;
 			qbittorrent) _qbittorrent;;
 			skype) _skype;;
 			teamviewer) _teamviewer;;
 			telegram) _telegram;;
 			tixati) _tixati_tar;;
-			torbrowser) _torbrowser;;
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
@@ -88,6 +90,7 @@ _packmanager_storecli()
 			bluetooth) _bluetooth;;
 			compactadores) _compactadores;;
 			gparted) _gparted;;
+			p7zip-gui) _p7zip_gui;;
 			peazip) _peazip;;
 			refind) _refind;;
 			stacer) _stacer;;

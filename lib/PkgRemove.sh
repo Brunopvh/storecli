@@ -57,6 +57,7 @@ _pack_remove()
 			'youtube-dl') _delete_all "$Dir_User_Bin/youtube-dl";;
 
 #-----------------------| SISTEMA |---------------------------------------------#
+			p7zip-gui) _delete_all "${array_p7zipgui_dirs[@]}";;
 			peazip) _delete_all "${array_peazip_dirs[@]}";;
 			refind) _delete_all "${array_refind_dirs[@]}";;
 			stacer) _delete_all "${array_stacer_dirs[@]}";;

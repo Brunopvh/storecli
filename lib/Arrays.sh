@@ -25,6 +25,7 @@
 dir_temp="/tmp/storecli_$USER/temp"
 Dir_Unpack="/tmp/storecli_$USER/unpack"
 Dir_User_Bin="$HOME/.local/bin"
+Dir_User_Lib="$HOME/.local/lib"
 Dir_User_Themes="$HOME/.themes"
 Dir_User_Application="$HOME/.local/share/applications"
 Dir_User_Icons="$HOME/.local/share/icons"
@@ -36,6 +37,7 @@ export array_user_dirs=(
 	"$dir_temp"
 	"$Dir_Unpack"
 	"$Dir_User_Bin"
+	"$Dir_User_Lib"
 	"$Dir_User_Themes"
 	"$Dir_User_Application"
 	"$Dir_User_Icons"
@@ -126,6 +128,16 @@ array_sublime_dirs=(
 "$Dir_Root_icons/256x256/apps/sublime-text.png" # .png.
 "$Dir_Root_bin/sublime" # Atalho para linha de comando.
 '/opt/sublime_text' # Diretório.
+)
+
+declare -A array_p7zipgui_dirs
+array_p7zipgui_dirs=(
+	[p7zip_file_7z]="/usr/local/bin/7z"
+	[p7zip_file_7za]="/usr/local/bin/7za"
+	[p7zip_lib_7z]="/usr/lib/p7zip/7z"
+	[p7zip_lib_7za]="/usr/lib/p7zip/7za"
+	[p7zip_lib_7zSO]="/usr/lib/p7zip/7z.so"
+	[p7zip_lib_7zSFX]="/usr/lib/p7zip/7zCon.sfx"
 )
 
 # PeaZip

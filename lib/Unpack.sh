@@ -7,7 +7,13 @@
 _unpack()
 {
 	# Obrigatório informar um arquivo no argumento $1.
-	[[ -z $1 ]] && usage_unpack && exit 1 
+	[[ -z $1 ]] && usage_unpack && exit 1
+
+	if [[ -d "$2" ]]; then 
+		Dir_Unpack="$2"
+	else
+		Dir_Unpack="$Dir_Unpack"
+	fi 
 	
 	# Argumento $1 foi informado, porém não é um arquivo.
 	if [[ ! -f "$1" ]]; then 
@@ -22,7 +28,6 @@ _unpack()
 	fi
 
 	cd /tmp
-	cd "$Dir_Unpack" || return 1
 	
 	# Prosseguir.
 	local path_file="$1"
@@ -40,12 +45,14 @@ _unpack()
 		type_file='deb'
 	else
 		red "(_unpack) Arquivo não suportado [$path_file]"
+		_RMDIR "$path_file"
 		return 1
 	fi
 
 	white "Descomprimindo: $path_file"
 	echo -ne "[>] Destino: $Dir_Unpack "
-	cd "/tmp"
+	cd /tmp
+	cd "$Dir_Unpack"
 
 
 	# Descomprimir.	

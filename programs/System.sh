@@ -114,6 +114,40 @@ function _gparted()
 	_package_man_distro gparted
 }
 
+_p7zip_gui()
+{
+	# https://www.ruinelli.ch/p7zip-gui-for-linux
+	# sudo apt-get install libwxgtk3.0-dev
+	local url_p7zipGUI='https://www.ruinelli.ch/download/software/p7zip/p7zip-full_15.09-1_amd64.deb'
+	local path_file="$Dir_Downloads/$(basename $url_p7zipGUI)"
+
+	_dow "$url_p7zipGUI" "$path_file" || return 1
+
+	# Somente baixar
+	if [[ "$download_only" == 'True' ]]; then
+		_INFO 'download_only' "$path_file"
+		return 0 
+	fi
+
+	_unpack "$path_file" || return 1
+	_unpack "$Dir_Unpack/data.tar.xz" || return 1
+	sudo mkdir -p /usr/lib/p7zip/
+
+	cd "$Dir_Unpack/usr/bin"
+
+	# Arquivo 7z em bin
+	sudo mv 7z "${array_p7zipgui_dirs[p7zip_file_7z]}"
+
+	# Arquivo 7za em bin
+	sudo mv 7za "${array_p7zipgui_dirs[p7zip_file_7za]}"
+
+	# Navegar até a pasta lib/p7zip.
+	cd "$Dir_Unpack/usr/lib/p7zip" 
+	sudo mv 7z "${array_p7zipgui_dirs[p7zip_lib_7z]}"
+	sudo mv 7za "${array_p7zipgui_dirs[p7zip_lib_7za]}"
+	sudo mv 7z.so "${array_p7zipgui_dirs[p7zip_lib_7zSO]}"
+	sudo mv 7zCon.sfx "${array_p7zipgui_dirs[p7zip_lib_7zSFX]}"
+}
 
 _peazip()
 {
