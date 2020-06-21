@@ -52,6 +52,7 @@ function _libreoffice_appimage()
 	# https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage
 	# https://github.com/AppImage/AppImageKit/wiki/FUSE
 	# https://wiki.archlinux.org/index.php/FUSE
+	# https://github.com/AppImage/AppImageKit/wiki/FUSE
 	# 
 	local url='https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage'
 	local path_file="$Dir_Downloads/$(basename $url)"

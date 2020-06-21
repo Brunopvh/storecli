@@ -171,7 +171,11 @@ _ZYPPER()
 _PACMAN()
 {
 	Pid_Pacman_Install=$(ps aux | grep 'root.*pacman' | egrep -m 1 '(-S|y)' | awk '{print $2}')
-	[[ ! -z $Pid_Pacman_Install ]] && _loop_pid "$Pid_Pacman_Install"
+	while [[ ! -z $Pid_Pacman_Install ]]; do
+		_loop_pid "$Pid_Pacman_Install"
+		Pid_Pacman_Install=$(ps aux | grep 'root.*pacman' | egrep -m 1 '(-S|y)' | awk '{print $2}')
+		sleep 0.2
+	done
 
 	if sudo pacman "$@"; then
 		return 0

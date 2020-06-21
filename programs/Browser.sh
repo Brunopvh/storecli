@@ -98,10 +98,22 @@ function _google_chrome_fedora()
 	_package_man_distro 'google-chrome-stable'
 }
 
+function _google_chrome_opensuse()
+{
+	# https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-openSUSE-Leap-15
+	# wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
+	# curl -SL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
+	yellow "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
+	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
+
+	yellow "Adicionando repositório: http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google"
+	sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google || return 1
+	_package_man_distro 'google-chrome-stable'
+}
 
 function _google_chrome_tumbleweed()
 {
-	# wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
+	
 	white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
@@ -148,7 +160,7 @@ function _google_chrome()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _google_chrome_debian;;
-		opensuse-tumbleweed|opensuse-leap) _google_chrome_tumbleweed;;
+		opensuse-tumbleweed|opensuse-leap) _google_chrome_opensuse;;
 		fedora) _google_chrome_fedora;;
 		arch) _google_chrome_archlinux;;
 		*) _INFO 'pkg_not_found' 'google-chrome'; return 1;;

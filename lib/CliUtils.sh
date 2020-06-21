@@ -320,8 +320,8 @@ _config_archlinux_requeriments()
 	white "Instalando: ${array_cli_linux[@]}"
 	_package_man_distro "${array_cli_linux[@]}" || return 1
 
-	white "Instalando: python3 python-pip python-setuptools"
-	_package_man_distro python3 'python-pip' 'python-setuptools'
+	white "Instalando: python3 python-pip python-setuptools python-pmw"
+	_package_man_distro python3 'python-pip' 'python-setuptools' 'python-pmw'
 
 	# Suporte ao NTFS - sudo pacman -S ntfs-3g 
 	# _package_man_distro 'ntfs-3g'
@@ -409,7 +409,7 @@ configure_all()
 
 _check_cli_utils()
 {
-	# Sempre que o programa executar sem o argumento --ignore-cli
+	# Sempre que o programa iniciar sem o argumento --ignore-cli
 	# Verificar os requerimentos de linha de comando.
 	
 	if [[ ! -x $(which wget 2> /dev/null) ]]; then

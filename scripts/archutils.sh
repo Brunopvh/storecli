@@ -293,9 +293,9 @@ _ismount()
 	local partition="$1"
 
 	
-	if ! ls "$1" 1> /dev/null 2&>1; then 
-		_red "Informe uma partição do tipo /dev/sdXy"
-		return 1
+	if ! ls "$1" 1> /dev/null; then 
+		_red "_ismount: informe uma partição do tipo /dev/sdXy"
+		#return 1
 	fi
 
 	# Procurar o ponto de montagem no arquivo /proc/mounts
@@ -342,11 +342,13 @@ _MOUNT_PARTITION()
 	_msg "Montando $partition em " "$mount_point"
 	
 	# Montar
-	if mount "$partiton" "$mount_point"; then
+	mount "$partition" "$mount_ponint"
+
+	if _ismount "$partition"; then
 		return 0
 	else
 		_red "Erro: mount $partition $mount_point"
-		sleep 0.5
+		sleep 1
 		return 1
 	fi
 }
@@ -384,7 +386,7 @@ _FORMAT_EXT4()
 
 	# Desmontar caso esteja montado
 	if _ismount "$device"; then 
-		_UMOUNT_PARTITION "$device" || return 1
+		_UMOUNT_PARTITION "$device" 
 	fi
 
 
