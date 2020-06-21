@@ -152,7 +152,7 @@ function _google_chrome_archlinux()
 
 	echo -e "$space_line"
 	green "Executando sudo pacman -U $(ls google*.tar.*)"
-	sudo pacman -U $(ls google*.tar.*)
+	sudo pacman -U --noconfirm $(ls google*.tar.*)
 }
 
 

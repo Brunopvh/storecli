@@ -159,27 +159,35 @@ class WinAcessory:
 
 	def close_windows(self):
 		self.master.destroy()
+
+	def show_ok(self):
+		print('---------------------------------------------')
+		print('OK')
 	
 	def install_etcher(self):
 		os.system('storecli install --yes etcher')
+		self.show_ok()
 
 	def show_info_etcher(self):
 		self.msg_show_info['text'] = 'Balena Etcher\né um utilitário para criar\nunidades de midia bootáveis'
 
 	def install_gnomedisk(self):
 		os.system('storecli install --yes gnome-disk')
+		self.show_ok()
 
 	def show_info_gnome_disk(self):
 		self.msg_show_info['text'] = 'Utilitário para formatar e\nmanipular unidades de disco\ne midias removiveis'
 
 	def install_veracrypt(self):
 		os.system('storecli install --yes veracrypt')
+		self.show_ok()
 
 	def show_info_veracrypt(self):
 		self.msg_show_info['text'] = 'Veracrypt encrypta e decrypta\npartições de disco e unidades\nremoviveis'
 
 	def install_woeusb(self):
 		os.system('storecli install --yes woeusb')
+		self.show_ok()
 
 	def show_info_woeusb(self):
 		self.msg_show_info['text'] = 'WoeUsb cria midias bootáveis\ncom o sistema Windows'

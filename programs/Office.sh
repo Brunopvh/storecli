@@ -46,13 +46,41 @@ function _fontes_microsoft()
 }
 
 #-----------------------------------------------------#
+function __configure_fuse_archlinux__()
+{
+	# https://hamacker.wordpress.com/ubuntu-perfeito/ubuntu-perfeito-faca-voce-mesmo/habilitando-o-fuse/
+	# cat /etc/fuse.conf - Vizualizar configuração atual
+	# Se a linha que contém a configuração (user_allow_other) estiver comentada
+	# Um usuário comun não terá permissão para montar arquivos virtuais.  
+	# user_allow_other - esta linha deve ser descomentada.
+	_package_man_distro squashfuse fuseiso
+
+	sudo modprobe fuse
+	sudo groupadd fuse
+	sudo usermod -a -G fuse "$USER"
+
+	[[ ! -f /etc/fuse.conf ]] && return 1
+
+	yellow "Configurando: /etc/fuse.conf"
+	if ! grep -q ^'user_allow_other' /etc/fuse.conf; then
+		if grep -q ^'#user_allow_other' /etc/fuse.conf; then
+			sudo sed -i 's|#user_allow_other|user_allow_other|g' /etc/fuse.conf
+		else
+			echo 'user_allow_other' | sudo tee -a /etc/fuse.conf
+		fi
+	fi
+	
+	sudo mkdir -p '/etc/modules-load.d/'
+	echo "fuse" | sudo tee '/etc/modules-load.d/fuse.conf' 1> /dev/null
+}
+
+#-----------------------------------------------------#
 
 function _libreoffice_appimage()
 {
 	# https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage
 	# https://github.com/AppImage/AppImageKit/wiki/FUSE
 	# https://wiki.archlinux.org/index.php/FUSE
-	# https://github.com/AppImage/AppImageKit/wiki/FUSE
 	# 
 	local url='https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage'
 	local path_file="$Dir_Downloads/$(basename $url)"

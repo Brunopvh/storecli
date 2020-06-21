@@ -230,15 +230,21 @@ class WinBrowser:
 
 	def close_windows(self):
 		self.master.destroy()
+
+	def show_ok(self):
+		print('---------------------------------------------')
+		print('OK')
 	
 	def install_chromium(self):
 		system('storecli install --yes chromium')
+		self.show_ok()
 
 	def show_info_chromium(self):
 		self.msg_show_info['text'] = 'Chromium é um\nnavegador de internet'
 
 	def install_firefox(self):
 		system('storecli install --yes firefox')
+		self.show_ok()
 
 	def show_info_firefox(self):
 		self.msg_show_info['text'] = 'Firefox é um navegador de internet'
@@ -246,6 +252,7 @@ class WinBrowser:
 
 	def install_google_chrome(self):
 		system('storecli install --yes google-chrome')
+		self.show_ok()
 
 	def show_info_google_chrome(self):
 		self.msg_show_info['text'] = 'Google chrome é um\nnavegador de internet'
@@ -253,12 +260,14 @@ class WinBrowser:
 
 	def install_opera_stable(self):
 		system('storecli install --yes opera-stable')
+		self.show_ok()
 
 	def show_info_opera_stable(self):
 		self.msg_show_info['text'] = 'Opera é um\nnavegador de internet'
 
 	def install_torbrowser(self):
 		system('storecli install --yes torbrowser')
+		self.show_ok()
 
 	def show_info_torbrowser(self):
 		self.msg_show_info['text'] = 'TorBrowser é um\nnavegador de internet'
