@@ -67,32 +67,6 @@ class WinInternet:
 		self.Container10["padx"] = self.padxPadrao
 		self.Container10.pack()
 
-		self.Container11 = Frame(master)
-		self.Container11["pady"] = self.padyPadrao
-		self.Container11["padx"] = self.padxPadrao
-		self.Container11.pack()
-
-		self.Container12 = Frame(master)
-		self.Container12["pady"] = self.padyPadrao
-		self.Container12["padx"] = self.padxPadrao
-		self.Container12.pack()
-
-		self.Container13 = Frame(master)
-		self.Container13["pady"] = self.padyPadrao
-		self.Container13["padx"] = self.padxPadrao
-		self.Container13.pack()
-
-		self.Container14 = Frame(master)
-		self.Container14["pady"] = self.padyPadrao
-		self.Container14["padx"] = self.padxPadrao
-		self.Container14.pack()
-
-		self.Container15 = Frame(master)
-		self.Container15["pady"] = self.padyPadrao
-		self.Container15["padx"] = self.padxPadrao
-		self.Container15.pack()
-
-
 #=========================================================#
 # Criação dos botões
 #=========================================================#
@@ -116,7 +90,7 @@ class WinInternet:
 								)
 		self.botao_voltar.pack()
 
-		self.megasync = Button(self.Container1)
+		self.megasync = Button(self.Container2)
 		self.megasync.configure(
 							text="megasync", 							
 							command=self.install_megasync,
@@ -127,7 +101,7 @@ class WinInternet:
 							)
 		self.megasync.pack(side=LEFT)
 
-		self.info_megasync = Button(self.Container1)
+		self.info_megasync = Button(self.Container2)
 		self.info_megasync.configure(
 								text='info', 
 								command=self.show_info_megasync,
@@ -139,7 +113,7 @@ class WinInternet:
 		self.info_megasync.pack(side=RIGHT)
 		
 
-		self.qbittorrent = Button(self.Container2)
+		self.qbittorrent = Button(self.Container3)
 		self.qbittorrent.configure(
 							text='qbittorrent', 							
 							command=self.install_qbittorrent,
@@ -150,7 +124,7 @@ class WinInternet:
 							)
 		self.qbittorrent.pack(side=LEFT)
 
-		self.info_qbittorrent = Button(self.Container2)
+		self.info_qbittorrent = Button(self.Container3)
 		self.info_qbittorrent.configure(
 								text='info', 
 								command=self.show_info_qbittorrent,
@@ -162,7 +136,7 @@ class WinInternet:
 		self.info_qbittorrent.pack(side=RIGHT)
 
 
-		self.skype = Button(self.Container3)
+		self.skype = Button(self.Container4)
 		self.skype.configure(
 							text='skype', 							
 							command=self.install_skype,
@@ -173,7 +147,7 @@ class WinInternet:
 							)
 		self.skype.pack(side=LEFT)
 
-		self.info_skype = Button(self.Container3)
+		self.info_skype = Button(self.Container4)
 		self.info_skype.configure(
 								text='info', 
 								command=self.show_info_skype,
@@ -184,7 +158,7 @@ class WinInternet:
 								)
 		self.info_skype.pack(side=RIGHT)
 
-		self.teamviewer = Button(self.Container4)
+		self.teamviewer = Button(self.Container5)
 		self.teamviewer.configure(
 							text='teamviewer', 							
 							command=self.install_teamviewer,
@@ -195,7 +169,7 @@ class WinInternet:
 							)
 		self.teamviewer.pack(side=LEFT)
 
-		self.info_teamviewer = Button(self.Container4)
+		self.info_teamviewer = Button(self.Container5)
 		self.info_teamviewer.configure(
 								text='info', 
 								command=self.show_info_teamviewer,
@@ -207,7 +181,7 @@ class WinInternet:
 		self.info_teamviewer.pack(side=RIGHT)
 
 
-		self.telegram = Button(self.Container5)
+		self.telegram = Button(self.Container6)
 		self.telegram.configure(
 							text='telegram', 							
 							command=self.install_telegram,
@@ -218,7 +192,7 @@ class WinInternet:
 							)
 		self.telegram.pack(side=LEFT)
 
-		self.info_telegram = Button(self.Container5)
+		self.info_telegram = Button(self.Container6)
 		self.info_telegram.configure(
 								text='info', 
 								command=self.show_info_telegram,
@@ -230,7 +204,7 @@ class WinInternet:
 		self.info_telegram.pack(side=RIGHT)
 
 
-		self.tixati = Button(self.Container6)
+		self.tixati = Button(self.Container7)
 		self.tixati.configure(
 							text='tixati', 							
 							command=self.install_tixati,
@@ -241,7 +215,7 @@ class WinInternet:
 							)
 		self.tixati.pack(side=LEFT)
 
-		self.info_tixati = Button(self.Container6)
+		self.info_tixati = Button(self.Container7)
 		self.info_tixati.configure(
 								text='info', 
 								command=self.show_info_tixati,
@@ -253,7 +227,7 @@ class WinInternet:
 		self.info_tixati.pack(side=RIGHT)
 
 
-		self.uget = Button(self.Container7)
+		self.uget = Button(self.Container8)
 		self.uget.configure(
 							text='uget', 							
 							command=self.install_uget,
@@ -264,7 +238,7 @@ class WinInternet:
 							)
 		self.uget.pack(side=LEFT)
 
-		self.info_uget = Button(self.Container7)
+		self.info_uget = Button(self.Container8)
 		self.info_uget.configure(
 								text='info', 
 								command=self.show_info_uget,
@@ -275,7 +249,7 @@ class WinInternet:
 								)
 		self.info_uget.pack(side=RIGHT)
 
-		self.youtube_dl = Button(self.Container8)
+		self.youtube_dl = Button(self.Container9)
 		self.youtube_dl.configure(
 							text='youtube-dl', 							
 							command=self.install_youtube_dl,
@@ -286,7 +260,7 @@ class WinInternet:
 							)
 		self.youtube_dl.pack(side=LEFT)
 
-		self.info_youtube_dl = Button(self.Container8)
+		self.info_youtube_dl = Button(self.Container9)
 		self.info_youtube_dl.configure(
 								text='info', 
 								command=self.show_info_youtube_dl,
@@ -299,7 +273,7 @@ class WinInternet:
 
 
 
-		self.youtube_dl_gui = Button(self.Container9)
+		self.youtube_dl_gui = Button(self.Container10)
 		self.youtube_dl_gui.configure(
 							text='youtube-dl-gui', 							
 							command=self.install_youtube_dl_gui,
@@ -310,7 +284,7 @@ class WinInternet:
 							)
 		self.youtube_dl_gui.pack(side=LEFT)
 
-		self.info_youtube_dl_gui = Button(self.Container9)
+		self.info_youtube_dl_gui = Button(self.Container10)
 		self.info_youtube_dl_gui.configure(
 								text='info', 
 								command=self.show_info_youtube_dl_gui,
@@ -329,7 +303,7 @@ class WinInternet:
 		system('storecli install --yes megasync')
 
 	def show_info_megasync(self):
-		self.msg_show_info['text'] = 'Megasync'
+		self.msg_show_info['text'] = 'sincroniza arquivos do\ncomputador com o armazenamento\nem nuvem Mega'
 
 	def install_qbittorrent(self):
 		system('storecli install --yes qbittorrent')
