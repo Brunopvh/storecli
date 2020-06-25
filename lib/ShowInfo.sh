@@ -75,7 +75,7 @@ _INFO()
 #
 case "$1" in
 pkg_are_instaled) 
-	white "O pacote ${Green}[$2]${Reset} já está instalado. Para remover-lo use $Script_root ${Green}r${Reset}emove $2"
+	white "${Green}$2${Reset} já está instalado. Para remover-lo execute: $Script_root ${Green}r${Reset}emove $2"
 	;;
 	
 pkg_sucess) 
@@ -165,7 +165,7 @@ function _YESNO()
 	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
 	
 	echo -en "[>] $@ [${Yellow}s${Reset}/${Red}n${Reset}]?: "
-	read -t 25 -n 1 sn
+	read -t 20 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then

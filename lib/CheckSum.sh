@@ -29,11 +29,11 @@ _check_sum()
 	white "Hash do servidor --> $2"
 	echo -ne "[>] Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
-		echo "[OK]"
+		echo "${CYellow}OK${CReset}"
 	else
 		echo ' '
 		rm -rf "$1"
-		red "Falha arquivo [$(basename $1)] não é seguro portanto foi removido"
+		red "Falha arquivo [$1] não é seguro portanto foi removido"
 		return 1
 	fi
 }

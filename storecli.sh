@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020_06_24_rev1'
-
+VERSION='2020_06_24_rev2'
+#
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
@@ -130,7 +130,7 @@ VERSION='2020_06_24_rev1'
 #=============================================================#
 # Diretórios
 #=============================================================#
-export readonly Dir_Storecli=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
+export readonly Dir_Storecli=$(dirname $(readlink -f "$0"))  # path deste arquivo no disco.
 export Dir_Storecli_Lib="$Dir_Storecli/lib"
 export Dir_Programs="$Dir_Storecli/programs"
 export Dir_Storecli_Scripts="$Dir_Storecli/scripts"
@@ -233,7 +233,46 @@ echo -e "$space_line" >> "$LogErro"
 echo ' ' >> "$LogErro"
 
 #=============================================================#
+
+space_line='-----------------------------------------------'
+
+SPACE_TEXT()
+{
+	# Espaçamento entre textos ou mensagens, o distânciamento
+	# padrão e 45, esse valor será subraido do tamanho da string "${#string}"
+	# Exemplo echo "texto1 $(SPACE_TEXT 'texto1') texto2"
+	
+	local line='-'
+	num="$((40-${#@}))" # Subtrair (45) - (tamanho da string recebida com $@) 
+
+	for n in $(seq "$num"); do
+		line="${line}-"
+	done
+	echo -ne "$line"
+}
+
+_space_text()
+{
+	if [[ "${#@}" != '2' ]]; then
+		red "Falha: informe apenas 2 argumentos para serem exibidos como string"
+		return 1
+	fi
+
+	local line='-'
+	num="$((45-${#2}))"  
+	#num="$(($num-${#1}))"
+
+	for i in $(seq "$num"); do
+		line="${line}-"
+	done
+	
+	echo -e "$1 ${line}> $2"
+
+}
+
+#=============================================================#
 # Válidar se o Kernel e Linux.
+#=============================================================#
 if [[ $(uname -s) != 'Linux' ]] && [[ $(uname -s) != 'FreeBSD' ]]; then
 	red "Execute este programa em sistemas Linux ou FreeBSD"
 	exit 1
@@ -262,7 +301,6 @@ if [[ $(id -u) == '0' ]]; then
 fi
 
 # Verificar se o usuário atual é adiministrador.
-# 
 _isroot()
 {
 	if [[ $(sudo id -u) == '0' ]]; then
@@ -317,7 +355,7 @@ if [[ "$1" != '--ignore-cli' ]]; then
 fi
 
 # Se a string 'requeriments OK' não estiver no arquivo de configuração
-# significa que a função de configuração (configura_all) ainda não foi
+# significa que a função de configuração (configure_all) ainda não foi
 # executada no sistema atual, ou seja, se o GREP abaixo retornar status
 # diferente de '0' a função configure_all será invocada.
 if [[ "$1" != '--ignore-cli' ]]; then
@@ -331,7 +369,7 @@ fi
 
 
 #=============================================================#
-# Verificar por atualizações.
+# Verificar por atualizações uma vez por dia.
 #=============================================================#
 _check_update_storecli 
 
@@ -350,9 +388,13 @@ _SUDO()
 }
 
 
-# Função para remover diretórios que o usuário não tem permissão de escrita.
+# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
+# que o usuário não tem permissão de escrita, para isso será usado o "sudo".
 _RMDIR()
 {
+	# Use:
+	#     _RMDIR <diretório> ou
+	#     _RMDIR <arquivo>
 	if [[ -z $1 ]]; then
 		return 1
 	fi
@@ -378,7 +420,6 @@ _clear_temp_dirs()
 		rm -rf "$X" 2>> "$LogErro" || _RMDIR "$X"
 	done
 	
-
 	cd "$Dir_Unpack" 
 	for X in $(ls); do
 		white "Limpando: $X"

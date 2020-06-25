@@ -2,9 +2,6 @@
 #
 #
 #
-#
-#
-
 
 Red='\033[0;31m'
 Green='\033[0;32m'
@@ -46,8 +43,6 @@ CBWhite='\033[5;37m'
 
 # Reset
 CReset='\033[0m'
-
-space_line='-----------------------------------------------'
 
 #=============================================================#
 _c()
@@ -92,19 +87,4 @@ white()
 	echo -e "${CSWhite}[>]${Reset} $@"
 }
 
-#=============================================================#
 
-SPACE_TEXT()
-{
-	# Espaçamento entre textos ou mensagens, o distânciamento
-	# padrão e 45, esse valor será subraido do tamanho da string "${#string}"
-	# Exemplo echo "texto1 $(SPACE_TEXT 'texto1') texto2"
-	
-	local line='-'
-	num="$((40-${#@}))" # Subtrair (45) - (tamanho da string recebida com $@) 
-
-	for n in $(seq "$num"); do
-		line="${line}-"
-	done
-	echo -ne "$line"
-}
