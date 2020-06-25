@@ -289,7 +289,7 @@ fi
 # ao usuário.
 case "$1" in
 	-h|--help) usage; exit 0;;
-	-v|--version) echo -e "$Script_root $VERSION"; exit 0;;
+	-v|--version) echo -e "$(basename $0) $VERSION"; exit 0;;
 	-l|--list) _list_applications; exit 0;;
 esac
 #=============================================================#
