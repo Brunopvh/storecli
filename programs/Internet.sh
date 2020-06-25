@@ -236,6 +236,7 @@ _proxychains()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _tor_debian;;
+		arch) _package_man_distro 'proxychains-ng' 'tor';;
 		fedora) _tor_fedora;;
 		*) _INFO 'pkg_not_found' 'proxychains tor';;
 	esac

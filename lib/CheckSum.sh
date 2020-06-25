@@ -32,7 +32,7 @@ _check_sum()
 		echo "[OK]"
 	else
 		echo ' '
-		#rm -rf "$1"
+		rm -rf "$1"
 		red "Falha arquivo [$(basename $1)] não é seguro portanto foi removido"
 		return 1
 	fi
