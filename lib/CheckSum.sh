@@ -29,7 +29,7 @@ _check_sum()
 	white "Hash do servidor --> $2"
 	echo -ne "[>] Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
-		echo "${CYellow}OK${CReset}"
+		echo -e "${CYellow}OK${CReset}"
 	else
 		echo ' '
 		rm -rf "$1"

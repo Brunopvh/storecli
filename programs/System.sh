@@ -42,16 +42,6 @@ function _bluetooth()
 	done
 }
 
- _brightnessctl()
- {
- 	# https://linuxdicasesuporte.blogspot.com/2018/11/controle-de-brilho-da-tela-por-linha-de_5.html
- 	case "$os_id" in
- 		debian|ubuntu|linuxmint) _package_man_distro brightnessctl;;
-		arch) _package_man_distro brightnessctl;;
-		fedora) _package_man_distro brightnessctl;;
-	esac
- }
-
 #=====================================================#
 # Compactadores
 #=====================================================#
@@ -112,41 +102,6 @@ function _firmware()
 function _gparted()
 {
 	_package_man_distro gparted
-}
-
-_p7zip_gui()
-{
-	# https://www.ruinelli.ch/p7zip-gui-for-linux
-	# sudo apt-get install libwxgtk3.0-dev
-	local url_p7zipGUI='https://www.ruinelli.ch/download/software/p7zip/p7zip-full_15.09-1_amd64.deb'
-	local path_file="$Dir_Downloads/$(basename $url_p7zipGUI)"
-
-	_dow "$url_p7zipGUI" "$path_file" || return 1
-
-	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
-		return 0 
-	fi
-
-	_unpack "$path_file" || return 1
-	_unpack "$Dir_Unpack/data.tar.xz" || return 1
-	sudo mkdir -p /usr/lib/p7zip/
-
-	cd "$Dir_Unpack/usr/bin"
-
-	# Arquivo 7z em bin
-	sudo mv 7z "${array_p7zipgui_dirs[p7zip_file_7z]}"
-
-	# Arquivo 7za em bin
-	sudo mv 7za "${array_p7zipgui_dirs[p7zip_file_7za]}"
-
-	# Navegar até a pasta lib/p7zip.
-	cd "$Dir_Unpack/usr/lib/p7zip" 
-	sudo mv 7z "${array_p7zipgui_dirs[p7zip_lib_7z]}"
-	sudo mv 7za "${array_p7zipgui_dirs[p7zip_lib_7za]}"
-	sudo mv 7z.so "${array_p7zipgui_dirs[p7zip_lib_7zSO]}"
-	sudo mv 7zCon.sfx "${array_p7zipgui_dirs[p7zip_lib_7zSFX]}"
 }
 
 _peazip()
@@ -483,15 +438,15 @@ function _virtualbox_archlinux()
 	# /usr/lib/modules-load.d/virtualbox-host-modules-arch.conf -> Arquivo de configuração
 	
 	local array_vb_archlinux=(
-		'linux-headers'
 		'virtualbox' 
 		'virtualbox-host-modules-arch'
+		'linux-headers'
 	)
 
 	for c in "${array_vb_archlinux[@]}"; do
-		green "Instalando $(SPACE_TEXT $c) $c"
+		_space_text "[+] Instalando" "$c"
 		if ! _package_man_distro "$c"; then
-			red "Falha $(SPACE_TEXT) $c"
+			_space_text "${CRed}[!]${CReset} Falha" "$c"
 		fi
 	done
 
@@ -506,7 +461,7 @@ function _virtualbox_archlinux()
 	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
 
 	# Instalar o pacote ExtensionPack.
-	_virtualbox_extpack 
+	#_virtualbox_extpack 
 }
 
 #-----------------------------------------------------#
@@ -536,15 +491,8 @@ function _virtualbox_linux_run()
 	# Filtrar o url do arquivo executável (.run) 
 	# e atribuir path para download.
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
+	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
 	path_file="$Dir_Downloads/$(basename $vbox_url_run)"
-
-	# Usar expansão de variáveis para obter a versão atual do virtualbox
-	# que está expressa no url de download "vbox_url_run".
-	#
-	# Selecionar 5 caracteres apartir do 43 - para obter somente o
-	# número da versão atual - leia sobre expanção de variaveis em 
-	# shell script.
-	vbox_version="${vbox_url_run:43:5}" 
 	
 	# Definir o url de download do arquivo com as hashs de seu
 	# destino de download
