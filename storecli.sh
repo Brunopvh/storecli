@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-VERSION='2020_06_25_rev1'
+VERSION='2020_06_28_rev1'
 #
 #---------------------- INSTALAÇÃO --------------------------------#
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
@@ -126,6 +126,25 @@ VERSION='2020_06_25_rev1'
 # http://shellscriptx.blogspot.com/2017/03/criando-bot-do-telegram-em-shell-script-com-shellbot.html
 #
 
+#=============================================================#
+# Válidar se o Kernel e Linux.
+#=============================================================#
+if [[ $(uname -s) != 'Linux' ]] && [[ $(uname -s) != 'FreeBSD' ]]; then
+	red "Execute este programa em sistemas Linux ou FreeBSD"
+	exit 1
+fi
+
+# Necessário ter o pacote "sudo" intalado.
+if [[ ! -x $(which sudo 2> /dev/null) ]]; then
+	red "Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir"
+	exit 1
+fi
+
+# Usuário não pode ser o root.
+if [[ $(id -u) == '0' ]]; then
+	red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
+	exit 1
+fi
 
 #=============================================================#
 # Diretórios
@@ -270,19 +289,7 @@ _space_text()
 
 }
 
-#=============================================================#
-# Válidar se o Kernel e Linux.
-#=============================================================#
-if [[ $(uname -s) != 'Linux' ]] && [[ $(uname -s) != 'FreeBSD' ]]; then
-	red "Execute este programa em sistemas Linux ou FreeBSD"
-	exit 1
-fi
 
-# Necessário ter o pacote "sudo" intalado.
-if [[ ! -x $(which sudo 2> /dev/null) ]]; then
-	red "Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir"
-	exit 1
-fi
 
 #=============================================================#
 # Parametros que não precisam de verificação para serem exibidos
@@ -293,12 +300,6 @@ case "$1" in
 	-l|--list) _list_applications; exit 0;;
 esac
 #=============================================================#
-
-# Usuário não pode ser o root.
-if [[ $(id -u) == '0' ]]; then
-	red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
-	exit 1
-fi
 
 # Verificar se o usuário atual é adiministrador.
 _isroot()

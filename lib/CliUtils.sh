@@ -86,13 +86,11 @@ _config_python()
 	yellow "Executando: [_config_python]"
 	echo -e "$space_line"
 	if _WHICH 'pip3'; then
-		pip3 install wheel --user
-		pip3 install wget --user 
-	elif _WHICH 'pip'; then
-		pip install whell --user 
-		pip install wget --user 
-	else
-		red "Instale o pacote 'pip'"
+		pip3 install wheel wget --user || return 1
+    fi
+ 
+	if _WHICH 'pip'; then
+		pip install wheel wget --user || return 1 
 	fi
 	return 0 
 }
