@@ -69,6 +69,15 @@ _gitclone()
 	fi
 
 	cd "$DirGitclone"
+	dir_repo=$(basename "$1" | sed 's/.git//g')
+	if [[ -d "$DirGitclone/$dir_repo" ]]; then
+		_yellow "Encontrado: $DirGitclone/$dir_repo"
+		if _YESNO "Deseja remover o diretório clonado anteriormente"; then
+			__RMDIR "$dir_repo"
+		else
+			return 0
+		fi
+	fi
 
 	_blue "Clonando: $1"
 	_blue "Destino: $(pwd)"

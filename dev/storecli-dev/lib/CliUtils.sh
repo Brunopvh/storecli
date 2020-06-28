@@ -73,7 +73,7 @@ requeriments_python3_freebsd=(
 # Módulos python3
 _config_python()
 {
-	_msg "Executando: [_config_python]"
+	_msg "Instalando módulos para python wget, wheel"
 
 	if is_executable 'pip3'; then
 		pip3 install wheel wget --user || return 1 

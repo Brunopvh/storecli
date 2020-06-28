@@ -8,8 +8,8 @@ _android_sdktools()
 	local url_commandline_tools='https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip'
 	local url_emulator='https://dl.google.com/android/repository/emulator-linux-6466327'
 
-	local path_sdktools="$Dir_Downloads/$(basename $url_sdktools)"
-	local path_commandline_tools="$Dir_Downloads/$(basename $url_commandline_tools)"
+	local path_sdktools="$DirDownloads/$(basename $url_sdktools)"
+	local path_commandline_tools="$DirDownloads/$(basename $url_commandline_tools)"
 	local hash_commandline_tools='f10f9d5bca53cc27e2d210be2cbc7c0f1ee906ad9b868748d74d62e10f2c8275'
 	local hash_skdtools=''
 	local JDKloaction="$HOME/.local/bin/android-studio/jre"
@@ -19,231 +19,185 @@ _android_sdktools()
 	_dow "$url_sdktools" "$path_sdktools"
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_sdktools"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 }
 
-#-----------------------------------------------------#
-function _android_studio_zip()
+
+_android_studio_zip()
 {
 	# https://developer.android.com/studio
 	local url='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
 	local hash_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
-	local path_file="$Dir_Downloads/$(basename $url)"
+	local path_file="$DirDownloads/$(basename $url)"
 
 	_dow "$url" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_sdktools"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
-	# Já instalado.
-	if _WHICH 'studio'; then
-		_INFO 'pkg_are_instaled' 'studio'
-		return 0
-	fi
-
-	
-	echo -e "$space_line"
 	_check_sum "$path_file" "$hash_studio" || return 1
 	_unpack "$path_file" || return 1
 
-	white "Instalando android studio em ~/.local/bin"
+	_white "Instalando android studio em ~/.local/bin"
 	cd "$Dir_Unpack" 
-	mv $(ls -d android-*) "${array_android_studio_dirs[3]}" 1> /dev/null # ~/.local/bin
-	cp -u "${array_android_studio_dirs[3]}"/bin/studio.png "${array_android_studio_dirs[1]}" # .png
-	chmod -R +x "${array_android_studio_dirs[3]}" # ~/.local/bin
+	mv $(ls -d android-*) "${destinationFilesAndroidStudio[dir]}" 1> /dev/null # ~/.local/bin/androi-studio
+	cp -u "${destinationFilesAndroidStudio[dir]}"/bin/studio.png "${destinationFilesAndroidStudio[file_png]}" # .png
+	chmod -R +x "${destinationFilesAndroidStudio[dir]}" # ~/.local/bin/androi-studio
 
 	# arquivo de configuração ".desktop"
-	green "Criando arquivo .desktop"
-	echo '[Desktop Entry]' > "${array_android_studio_dirs[0]}"
+	_show_info 'AddFileDesktop'
+	echo '[Desktop Entry]' > "${destinationFilesAndroidStudio[file_desktop]}"
 	{
 		echo "Version=1.0"
 		echo "Type=Application"
 		echo "Name=Android Studio"
 		echo "Icon=studio.png"
-		echo "Exec=sh -c 'cd ${array_android_studio_dirs[3]}/bin && ./studio.sh'"
+		echo "Exec=sh -c 'cd ${destinationFilesAndroidStudio[dir]}/bin && ./studio.sh'"
 		echo "Comment=The Drive to Develop"
 		echo "Categories=Development;IDE;"
 		echo "Terminal=false"
 		echo "StartupWMClass=jetbrains-studio"
-	} >> "${array_android_studio_dirs[0]}"
+	} >> "${destinationFilesAndroidStudio[file_desktop]}"
 
 	# Atalho para linha de comando.
-	echo '#!/bin/sh' > "${array_android_studio_dirs[2]}" # ~/.local/bin/studio
-	echo "cd ${array_android_studio_dirs[3]}/bin && ./studio.sh" >> "${array_android_studio_dirs[2]}"
+	echo '#!/bin/sh' > "${destinationFilesAndroidStudio[link]}" # ~/.local/bin/studio
+	echo "cd ${destinationFilesAndroidStudio[dir]}/bin && ./studio.sh" >> "${destinationFilesAndroidStudio[link]}"
 
 	# Permissão.
-	chmod u+x "${array_android_studio_dirs[0]}"
-	chmod u+x "${array_android_studio_dirs[2]}"
+	chmod u+x "${destinationFilesAndroidStudio[file_desktop]}"
+	chmod u+x "${destinationFilesAndroidStudio[link]}"
 
 	# Área de trabalho.
-	green "Criando atalho na Área de trabalho"
-	cp -u "${array_android_studio_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_android_studio_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "${array_android_studio_dirs[0]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesAndroidStudio[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesAndroidStudio[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesAndroidStudio[file_desktop]}" ~/Desktop/ 2> /dev/null
 
-	if _WHICH 'studio'; then
-		_INFO 'pkg_sucess' 'studio'
-		return 0
-	else
-		_INFO 'pkg_instalation_failed' 'studio'
-		return 1
-	fi
 }
 
 #-----------------------------------------------------#
 
-function _android_studio_debian()
+_android_studio_debian()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
 	if [[ ! -f /etc/debian_version ]]; then
 		return 1
 	fi
 
-	#------------------------------------------------------------#
-	# debian virt utils
-	local virtual_debian_requeriments=(
-		'qemu-kvm' 'libvirt-clients' 'libvirt-daemon-system'
-	)
-
-	# Debian lib utils.
-	local libs_debian_requeriments=(
-		lib32z1 'lib32stdc++6' lib32gcc1 lib32ncurses6 lib32tinfo6 'libc6-i386'
-	)
-
+	local debianBusterRequeriments=(
+		'qemu-kvm' 
+		'libvirt-clients' 
+		'libvirt-daemon-system'
+		lib32z1 
+		'lib32stdc++6' 
+		lib32gcc1 
+		lib32ncurses6 
+		lib32tinfo6 
+		'libc6-i386'
+		)
 
 	_APT update
-	green "Instalando: openjdk-11-jdk"
-	_package_man_distro 'openjdk-11-jdk'
+	_green "Instalando: openjdk-11-jdk"
+	_pkg_manager_sys 'openjdk-11-jdk'
 
 	#-----------------------------------------------------#
-	for c in "${virtual_debian_requeriments[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			sleep 1			
-		fi
+	for c in "${debianBusterRequeriments[@]}"; do
+		_msg "Instalando: $c"
+		_pkg_manager_sys "$c"
 	done
 	
-	#-----------------------------------------------------#
-	for c in "${libs_debian_requeriments[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			sleep 1
-		fi
-	done
-	#-----------------------------------------------------#
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
-	_SUDO adduser "$USER" libvirt
-	_SUDO adduser "$USER" 'libvirt-qemu'
+	_msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
+	__sudo__ adduser "$USER" libvirt
+	__sudo__ adduser "$USER" 'libvirt-qemu'
 
 	_android_studio_zip || return 1
 }
 
 #-----------------------------------------------------#
-function _android_archlinux()
+_android_archlinux()
 {
 	_android_studio_zip
 }
 
 #-----------------------------------------------------#
 
-function _android_studio_ubuntu()
+_android_studio_ubuntu()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
 	if [[ ! -f /etc/debian_version ]]; then
 		return 1
 	fi
 
-	#------------------------------------------------------------#
-	# ubuntu virt utils
-	local virtual_ubuntu_requeriments=(
-		'qemu-kvm' 'libvirt-bin' 'ubuntu-vm-builder' 'bridge-utils'
-	)
-
-	# Ubuntu lib utils.
-	local libs_ubuntu_requeriments=(
-		lib32z1 lib32ncurses5 'lib32stdc++6' lib32gcc1 lib32tinfo5 'libc6-i386'
-	)
-	#------------------------------------------------------------#
+	local ubuntuBionicRequeriments=(
+		'qemu-kvm' 
+		'libvirt-bin' 
+		'ubuntu-vm-builder' 
+		'bridge-utils'
+		lib32z1 
+		lib32ncurses5 
+		'lib32stdc++6' 
+		lib32gcc1 
+		lib32tinfo5 
+		'libc6-i386'
+		)
 
 	_APT update
-	yellow "Instalando: openjdk-8-jdk"
-	_package_man_distro 'openjdk-8-jdk'
+	_msg "Instalando: openjdk-8-jdk"
+	_pkg_manager_sys 'openjdk-8-jdk'
 
-	#-----------------------------------------------------#
-	for c in "${virtual_ubuntu_requeriments[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			sleep 1			
-		fi
+	for c in "${ubuntuBionicRequeriments[@]}"; do
+		_msg "Instalando: $c"
+		_pkg_manager_sys "$c"
 	done
 	
-	#-----------------------------------------------------#
-	for c in "${libs_ubuntu_requeriments[@]}"; do
-		yellow "Instalando: $c"
-		if ! _package_man_distro "$c"; then
-			red "Falha: $c"
-			sleep 1
-		fi
-	done
-	#-----------------------------------------------------#
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
-	_SUDO adduser "$USER" libvirt
-	_SUDO adduser "$USER" libvirt-qemu
+	_msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
+	__sudo__ adduser "$USER" libvirt
+	__sudo__ adduser "$USER" 'libvirt-qemu'
 
 	_android_studio_zip || return 1
 }
 
-#-----------------------------------------------------#
-function _android_studio_fedora()
+
+_android_studio_fedora()
 {
 	local array_libs_fedora=(
 			'zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686'
 			)
 
-	echo -e "$space_line"
-	green "Instalando: ${array_libs_fedora[@]}"
-	if ! _package_man_distro "${array_libs_fedora[@]}"; then
-		red "Falha: ${array_libs_fedora[@]}"
-		sleep 0.25
-	fi
+	__msg "Instalando: ${array_libs_fedora[@]}"
+	_pkg_manager_sys "${array_libs_fedora[@]}"
 
 	_android_studio_zip || return 1
 	#_android_sdktools
 }
-#-----------------------------------------------------#
-function _android_studio_opensuseleap()
+
+
+_android_studio_opensuseleap()
 {
-	_package_man_distro 'java-1_8_0-openjdk-devel' 'qemu-kvm'
+	_pkg_manager_sys 'java-1_8_0-openjdk-devel' 'qemu-kvm'
 
 	local requerimentsOpenSuse=(
-		'libstdc++6-32bit' 
-		'zlib-devel-32bit' 
-		'libncurses5-32bit' 
-		'libbz2-1-32bit'
+			'libstdc++6-32bit' 
+			'zlib-devel-32bit' 
+			'libncurses5-32bit' 
+			'libbz2-1-32bit'
 		)
-	yellow "Instalando: ${requerimentsOpenSuse[@]}"
-	_package_man_distro "${requerimentsOpenSuse[@]}"
+	_yellow "Instalando: ${requerimentsOpenSuse[@]}"
+	_pkg_manager_sys "${requerimentsOpenSuse[@]}"
 	_android_studio_zip
 }
 
 #-----------------------------------------------------#
 
-function _android_studio()
+_android_studio()
 {
 	# https://www.blogopcaolinux.com.br/2017/09/Instalando-Android-Studio-no-Debian-e-no-Ubuntu.html
 	# https://www.blogopcaolinux.com.br/2017/05/Instalando-Android-Studio-no-openSUSE-e-Fedora.html
 	# https://developer.android.com/studio/index.html#downloads
+
+	# Já instalado.
+	is_executable 'studio' && _show_info 'PkgInstalled' 'android-studio' && return 0
 
 	case "$os_id" in
 		debian) _android_studio_debian;;
@@ -251,94 +205,102 @@ function _android_studio()
 		'opensuse-leap') _android_studio_opensuseleap;;
 		fedora) _android_studio_fedora;;
 		arch) _android_archlinux;;
-		*) _INFO 'pkg_not_found' 'android-studio'; return 1;;
+		*) _show_info 'ProgramNotFound' 'android-studio'; return 1;;
 	esac
+
+	if is_executable 'studio'; then
+		_show_info 'SuccessInstalation' 'android-studio'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'android-studio'
+		return 1
+	fi
 }
 
 #-----------------------------------------------------#
-function _codeblocks_fedora()
+_codeblocks_fedora()
 {
 	# https://sempreupdate.com.br/como-instalar-o-codeblocks-no-fedora/
 	#
 	# local url_codeblocks_fedora='http://sourceforge.net/projects/codeblocks/files/Binaries/17.12/Linux/Fedora%2028%20(aka%20Rawhide)/codeblock-17.12-1.fc28.x86_64.tar.xz'
 
-	_package_man_distro codeblocks || return 1
-	_package_man_distro make automake gcc 'gcc-c++' 'kernel-devel' || return 1
+	_pkg_manager_sys codeblocks || return 1
+	_pkg_manager_sys make automake gcc 'gcc-c++' 'kernel-devel' || return 1
 	# sudo dnf groupinstall "Development Tools" "Development Libraries" 
 }
 
 #-----------------------------------------------------#
 
-function _codeblocks_archlinux()
+_codeblocks_archlinux()
 {
 	# https://www.archlinux.org/packages/community/x86_64/codeblocks/
-	_package_man_distro codeblocks
+	_pkg_manager_sys codeblocks
 }
 
 #-----------------------------------------------------#
-function _codeblocks_debian()
+_codeblocks_debian()
 {
-	_package_man_distro codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1
+	_pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1
 }
 #-----------------------------------------------------#
 
-function _codeblocks()
+_codeblocks()
 {
 	case "$os_id" in
 		debian) _codeblocks_debian;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
-		*) _INFO 'pkg_not_found' 'codeblocks'; return 1;;
+		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
 	esac
 }
 
 #=====================================================#
 # Java
 #=====================================================#
-function _java_instalation_tarfile()
+_java_instalation_tarfile()
 {
 	# https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242050_3d5a2bb8f8d4428bbe94aed7ec7ae784
 	# https://www.java.com/pt_BR/download/linux_manual.jsp
 	# https://www.blogopcaolinux.com.br/2016/06/instalando-java-jre-oracle-no-ubuntu-manualmente.html
 
 	local url_javaTARGZ='https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242050_3d5a2bb8f8d4428bbe94aed7ec7ae784'
-	local path_file="$Dir_Downloads/java.tar.gz"
+	local path_file="$DirDownloads/java.tar.gz"
 
 	_dow "$url_javaTARGZ" "$path_file" || return 1
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+		_show_info 'download_only' "$path_file"
 		return 0 
 	fi
 
 	_unpack "$path_file" || return 1
 
 	if [[ ! -d '/usr/lib/jre-oracle' ]]; then
-		_SUDO mkdir -p '/usr/lib/jre-oracle'
+		__sudo__ mkdir -p '/usr/lib/jre-oracle'
 	fi
 
 	cd '/usr/lib/jre-oracle' && _RMDIR $(ls)
 	cd "$Dir_Unpack"
 	mv $(ls -d jre*) jre-oracle
-	_SUDO cp -R 'jre-oracle' '/usr/lib/'
+	__sudo__ cp -R 'jre-oracle' '/usr/lib/'
 
 	# Informar ao sistema onde o Oracle Java está localizado:
-	yellow "Executando: update-alternatives"
+	_yellow "Executando: update-alternatives"
 	sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jre-oracle/bin/java" 1
 
 	# Definir como padrão
 	sudo update-alternatives --set java /usr/lib/jre-oracle/bin/java
 
 	# Habilitar plugin Java para firefox.
-	yellow "Habilitando plugin para Mozilla Firefox"
+	_yellow "Habilitando plugin para Mozilla Firefox"
 	sudo mkdir -p /usr/lib/mozilla
 	sudo mkdir -p /usr/lib/mozilla/plugins
 	sudo update-alternatives --install "/usr/lib/mozilla/plugins/javaplugin.so" "javaplugin" "/usr/lib/jre-oracle/lib/amd64/libnpjp2.so" 3
 
-	yellow "Definindo como padrão"
+	_yellow "Definindo como padrão"
 	sudo update-alternatives --set javaplugin '/usr/lib/jre-oracle/lib/amd64/libnpjp2.so'
 
-	green "Criando arquivo de configuração '.desktop'"
+	_green "Criando arquivo de configuração '.desktop'"
 	javaDesktopFile='/usr/share/applications/java-control.desktop'
 
 	echo '[Desktop Entry]' | sudo tee "$javaDesktopFile" 1> /dev/null
@@ -353,7 +315,7 @@ function _java_instalation_tarfile()
 		echo 'Categories=Application;Settings;Java;X-Red-Hat-Base;X-Ximian-Settings;'
 	} | sudo tee -a "$javaDesktopFile" 1> /dev/null
 
-	green "Criando atalho na Área de trabalho"
+	_green "Criando atalho na Área de trabalho"
 	cp -u "$javaDesktopFile" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "$javaDesktopFile" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$javaDesktopFile" ~/Desktop/ 2> /dev/null
@@ -362,25 +324,25 @@ function _java_instalation_tarfile()
 
 _java_instalation_debian()
 {
-	_package_man_distro 'openjdk-8-jre'
+	_pkg_manager_sys 'openjdk-8-jre'
 }
 
 _java_instalation_rpm()
 {
 	# http://openjdk.java.net/install/
 	local url_javaRPM='https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242049_3d5a2bb8f8d4428bbe94aed7ec7ae784'
-	local path_file="$Dir_Downloads/java.rpm"
+	local path_file="$DirDownloads/java.rpm"
 
 	_dow "$url_javaRPM" "$path_file" || return 1
 
 	case "$os_id" in
 		fedora) _RPM --install "$path_file" || return 1;;
-		*) _INFO 'pkg_not_found' 'java';;
+		*) _show_info 'ProgramNotFound' 'java';;
 	esac
 }
 
 
-function _java()
+_java()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _java_instalation_debian;;
@@ -392,24 +354,24 @@ function _java()
 #=====================================================#
 # Pycharm
 #=====================================================#
-function _pycharm()
+_pycharm()
 {
 	#local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2019.3.3.tar.gz'
 	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.1.tar.gz'
 	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
-	local path_file="$Dir_Downloads/$(basename $url_pycharm)"
+	local path_file="$DirDownloads/$(basename $url_pycharm)"
 	
 	_dow "$url_pycharm" "$path_file" || return 1
 
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+		_show_info 'download_only' "$path_file"
 		return 0 
 	fi
 
 	# Já instalado.
 	if _WHICH 'pycharm'; then
-		_INFO 'pkg_are_instaled' 'pycharm'
+		_show_info 'pkg_are_instaled' 'pycharm'
 		return 0 
 	fi
 
@@ -427,7 +389,7 @@ function _pycharm()
 	chmod +x "${array_pycharm_dirs[2]}"
 
 	# Criar arquivo .desktop
-	green "Criando arquivo .desktop"
+	_green "Criando arquivo .desktop"
 	touch "${array_pycharm_dirs[0]}" 
 	echo "[Desktop Entry]" > "${array_pycharm_dirs[0]}"
     {
@@ -441,16 +403,16 @@ function _pycharm()
     } >> "${array_pycharm_dirs[0]}"
 
     # Área de trabalho.
-	green "Criando atalho na Área de trabalho"
+	_green "Criando atalho na Área de trabalho"
 	cp -u "${array_pycharm_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${array_pycharm_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
 	cp -u "${array_pycharm_dirs[0]}" ~/Desktop/ 2> /dev/null 
 
 	if _WHICH 'pycharm'; then
-		_INFO 'pkg_sucess' 'pycharm'
+		_show_info 'pkg_sucess' 'pycharm'
 		return 0
 	else
-		_INFO 'pkg_instalation_failed' 'pycharm'
+		_show_info 'pkg_instalation_failed' 'pycharm'
 		return 1
 	fi
 }
@@ -458,24 +420,24 @@ function _pycharm()
 #=====================================================#
 # Sublime-text
 #=====================================================#
-function _sublime_text()
+_sublime_text()
 {
 	sublime_pag='https://www.sublimetext.com/3'
 	sublime_html=$(grep -m 1 'http.*sublime.*x64.tar.bz2' <<< $(curl -sL "$sublime_pag"))
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
-	path_file="$Dir_Downloads/$(basename $sublime_url)"
+	path_file="$DirDownloads/$(basename $sublime_url)"
 
 	_dow "$sublime_url" "$path_file" || return 1
 	
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+		_show_info 'download_only' "$path_file"
 		return 0 
 	fi
 
 	# Já instalado.
 	if _WHICH 'sublime'; then
-		_INFO 'pkg_are_instaled' 'sublime'
+		_show_info 'pkg_are_instaled' 'sublime'
 		return 0
 	fi
 	_unpack "$path_file" || return 1
@@ -487,11 +449,11 @@ function _sublime_text()
 	#sudo gtk-update-icon-cache
 
 	if _WHICH 'sublime'; then
-		_INFO 'pkg_sucess' 'sublime'
+		_show_info 'pkg_sucess' 'sublime'
 		sublime &
 		return 0
 	else
-		_INFO 'pkg_instalation_failed' 'sublime'
+		_show_info 'pkg_instalation_failed' 'sublime'
 		return 1
 	fi
 }
@@ -500,15 +462,15 @@ function _sublime_text()
 #=====================================================#
 # Vim
 #=====================================================#
-function _vim()
+_vim()
 {
-	_package_man_distro vim
+	_pkg_manager_sys vim
 }
 
 #=====================================================#
 # Vscode.
 #=====================================================#
-function _vscode_debian()
+_vscode_debian()
 {
 	local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
 	local path_file="$dir_user_cache/vscode-amd64.deb"
@@ -516,13 +478,13 @@ function _vscode_debian()
 
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+		_show_info 'download_only' "$path_file"
 		return 0 
 	fi
 	
 	# Já instalado.
 	if _WHICH 'code'; then
-		_INFO 'pkg_are_instaled' 'code'
+		_show_info 'pkg_are_instaled' 'code'
 		return 0
 	fi
 
@@ -531,22 +493,22 @@ function _vscode_debian()
 
 #-----------------------------------------------------#
 
-function _vscode()
+_vscode()
 {
 	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
-	local path_file="$Dir_Downloads/vscode.tar.gz"
+	local path_file="$DirDownloads/vscode.tar.gz"
 
 	_dow "$url_vscode_tar" "$path_file"
 
 	# Somente baixar
 	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+		_show_info 'download_only' "$path_file"
 		return 0 
 	fi
 
 	# Já instalado.
 	if _WHICH 'code'; then
-		_INFO 'pkg_are_instaled' 'code'
+		_show_info 'pkg_are_instaled' 'code'
 		return 0
 	fi
 
@@ -564,7 +526,7 @@ function _vscode()
 	chmod +x "${array_vscode_dirs[2]}"
 
 	# Criar entrada no menu do sistema.
-	green "Criando arquivo .desktop"
+	_green "Criando arquivo .desktop"
 	echo "[Desktop Entry]" > "${array_vscode_dirs[0]}" 
 	{
 		echo "Name=Code"
@@ -576,16 +538,16 @@ function _vscode()
 		echo "Type=Application"
 	} >> "${array_vscode_dirs[0]}"
 
-	green "Criando atalho na Área de trabalho"
+	_green "Criando atalho na Área de trabalho"
 	cp -u "${array_vscode_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
 	cp -u "${array_vscode_dirs[0]}" ~/Desktop/ 2> /dev/null 
 	cp -u "${array_vscode_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
 
 	if _WHICH 'code'; then
-		_INFO 'pkg_sucess' 'code'
+		_show_info 'pkg_sucess' 'code'
 		return 0
 	else
-		_INFO 'pkg_instalation_failed' 'code'
+		_show_info 'pkg_instalation_failed' 'code'
 		return 1
 	fi
 }

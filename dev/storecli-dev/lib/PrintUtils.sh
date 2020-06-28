@@ -39,6 +39,13 @@ _msg()
 	echo '--------------------------------------------------'
 }
 
+
+_sred()
+{
+	echo -e "${CSRed} $@${CReset}"
+}
+
+
 _YESNO()
 {
 	# Será necessário indagar o usuário repetidas vezes durante a execução
@@ -51,7 +58,7 @@ _YESNO()
 	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
 	
 	echo -en "[>] $@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
-	read -t 20 -n 1 sn
+	read -t 15 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then
@@ -84,6 +91,146 @@ _space_text()
 _show_info()
 {
 	case "$1" in
-		DownloadOnly) _gree "Feito somente download";;
+		AddFileDestktop) _green "Criando arquivo (.desktop)";;
+		DownloadOnly) _green "Feito somente download";;
+		PkgInstalled) _green "($2) está instalado";;
+		SuccessInstalation) _green "($2) instalado com sucesso";;
+		InstalationFailed) _red "Falha ao tentar instalar ($2)";;
+		ProgramNotFound) _red "Programa indisponível para o seu sistema: $2";;
 	esac
+}
+
+
+_list_applications()
+{
+	if [[ -z $1 ]]; then
+		printf "%s\n" "  Acessorios: " # Acessorios
+		for APP in "${programs_acessory[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Desenvolvimento: " # Desenvolvimento
+		for APP in "${programs_development[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Escritorio: " # Escritório
+		for APP in "${programs_office[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Navegadores: " # Navegadores
+		for APP in "${programs_browser[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Internet: " # Internt
+		for APP in "${programs_internet[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Midia: " # Midia
+		for APP in "${programs_midia[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Sistema: " # Sistema
+		for APP in "${programs_system[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Preferencias: " # Preferências
+		for APP in "${programs_preferences[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Gnome Shell: " # Gnome Shell
+		for APP in "${programs_gnomeshell[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+		printf "\n"
+
+
+		return 0
+	fi
+
+	while [[ $1 ]]; do
+		case "$1" in
+			Acessorios)
+					printf "%s\n" "  Acessorios: "
+					for APP in "${programs_acessory[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Desenvolvimento)
+					printf "%s\n" "  Desenvolvimento: "
+					for APP in "${programs_development[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Escritorio)
+					printf "%s\n" "  Escritorio: "
+					for APP in "${programs_office[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Navegadores)
+					printf "%s\n" "  Navegadores: "
+					for APP in "${programs_browser[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Internet)
+					printf "%s\n" "  Internet: "
+					for APP in "${programs_internet[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Midia)
+					printf "%s\n" "  Midia: "
+					for APP in "${programs_midia[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Sistema)
+					printf "%s\n" "  Sistema: "
+					for APP in "${programs_system[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Preferencias)
+					printf "%s\n" "  Preferencias: "
+					for APP in "${programs_preferences[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			GnomeShell)
+					printf "%s\n" "  Gnome Shell: "
+					for APP in "${programs_gnomeshell[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			*)
+			_red "Use: --list|-l OU --list|-l Acessorios|Escritorio|Internet"
+					;;
+		esac
+		shift
+	done	
 }

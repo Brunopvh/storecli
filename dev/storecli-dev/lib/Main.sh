@@ -15,7 +15,8 @@ _pkg_manager_storecli()
 		tina|tricia) export os_codename='bionic';;
 	esac
 
-	_yellow "$os_id $os_release"
+	_yellow "storecli ${__version__}: sua loja de aplicativos via linha de comando."
+	_space_text "[+] Sistema" "$os_id $os_release"
 
 	while [[ $1 ]]; do
 		case "$1" in
@@ -115,4 +116,39 @@ _pkg_manager_storecli()
 		esac
 		shift
 	done
+}
+
+__delete_files__()
+{
+	if [[ -z $1 ]]; then
+		return 1
+	fi
+
+	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
+	# A função __sudo__ irá remover o arquivo/diretório.
+	for FILE in "$@"; do
+		if [[ ! -L "$FILE" ]] && [[ ! -f "$FILE" ]] && [[ ! -d "$FILE" ]]; then
+			_red "Não encontrado: $FILE"
+		else
+			_red "Removendo: $FILE"
+			rm -rf "$FILE" 2> /dev/null || __sudo__ rm -rf "$FILE"
+		fi
+	done
+}
+
+_remove_packages()
+{
+	[[ -z $1 ]] && return 1
+	while [[ $1 ]]; do
+		_space_text "Removendo" "$1"
+
+		case "$1" in
+			etcher) __delete_files__ "${destinationFilesEtcher[@]}";;
+			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
+		esac
+		shift
+	done
+#-----------------------| ACESSÓRIOS |------------------------------------------#
+
+return "$?"
 }

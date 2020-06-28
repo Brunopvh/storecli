@@ -8,14 +8,12 @@ directoryUSERbin="$HOME/.local/bin"
 directoryUSERicon="$HOME/.local/share/icons"
 directoryUSERthemes="$HOME/.themes"
 directoryUSERapplications="$HOME/.local/share/applications"
-directoryUSERdownloads="$HOME/.cache/storecli/downloads"
 directoryUSERconfig="$HOME/.config/storecli"
 
 mkdir -p "$directoryUSERbin"
 mkdir -p "$directoryUSERicon"
 mkdir -p "$directoryUSERthemes"
 mkdir -p "$directoryUSERapplications"
-mkdir -p "$directoryUSERdownloads"
 mkdir -p "$directoryUSERconfig"
 
 #=============================================================#

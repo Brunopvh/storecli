@@ -3,12 +3,12 @@
 #
 # Use: 
 # source Gpg.sh
-# _verify_sig <sig> <file>
+# _verify_signature <sig> <file>
 #
 #
 
 
-_verify_sig()
+_verify_signature()
 {
 	# $1 = sig
 	# $2 = file

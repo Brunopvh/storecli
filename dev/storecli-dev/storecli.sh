@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_26_rev1'
+__version__='2020_06_28_rev1'
 #
 ##=============================================================#
 # REFERÊNCIAS
@@ -10,28 +10,32 @@ __version__='2020_06_26_rev1'
 # https://man7.org/linux/man-pages/man1/getopts.1p.html
 #
 
-clear
 
 #=============================================================#
 # Válidar se o Kernel e Linux.
 #=============================================================#
 if [[ $(uname -s) != 'Linux' ]]; then
-	_red "Execute este programa apenas em sistemas Linux."
-	exit 1
-fi
-
-# Necessário ter o pacote "sudo" intalado.
-if [[ ! -x $(which sudo 2> /dev/null) ]]; then
-	_red "Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir"
+	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
 	exit 1
 fi
 
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
-	red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
+	printf "\033[0;31m Usuário não pode ser o [root] execute novamente sem o [sudo]\033[m\n"
 	exit 1
 fi
 
+# Necessário ter o pacote "sudo" intalado.
+if [[ ! -x $(which sudo 2> /dev/null) ]]; then
+	printf "\033[0;31m Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir\033[m\n"
+	exit 1
+fi
+
+# Verificar se a arquitetura do Sistema e 64 bits
+if ! uname -m | grep '64' 1> /dev/null; then
+	printf "\033[0;31m Seu sistema não e 64 bits. Saindo\033[m\n"
+	exit 1
+fi
 
 #=============================================================#
 # Configuração de diretórios para libs, scripts e programas
@@ -62,9 +66,11 @@ libDownload="$dirSTORECLIPathLib/DownloadLib.sh"
 
 # Programas
 libAcessory="$dirSTORECLIPathPrograms/Acessory.sh"
+libDevelopment="$dirSTORECLIPathPrograms/Dev.sh"
 
-# Scritps
+# Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
+scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 
 #=============================================================#
 # importar libs
@@ -84,6 +90,7 @@ source "$libDownload"
 
 # Programas
 source "$libAcessory"
+source "$libDevelopment"
 
 #=============================================================#
 # Criar diretórios para arquivos temporários, descompressão dos
@@ -94,6 +101,7 @@ export TemporaryDirectory="/tmp/storecli_$USER"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
+export DirDownloads="$HOME/.cache/storecli/downloads"
 
 mkdir -p "$TemporaryDirectory"
 mkdir -p "$DirTemp"
@@ -114,6 +122,8 @@ export LogErro="$HOME/.cache/storecliERROLog.log"
 touch "$configFILE"
 touch "$LogFile"
 touch "$LogErro"
+
+space_line='-------------------------------------------------------'
 
 "$scriptConfigPath"
 
@@ -156,7 +166,7 @@ EOF
 # Função para se um executável qualquer existe no sistema.
 is_executable()
 {
-	if [[ -x $(command -v "$1" 2> /dev/null) ]]; then
+	if [[ -x $(which "$1" 2> /dev/null) ]]; then
 		return 0
 	else
 		return 1
@@ -234,7 +244,6 @@ __RMDIR()
 		_red "Removendo: $i"
 		rm -rf "$1" 2> /dev/null || __sudo__ rm -rf "$i"
 	done
-
 }
 
 for option in "$@"; do
@@ -254,12 +263,12 @@ argument_parser()
 			-c|--configure) _run_configuration_dep;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			-l|--list) ;;
+			-l|--list) shift; _list_applications "$@"; return 0;;
 			-s|--self-update) ;;
 			-y|--yes) ;;
-			install) shift; _pkg_manager_storecli "$@";;
-			remove) ;;
-			*) _red "(argument_parser) comando não encontrado: $1"; return 1;;
+			install) shift; _pkg_manager_storecli "$@"; return "$?";;
+			remove) shift; _remove_packages "$@"; return "$?";;
+			*) _red "(argument_parser) argumento inválido: $1"; return 1;;
 		esac
 		shift
 	done
@@ -269,8 +278,9 @@ main()
 {	
 	argument_parser "$@"
 
+	return "$?"
 }
 
 main "$@"
-echo "$?"
+#echo "$?"
 

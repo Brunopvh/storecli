@@ -11,12 +11,12 @@
 # echo "Name = $sysname"
 #
 
-os_type=' '
-os_id=' '
-os_release=' '
-os_version=' '
-os_codename=' '
-sysname=' '
+os_type=''
+os_id=''
+os_release=''
+os_version=''
+os_codename=''
+sysname=''
 
 #=============================================#
 # os_type - Kernel
