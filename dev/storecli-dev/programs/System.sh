@@ -9,19 +9,19 @@
 function _bluetooth()
 {
 	if [[ "$os_id" != 'debian' ]]; then
-		yellow "Este pacote está disponível apenas para sistemas Debian"
+		_yellow "Este pacote está disponível apenas para sistemas Debian"
 		return 1
 	fi
 
 	_pkg_manager_sys bluez 'bluez-firmware' 'bluez-hcidump'
 	echo -e "$space_line"
-	white "1 - ${Green}G${Reset}NOME"
-	white "2 - ${Green}K${Reset}DE"
-	white "3 - ${Green}L${Reset}XDE/${Green}X${Reset}FCE/${Green}L${Reset}XQT/${Green}M${Reset}ATE"
+	_white "1 - ${CGreen}G${CReset}NOME"
+	_white "2 - ${CGreen}K${CReset}DE"
+	_white "3 - ${CGreen}L${CReset}XDE/${CGreen}X${CReset}FCE/${CGreen}L${CReset}XQT/${CGreen}M${CReset}ATE"
 	
 	while true; do
 
-		white "Selecione a sua interface gráfica: ${Green}(1 / 2 / 3): ${Reset}" 
+		_white "Selecione a sua interface gráfica: ${CGreen}(1 / 2 / 3): ${CReset}" 
 		read -t 10 -n 1 desktop; echo ' '
 
 		case "${desktop,,}" in
@@ -29,7 +29,7 @@ function _bluetooth()
 			2) _pkg_manager_sys bluedevil;;
 			3) _pkg_manager_sys blueman;;
 			*) 
-			white "Opição inválida, você pode ${Green}repetir${Reset} ou ${Red}cancelar${Reset} [r/c]: " 
+			_white "Opição inválida, você pode ${CGreen}repetir${CReset} ou ${_red}cancelar${CReset} [r/c]: " 
 			read -t 10 -n 1 input; echo ' '
 			if [[ "${input,,}" == 'r' ]]; then
 				continue	
@@ -83,7 +83,7 @@ function _compactadores()
 function _firmware()
 {
 	if [[ "$os_id" != 'debian' ]]; then
-		yellow "Este pacote está disponível apenas para sistemas Debian"
+		_yellow "Este pacote está disponível apenas para sistemas Debian"
 		return 1
 	fi
 
@@ -114,15 +114,9 @@ _peazip()
 	__download__ "$peazip_url__download__nload" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 		
-	if is_executable 'peazip'; then
-		_show_info 'pkg_are_instaled' 'peazip'
-		return 0 
-	fi
+	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0 
 
 	__shasum__ "$path_file" "$hash_file" || return 1
 	_unpack "$path_file" || return 1
@@ -169,16 +163,10 @@ function _refind_zip()
 	__download__ "$url_zip" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	
 	# Já instalado.
-	if is_executable 'refind-install'; then
-		_show_info 'pkg_are_instaled' 'refind-install'
-		return 0
-	fi
+	is_executable 'refind-install' && _show_info 'PkgInstalled' 'refind-install' && return 0
 	
 	_unpack "$path_file" || return 1
 	cd "$DirUnpack"
@@ -227,10 +215,7 @@ function _stacer_debian()
 	__download__ "$url" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$url"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	_DPKG --install "$path_file"
 }
@@ -260,7 +245,7 @@ _stacer_archlinux()
 	sudo ln -sf "${array_stacer_dirs[stacer_file_appimage]}" "${array_stacer_dirs[stacer_link]}"
 
 	# Criar arquivo '.desktop'
-	yellow "Criando arquivo .desktop"
+	_yellow "Criando arquivo .desktop"
 	echo '[Desktop Entry]' | sudo tee "${array_stacer_dirs[stacer_file_desktop]}"
 	{
 		echo "Encoding=UTF-8"
@@ -275,8 +260,7 @@ _stacer_archlinux()
 		echo "Categories=Utility;System;"
 	} | sudo tee -a "${array_stacer_dirs[stacer_file_desktop]}"
 
-	yellow "Criando atalho na Área de Trabalho"
-	# sudo chmod +rwx "${array_stacer_dirs[stacer_file_desktop]}"
+	_yellow "Criando atalho na Área de Trabalho"
 	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/Desktop/ 2> /dev/null
@@ -288,7 +272,7 @@ function _stacer()
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _stacer_debian;;
 		arch) _stacer_archlinux;;
-		*) _show_info ProgramNotFound stacer;;
+		*) _show_info 'ProgramNotFound' stacer;;
 	esac
 }
 
@@ -306,24 +290,20 @@ function _virtualbox_extpack()
 	#   Baixa o pacote (extensionpack) instala o pacote usando o virtualbox
 	# e adiciona o usuário atual no grupo  vboxuser.
 	#
-	white "Aguarde"
+	_white "Aguarde"
 	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
 	local vb_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" <<< $(curl -sL "$vb_pag"))
 	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
 	local path_file="$Dir_Downloads/$(basename $vb_url)"
 
 	__download__ "$vb_url" "$path_file" || return 1
-	
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Instalação
-	yellow "Instalando Extension Pack"
+	_yellow "Instalando Extension Pack"
 	sudo VBoxManage extpack install --replace "$path_file"
 
-	_YESNO "Deseja adicionar $USER ao grupo ${Green}vboxusers${Reset}" || return 1
+	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1
 	
 	#sudo gpasswd -a "$USER" vboxusers  
 	sudo usermod -a -G vboxusers $USER	
@@ -353,10 +333,10 @@ function _virtualbox_fedora()
 	_pkg_manager_sys kernel-devel-$(uname -r)
 
 	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$Dir_Downloads/oracle_vbox.asc"
-	yellow "Importando: $Dir_Downloads/oracle_vbox.asc"
+	_yellow "Importando: $Dir_Downloads/oracle_vbox.asc"
 	sudo rpm --import "$Dir_Downloads/oracle_vbox.asc"
 	
-	white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
+	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
 	sudo sh -c 'curl -s -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 	
 	case "$os_version" in
@@ -365,7 +345,7 @@ function _virtualbox_fedora()
 	esac
 	
 	# Módulos
-	white "Configurando módulos"
+	_white "Configurando módulos"
 	sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
 	sudo sh -c '/sbin/vboxconfig'
 
@@ -386,12 +366,12 @@ function _virtualbox_debian()
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
 		bionic|tricia|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
-		*) red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
+		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
 
 	
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	white "Limpando o cache do (apt)"
+	_white "Limpando o cache do (apt)"
 	_APT clean
 	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
@@ -446,13 +426,13 @@ function _virtualbox_archlinux()
 	for c in "${array_vb_archlinux[@]}"; do
 		_space_text "[+] Instalando" "$c"
 		if ! _pkg_manager_sys "$c"; then
-			_space_text "${CRed}[!]${CReset} Falha" "$c"
+			_space_text "${C_red}[!]${CReset} Falha" "$c"
 		fi
 	done
 
 	# /etc/modules-load.d/virtualbox.conf
 	# sudo depmod -a
-	white "Configurando módulos"
+	_white "Configurando módulos"
 	sudo /sbin/rcvboxdrv setup
 	sudo /sbin/vboxconfig
 	sudo modprobe vboxdrv
@@ -503,10 +483,7 @@ function _virtualbox_linux_run()
 	__download__ "$vbox_url_hash" "$vbox_path_file_hash" || return
 
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Obter a HASH da versão atual no que está no arquivo .check
 	# em seguida verificar a integridade do pacote usando o módulo

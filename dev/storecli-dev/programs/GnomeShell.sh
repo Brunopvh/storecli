@@ -5,13 +5,7 @@
 # algumas exentenções uteis para o gnome-shell.
 #
 
-source "$Lib_Arrays"
-
-#=============================================================#
-# Dash to dock
-#=============================================================#
-
-function _dashtodock_github()
+_dashtodock_github()
 {
 	# https://micheleg.github.io/dash-to-dock/download.html
 	#
@@ -23,22 +17,15 @@ function _dashtodock_github()
 	_gitclone "$url_repo" || return 1
 
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
-
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	# Instalar o pacote make
 	_pkg_manager_sys make
 
 	cd "$DirTemp"/dash-to-dock
-	echo -e "$space_line"
 	make
 	make install
 	#sudo make install 
-
-	echo -e "$space_line"
 
 	if _YESNO "Deseja abrir a jenela de configuração gnome-shell-extension-prefs"; then
 		# gnome-shell-extension-prefs dash-to-dock@micxgx.gmail.com
@@ -47,7 +34,7 @@ function _dashtodock_github()
 
 }
 
-function _dashtodock()
+_dashtodock()
 {
 	case "$os_id" in
 		fedora) _pkg_manager_sys 'gnome-shell-extension-dash-to-dock.noarch';;
@@ -59,7 +46,7 @@ function _dashtodock()
 #=============================================================#
 # Drive Menu
 #=============================================================#
-function _drive_menu()
+_drive_menu()
 {
 	case "$os_id" in
 		fedora) _pkg_manager_sys 'gnome-shell-extension-drive-menu';;
@@ -70,7 +57,7 @@ function _drive_menu()
 #=============================================================#
 # Gnome Backgrounds
 #=============================================================#
-function _gnome_backgrounds()
+_gnome_backgrounds()
 {
 	case "$os_id" in 
 		arch) _pkg_manager_sys 'gnome-backgrounds';;
@@ -82,7 +69,7 @@ function _gnome_backgrounds()
 #=============================================================#
 # Top icons plus
 #=============================================================#
-function _topicons_plus_github()
+_topicons_plus_github()
 {
 	# https://github.com/phocean/TopIcons-plus/archive/master.zip
 	# https://github.com/phocean/TopIcons-plus/archive/master.tar.gz
@@ -105,7 +92,7 @@ function _topicons_plus_github()
 	cd "$DirUnpack"
 	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
 	cd topicons_plus
-	echo -e "$space_line"
+	
 	# make install
 	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
 	echo -e "$space_line"
@@ -116,7 +103,7 @@ function _topicons_plus_github()
 
 }
 
-function _topicons_plus()
+_topicons_plus()
 {
 	case "$os_id" in
 		fedora) _pkg_manager_sys 'gnome-shell-extension-topicons-plus';;
@@ -128,7 +115,7 @@ function _topicons_plus()
 #=============================================================#
 # Gnome tweaks
 #=============================================================#
-function _gnome_tweaks()
+_gnome_tweaks()
 {
 	_pkg_manager_sys 'gnome-tweaks'
 }

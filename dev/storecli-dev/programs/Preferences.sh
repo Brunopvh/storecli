@@ -46,18 +46,18 @@ function _ohmybash()
 	"$ohmybash_installer"
 
 	_unpack "$path_file" || return 1
-	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
+	_msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
 	mkdir -p "$HOME/.bash/themes"
 	cp -R -u "$DirUnpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
 	
 	_YESNO "Gostaria de habilitar um tema para ohmybash" || return 1
 
-	yellow "1 => bakke"
-	yellow "2 => bobby"
-	yellow "3 => bobby-python"
-	yellow "4 => emperor"
-	yellow "5 => mairan (recomendado)"
-	yellow "6 => rjorgenson"
+	_yellow "1 => bakke"
+	_yellow "2 => bobby"
+	_yellow "3 => bobby-python"
+	_yellow "4 => emperor"
+	_yellow "5 => mairan (recomendado)"
+	_yellow "6 => rjorgenson"
 	read -n 1 -t 15 -p "Selecione um numero correspondente a opção desejada: " option
 	echo ' '
 
@@ -68,10 +68,10 @@ function _ohmybash()
 		4) option='emperor';;
 		5) option='mairan';;
 		6) option='rjorgenson';;
-		*) red "Opção incorreta saindo"; return 1;;
+		*) _red "Opção incorreta saindo"; return 1;;
 	esac
 
-	white "Habilitando o tema $option para ohmybash"
+	_white "Habilitando o tema $option para ohmybash"
 	case "$option" in
 		bakke) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
 		bobby) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
@@ -80,7 +80,7 @@ function _ohmybash()
 		mairan) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
 		rjorgenson) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
 	esac
-	white "OK"
+	_white "OK"
 	
 }
 
@@ -94,11 +94,11 @@ function _ohmyzsh()
 	#
 
 	if ! is_executable 'zsh'; then
-		yellow "Necessário instalar shell [zsh]"	
+		_yellow "Necessário instalar shell [zsh]"	
 	fi
 
 	_pkg_manager_sys zsh
-	yellow "Instalando ohmyzsh"
+	_yellow "Instalando ohmyzsh"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
 }
 
@@ -135,7 +135,7 @@ function _papirus_github()
 	# de informações sobre o tema que está no módulo 'Arrays.sh'.
 	for dir in "${array_papirus_dirs[@]}"; do
 		if [[ -d "$dir" ]]; then
-			_show_info 'pkg_are_instaled' 'papirus'
+			_show_info 'PkgInstalled' 'papirus'
 			return 0
 			break
 		fi
@@ -145,16 +145,16 @@ function _papirus_github()
 	cd "$DirUnpack"
 	mv  $(ls -d papirus-*) papirus
 	cd papirus
-	green "Instalando Papirus-Dark"
+	_green "Instalando Papirus-Dark"
 	cp -R Papirus-Dark "$Dir_User_Icons/"
 
-	green "Instalando Papirus"
+	_green "Instalando Papirus"
 	cp -R Papirus "$Dir_User_Icons/"
 	
-	green "Instalando Papirus-Light"
+	_green "Instalando Papirus-Light"
 	cp -R Papirus-Light "$Dir_User_Icons/"
 
-	green "Instalando ePapirus"
+	_green "Instalando ePapirus"
 	cp -R ePapirus "$Dir_User_Icons/"
 	
 	for dir in "${array_papirus_dirs[@]}"; do
