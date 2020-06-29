@@ -30,6 +30,118 @@ destinationFilesAndroidStudio=(
 	[dir]="$directoryUSERbin/android-studio"
 	)
 
+declare -A destinationFilesPycharm
+destinationFilesPycharm=(
+	[file_desktop]="$directoryUSERapplications/pycharm.desktop"
+	[file_png]="$directoryUSERicon/pycharm.png"
+	[link]="$directoryUSERbin/pycharm"
+	[dir]="$directoryUSERbin/pycharm-community"
+	)
+
+declare -A destinationFilesSublime
+destinationFilesSublime=(
+	[file_desktop]="$directoryROOTapplications/sublime_text.desktop"
+	[file_png]="$directoryROOTicon/256x256/apps/sublime-text.png"
+	[link]="$directoryROOTbin/sublime"
+	[dir]="/opt/sublime_text"
+	)
+
+declare -A destinationFilesVscode
+destinationFilesVscode=(
+	[file_desktop]="$directoryUSERapplications/code.desktop"  
+	[file_png]="$directoryUSERicon/code.png"             
+	[link]="$directoryUSERbin/code"                  
+	[dir]="$directoryUSERbin/code-amd64"            
+)
+
+#=============================================================#
+# Escritorio
+#=============================================================#
+
+# Libreoffice AppImage.
+declare -A destinationFilesLibreofficeAppimage
+destinationFilesLibreofficeAppimage=(
+	[file_desktop]="$directoryUSERapplications/libreoffice-appimage.desktop"   
+	[file_appimage]="$directoryUSERbin/libreoffice-appimage"                            
+)
+
+#=============================================================#
+# Midia
+#=============================================================#
+
+
+#=============================================================#
+# Navegadores
+#=============================================================#
+
+#=============================================================#
+# Internet
+#=============================================================#
+
+declare -A destinationFilesTelegram
+destinationFilesTelegram=(
+	[file_desktop]="$directoryUSERapplications/telegramdesktop.desktop" 
+	[file_png]="$directoryUSERicon/telegram.png"                  
+	[link]="$directoryUSERbin/telegram"                       
+	[dir]="$directoryUSERbin/telegram-amd64"                  
+)
+
+
+declare -A destinationFilesTixati
+destinationFilesTixati=(
+	[file_desktop]="$directoryROOTapplications/tixati.desktop"
+	[file_png]="$directoryROOTicon/48x48/apps/tixati.png" 
+	[file_bin]="$directoryROOTbin/tixati"                                       
+)
+
+
+destinationFilesTeamviewer=(
+	'/opt/teamviewer'
+	'/usr/bin/teamviewer'
+	"$directoryROOTicon/16x16/apps/TeamViewer.png"
+	"$directoryROOTicon/20x20/apps/TeamViewer.png"
+	"$directoryROOTicon/24x24/apps/TeamViewer.png"
+	"$directoryROOTicon/32x32/apps/TeamViewer.png"
+	"$directoryROOTicon/48x48/apps/TeamViewer.png"
+	"$directoryROOTicon/256x256/apps/TeamViewer.png"
+	"$directoryROOTapplications/com.teamviewer.TeamViewer.desktop"
+	'/usr/share/dbus-1/services/com.teamviewer.TeamViewer.Desktop.service'
+	'/usr/share/dbus-1/services/com.teamviewer.TeamViewer.service'
+	'/usr/share/polkit-1/actions/com.teamviewer.TeamViewer.policy'
+	'/etc/systemd/system/multi-user.target.wants/teamviewerd.service'
+)
+
+
+
+# Papirus
+array_papirus_dirs=(
+	"$directoryUSERicon/Papirus-Dark" 
+	"$directoryUSERicon/Papirus-Light" 
+	"$directoryUSERicon/ePapirus"
+	"$directoryUSERicon/Papirus" 
+)
+
+# PeaZip
+array_peazip_dirs=(
+"$directoryROOTapplications/peazip.desktop" # .desktop
+"$directoryROOTicon/256x256/apps/peazip.png" # .png
+"$directoryROOTbin/peazip" # bin
+'/opt/peazip-amd64' # Dir peazip
+)
+
+# Refind
+array_refind_dirs=(
+"/opt/refind"   # Diretório
+"$directoryROOTbin/refind-install"              # Script
+)
+
+
+
+
+
+
+
+
 
 
 #=============================================================#

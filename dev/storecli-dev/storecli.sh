@@ -3,17 +3,14 @@
 #
 __version__='2020_06_28_rev1'
 #
-##=============================================================#
+#=============================================================#
 # REFERÊNCIAS
 #=============================================================#
 # https://www.dicas-l.com.br/arquivo/fatiando_opcoes_com_o_getopts.php
 # https://man7.org/linux/man-pages/man1/getopts.1p.html
 #
 
-
-#=============================================================#
 # Válidar se o Kernel e Linux.
-#=============================================================#
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
 	exit 1
@@ -67,6 +64,8 @@ libDownload="$dirSTORECLIPathLib/DownloadLib.sh"
 # Programas
 libAcessory="$dirSTORECLIPathPrograms/Acessory.sh"
 libDevelopment="$dirSTORECLIPathPrograms/Dev.sh"
+libOffice="$dirSTORECLIPathPrograms/Office.sh"
+libInternet="$dirSTORECLIPathPrograms/Internet.sh"
 
 # Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
@@ -91,11 +90,11 @@ source "$libDownload"
 # Programas
 source "$libAcessory"
 source "$libDevelopment"
+source "$libOffice"
+source "$libInternet"
 
-#=============================================================#
 # Criar diretórios para arquivos temporários, descompressão dos
 # arquivos baixados e para clonar repositórios do github. 
-#=============================================================#
 #export TemporaryDirectory=$(mktemp --directory)
 export TemporaryDirectory="/tmp/storecli_$USER"
 export DirTemp="$TemporaryDirectory/temp"
@@ -107,6 +106,7 @@ mkdir -p "$TemporaryDirectory"
 mkdir -p "$DirTemp"
 mkdir -p "$DirGitclone"
 mkdir -p "$DirUnpack"
+mkdir -p "$DirDownloads"
 
 #=============================================================#
 # Arquivos de configuração e Log.
@@ -246,6 +246,25 @@ __RMDIR()
 	done
 }
 
+_clear_temp_dirs()
+{
+	cd "$DirTemp" && __RMDIR $(ls)
+	cd "$DirUnpack" && __RMDIR $(ls)
+}
+
+_clear_temp_dirs
+
+__gpg__()
+{
+	echo -ne "Executando: gpg $@ "
+	gpg "$@" 1> /dev/null 2> /dev/null || {
+		echo ' '
+		_red "Falha"
+		return 1
+	}
+	return 0
+}
+
 for option in "$@"; do
 	case "$option" in
 		-d|--downloadonly) export DownloadOnly='True';;
@@ -266,9 +285,9 @@ argument_parser()
 			-l|--list) shift; _list_applications "$@"; return 0;;
 			-s|--self-update) ;;
 			-y|--yes) ;;
-			install) shift; _pkg_manager_storecli "$@"; return "$?";;
+			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
 			remove) shift; _remove_packages "$@"; return "$?";;
-			*) _red "(argument_parser) argumento inválido: $1"; return 1;;
+			*) _red "(argument_parser) argumento inválido: $1"; return 1; break;;
 		esac
 		shift
 	done
@@ -277,7 +296,6 @@ argument_parser()
 main()
 {	
 	argument_parser "$@"
-
 	return "$?"
 }
 

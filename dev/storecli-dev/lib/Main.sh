@@ -70,7 +70,7 @@ _pkg_manager_storecli()
 			skype) _skype;;
 			teamviewer) _teamviewer;;
 			telegram) _telegram;;
-			tixati) _tixati_tar;;
+			tixati) _tixati;;
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
@@ -136,6 +136,32 @@ __delete_files__()
 	done
 }
 
+#=============================================================#
+# Removção desinstalação dos pacotes
+#=============================================================#
+_remove_vscode()
+{
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _APT remove code;;
+		*) __delete_files__ "${destinationFilesVscode[@]}";;
+	esac
+}
+
+_remove_teamviewer()
+{
+	is_executable 'teamviewer' || { 
+		_red 'Teamviewer não está instalado'
+		return 0
+	}
+	
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _APT remove teamviewer;;
+		fedora) _DNF remove teamviewer;;
+		*) __delete_files__ "${destinationFilesTeamviewer[@]}";;
+	esac
+
+}
+
 _remove_packages()
 {
 	[[ -z $1 ]] && return 1
@@ -143,12 +169,31 @@ _remove_packages()
 		_space_text "Removendo" "$1"
 
 		case "$1" in
+#-----------------------| ACESSÓRIOS |------------------------------------------#
 			etcher) __delete_files__ "${destinationFilesEtcher[@]}";;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
+
+#-----------------------| DESENVOLVIMENTO |--------------------------------------#
+			'android-studio') __delete_files__ "${destinationFilesAndroidStudio[@]}";;
+			pycharm) __delete_files__ "${destinationFilesPycharm[@]}";;
+			'sublime-text') __delete_files__ "${destinationFilesSublime[@]}";;
+			vscode) _remove_vscode;;
+
+#-----------------------| ESCRITÓRIO |-------------------------------------------#
+			'libreoffice-appimage') __delete_files__ "${destinationFilesLibreofficeAppimage[@]}";;
+	
+#-----------------------| INTERNET |---------------------------------------------#
+			telegram) __delete_files__ "${destinationFilesTelegram[@]}";;
+			tixati) __delete_files__ "${destinationFilesTixati[@]}";;
+			teamviewer) _remove_teamviewer;;
+			youtube-dl) __delete_files__ "$directoryUSERbin/youtube-dl";;
+	
+
+			*) _red "Não foi possível remover: $1";;
 		esac
 		shift
 	done
-#-----------------------| ACESSÓRIOS |------------------------------------------#
+
 
 return "$?"
 }

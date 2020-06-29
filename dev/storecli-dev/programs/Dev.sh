@@ -39,7 +39,7 @@ _android_studio_zip()
 	_unpack "$path_file" || return 1
 
 	_white "Instalando android studio em ~/.local/bin"
-	cd "$Dir_Unpack" 
+	cd "$DirUnpack" 
 	mv $(ls -d android-*) "${destinationFilesAndroidStudio[dir]}" 1> /dev/null # ~/.local/bin/androi-studio
 	cp -u "${destinationFilesAndroidStudio[dir]}"/bin/studio.png "${destinationFilesAndroidStudio[file_png]}" # .png
 	chmod -R +x "${destinationFilesAndroidStudio[dir]}" # ~/.local/bin/androi-studio
@@ -254,109 +254,9 @@ _codeblocks()
 	esac
 }
 
-#=====================================================#
-# Java
-#=====================================================#
-_java_instalation_tarfile()
-{
-	# https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242050_3d5a2bb8f8d4428bbe94aed7ec7ae784
-	# https://www.java.com/pt_BR/download/linux_manual.jsp
-	# https://www.blogopcaolinux.com.br/2016/06/instalando-java-jre-oracle-no-ubuntu-manualmente.html
 
-	local url_javaTARGZ='https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242050_3d5a2bb8f8d4428bbe94aed7ec7ae784'
-	local path_file="$DirDownloads/java.tar.gz"
-
-	_dow "$url_javaTARGZ" "$path_file" || return 1
-	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_show_info 'download_only' "$path_file"
-		return 0 
-	fi
-
-	_unpack "$path_file" || return 1
-
-	if [[ ! -d '/usr/lib/jre-oracle' ]]; then
-		__sudo__ mkdir -p '/usr/lib/jre-oracle'
-	fi
-
-	cd '/usr/lib/jre-oracle' && _RMDIR $(ls)
-	cd "$Dir_Unpack"
-	mv $(ls -d jre*) jre-oracle
-	__sudo__ cp -R 'jre-oracle' '/usr/lib/'
-
-	# Informar ao sistema onde o Oracle Java está localizado:
-	_yellow "Executando: update-alternatives"
-	sudo update-alternatives --install "/usr/bin/java" "java" "/usr/lib/jre-oracle/bin/java" 1
-
-	# Definir como padrão
-	sudo update-alternatives --set java /usr/lib/jre-oracle/bin/java
-
-	# Habilitar plugin Java para firefox.
-	_yellow "Habilitando plugin para Mozilla Firefox"
-	sudo mkdir -p /usr/lib/mozilla
-	sudo mkdir -p /usr/lib/mozilla/plugins
-	sudo update-alternatives --install "/usr/lib/mozilla/plugins/javaplugin.so" "javaplugin" "/usr/lib/jre-oracle/lib/amd64/libnpjp2.so" 3
-
-	_yellow "Definindo como padrão"
-	sudo update-alternatives --set javaplugin '/usr/lib/jre-oracle/lib/amd64/libnpjp2.so'
-
-	_green "Criando arquivo de configuração '.desktop'"
-	javaDesktopFile='/usr/share/applications/java-control.desktop'
-
-	echo '[Desktop Entry]' | sudo tee "$javaDesktopFile" 1> /dev/null
-	{
-		echo 'Encoding=UTF-8' 
-		echo 'Name=Java'
-		echo 'Comment=Java Control Panel'
-		echo "Exec=sh '/usr/lib/jre-oracle/bin/jcontrol'"
-		echo 'Icon=/usr/lib/jre-oracle/lib/desktop/icons/hicolor/48x48/apps/sun-jcontrol.png'
-		echo 'Terminal=false'
-		echo 'Type=Application'
-		echo 'Categories=Application;Settings;Java;X-Red-Hat-Base;X-Ximian-Settings;'
-	} | sudo tee -a "$javaDesktopFile" 1> /dev/null
-
-	_green "Criando atalho na Área de trabalho"
-	cp -u "$javaDesktopFile" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "$javaDesktopFile" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "$javaDesktopFile" ~/Desktop/ 2> /dev/null
-}
-
-
-_java_instalation_debian()
-{
-	_pkg_manager_sys 'openjdk-8-jre'
-}
-
-_java_instalation_rpm()
-{
-	# http://openjdk.java.net/install/
-	local url_javaRPM='https://javadl.oracle.com/webapps/download/AutoDL?BundleId=242049_3d5a2bb8f8d4428bbe94aed7ec7ae784'
-	local path_file="$DirDownloads/java.rpm"
-
-	_dow "$url_javaRPM" "$path_file" || return 1
-
-	case "$os_id" in
-		fedora) _RPM --install "$path_file" || return 1;;
-		*) _show_info 'ProgramNotFound' 'java';;
-	esac
-}
-
-
-_java()
-{
-	case "$os_id" in
-		debian|ubuntu|linuxmint) _java_instalation_debian;;
-		fedora) _java_instalation_tarfile;;
-		*) _java_instalation_tarfile;;
-	esac
-}
-
-#=====================================================#
-# Pycharm
-#=====================================================#
 _pycharm()
 {
-	#local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2019.3.3.tar.gz'
 	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.1.tar.gz'
 	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
@@ -364,55 +264,45 @@ _pycharm()
 	_dow "$url_pycharm" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_show_info 'download_only' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Já instalado.
-	if _WHICH 'pycharm'; then
-		_show_info 'pkg_are_instaled' 'pycharm'
-		return 0 
-	fi
+	is_executable 'pycharm' && _show_info 'PkgInstalled' && return 0
 
 	_check_sum "$path_file" "$hash_pycharm" || return 1
 	_unpack "$path_file" || return 1
 
-	cd "$Dir_Unpack" 
-	mv $(ls -d pycharm*) "${array_pycharm_dirs[3]}" 1> /dev/null
-	cp -u "${array_pycharm_dirs[3]}"/bin/pycharm.png "${array_pycharm_dirs[1]}"
+	cd "$DirUnpack" 
+	mv $(ls -d pycharm*) "${destinationFilesPycharm[dir]}" 1> /dev/null
+	cp -u "${destinationFilesPycharm[dir]}"/bin/pycharm.png "${dedestinationFilesPycharm[file_png]}"
 
 	# Criar atalho para execução na linha de comando.
-	touch "${array_pycharm_dirs[2]}"
-	echo "#!/usr/bin/env bash" > "${array_pycharm_dirs[2]}"
-	echo -e "\ncd ${array_pycharm_dirs[3]}/bin/ && ./pycharm.sh" >> "${array_pycharm_dirs[2]}"
-	chmod +x "${array_pycharm_dirs[2]}"
+	echo "#!/usr/bin/env bash" > "${destinationFilesPycharm[link]}"
+	echo -e "\ncd ${destinationFilesPycharm[dir]}/bin/ && ./pycharm.sh" >> "${destinationFilesPycharm[link]}"
+	chmod +x "${destinationFilesPycharm[link]}"
 
-	# Criar arquivo .desktop
-	_green "Criando arquivo .desktop"
-	touch "${array_pycharm_dirs[0]}" 
-	echo "[Desktop Entry]" > "${array_pycharm_dirs[0]}"
+	_show_info 'AddFileDesktop' 
+	echo "[Desktop Entry]" > "${destinationFilesPycharm[file_desktop]}"
     {
         echo "Name=Pycharm Community"
         echo "Version=1.0"
-        echo "Icon=${array_pycharm_dirs[1]}"
+        echo "Icon=${dedestinationFilesPycharm[file_png]}"
         echo "Exec=pycharm"
         echo "Terminal=false"
         echo "Categories=Development;IDE;"
         echo "Type=Application"
-    } >> "${array_pycharm_dirs[0]}"
+    } >> "${destinationFilesPycharm[file_desktop]}"
 
-    # Área de trabalho.
-	_green "Criando atalho na Área de trabalho"
-	cp -u "${array_pycharm_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_pycharm_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
-	cp -u "${array_pycharm_dirs[0]}" ~/Desktop/ 2> /dev/null 
+    
+	cp -u "${destinationFilesPycharm[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesPycharm[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesPycharm[file_desktop]}" ~/Desktop/ 2> /dev/null 
 
-	if _WHICH 'pycharm'; then
-		_show_info 'pkg_sucess' 'pycharm'
+	if is_executable 'pycharm'; then
+		_show_info 'SuccessInstalation' 'pycharm'
 		return 0
 	else
-		_show_info 'pkg_instalation_failed' 'pycharm'
+		_show_info 'InstalationFailed' 'pycharm'
 		return 1
 	fi
 }
@@ -430,30 +320,31 @@ _sublime_text()
 	_dow "$sublime_url" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_show_info 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
 	# Já instalado.
-	if _WHICH 'sublime'; then
-		_show_info 'pkg_are_instaled' 'sublime'
+	if is_executable 'sublime'; then
+		_show_info 'PkgInstalled' 'sublime-text'
 		return 0
 	fi
 	_unpack "$path_file" || return 1
 
-	sudo cp -u "$Dir_Unpack"/sublime_text_3/sublime_text.desktop "${array_sublime_dirs[0]}" # Arquivo .desktop 
-	sudo cp -u "$Dir_Unpack"/sublime_text_3/Icon/256x256/sublime-text.png "${array_sublime_dirs[1]}" # .png 
-	sudo mv "$Dir_Unpack"/sublime_text_3 "${array_sublime_dirs[3]}" # Deretório.
-	sudo ln -sf /opt/sublime_text/sublime_text "${array_sublime_dirs[2]}" # atalho para linha de comando. 
-	#sudo gtk-update-icon-cache
+	sudo cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
+	sudo cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[file_png]}" 
+	sudo mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"
+	sudo ln -sf "${destinationFilesSublime[dir]}"/sublime_text "${destinationFilesSublime[link]}" 
+	
+	is_executable 'gtk-update-icon-cache' && sudo 'gtk-update-icon-cache'
 
-	if _WHICH 'sublime'; then
-		_show_info 'pkg_sucess' 'sublime'
+	if is_executable 'sublime'; then
+		_show_info 'SuccessInstalation' 'sublime'
 		sublime &
 		return 0
 	else
-		_show_info 'pkg_instalation_failed' 'sublime'
+		_show_info 'InstalationFailed' 'sublime'
 		return 1
 	fi
 }
@@ -470,30 +361,20 @@ _vim()
 #=====================================================#
 # Vscode.
 #=====================================================#
-_vscode_debian()
+_vscode_package_deb()
 {
 	local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
-	local path_file="$dir_user_cache/vscode-amd64.deb"
-	_dow "$url_code_debian" "$path_file"
+	local path_file="$DirDownloads/vscode-amd64.deb"
+	_dow "$url_code_debian" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_show_info 'download_only' "$path_file"
-		return 0 
-	fi
-	
-	# Já instalado.
-	if _WHICH 'code'; then
-		_show_info 'pkg_are_instaled' 'code'
-		return 0
-	fi
-
-	sudo dpkg --install "$path_file" # .deb
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	_DPKG --install "$path_file" # .deb
 }
 
 #-----------------------------------------------------#
 
-_vscode()
+_vscode_tarfile()
 {
 	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
 	local path_file="$DirDownloads/vscode.tar.gz"
@@ -501,53 +382,53 @@ _vscode()
 	_dow "$url_vscode_tar" "$path_file"
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_show_info 'download_only' "$path_file"
-		return 0 
-	fi
-
-	# Já instalado.
-	if _WHICH 'code'; then
-		_show_info 'pkg_are_instaled' 'code'
-		return 0
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	_unpack "$path_file" || return 1
 
-
-	cd "$Dir_Unpack"
-	mv $(ls -d VSCode*) "${array_vscode_dirs[3]}" 2> /dev/null
-	cp -u "${array_vscode_dirs[3]}"/resources/app/resources/linux/code.png "${array_vscode_dirs[1]}"
+	cd "$DirUnpack"
+	mv $(ls -d VSCode*) "${destinationFilesVscode[dir]}" 
+	cp -u "${destinationFilesVscode[dir]}"/resources/app/resources/linux/code.png "${destinationFilesVscode[file_png]}"
 
 	# Criar atalho para execução na linha de comando.
-	touch "${array_vscode_dirs[2]}"
-	echo "#!/usr/bin/env bash" > "${array_vscode_dirs[2]}"
-	echo -e "\ncd ${array_vscode_dirs[3]}/bin/ && ./code" >> "${array_vscode_dirs[2]}"
-	chmod +x "${array_vscode_dirs[2]}"
+	echo "#!/usr/bin/env bash" > "${destinationFilesVscode[link]}"
+	echo -e "\ncd ${destinationFilesVscode[dir]}/bin/ && ./code" >> "${destinationFilesVscode[link]}"
+	chmod +x "${destinationFilesVscode[link]}"
 
 	# Criar entrada no menu do sistema.
-	_green "Criando arquivo .desktop"
-	echo "[Desktop Entry]" > "${array_vscode_dirs[0]}" 
+	_show_info "AddFileDesktop"
+	echo "[Desktop Entry]" > "${destinationFilesVscode[file_desktop]}" 
 	{
 		echo "Name=Code"
 		echo "Version=1.0"
 		echo "Icon=code"
-		echo "Exec=${array_vscode_dirs[3]}/bin/code"
+		echo "Exec=${destinationFilesVscode[dir]}/bin/code"
 		echo "Terminal=false"
 		echo "Categories=Development;IDE;" 
 		echo "Type=Application"
-	} >> "${array_vscode_dirs[0]}"
+	} >> "${destinationFilesVscode[file_desktop]}"
 
-	_green "Criando atalho na Área de trabalho"
-	cp -u "${array_vscode_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null 
-	cp -u "${array_vscode_dirs[0]}" ~/Desktop/ 2> /dev/null 
-	cp -u "${array_vscode_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesVscode[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	ln -sf "${destinationFilesVscode[file_desktop]}" ~/Desktop/ 2> /dev/null 
+	ln -sf "${destinationFilesVscode[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null	
+}
 
-	if _WHICH 'code'; then
-		_show_info 'pkg_sucess' 'code'
+_vscode()
+{
+	# Já instalado.
+	is_executable 'code' && _show_info 'PkgInstalled' 'code' && return 0
+
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _vscode_package_deb;;
+		*) _vscode_tarfile;;
+	esac
+	
+
+	if is_executable 'code'; then
+		_show_info 'SuccessInstalation' 'code'
 		return 0
 	else
-		_show_info 'pkg_instalation_failed' 'code'
+		_show_info 'InstalationFailed' 'code'
 		return 1
 	fi
 }

@@ -76,15 +76,18 @@ _config_python()
 	_msg "Instalando módulos para python wget, wheel"
 
 	if is_executable 'pip3'; then
+		_yellow "Executando: pip3 install wget wheel --user"
 		pip3 install wheel wget --user || return 1 
 	fi
 
 
 	if is_executable 'pip'; then
+		_yellow "Executando: pip install wget wheel --user"
 		pip install wheel wget --user || return 1 
 	fi
 
 	if is_executable 'pip2'; then
+		_yellow "Executando: pip2 install wget wheel --user"
 		pip2 install wheel wget --user || return 1 
 	fi
 	
@@ -166,8 +169,8 @@ _config_requeriments_ubuntu()
 	_msg "Istalando: python python-pip python-setuptools"
 	case "$os_codename" in 
 		focal) _pkg_manager_sys 'python' 'python-pip-whl' 'python-setuptools' || return 1;;
-		bionic|eoan) _pkg_manager_sys 'python' 'python-pip' 'python-setuptools' || return 1;;
-		*) return 1;;
+		bionic|eoan|tricia) _pkg_manager_sys 'python' 'python-pip' 'python-setuptools' || return 1;;
+		*) _red "(_config_requeriments_ubuntu) a versão do se Ubuntu não é suportada."; return 1;;
 	esac
 	
 	_msg "Instalando: ${requeriments_python3_debian[@]}"
@@ -227,7 +230,7 @@ _install_requeriments_all_system()
 			_red 'Falha: (_config_requeriments_debian)'
 			return 1
 		}
-	elif [[ "$os_id" == 'ubuntu' ]]; then
+	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
 		_config_requeriments_ubuntu || { 
 			_red 'Falha: (_config_requeriments_ubuntu)'
 			return 1
@@ -243,7 +246,7 @@ _install_requeriments_all_system()
 			return 1
 		}
 	else
-		_red "Seu sistema não é suportado por este programa"
+		_red "Seu sistema não é suportado por este programa, use a opção --ignore-cli"
 		return 1
 	fi
 

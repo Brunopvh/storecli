@@ -7,17 +7,18 @@ __curl__()
 	path_file="$2"
 	if [[ -z $2 ]]; then
 		curl -C - -S -L -O "$url" || {
-			_red "Falha: curl -S -L -O $url"
+			_red "Falha: curl -S -L -O"
 			return 1
 		}
 		return 0
 	elif [[ $2 ]]; then
 		_blue "Destino: $path_file"
 		curl -C - -S -L -o "$path_file" "$url" || {
-			_red "Falha: curl -S -L -o $path_file $url"
-			return 1
+			_red "Falha: curl -S -L -o"
+			rm "$path_file" 2> /dev/null
+			return "$?"
 		}
-		return 0
+		return "$?"
 	fi
 
 }
@@ -25,7 +26,7 @@ __curl__()
 __wget__()
 {
 	url="$1"
-	path_file="$1"
+	path_file="$2"
 	if [[ -z $2 ]]; then
 		wget -c "$url" || {
 			_red "Falha: wget -c $url"
@@ -34,8 +35,9 @@ __wget__()
 		return 0
 	elif [[ $2 ]]; then
 		_blue "Destino: $path_file"
-		wget -c -o "$path_file" "$url" || {
-			_red "Falha: wget -c -o $path_file $url"
+		wget -c "$url" -O "$path_file" || {
+			_red "Falha: wget -c -O"
+			rm "$path_file" 2> /dev/null
 			return 1
 		}
 		return 0
@@ -54,8 +56,13 @@ _dow()
 	cd "$directoryUSERdownloads"
 	_blue "Baixando: $1"
 
-	__curl__ "$@"
-	#__wget__ "$@"
+	#__curl__ "$@"
+	__wget__ "$@"
+
+	if [[ "$?" == '130' ]]; then
+		_red "Cancelado com Ctrl c"
+		return 130
+	fi
 
 }
 

@@ -20,21 +20,21 @@ _verify_signature()
 	fi
 
 	if [[ ! -f "$2" ]]; then
-		_red "Use _verify_sig <sig> <file>"
+		_red "Use _verify_signature <sig> <file>"
 		return 1
 	fi
 
 	local sig="$1"
 	local file="$2"
 
-	echo -e "$space_line"
 	echo -ne "[>] Verificando arquivo [$(basename $file)] "
 
-	if gpg --verify "$sig" "$file"; then
+	if gpg --verify "$sig" "$file" 2> /dev/null; then
 		echo 'OK'
 	else
 		rm -rf "$file"
 		rm -rf "$sig"
+		echo ' '
 		_red "Falha o arquivo [$file] não é confiável portanto foi removido"
 		return 1
 	fi	
