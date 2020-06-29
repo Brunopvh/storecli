@@ -6,10 +6,10 @@ _blender()
 	local url_blender='https://ftp.nluug.nl/pub/graphics/blender/release/Blender2.82/blender-2.82a-linux64.tar.xz'
 	local path_file="$Dir_Downloads/$(basename $url_blender)"
 
-	_dow "$url_blender" "$path_file" || return 1
+	__download__ "$url_blender" "$path_file" || return 1
 
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' 'Blender'
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' 'Blender'
 		return 0
 	fi
 
@@ -26,7 +26,7 @@ function _codecs_tumbleweed()
 	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
 	
 	# Adicionar repostórios
-	"$Script_AddRepo" --tumbleweed-repos
+	"$scriptAddRepo" --tumbleweed-repos
 
 	# Instalar os codecs
 	local array_tumbleweed_codecs=(
@@ -53,8 +53,8 @@ function _codecs_tumbleweed()
 	)
 
 	for c in "${array_tumbleweed_codecs[@]}"; do
-		yellow "Instalando [$c]"
-		_package_man_distro "$c"		
+		_yellow "Instalando [$c]"
+		_pkg_manager_sys "$c"		
 	done
 }
 
@@ -81,15 +81,15 @@ function _codecs_opensuse_leap()
 	sudo zypper addrepo -f http://opensuse-guide.org/repo/openSUSE_Leap_15.1/ dvd
 	sudo zypper ref
 	for i in "${codecsOpesSuseLeap[@]}"; do
-		_package_man_distro "$i"
+		_pkg_manager_sys "$i"
 	done
 
 }
 #-----------------------------------------------------#
 function _codecs_ubuntu()
 {
-	_package_man_distro --install-recommends ffmpeg ffmpegthumbnailer
-	_package_man_distro 'ubuntu-restricted-extras'
+	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
+	_pkg_manager_sys 'ubuntu-restricted-extras'
 }
 
 #-----------------------------------------------------#
@@ -107,22 +107,21 @@ function _codecs_debian()
 	local hash_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
 	local path_file="$Dir_Downloads/$(basename $url_wcodecs)"
 
-	_dow "$url_wcodecs" "$path_file" || return 1
+	__download__ "$url_wcodecs" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
-	_package_man_distro --install-recommends ffmpeg ffmpegthumbnailer
-	_package_man_distro lame
+	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
+	_pkg_manager_sys lame
 
-	_check_sum "$path_file" "$hash_wcodecs" || return 1
+	__shasum__ "$path_file" "$hash_wcodecs" || return 1
 	
-	echo -e "$space_line"
-	white "Instalando: $path_file"
-	sudo dpkg --install "$path_file" || return 1
+	_msg "Instalando: $path_file"
+	_DPKG --install "$path_file" || return 1
 }
 
 #-----------------------------------------------------#
@@ -131,7 +130,7 @@ function _codecs_debian()
 function _codecs_fedora()
 {
 	# Add repo fusion non free
-	"$Script_AddRepo" --fedora-repos
+	sudo "$scriptAddRepo" --repo fedora
 
 	local array_gstreamer_fedora=(
 		gstreamer-plugins-espeak 
@@ -177,7 +176,7 @@ function _codecs_fedora()
 
 	for c in "${array_codecs_fedora[@]}"; do
 		green "Instalando: $c"
-		if ! _package_man_distro "$c"; then
+		if ! _pkg_manager_sys "$c"; then
 			red "Falha $c"
 			sleep 0.5
 		fi
@@ -186,7 +185,7 @@ function _codecs_fedora()
 
 	for c in "${array_gstreamer_fedora[@]}"; do
 		green "Instalando: $c"
-		if ! _package_man_distro "$c"; then
+		if ! _pkg_manager_sys "$c"; then
 			red "Falha $c"
 			sleep 0.5
 		fi
@@ -230,34 +229,31 @@ function _codecs_arch()
 		)
 
 	for x in "${list_codecs_arch[@]}"; do 
-		echo -e "$space_line"
-		yellow "Instalando: $x"
-		if ! _package_man_distro "$x"; then red "Falha: $x"; fi
+		_space_text "Instalando" "$x"
+		_pkg_manager_sys "$x"
 	done
 
 	
 	for x in "${list_codecs_parole[@]}"; do 
-		echo -e "$space_line"
-		yellow "Instalando: $x"
-		if ! _package_man_distro "$x"; then red "Falha: $x"; fi
+		_space_text "Instalando" "$x"
+		_pkg_manager_sys "$x"
 	done
 	
 }
 
-#-----------------------------------------------------#
 
 # Codecs
 function _codecs()
 {
 case "$os_id" in
-	freebsd12.0-release) _package_man_distro ffmpeg ffmpegthumbnailer 'gstreamer-ffmpeg';;
+	freebsd12.0-release) _pkg_manager_sys ffmpeg ffmpegthumbnailer 'gstreamer-ffmpeg';;
 	debian) _codecs_debian;;
 	linuxmint|ubuntu) _codecs_ubuntu;;
 	fedora) _codecs_fedora;;
 	'opensuse-tumbleweed') _codecs_tumbleweed;;
 	'opensuse-leap') _codecs_opensuse_leap;;
 	arch) _codecs_arch;;
-	*) _INFO 'pkg_not_found' 'codecs'; return 1;;
+	*) _show_info 'ProgramNotFound' 'codecs'; return 1;;
 
 esac
 }
@@ -266,13 +262,13 @@ esac
 
 function _celluloid()
 {
-	_package_man_distro 'celluloid'
+	_pkg_manager_sys 'celluloid'
 }
 
 
 function _cinema()
 {
-	_package_man_distro 'cinema'
+	_pkg_manager_sys 'cinema'
 }
 
 #=====================================================#
@@ -280,12 +276,12 @@ function _cinema()
 #=====================================================#
 function _gnome_mpv()
 {
-	if _WHICH 'dnf'; then
-		_package_man_distro 'gnome-mpv' 'smplayer-themes'
+	if is_executable 'dnf'; then
+		_pkg_manager_sys 'gnome-mpv' 'smplayer-themes'
 	elif [[ -f '/etc/debian_version' ]]; then
-		_package_man_distro 'gnome-mpv'
+		_pkg_manager_sys 'gnome-mpv'
 	else
-		_package_man_distro 'gnome-mpv' 
+		_pkg_manager_sys 'gnome-mpv' 
 	fi
 }
 
@@ -294,7 +290,7 @@ function _gnome_mpv()
 #=====================================================#
 function _parole()
 {
-	_package_man_distro parole	
+	_pkg_manager_sys parole	
 }
 
 #=====================================================#
@@ -302,7 +298,7 @@ function _parole()
 #=====================================================#
 function _smplayer()
 {
-	_package_man_distro smplayer
+	_pkg_manager_sys smplayer
 }
 
 #=====================================================#
@@ -311,22 +307,21 @@ function _smplayer()
 function _spotify_debian()
 {
 	# https://wiki.debian.org/spotify
-	# 
-	white "Adicionando keyserver e repositório"
+	_msg "Adicionando key e repositório"
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45
 	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
 	_APT update
-	_package_man_distro 'spotify-client'
+	_pkg_manager_sys 'spotify-client'
 }
 
 function _spotify_ubuntu()
 {
 	# https://www.spotify.com/br/download/linux/
-	white "Adicionando keyserver e repositório"
+	_msg "Adicionando key e repositório"
 	curl -sSL https://download.spotify.com/debian/pubkey.gpg | sudo apt-key add - 
 	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
-	sudo apt-get update 
- 	_package_man_distro 'spotify-client'
+	_APT update 
+ 	_pkg_manager_sys 'spotify-client'
 }
 
 function _spotify_archlinux()
@@ -336,9 +331,6 @@ function _spotify_archlinux()
 	local spotify_file_server=$(curl -sSL "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
 	local Spotify_Url_Server="$spotify_url/$spotify_file_server"
 	local path_file="$Dir_Downloads/$spotify_file_server"
-	
-	_dow "$Spotify_Url_Server" "$path_file" || return 1
-	
 	
 	local array_spotify_requeriments=( 
 		gconf 
@@ -356,21 +348,17 @@ function _spotify_archlinux()
 	)
 	
 	for X in "${array_spotify_requeriments[@]}"; do
-		yellow "Instalando: $X"
-		if ! _package_man_distro "$X"; then
-			red "Falha: $X"
-		fi
+		_msg "Instalando: $X"
+		_pkg_manager_sys "$X"
 	done
-	
+		
+	__download__ "$Spotify_Url_Server" "$path_file" || return 1
+
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
-		return 0 
-	fi
-	
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
 	_unpack "$path_file" || return 1
-	cd "$Dir_Unpack"
-	white "Descomprimindo arquivo data.tar.gz"
+	cd "$DirUnpack"
+	_white "Descomprimindo arquivo data.tar.gz"
 	sudo tar -zxpvf data.tar.gz -C / 1> /dev/null
 	sudo install -Dm644 /usr/share/spotify/spotify.desktop /usr/share/applications/spotify.desktop
 	sudo install -Dm644 /usr/share/spotify/icons/spotify-linux-512.png /usr/share/pixmaps/spotify-client.png
@@ -386,16 +374,13 @@ function _spotify_fedora()
 
 	local FlatpakRepoSpotity='flathub https://flathub.org/repo/flathub.flatpakrepo'
 
-	if ! _WHICH flatpak; then
-		_package_man_distro flatpak
-	fi
+	is_executable flatpak || _pkg_manager_sys flatpak
 
 	echo -ne "[>] Executando: remote-add --if-not-exists $FlatpakRepoSpotity "
 	if flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo; then
-		echo -e "${Yellow}OK${Reset}"
+		_syellow "OK"
 	else
-		echo ' '
-		red "Falha"
+		_sred "FALHA"
 	fi
 
 	_FLATPAK install flathub com.spotify.Client || return 1
@@ -413,7 +398,7 @@ function _spotify()
 	elif [[ "$os_id" == 'fedora' ]]; then
 		_spotify_fedora
 	else
-		_INFO 'pkg_not_found' 'spotify'; return 1
+		_show_info 'ProgramNotFound' 'spotify'; return 1
 	fi
 	
 }
@@ -422,29 +407,29 @@ function _spotify()
 # Totem
 #=====================================================#
 function _totem(){
-	_package_man_distro totem
+	_pkg_manager_sys totem
 }
 
 
 _vlc_fedora()
 {
-	"$Script_AddRepo" --fedora-repos # Adicionar repositórios fusion non free
-	_package_man_distro vlc python-vlc
+	"$scriptAddRepo" --repo fedora # Adicionar repositórios fusion non free
+	_pkg_manager_sys vlc 'python-vlc'
 }
 
 _vlc()
 {
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _package_man_distro vlc;;
-		'opensuse-leap') _package_man_distro vlc;;
+		debian|ubuntu|linuxmint) _pkg_manager_sys vlc;;
+		'opensuse-leap') _pkg_manager_sys vlc;;
 		fedora) _vlc_fedora;;
-		arch) _package_man_distro vlc;;
+		arch) _pkg_manager_sys vlc;;
 	esac
 
-	if _WHICH 'vlc'; then
-		_INFO 'pkg_sucess' 'vlc'
+	if is_executable 'vlc'; then
+		_show_info 'SuccessInstalation' 'vlc'
 	else
-		_INFO 'pkg_instalation_failed' 'vlc'
+		_show_info 'InstalationFailed' 'vlc'
 	fi
 }
 
@@ -454,7 +439,7 @@ _vlc()
 #=============================================================#
 _Midia_All()
 {
-	if [[ -z "$install_yes" ]]; then
+	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
 	fi
 	_codecs

@@ -10,6 +10,9 @@ __version__='2020_06_28_rev1'
 # https://man7.org/linux/man-pages/man1/getopts.1p.html
 #
 
+#=============================================================#
+# Verificar requesitos minimos do sistema.
+#=============================================================#
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
@@ -45,57 +48,99 @@ export dirSTORECLIPathScripts="$dirSTORECLIPath/scripts"
 export dirSTORECLIPathPython="$dirSTORECLIPath/python"
 
 #=============================================================#
+# Diretórios do usuário
+#=============================================================#
+directoryUSERbin="$HOME/.local/bin"
+directoryUSERicon="$HOME/.local/share/icons"
+directoryUSERthemes="$HOME/.themes"
+directoryUSERapplications="$HOME/.local/share/applications"
+directoryUSERconfig="$HOME/.config/storecli"
+
+mkdir -p "$directoryUSERbin"
+mkdir -p "$directoryUSERicon"
+mkdir -p "$directoryUSERthemes"
+mkdir -p "$directoryUSERapplications"
+mkdir -p "$directoryUSERconfig"
+
+#=============================================================#
+# Diretórios do root
+#=============================================================#
+directoryROOTbin='/usr/local/bin'
+directoryROOTicon='/usr/share/icons/hicolor'
+directoryROOTthemes='/usr/share/themes/'
+directoryROOTapplications='/usr/share/applications'
+
+if [[ ! -d "$directoryROOTbin" ]]; then
+	_green "Criando o diretório: $directoryROOTbin"
+	sudo mkdir "$directoryROOTbin"
+fi
+
+
+if [[ ! -d "$directoryROOTicon" ]]; then
+	_green "Criando o diretório: $directoryROOTicon"
+	sudo mkdir "$directoryROOTicon"
+fi
+
+
+if [[ ! -d "$directoryROOTthemes" ]]; then
+	_green "Criando o diretório: $directoryROOTthemes"
+	sudo mkdir "$directoryROOTthemes"
+fi
+
+
+if [[ ! -d "$directoryROOTapplications" ]]; then
+	_green "Criando o diretório: $directoryROOTapplications"
+	sudo mkdir "$directoryROOTapplications"
+fi
+
+#=============================================================#
 # Definir as Libs e scripts a serem usados
 #=============================================================#
 # módulos/libs.
 libColors="$dirSTORECLIPathLib/Colors.sh"
 libPrintUtils="$dirSTORECLIPathLib/PrintUtils.sh"
-libDirectoryUtils="$dirSTORECLIPathLib/DirectoryUtils.sh"
 libCliUtils="$dirSTORECLIPathLib/CliUtils.sh"
 libPlatform="$dirSTORECLIPathLib/Platform.sh"
 libPkgManagerSys="$dirSTORECLIPathLib/PkgManagerSys.sh"
-libMain="$dirSTORECLIPathLib/Main.sh"
+libUninstallPkgs="$dirSTORECLIPathLib/UninstallPkgs.sh"
 libArrayUtils="$dirSTORECLIPathLib/ArrayUtils.sh"
-libUnpack="$dirSTORECLIPathLib/Unpack.sh"
-libCheckGpg="$dirSTORECLIPathLib/CheckGpg.sh"
-libCheckSum="$dirSTORECLIPathLib/CheckSum.sh"
-libDownload="$dirSTORECLIPathLib/DownloadLib.sh"
 
 # Programas
 libAcessory="$dirSTORECLIPathPrograms/Acessory.sh"
 libDevelopment="$dirSTORECLIPathPrograms/Dev.sh"
 libOffice="$dirSTORECLIPathPrograms/Office.sh"
+libBrowser="$dirSTORECLIPathPrograms/Browser.sh"
 libInternet="$dirSTORECLIPathPrograms/Internet.sh"
+libMidia="$dirSTORECLIPathPrograms/Midia.sh"
+
 
 # Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
 scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
+scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
 
 #=============================================================#
 # importar libs
 #=============================================================#
 source "$libColors"
 source "$libPrintUtils"
-source "$libDirectoryUtils"
 source "$libCliUtils"
 source "$libPlatform"
 source "$libPkgManagerSys"
-source "$libMain"
+source "$libUninstallPkgs"
 source "$libArrayUtils"
-source "$libUnpack"
-source "$libCheckSum"
-source "$libCheckGpg"
-source "$libDownload"
 
 # Programas
 source "$libAcessory"
 source "$libDevelopment"
 source "$libOffice"
 source "$libInternet"
+source "$libMidia"
+source "$libBrowser"
 
 # Criar diretórios para arquivos temporários, descompressão dos
 # arquivos baixados e para clonar repositórios do github. 
-#export TemporaryDirectory=$(mktemp --directory)
+# export TemporaryDirectory=$(mktemp --directory)
 export TemporaryDirectory="/tmp/storecli_$USER"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
@@ -176,14 +221,14 @@ is_executable()
 
 _ping()
 {
-	echo -ne "[>] Aguardando conexão "
+	printf "%s" "[>] Aguardando conexão: "
 
-	if ping -c 2 8.8.8.8 1> /dev/null; then
-		echo "[Conectado]"
+	if ping -c 1 8.8.8.8 1> /dev/null; then
+		_syellow "Conectado"
 		return 0
 	else
-		echo ' '
-		red "Falha - AVISO: você está OFF-LINE"
+		_sred 'FALHA'
+		_red "AVISO: você está OFF-LINE"
 		read -p "Pressione enter: " enter
 		return 1
 	fi
@@ -242,7 +287,7 @@ __RMDIR()
 	# A função __sudo__ irá remover o arquivo/diretório.
 	for i in "$@"; do
 		_red "Removendo: $i"
-		rm -rf "$1" 2> /dev/null || __sudo__ rm -rf "$i"
+		rm -rf "$1" 2> /dev/null || sudo rm -rf "$i"
 	done
 }
 
@@ -252,18 +297,322 @@ _clear_temp_dirs()
 	cd "$DirUnpack" && __RMDIR $(ls)
 }
 
-_clear_temp_dirs
-
 __gpg__()
 {
-	echo -ne "Executando: gpg $@ "
-	gpg "$@" 1> /dev/null 2> /dev/null || {
-		echo ' '
-		_red "Falha"
+	printf "%s" "[>] Verificando integridade "
+	if gpg "$@" 1> /dev/null 2> /dev/null; then
+		_syellow "OK"
+	else
+		_sred "FALHA"
 		return 1
-	}
+	fi
 	return 0
 }
+
+__shasum__()
+{
+	# Esta função compara a hash de um arquivo local no disco com
+	# uma hash informada no parametro "$2" (hash original). 
+	#   Ou seja "$1" é o arquivo local e "$2" é uma hash
+
+	if [[ ! -f "$1" ]]; then
+		_red "(__shasum__) arquivo inválido: $1"
+		return 1
+	fi
+
+	if [[ -z "$2" ]]; then
+		_red "(__shasum__) use: __shasum__ <arquivo> <hash>"
+		return 1
+	fi
+
+	_white "Gerando hash do arquivo: $1"
+	local hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
+	
+	echo -ne "[>] Comparando valores "
+	if [[ "$hash_file" == "$2" ]]; then
+		echo -e "${CYellow}OK${CReset}"
+		return 0
+	else
+		_sred 'FALHA'
+		rm -rf "$1"
+		_red "(__shasum__) o arquivo inseguro foi removido: $1"
+		return 1
+	fi
+}
+
+
+__curl__()
+{
+	# Função para baixar arquivos usando a ferramenta 'curl'.
+	url="$1"
+	path_file="$2"
+	if [[ -z $2 ]]; then
+		curl -C - -S -L -O "$url" || {
+			_red "Falha: curl -S -L -O"
+			return 1
+		}
+		return 0
+	elif [[ $2 ]]; then
+		_blue "Destino: $path_file"
+		curl -C - -S -L -o "$path_file" "$url" || {
+			_red "Falha: curl -S -L -o"
+			rm "$path_file" 2> /dev/null
+			return "$?"
+		}
+		return "$?"
+	fi
+
+}
+
+__wget__()
+{
+	# Função para baixar arquivos usando a ferramenta 'wget'.
+	url="$1"
+	path_file="$2"
+	if [[ -z $2 ]]; then
+		wget -c "$url" || {
+			_red "Falha: wget"
+			return 1
+		}
+		return 0
+	elif [[ $2 ]]; then
+		_blue "Destino: $path_file"
+		wget -c "$url" -O "$path_file" || {
+			_red "Falha: wget"
+			rm "$path_file" 2> /dev/null
+			return 1
+		}
+		return 0
+	fi	
+}
+
+
+
+__download__()
+{
+	if [[ -f "$2" ]]; then
+		_blue "Arquivo encontrado: $2"
+		return 0
+	fi
+
+	cd "$directoryUSERdownloads"
+	_blue "Baixando: $1"
+
+	#__curl__ "$@"
+	__wget__ "$@"
+
+	if [[ "$?" == '130' ]]; then
+		_red "Cancelado com Ctrl c"
+		return 130
+	fi
+
+}
+
+
+_gitclone()
+{
+
+	if [[ -z $1 ]]; then
+		_red "(_gitclone) use: _gitclone <repo.git>"
+		return 1
+	fi
+
+	cd "$DirGitclone"
+	dir_repo=$(basename "$1" | sed 's/.git//g')
+	if [[ -d "$DirGitclone/$dir_repo" ]]; then
+		_yellow "Encontrado: $DirGitclone/$dir_repo"
+		if _YESNO "Deseja remover o diretório clonado anteriormente"; then
+			__RMDIR "$dir_repo"
+		else
+			return 0
+		fi
+	fi
+
+	_blue "Clonando: $1"
+	_blue "Destino: $(pwd)"
+	if ! git clone "$1"; then
+		_red "(_gitclone): falha"
+		return 1
+	fi
+	return 0
+}
+
+
+
+_unpack()
+{
+	# Obrigatório informar um arquivo no argumento $1.
+	if [[ ! -f "$1" ]]; then
+		_red "(_unpack) nenhum arquivo informado como argumento"
+		return 1
+	fi
+
+	# Destino para descompressão.
+	if [[ -d "$2" ]]; then 
+		DirUnpack="$2"
+	elif [[ -d "$DirUnpack" ]]; then
+		DirUnpack="$DirUnpack"
+	else
+		_red "(_unpack): nenhum diretório para descompressão foi informado"
+		return 1
+	fi 
+	
+	cd "$DirUnpack"
+	path_file="$1"
+
+	# Detectar a extensão do arquivo.
+	if [[ "${path_file: -6}" == 'tar.gz' ]]; then    # tar.gz - 6 ultimos caracteres.
+		type_file='tar.gz'
+	elif [[ "${path_file: -7}" == 'tar.bz2' ]]; then # tar.bz2 - 7 ultimos carcteres.
+		type_file='tar.bz2'
+	elif [[ "${path_file: -6}" == 'tar.xz' ]]; then  # tar.xz
+		type_file='tar.xz'
+	elif [[ "${path_file: -4}" == '.zip' ]]; then    # .zip
+		type_file='zip'
+	elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
+		type_file='deb'
+	else
+		_red "(_unpack) arquivo não suportado: $path_file"
+		__RMDIR "$path_file"
+		return 1
+	fi
+
+	printf "%s" "Descomprimindo: $path_file "
+	#printf "%s" "[>] Destino: $DirUnpack "
+	
+	# Descomprimir.	
+	case "$type_file" in
+		'tar.gz') tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
+		'tar.bz2') tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
+		'tar.xz') tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
+		zip) unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1;;
+		deb) ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1;;
+		*) return 1;;
+	esac
+
+	if [[ "$?" == '0' ]]; then
+		_syellow "OK"
+		return 0
+	else
+		_sred "FALHA"
+		_red "(_unpack) erro: $path_file"
+		__RMDIR "$path_file"
+		return 1
+	fi
+}
+
+#=============================================================#
+# Instalar os pacotes
+#=============================================================#
+_pkg_manager_storecli()
+{
+	# Instalação dos programas
+	if [[ -z $1 ]]; then
+		usage
+		return 1
+	fi
+
+	_ping
+	_clear_temp_dirs
+
+	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
+	case "$os_codename" in
+		tina|tricia) export os_codename='bionic';;
+	esac
+
+	_yellow "storecli ${__version__}: sua loja de aplicativos via linha de comando."
+	_space_text "[+] Sistema" "$os_id $os_release"
+
+	while [[ $1 ]]; do
+		case "$1" in
+			-d|--downloadonly) ;;
+			-y|--yes) ;;
+			-I|--ignore-cli) ;;
+			*) _space_text "[+] Instalando" "$1";; 
+		esac
+		 
+
+		case "$1" in
+			-d|--downloadonly) export DownloadOnly='True';;
+			-y|--yes) export AssumeYes='True';;
+
+			Acessorios) _Acessory_All;;
+			etcher) _etcher;;
+			gnome-disk) _gnome_disk;;
+			veracrypt) _veracrypt;;
+			woeusb) _woeusb;;
+
+
+			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
+			'android-studio') _android_studio;;
+			codeblocks) _codeblocks;;
+			java) _java;;
+			pycharm) _pycharm;;
+			sublime-text) _sublime_text;;
+			vim) _vim;;
+			vscode) _vscode;;
+
+			Escritorio) _Office_All;;
+			atril) _atril;;
+			'fontes-ms') _fontes_microsoft;;
+			libreoffice) _libreoffice;;
+			libreoffice-appimage) _libreoffice_appimage;;
+
+			chromium) _chromium;;
+			firefox) _firefox;;
+			'google-chrome') _google_chrome;;
+			'opera-stable') _opera_stable;;
+			torbrowser) _torbrowser;;
+
+			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
+			megasync) _megasync;;
+			proxychains) _proxychains;;
+			qbittorrent) _qbittorrent;;
+			skype) _skype;;
+			teamviewer) _teamviewer;;
+			telegram) _telegram;;
+			tixati) _tixati;;
+			uget) _uget;;
+			youtube-dl) _youtube_dl;;
+			youtube-dl-gui) _youtube_dlgui;;
+
+			Midia) _Midia_All;;
+			blender) _blender;;
+			celluloid) _celluloid;;
+			cinema) _cinema;;
+			codecs) _codecs;;
+			'gnome-mpv') _gnome_mpv;;
+			smplayer) _smplayer;;
+			spotify) _spotify;;
+			parole) _parole;;
+			totem) _totem;;
+			vlc) _vlc;;
+
+			Sistema) _System_All;;
+			bluetooth) _bluetooth;;
+			compactadores) _compactadores;;
+			gparted) _gparted;;
+			peazip) _peazip;;
+			refind) _refind;;
+			stacer) _stacer;;
+			virtualbox) _virtualbox;;
+
+			ohmybash) _ohmybash;;			
+			ohmyzsh) _ohmyzsh;;
+			papirus) _papirus;;
+			sierra) _sierra;;
+		
+			'dash-to-dock') _dashtodock;;
+			'drive-menu') _drive_menu;;
+			'gnome-backgrounds') _gnome_backgrounds;;
+			'gnome-tweaks') _gnome_tweaks;;
+			'topicons-plus') _topicons_plus;;
+			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
+		esac
+		shift
+	done
+}
+
 
 for option in "$@"; do
 	case "$option" in

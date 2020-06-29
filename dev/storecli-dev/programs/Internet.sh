@@ -55,7 +55,7 @@ _megasync_ubuntu()
 		eoan)
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_19.10/Release.key'
-			_dow "$url_libraw16" "$path_libraw" || return 1 
+			__download__ "$url_libraw16" "$path_libraw" || return 1 
 			_msg "Instalando: $path_libraw"
 			_DPKG --install "$path_libraw" || return 1
 			;;
@@ -126,7 +126,7 @@ _megasync_archlinux()
 		)
 
 	# Baixar o pacote do repositório MEGA.
-	_dow "$mega_url_tar" "$path_mega_tar" || return 1
+	__download__ "$mega_url_tar" "$path_mega_tar" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -201,7 +201,7 @@ _tor_fedora()
 {
 	case "$os_version" in
 		32) _pkg_manager_sys tor;;
-		*) return;;
+		*) _show_info 'ProgramNotFound' 'tor';;
 	esac
 
 	_pkg_manager_sys proxychains || return 1
@@ -232,7 +232,7 @@ _skype_debian()
 	local skype_url='https://go.skype.com/skypeforlinux-64.deb'
 	local path_file="$DirDownloads/$(basename $skype_url)"
 
-	_dow "$skype_url" "$path_file" || return 1
+	__download__ "$skype_url" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -294,7 +294,7 @@ _install_teamviewer_debian()
 		'qml-module-qtquick-layouts' 
 		)
 	
-	_dow "$url_deb" "$path_file" || return 1
+	__download__ "$url_deb" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
@@ -314,7 +314,7 @@ _install_teamviewer_fedora()
 	local url_rpm=$(echo "$tw_html" | grep -m 1 'x86_64.rpm' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_x86_64.rpm"
 	
-	_dow "$url_rpm" "$path_file" || return 1
+	__download__ "$url_rpm" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
@@ -329,7 +329,7 @@ _teamviewer_tar()
 	local url_tar=$(echo "$tw_html" | grep -m 1 'amd64.tar' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_amd64.tar.xz"
 	
-	_dow "$url_tar" "$path_file" || return 1
+	__download__ "$url_tar" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
@@ -369,7 +369,7 @@ _telegram()
 	local url_telegram='https://telegram.org/dl/desktop/linux'
 	local path_file="$DirDownloads/telegramsetup.tar.xz"
 
-	_dow "$url_telegram" "$path_file" || return 1
+	__download__ "$url_telegram" "$path_file" || return 1
 
 	# Instalar gconf2.
 	_msg "Instalando gconf2"
@@ -405,16 +405,16 @@ _telegram()
 _tixati_tarfile()
 {
 	_yellow "Obtendo URL de download aguarde."
-	local tixati_pag_downloads='https://www.tixati.com/download/linux.html'
-	local tixati_html=$(curl -sSL "$tixati_pag_downloads" | grep -m 1 'tixati.*64.*tar.gz')
+	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
+	local tixati_html=$(curl -sSL "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
 	local signatureFile="${TarFile}.asc"
 	
 	[[ -f "$path_file_asc" ]] && rm "$path_file_asc"
-	_dow "$url_tarfile" "$TarFile" || return 1
-	_dow "$url_signature_file" "$signatureFile" || return 1
+	__download__ "$url_tarfile" "$TarFile" || return 1
+	__download__ "$url_signature_file" "$signatureFile" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
@@ -432,7 +432,7 @@ _tixati_tarfile()
 	fi
 
 	# Gpg
-	_verify_signature "$signatureFile" "$TarFile" || return 1
+	__gpg__ "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
 	_msg "Instalando gconf2"
@@ -505,14 +505,14 @@ _youtube_dl()
 	local path_file="$DirDownloads/youtube-dl"   # Path+Nome.
 	local hash_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
 	
-	_dow "$url_ytdl_test" "$path_file" || return 1 
-	_dow "$url_ytdl_sig" "$path_file_sig" || return 1
+	__download__ "$url_ytdl_test" "$path_file" || return 1 
+	__download__ "$url_ytdl_sig" "$path_file_sig" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
 	
 	# Asc philipp
-	echo -ne "[>] Importando: $url_ytdl_asc_philipp "
+	printf "%s" "[>] Importando: $url_ytdl_asc_philipp "
 	if curl -sSL "$url_ytdl_asc_philipp" -o- | gpg --import - 1> /dev/null 2> /dev/null; then  
 		echo -e "${CYellow}OK${CReset}"
 	else
@@ -521,7 +521,7 @@ _youtube_dl()
 	fi
 	
 	# Asc sergey
-	echo -ne "[>] Importando: $url_ytdl_asc_sergey "
+	printf "%s" "[>] Importando: $url_ytdl_asc_sergey "
 	if curl -sSL "$url_ytdl_asc_sergey" -o- | gpg --import - 1> /dev/null 2> /dev/null; then 
 		echo -e "${CYellow}OK${CReset}"
 	else
@@ -635,7 +635,7 @@ _youtube_dlgui_compile()
 	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 
-	_dow "$url_ytdl_gui" "$path_file" || return 1
+	__download__ "$url_ytdl_gui" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
@@ -720,7 +720,7 @@ _youtube_dlgui_fedora()
 		31) _pkg_manager_sys 'python2-wxpython' || return 1;;
 		32) 
 			_pkg_manager_sys 'wxGTK3-media' 'python3-wxpython4.x86_64' || return 1
-			_dow "$url" "$path_file" || return 1
+			__download__ "$url" "$path_file" || return 1
 			_yellow "Instalando: $path_file"
 			_RPM --install "$path_file" 
 			;;
@@ -740,7 +740,7 @@ _youtube_dlgui_tumbleweed()
 	local url_ytdlg_tumbleweed="$url_opensuse_repo/Factory/standard/noarch/youtube-dl-gui-0.4-1.7.noarch.rpm"
 	local path_file="$DirDownloads/$(basename $url_ytdlg_tumbleweed)"
 
-	_dow "$url_ytdlg_tumbleweed" "$path_file" || return 1 
+	__download__ "$url_ytdlg_tumbleweed" "$path_file" || return 1 
 	_pkg_manager_sys "$path_file" || return 1
 	
 	if is_executable 'youtube-dl-gui'; then
@@ -817,7 +817,7 @@ _youtube_dlgui()
 #=============================================================#
 _Internet_All()
 {
-	if [[ -z "$install_yes" ]]; then
+	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 	fi
 	_chromium

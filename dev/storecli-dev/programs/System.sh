@@ -13,7 +13,7 @@ function _bluetooth()
 		return 1
 	fi
 
-	_package_man_distro bluez 'bluez-firmware' 'bluez-hcidump'
+	_pkg_manager_sys bluez 'bluez-firmware' 'bluez-hcidump'
 	echo -e "$space_line"
 	white "1 - ${Green}G${Reset}NOME"
 	white "2 - ${Green}K${Reset}DE"
@@ -25,9 +25,9 @@ function _bluetooth()
 		read -t 10 -n 1 desktop; echo ' '
 
 		case "${desktop,,}" in
-			1) _package_man_distro 'gnome-bluetooth';;
-			2) _package_man_distro bluedevil;;
-			3) _package_man_distro blueman;;
+			1) _pkg_manager_sys 'gnome-bluetooth';;
+			2) _pkg_manager_sys bluedevil;;
+			3) _pkg_manager_sys blueman;;
 			*) 
 			white "Opição inválida, você pode ${Green}repetir${Reset} ou ${Red}cancelar${Reset} [r/c]: " 
 			read -t 10 -n 1 input; echo ' '
@@ -62,16 +62,16 @@ function _compactadores()
 	)
 
 
-	if _WHICH 'zypper'; then
-		_package_man_distro "${compactadores_fedora[@]}"
-	elif _WHICH 'dnf'; then
-		_package_man_distro "${compactadores_fedora[@]}"
-	elif _WHICH 'apt'; then
-		_package_man_distro "${compactadores_debian[@]}"
-	elif _WHICH 'pacman'; then
-		_package_man_distro "${compactadores_arch[@]}"
+	if is_executable 'zypper'; then
+		_pkg_manager_sys "${compactadores_fedora[@]}"
+	elif is_executable 'dnf'; then
+		_pkg_manager_sys "${compactadores_fedora[@]}"
+	elif is_executable 'apt'; then
+		_pkg_manager_sys "${compactadores_debian[@]}"
+	elif is_executable 'pacman'; then
+		_pkg_manager_sys "${compactadores_arch[@]}"
 	else
-		_INFO 'pkg_not_found' 'compactadores'
+		_show_info 'ProgramNotFound' 'compactadores'
 		return 1
 	fi
 }
@@ -88,10 +88,10 @@ function _firmware()
 	fi
 
 	case "$1" in
-		firmware-ralink) _package_man_distro 'firmware-ralink';;
-		firmware-atheros) _package_man_distro 'firmware-atheros';;
-		firmware-realtek) _package_man_distro 'firmware-realtek';;
-		firmware-linux-nonfree) _package_man_distro 'firmware-linux-nonfree';;
+		firmware-ralink) _pkg_manager_sys 'firmware-ralink';;
+		firmware-atheros) _pkg_manager_sys 'firmware-atheros';;
+		firmware-realtek) _pkg_manager_sys 'firmware-realtek';;
+		firmware-linux-nonfree) _pkg_manager_sys 'firmware-linux-nonfree';;
 	esac
 }
 
@@ -101,36 +101,36 @@ function _firmware()
 #=====================================================#
 function _gparted()
 {
-	_package_man_distro gparted
+	_pkg_manager_sys gparted
 }
 
 _peazip()
 {
 	# Url fixo versão 6.8
-	local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$Dir_Downloads/$(basename $peazip_url_download)"
+	local peazip_url__download__nload='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_file="$Dir_Downloads/$(basename $peazip_url__download__nload)"
 	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
 
-	_dow "$peazip_url_download" "$path_file" || return 1
+	__download__ "$peazip_url__download__nload" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 		
-	if _WHICH 'peazip'; then
-		_INFO 'pkg_are_instaled' 'peazip'
+	if is_executable 'peazip'; then
+		_show_info 'pkg_are_instaled' 'peazip'
 		return 0 
 	fi
 
-	_check_sum "$path_file" "$hash_file" || return 1
+	__shasum__ "$path_file" "$hash_file" || return 1
 	_unpack "$path_file" || return 1
 
 	
-	cd "$Dir_Unpack"
-	mv -v $(ls -d peazip*) "$Dir_Unpack/peazip-amd64" 1> /dev/null
-	sudo mv "$Dir_Unpack/peazip-amd64" '/opt/'
+	cd "$DirUnpack"
+	mv -v $(ls -d peazip*) "$DirUnpack/peazip-amd64" 1> /dev/null
+	sudo mv "$DirUnpack/peazip-amd64" '/opt/'
 	sudo chown -R root:root "/opt/peazip-amd64" #1> /dev/null # root é o dono.
 	sudo chmod -R a+x "/opt/peazip-amd64"
 
@@ -144,11 +144,11 @@ _peazip()
 	cp -u "${array_peazip_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
 
-	if _WHICH 'peazip'; then
-		_INFO 'pkg_sucess' 'peazip'
+	if is_executable 'peazip'; then
+		_show_info 'SuccessInstalation' 'peazip'
 		return 0
 	else
-		_INFO 'pkg_instalation_failed' 'peazip'
+		_show_info 'InstalationFailed' 'peazip'
 		return 1
 	fi
 }
@@ -166,22 +166,22 @@ function _refind_zip()
 	local url_zip='https://sourceforge.net/projects/refind/files/0.12.0/refind-bin-0.12.0.zip/download'
 	local path_file="$Dir_Downloads/refind-bin-0.12.0.zip"
 	
-	_dow "$url_zip" "$path_file" || return 1
+	__download__ "$url_zip" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 	
 	# Já instalado.
-	if _WHICH 'refind-install'; then
-		_INFO 'pkg_are_instaled' 'refind-install'
+	if is_executable 'refind-install'; then
+		_show_info 'pkg_are_instaled' 'refind-install'
 		return 0
 	fi
 	
 	_unpack "$path_file" || return 1
-	cd "$Dir_Unpack"
+	cd "$DirUnpack"
 	mv $(ls -d refind*) refind
 	sudo mv refind "${array_refind_dirs[0]}"
 	
@@ -200,15 +200,15 @@ function _refind_zip()
 function _refind()
 {
 	case "$os_id" in
-		debian|ubuntu|linuxmint|arch) _package_man_distro refind;;
+		debian|ubuntu|linuxmint|arch) _pkg_manager_sys refind;;
 		*) _refind_zip;;
 	esac
 	
-	if _WHICH 'refind-install'; then
-		_INFO 'pkg_sucess' 'refind-install'
+	if is_executable 'refind-install'; then
+		_show_info 'SuccessInstalation' 'refind-install'
 		return 0
 	else
-		_INFO 'pkg_instalation_failed' 'refind-install'
+		_show_info 'InstalationFailed' 'refind-install'
 		return 1
 	fi
 }
@@ -224,11 +224,11 @@ function _stacer_debian()
 	local url='https://github.com/oguzhaninan/Stacer/releases/download/v1.1.0/stacer_1.1.0_amd64.deb'
 	local path_file="$Dir_Downloads/$(basename $url)"
 
-	_dow "$url" "$path_file" || return 1
+	__download__ "$url" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$url"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$url"
 		return 0 
 	fi
 
@@ -237,7 +237,7 @@ function _stacer_debian()
 
 _stacer_fedora()
 {
-	_package_man_distro stacer	
+	_pkg_manager_sys stacer	
 }
 
 
@@ -252,9 +252,9 @@ _stacer_archlinux()
 	local url_appimage='https://github.com/oguzhaninan/Stacer/releases/download/v1.1.0/Stacer-1.1.0-x64.AppImage'
 	local path_file="$Dir_Downloads/Stacer-1.1.0-x64.AppImage"
 	
-	_package_man_distro 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
+	_pkg_manager_sys 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
 	
-	_dow "$url_appimage" "$path_file" || return 1
+	__download__ "$url_appimage" "$path_file" || return 1
 	sudo cp "$path_file" "${array_stacer_dirs[stacer_file_appimage]}"
 	sudo chmod a+x "${array_stacer_dirs[stacer_file_appimage]}"
 	sudo ln -sf "${array_stacer_dirs[stacer_file_appimage]}" "${array_stacer_dirs[stacer_link]}"
@@ -288,7 +288,7 @@ function _stacer()
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _stacer_debian;;
 		arch) _stacer_archlinux;;
-		*) _INFO pkg_not_found stacer;;
+		*) _show_info ProgramNotFound stacer;;
 	esac
 }
 
@@ -312,10 +312,10 @@ function _virtualbox_extpack()
 	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
 	local path_file="$Dir_Downloads/$(basename $vb_url)"
 
-	_dow "$vb_url" "$path_file" || return 1
+	__download__ "$vb_url" "$path_file" || return 1
 	
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
@@ -348,11 +348,11 @@ function _virtualbox_fedora()
 		'patch'
 	)
 
-	_package_man_distro "${requeriments_vb_fedora[@]}"
-	_package_man_distro $(rpm -qa kernel | sort -V | tail -n 1) 
-	_package_man_distro kernel-devel-$(uname -r)
+	_pkg_manager_sys "${requeriments_vb_fedora[@]}"
+	_pkg_manager_sys $(rpm -qa kernel | sort -V | tail -n 1) 
+	_pkg_manager_sys kernel-devel-$(uname -r)
 
-	_dow "https://www.virtualbox.org/download/oracle_vbox.asc" "$Dir_Downloads/oracle_vbox.asc"
+	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$Dir_Downloads/oracle_vbox.asc"
 	yellow "Importando: $Dir_Downloads/oracle_vbox.asc"
 	sudo rpm --import "$Dir_Downloads/oracle_vbox.asc"
 	
@@ -360,8 +360,8 @@ function _virtualbox_fedora()
 	sudo sh -c 'curl -s -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 	
 	case "$os_version" in
-		31) _package_man_distro 'VirtualBox-6.0' || return 1;;
-		32) _package_man_distro 'VirtualBox-6.1' || return 1;;
+		31) _pkg_manager_sys 'VirtualBox-6.0' || return 1;;
+		32) _pkg_manager_sys 'VirtualBox-6.1' || return 1;;
 	esac
 	
 	# Módulos
@@ -410,18 +410,18 @@ function _virtualbox_debian()
 	# Dependências
 	echo "$space_line"
 	
-	#_package_man_distro libvpx6 
-	_package_man_distro 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
-	_package_man_distro linux-headers-$(uname -r)
+	#_pkg_manager_sys libvpx6 
+	_pkg_manager_sys 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
+	_pkg_manager_sys linux-headers-$(uname -r)
 	
 	if [[ "$os_codename" == 'focal' ]]; then
-		_dow "$url_libvpx" "$path_libvpx" || return 1
-		_check_sum "$path_libvpx" "$sum_libvpx" || return 1
+		__download__ "$url_libvpx" "$path_libvpx" || return 1
+		__shasum__ "$path_libvpx" "$sum_libvpx" || return 1
 		_DPKG --install "$path_libvpx" || _BROKE
 	fi
 	
 	echo -e "$space_line"
-	_package_man_distro 'virtualbox-6.0' || return 1
+	_pkg_manager_sys 'virtualbox-6.0' || return 1
 	_virtualbox_extpack
 }
 
@@ -445,7 +445,7 @@ function _virtualbox_archlinux()
 
 	for c in "${array_vb_archlinux[@]}"; do
 		_space_text "[+] Instalando" "$c"
-		if ! _package_man_distro "$c"; then
+		if ! _pkg_manager_sys "$c"; then
 			_space_text "${CRed}[!]${CReset} Falha" "$c"
 		fi
 	done
@@ -499,12 +499,12 @@ function _virtualbox_linux_run()
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
 	vbox_path_file_hash="$Dir_Downloads/virtualbox_$vbox_version.check"
 
-	_dow "$vbox_url_run" "$path_file" || return 1
-	_dow "$vbox_url_hash" "$vbox_path_file_hash" || return
+	__download__ "$vbox_url_run" "$path_file" || return 1
+	__download__ "$vbox_url_hash" "$vbox_path_file_hash" || return
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
@@ -512,7 +512,7 @@ function _virtualbox_linux_run()
 	# em seguida verificar a integridade do pacote usando o módulo
 	# CheckSum
 	vbox_sum=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
-	_check_sum "$path_file" "$vbox_sum" || return 1
+	__shasum__ "$path_file" "$vbox_sum" || return 1
 	chmod +x "$path_file"
 	sudo "$path_file"
 	sudo /sbin/rcvboxdrv setup
@@ -529,7 +529,7 @@ function _virtualbox()
 		debian|linuxmint|ubuntu) _virtualbox_debian;;
 		fedora) _virtualbox_fedora;;
 		arch) _virtualbox_linux_run;;	
-		*) _INFO 'pkg_not_found' 'virtualbox'; return 1;;	
+		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	
 	esac
 }
 
@@ -538,7 +538,7 @@ function _virtualbox()
 #=============================================================#
 _System_All()
 {
-	if [[ -z "$install_yes" ]]; then
+	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
 	fi
 	_bluetooth

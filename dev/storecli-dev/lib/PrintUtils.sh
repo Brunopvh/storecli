@@ -42,9 +42,23 @@ _msg()
 
 _sred()
 {
-	echo -e "${CSRed} $@${CReset}"
+	echo -e "${CSRed}$@${CReset}"
 }
 
+_sgreen()
+{
+	echo -e "${CSGreen}$@${CReset}"
+}
+
+_syellow()
+{
+	echo -e "${CSYellow}$@${CReset}"
+}
+
+_sblue()
+{
+	echo -e "${CSBlue}$@${CReset}"
+}
 
 _YESNO()
 {
@@ -228,7 +242,7 @@ _list_applications()
 					printf "\n"
 					;;
 			*)
-			_red "Use: --list|-l OU --list|-l Acessorios|Escritorio|Internet"
+			_red "Use: --list|-l OU --list|-l Acessorios|Escritorio|Navegadores|Internet"
 					;;
 		esac
 		shift

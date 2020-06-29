@@ -23,16 +23,16 @@ function _dashtodock_github()
 	_gitclone "$url_repo" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
 
 	# Instalar o pacote make
-	_package_man_distro make
+	_pkg_manager_sys make
 
-	cd "$dir_temp"/dash-to-dock
+	cd "$DirTemp"/dash-to-dock
 	echo -e "$space_line"
 	make
 	make install
@@ -50,8 +50,8 @@ function _dashtodock_github()
 function _dashtodock()
 {
 	case "$os_id" in
-		fedora) _package_man_distro 'gnome-shell-extension-dash-to-dock.noarch';;
-		debian) _package_man_distro 'gnome-shell-extension-dashtodock';;
+		fedora) _pkg_manager_sys 'gnome-shell-extension-dash-to-dock.noarch';;
+		debian) _pkg_manager_sys 'gnome-shell-extension-dashtodock';;
 		*) _dashtodock_github;;
 	esac
 }
@@ -62,8 +62,8 @@ function _dashtodock()
 function _drive_menu()
 {
 	case "$os_id" in
-		fedora) _package_man_distro 'gnome-shell-extension-drive-menu';;
-		*) _INFO 'pkg_not_found' 'drive-menu'; return 1;;
+		fedora) _pkg_manager_sys 'gnome-shell-extension-drive-menu';;
+		*) _show_info 'ProgramNotFound' 'drive-menu'; return 1;;
 	esac
 }
 
@@ -73,9 +73,9 @@ function _drive_menu()
 function _gnome_backgrounds()
 {
 	case "$os_id" in 
-		arch) _package_man_distro 'gnome-backgrounds';;
-		fedora) _package_man_distro 'gnome-backgrounds-extras' 'verne-backgrounds-gnome';;
-		*) _INFO 'pkg_not_found' 'gnome-backgrounds'; return 1;;
+		arch) _pkg_manager_sys 'gnome-backgrounds';;
+		fedora) _pkg_manager_sys 'gnome-backgrounds-extras' 'verne-backgrounds-gnome';;
+		*) _show_info 'ProgramNotFound' 'gnome-backgrounds'; return 1;;
 	esac
 }
 
@@ -91,19 +91,19 @@ function _topicons_plus_github()
 	local url='https://github.com/phocean/TopIcons-plus/archive/master.tar.gz'
 	local path_file="$Dir_Downloads/topicons_plus.tar.gz"
 
-	_dow "$url" "$path_file" || return 1
+	__download__ "$url" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
 	_unpack "$path_file" || return 1
-	_package_man_distro make
+	_pkg_manager_sys make
 
-	cd "$Dir_Unpack"
-	mv $(ls -d Top*) "$Dir_Unpack"/topicons_plus
+	cd "$DirUnpack"
+	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
 	cd topicons_plus
 	echo -e "$space_line"
 	# make install
@@ -119,8 +119,8 @@ function _topicons_plus_github()
 function _topicons_plus()
 {
 	case "$os_id" in
-		fedora) _package_man_distro 'gnome-shell-extension-topicons-plus';;
-		debian) _package_man_distro 'gnome-shell-extension-top-icons-plus';;
+		fedora) _pkg_manager_sys 'gnome-shell-extension-topicons-plus';;
+		debian) _pkg_manager_sys 'gnome-shell-extension-top-icons-plus';;
 		*) _topicons_plus_github;;
 	esac
 }
@@ -130,5 +130,5 @@ function _topicons_plus()
 #=============================================================#
 function _gnome_tweaks()
 {
-	_package_man_distro 'gnome-tweaks'
+	_pkg_manager_sys 'gnome-tweaks'
 }

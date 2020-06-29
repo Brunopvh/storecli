@@ -13,7 +13,7 @@ _ubuntu_msttcorefonts()
 	local url_msttcorefonts='http://ftp.us.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb'
 	local path_file="$DirDownloads/$(basename $url_msttcorefonts)"
 
-	_dow "$url_msttcorefonts" "$path_file" || return 1
+	__download__ "$url_msttcorefonts" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
@@ -46,7 +46,7 @@ _libreoffice_appimage()
 	local path_file="$DirDownloads/$(basename $url)"
 	local hash_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e83c3ef1e6'
 
-	_dow "$url" "$path_file" || return 1
+	__download__ "$url" "$path_file" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0

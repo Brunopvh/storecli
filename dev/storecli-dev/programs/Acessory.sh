@@ -21,7 +21,7 @@ _etcher_archlinux()
 	url_snapshot='https://aur.archlinux.org/cgit/aur.git/snapshot/balena-etcher.tar.gz'
 	path_file="$DirDownloads/etcher_archlinux.tar.gz"
 	
-	_dow "$url_snapshot" "$path_file" || return 1
+	___download__ "$url_snapshot" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	_unpack "$path_file" || return 1
 	
@@ -49,7 +49,7 @@ _etcher_appimage()
 	local url='https://github.com/balena-io/etcher/releases/download/v1.5.99/balenaEtcher-1.5.99-x64.AppImage'
 	local path_file="$DirDownloads/$(basename $url)"
 
-	_dow "$url" "$path_file" || return 1
+	__download__ "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	
 	cp "$path_file" "${destinationFilesEtcher[file_appimage]}"
@@ -140,15 +140,15 @@ _veracrypt()
 
 	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
 	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
-	local vc_url_dow=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
-	local vc_url_sig="${vc_url_dow}.sig"
+	local vc_url__download__=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
+	local vc_url_sig="${vc_url__download__}.sig"
 
-	local path_file="$DirDownloads/$(basename $vc_url_dow)"
+	local path_file="$DirDownloads/$(basename $vc_url__download__)"
 	local path_sig="${path_file}.sig"
 	
 
-	_dow "$vc_url_sig" "$path_sig" || return 1
-	_dow "$vc_url_dow" "$path_file" || return 1
+	__download__ "$vc_url_sig" "$path_sig" || return 1
+	__download__ "$vc_url__download__" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -158,7 +158,7 @@ _veracrypt()
 
 	_green "Importando key [https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc]"
 	curl -sSL 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' -o - | gpg --import
-	_verify_signature "$path_sig" "$path_file" || return 1
+	__gpg__ --verify "$path_sig" "$path_file" || return 1
 	_unpack "$path_file" || return 1
 
 	cd "$DirUnpack"

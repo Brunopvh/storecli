@@ -27,18 +27,18 @@ function _ohmybash()
 
 	# Perguntar se o usuário deseja realmente instalar o pacote caso não exista
 	# o argumento '-y' ou --yes.
-	if [[ -z "$install_yes" ]]; then
+	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar o pacote ohmybash" || return 0
 	fi
 
 	# Download do instalador e dos temas para OhMybash
 	if [[ -f "$ohmybash_installer" ]]; then rm "$ohmybash_installer"; fi
-	_dow "$url_installer" "$ohmybash_installer" || return 1
-	_dow "$ohmybash_master" "$path_file" || return 1
+	__download__ "$url_installer" "$ohmybash_installer" || return 1
+	__download__ "$ohmybash_master" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
@@ -48,7 +48,7 @@ function _ohmybash()
 	_unpack "$path_file" || return 1
 	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
 	mkdir -p "$HOME/.bash/themes"
-	cp -R -u "$Dir_Unpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
+	cp -R -u "$DirUnpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
 	
 	_YESNO "Gostaria de habilitar um tema para ohmybash" || return 1
 
@@ -93,11 +93,11 @@ function _ohmyzsh()
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
 
-	if ! _WHICH 'zsh'; then
+	if ! is_executable 'zsh'; then
 		yellow "Necessário instalar shell [zsh]"	
 	fi
 
-	_package_man_distro zsh
+	_pkg_manager_sys zsh
 	yellow "Instalando ohmyzsh"
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
 }
@@ -108,7 +108,7 @@ function _ohmyzsh()
 function _papirus_debian()
 {
 	# sudo apt install libreoffice-style-papirus
-	_package_man_distro 'papirus-icon-theme'
+	_pkg_manager_sys 'papirus-icon-theme'
 }
 
 
@@ -123,11 +123,11 @@ function _papirus_github()
 	local url_papirus_master="$github/PapirusDevelopmentTeam/papirus-icon-theme/archive/master.tar.gz"
 	local path_file="$Dir_Downloads/papirus.tar.gz"
 
-	_dow "$url_papirus_master" "$path_file" || return 1
+	__download__ "$url_papirus_master" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
@@ -135,14 +135,14 @@ function _papirus_github()
 	# de informações sobre o tema que está no módulo 'Arrays.sh'.
 	for dir in "${array_papirus_dirs[@]}"; do
 		if [[ -d "$dir" ]]; then
-			_INFO 'pkg_are_instaled' 'papirus'
+			_show_info 'pkg_are_instaled' 'papirus'
 			return 0
 			break
 		fi
 	done
 
 	_unpack "$path_file" || return 1
-	cd "$Dir_Unpack"
+	cd "$DirUnpack"
 	mv  $(ls -d papirus-*) papirus
 	cd papirus
 	green "Instalando Papirus-Dark"
@@ -159,9 +159,9 @@ function _papirus_github()
 	
 	for dir in "${array_papirus_dirs[@]}"; do
 		if [[ -d "$dir" ]]; then
-			_INFO 'pkg_sucess' "$dir"
+			_show_info 'SuccessInstalation' "$dir"
 		else
-			_INFO 'pkg_instalation_failed' "$dir"
+			_show_info 'InstalationFailed' "$dir"
 		fi
 	done
 }
@@ -200,11 +200,11 @@ function _sierra()
 	local url_sierra='https://github.com/vinceliuice/Sierra-gtk-theme/archive/master.tar.gz'
 	local path_file="$Dir_Downloads/sierra_gtk_theme.tar.gz"
 
-	_dow "$url_sierra" "$path_file" || return 1
+	__download__ "$url_sierra" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$download_only" == 'True' ]]; then
-		_INFO 'download_only' "$path_file"
+	if [[ "$DownloadOnly" == 'True' ]]; then
+		_show_info 'DownloadOnly' "$path_file"
 		return 0 
 	fi
 
@@ -212,19 +212,19 @@ function _sierra()
 
 	case "$os_id" in
 		fedora) 
-				_package_man_distro 'gtk-murrine-engine' 'gtk2-engines'
+				_pkg_manager_sys 'gtk-murrine-engine' 'gtk2-engines'
 				;;
 
 		arch) 
-				_package_man_distro 'gtk-engine-murrine' 'gtk-engines'
+				_pkg_manager_sys 'gtk-engine-murrine' 'gtk-engines'
 				;;
 
 		debian|ubuntu|linuxmint) 
-				_package_man_distro 'gtk2-engines-murrine' 'gtk2-engines-pixbuf'
+				_pkg_manager_sys 'gtk2-engines-murrine' 'gtk2-engines-pixbuf'
 				;;
 	esac
 
-	cd "$Dir_Unpack"
+	cd "$DirUnpack"
 	mv $(ls -d Sierra*) sierra_theme 
 	cd sierra_theme
 	chmod +x install.sh

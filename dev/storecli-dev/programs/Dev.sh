@@ -16,7 +16,7 @@ _android_sdktools()
 	local SDKlocation="$HOME/Android/Sdk"
 
 	# Baixar skdtools.
-	_dow "$url_sdktools" "$path_sdktools"
+	__download__ "$url_sdktools" "$path_sdktools"
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -30,12 +30,12 @@ _android_studio_zip()
 	local hash_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
 	local path_file="$DirDownloads/$(basename $url)"
 
-	_dow "$url" "$path_file" || return 1
+	__download__ "$url" "$path_file" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
-	_check_sum "$path_file" "$hash_studio" || return 1
+	__shasum__ "$path_file" "$hash_studio" || return 1
 	_unpack "$path_file" || return 1
 
 	_white "Instalando android studio em ~/.local/bin"
@@ -261,7 +261,7 @@ _pycharm()
 	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
 	
-	_dow "$url_pycharm" "$path_file" || return 1
+	__download__ "$url_pycharm" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -269,7 +269,7 @@ _pycharm()
 	# Já instalado.
 	is_executable 'pycharm' && _show_info 'PkgInstalled' && return 0
 
-	_check_sum "$path_file" "$hash_pycharm" || return 1
+	__shasum__ "$path_file" "$hash_pycharm" || return 1
 	_unpack "$path_file" || return 1
 
 	cd "$DirUnpack" 
@@ -317,7 +317,7 @@ _sublime_text()
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
 	path_file="$DirDownloads/$(basename $sublime_url)"
 
-	_dow "$sublime_url" "$path_file" || return 1
+	__download__ "$sublime_url" "$path_file" || return 1
 	
 	# Somente baixar
 	if [[ "$DownloadOnly" == 'True' ]]; then
@@ -365,7 +365,7 @@ _vscode_package_deb()
 {
 	local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
 	local path_file="$DirDownloads/vscode-amd64.deb"
-	_dow "$url_code_debian" "$path_file" || return 1
+	__download__ "$url_code_debian" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -379,7 +379,7 @@ _vscode_tarfile()
 	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
 	local path_file="$DirDownloads/vscode.tar.gz"
 
-	_dow "$url_vscode_tar" "$path_file"
+	__download__ "$url_vscode_tar" "$path_file"
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -438,7 +438,7 @@ _vscode()
 #=============================================================#
 _Dev_All()
 {
-	if [[ -z "$install_yes" ]]; then
+	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
 	fi
 	
