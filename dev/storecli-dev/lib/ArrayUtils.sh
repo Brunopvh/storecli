@@ -166,7 +166,6 @@ programs_acessory=(
 programs_development=(
 	'android-studio'
 	codeblocks
-	java
 	pycharm
 	'sublime-text'
 	vim

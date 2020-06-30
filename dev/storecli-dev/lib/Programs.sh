@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
 
+github='https://github.com'
+
 _etcher_ubuntu()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
@@ -50,7 +52,7 @@ _etcher_appimage()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	
 	cp "$path_file" "${destinationFilesEtcher[file_appimage]}"
-	"${destinationFilesEtcher[file_appimage]}"
+	chmod +x "${destinationFilesEtcher[file_appimage]}"
 	
 	_show_info 'AddFileDesktop'
 	
@@ -131,16 +133,18 @@ _veracrypt()
 		return 1
 	fi
 
+	_yellow "Obtendo url de download aguarde"
 	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
 	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
 	local vc_url_download=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
+	local vc_url_ascpub='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
 	local vc_url_sig="${vc_url_download}.sig"
-	local path_file="$DirDownloads/$(basename $vc_url_download)"
-	local path_sig="${path_file}.sig"
+	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
+	local veracryptSigFile="${veracryptTarFile}.sig"
 
-	__download__ "$vc_url_sig" "$path_sig" || return 1
-	__download__ "$vc_url_download" "$path_file" || return 1
-
+	__download__ "$vc_url_download" "$veracryptTarFile" || return 1
+	__download__ "$vc_url_sig" "$veracryptSigFile" || return 1
+	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
@@ -148,19 +152,18 @@ _veracrypt()
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 
 	printf "%s" "[>] Importando key: "
-	if curl -sSL 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' -o - | gpg --import; then
+	if wget -q "$vc_url_ascpub" -O- | gpg --import 1> /dev/null 2> /dev/null; then
 		_syellow "OK"
 	else
 		_sred "FALHA"
 		return 1
 	fi
 
-	__gpg__ --verify "$path_sig" "$path_file" || return 1
-	_unpack "$path_file" || return 1
-	cd "$DirUnpack"
-	mv $(ls veracrypt*setup-gui-x64) "$DirUnpack/veracryptx64" 1> /dev/null
-	chmod +x "$DirUnpack/veracryptx64" 
-	xterm -title 'Instalando veracrypt' "$DirUnpack/veracryptx64" 
+	__gpg__ --verify "$veracryptSigFile" "$veracryptTarFile" || return 1
+	_unpack "$veracryptTarFile" || return 1
+	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
+	chmod +x "$DirTemp"/veracrypt-setupx64
+	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$os_id" in
 		arch) _green "Instalando o pacote: gtk2"; _pkg_manager_sys gtk2;;
@@ -450,7 +453,6 @@ _android_studio_debian()
 	_green "Instalando: openjdk-11-jdk"
 	_pkg_manager_sys 'openjdk-11-jdk'
 
-	#-----------------------------------------------------#
 	for c in "${debianBusterRequeriments[@]}"; do
 		_msg "Instalando: $c"
 		_pkg_manager_sys "$c"
@@ -577,7 +579,6 @@ _codeblocks_fedora()
 	# sudo dnf groupinstall "Development Tools" "Development Libraries" 
 }
 
-
 _codeblocks_archlinux()
 {
 	# https://www.archlinux.org/packages/community/x86_64/codeblocks/
@@ -614,7 +615,7 @@ _pycharm()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Já instalado.
-	is_executable 'pycharm' && _show_info 'PkgInstalled' && return 0
+	is_executable 'pycharm' && _show_info 'PkgInstalled' 'pycharm' && return 0
 
 	__shasum__ "$path_file" "$hash_pycharm" || return 1
 	_unpack "$path_file" || return 1
@@ -654,7 +655,6 @@ _pycharm()
 	fi
 }
 
-
 _sublime_text()
 {
 	sublime_pag='https://www.sublimetext.com/3'
@@ -665,7 +665,7 @@ _sublime_text()
 	__download__ "$sublime_url" "$path_file" || return 1
 	
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
 	# Já instalado.
 	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
@@ -766,7 +766,6 @@ _vscode()
 	fi
 }
 
-
 _codecs_tumbleweed()
 {
 	# https://software.opensuse.org/download/package?package=opensuse-codecs-installer&project=multimedia%3Aapps
@@ -805,7 +804,6 @@ _codecs_tumbleweed()
 	done
 }
 
-
 _codecs_opensuse_leap()
 {
 	if [[ "$os_version" != '15.1' ]]; then
@@ -833,13 +831,11 @@ _codecs_opensuse_leap()
 
 }
 
-
 _codecs_ubuntu()
 {
 	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
 	_pkg_manager_sys 'ubuntu-restricted-extras'
 }
-
 
 _codecs_debian()
 {
@@ -933,7 +929,6 @@ _codecs_fedora()
 	done
 }
 
-
 _codecs_arch()
 {
 	#
@@ -981,7 +976,6 @@ _codecs_arch()
 	
 }
 
-
 _codecs()
 {
 case "$os_id" in
@@ -997,18 +991,15 @@ case "$os_id" in
 esac
 }
 
-
 _celluloid()
 {
 	_pkg_manager_sys 'celluloid'
 }
 
-
 _cinema()
 {
 	_pkg_manager_sys 'cinema'
 }
-
 
 _gnome_mpv()
 {
@@ -1021,18 +1012,15 @@ _gnome_mpv()
 	fi
 }
 
-
 _parole()
 {
 	_pkg_manager_sys parole	
 }
 
-
 _smplayer()
 {
 	_pkg_manager_sys smplayer
 }
-
 
 _spotify_debian()
 {
@@ -1060,7 +1048,7 @@ _spotify_archlinux()
 	local spotify_url='https://repository-origin.spotify.com/pool/non-free/s/spotify-client'
 	local spotify_file_server=$(curl -sSL "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
 	local Spotify_Url_Server="$spotify_url/$spotify_file_server"
-	local path_file="$DirDownloads/$spotify_file_server"
+	local path_file="$DirDownloads/spotify-client-amd64.deb"
 	
 	local array_spotify_requeriments=( 
 		gconf 
@@ -1133,11 +1121,9 @@ _spotify()
 	
 }
 
-
 _totem(){
 	_pkg_manager_sys totem
 }
-
 
 _vlc_fedora()
 {
@@ -1161,13 +1147,10 @@ _vlc()
 	fi
 }
 
-
-
 _atril()
 {
 	_pkg_manager_sys atril
 }
-
 
 _ubuntu_msttcorefonts()
 {
@@ -1196,7 +1179,6 @@ _fontes_microsoft()
 	esac
 }
 
-
 _libreoffice_appimage()
 {
 	# https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage
@@ -1210,7 +1192,7 @@ _libreoffice_appimage()
 	__download__ "$url" "$path_file" || return 1
 	
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Já instalado.
 	is_executable 'libreoffice-appimage' && _show_info 'PkgInstalled' && return 0
@@ -1247,8 +1229,6 @@ _libreoffice_appimage()
 	fi
 }
 
-
-
 _libreoffice_ptbr(){
 	# Verificar qual o idioma do usuário atual
 	local lang=$(printenv | grep -m 1 '^LANG=' | sed 's/.*=//g')
@@ -1266,7 +1246,6 @@ _libreoffice_ptbr(){
 	esac
 }
 
-
 _libreoffice()
 {
 	case "$os_id" in 
@@ -1280,7 +1259,6 @@ _libreoffice()
 
 	_libreoffice_ptbr
 }
-
 
 _chromium_lang()
 {
@@ -1299,7 +1277,6 @@ _chromium_lang()
 	esac
 }
 
-
 _chromium()
 {
 	case "$os_id" in
@@ -1315,9 +1292,6 @@ _chromium()
 	_chromium_lang # Instalar pacote de idioma ptbr.
 }
 
-#=====================================================#
-# Firefox
-#=====================================================#
 _firefox_lang()
 {
 	# Verificar se o idioma da sessão e pt_br e em seguida instalar o
@@ -1346,9 +1320,6 @@ _firefox()
 	_firefox_lang
 }
 
-#=====================================================#
-# Google chrome
-#=====================================================#
 _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
@@ -1399,7 +1370,6 @@ _google_chrome_tumbleweed()
 	_pkg_manager_sys 'google-chrome-stable'
 }
 
-
 _google_chrome_archlinux()
 {
 	# Dependências opcionais para google-chrome
@@ -1431,7 +1401,6 @@ _google_chrome_archlinux()
 	_PACMAN -U --noconfirm $(ls google*.tar.*)
 }
 
-
 _google_chrome()
 {
 	case "$os_id" in
@@ -1451,9 +1420,6 @@ _google_chrome()
 	fi
 }
 
-#=============================================================#
-# opera
-#=============================================================#
 _opera_stable_debian()
 {
 	local opera_repo='deb [arch=amd64] https://deb.opera.com/opera-stable/ stable non-free'
@@ -1474,8 +1440,6 @@ _opera_stable_debian()
 	_APT update
 	_pkg_manager_sys 'opera-stable' || return 1	
 }
-
-#-----------------------------------------------------#
 
 _opera_stable_fedora()
 {
@@ -1498,8 +1462,6 @@ _opera_stable_fedora()
 
 	_pkg_manager_sys 'opera-stable'
 }
-
-#-----------------------------------------------------#
 
 _opera_stable_suse()
 {
@@ -1524,8 +1486,6 @@ _opera_stable_suse()
 	_pkg_manager_sys 'opera-stable'  || return 1
 }
 
-#-----------------------------------------------------#
-
 _opera_stable()
 {
 case "$os_id" in
@@ -1543,10 +1503,6 @@ esac
 	fi
 }
 
-
-#=============================================================#
-# TorBrowser
-#=============================================================#
 _torbrowser()
 {
 	# Url do script de instalação do torbrowser.
@@ -1564,11 +1520,9 @@ _torbrowser()
 	fi
 }
 
-
 _megasync_opensuse_tumbleweed()
 {
 	# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
-
 	_white "Adicionando key [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key]"
 	sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key || return 1
 	
@@ -1579,7 +1533,6 @@ _megasync_opensuse_tumbleweed()
 	_white "Instalando megasync"
 	_pkg_manager_sys megasync || return 1	
 }
-
 
 _megasync_debian()
 {
@@ -1640,8 +1593,6 @@ _megasync_ubuntu()
 	_pkg_manager_sys 'libc-ares2' libmediainfo0v5 
 	_pkg_manager_sys megasync
 }
-
-
 
 _megasync_fedora()
 {
@@ -1731,7 +1682,6 @@ _megasync()
 	fi
 }
 
-
 _tor_debian()
 {
 	local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
@@ -1770,8 +1720,6 @@ _tor_fedora()
 	_pkg_manager_sys proxychains || return 1
 }
 
-
-
 _proxychains()
 {
 	case "$os_id" in
@@ -1782,13 +1730,10 @@ _proxychains()
 	esac
 }
 
-
 _qbittorrent()
 {
 	_pkg_manager_sys qbittorrent || return 1
 }
-
-
 
 _skype_debian()
 {
@@ -1802,7 +1747,6 @@ _skype_debian()
 	_DPKG --install "$path_file" || return 1
 }
 
-
 _skype()
 {
 	case "$os_id" in
@@ -1810,7 +1754,6 @@ _skype()
 		*) _show_info 'ProgramNotFound' 'skype';;
 	esac
 }
-
 
 _install_teamviewer_debian()
 {
@@ -1852,7 +1795,6 @@ _install_teamviewer_debian()
 	done
 	_DPKG --install "$path_file" || _BROKE # Remover pacotes quebrados.
 }
-
 
 _install_teamviewer_fedora()
 {
@@ -2092,16 +2034,11 @@ _youtube_dl()
 		_red "Falha"
 	fi
 
-
 	# Gpg
 	__gpg__ --verify "$path_file_sig" "$path_file" || return 1
 	
-	
 	# Já instalado.
-	is_executable "$directoryUSERbin/youtube-dl" && {
-		_show_info 'PkgInstalled' "youtube-dl" 
-		return 0
-	}
+	is_executable "$directoryUSERbin/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
 
 	_white "Instalando youtube-dl em ~/.local/bin"
 	cp -u "$path_file" "$directoryUSERbin"/youtube-dl
@@ -2115,8 +2052,6 @@ _youtube_dl()
 		return 1
 	fi
 }
-
-
 
 _python_twodict_github()
 {
@@ -2201,7 +2136,7 @@ _youtube_dlgui_compile()
 	__download__ "$url_ytdl_gui" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
 	_unpack "$path_file" || return 1
 	cd "$DirUnpack"/youtube-dl-gui-master || return 1
@@ -2263,7 +2198,6 @@ _youtube_dlgui_ubuntu()
 	esac	
 }
 
-
 _youtube_dlgui_fedora()
 {
 	# https://fedora.pkgs.org/31/fedora-x86_64/python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm.html
@@ -2294,8 +2228,6 @@ _youtube_dlgui_fedora()
 	return 0
 }
 
-
-
 _youtube_dlgui_tumbleweed()
 {
 	# https://software.opensuse.org/download/package?package=youtube-dl-gui&project=openSUSE%3AFactory
@@ -2314,7 +2246,6 @@ _youtube_dlgui_tumbleweed()
 		return 1
 	fi
 }
-
 
 _youtube_dlgui_debian()
 {
@@ -2353,7 +2284,6 @@ _youtube_dlgui_freebsd()
 	return 0
 }
 
-
 _youtube_dlgui()
 {
 	case "$os_id" in
@@ -2374,7 +2304,6 @@ _youtube_dlgui()
 		return 1
 	fi
 }
-
 
 _bluetooth()
 {
@@ -2443,7 +2372,6 @@ _compactadores()
 		return 1
 	fi
 }
-
 
 _firmware()
 {
@@ -2524,7 +2452,6 @@ _peazip()
 		return 1
 	fi
 }
-
 
 _refind_zip()
 {
@@ -2686,8 +2613,6 @@ _virtualbox_extpack()
 	sudo usermod -a -G vboxusers $USER	
 }
 
-#-----------------------------------------------------#
-
 _virtualbox_fedora()
 {
 	local requeriments_vb_fedora=(
@@ -2763,7 +2688,7 @@ _virtualbox_debian()
 	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
 	
-	#_pkg_manager_sys libvpx6 
+	# _pkg_manager_sys libvpx6 
 	_pkg_manager_sys 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	_pkg_manager_sys linux-headers-$(uname -r)
 	
@@ -2778,7 +2703,6 @@ _virtualbox_debian()
 	_virtualbox_extpack
 }
 
-#-----------------------------------------------------#
 _virtualbox_archlinux()
 {
 	# https://sempreupdate.com.br/como-instalar-o-virtualbox-no-arch-linux/
@@ -2815,8 +2739,6 @@ _virtualbox_archlinux()
 	# Instalar o pacote ExtensionPack.
 	#_virtualbox_extpack 
 }
-
-#-----------------------------------------------------#
 
 _virtualbox_linux_run()
 {
@@ -2856,8 +2778,7 @@ _virtualbox_linux_run()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Obter a HASH da versão atual no que está no arquivo .check
-	# em seguida verificar a integridade do pacote usando o módulo
-	# CheckSum
+	# em seguida verificar a integridade do pacote.
 	vbox_sum=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
 	__shasum__ "$path_file" "$vbox_sum" || return 1
 	chmod +x "$path_file"
@@ -2866,9 +2787,6 @@ _virtualbox_linux_run()
 	sudo /sbin/vboxconfig
 	_virtualbox_extpack
 }
-
-#-----------------------------------------------------#
-
 
 _virtualbox()
 {
@@ -2879,10 +2797,6 @@ _virtualbox()
 		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	
 	esac
 }
-
-
-
-github='https://github.com'
 
 _ohmybash()
 {
@@ -2971,7 +2885,6 @@ _papirus_debian()
 	_pkg_manager_sys 'papirus-icon-theme'
 }
 
-
 _papirus_github()
 {
 	#------------------- Instruções para instalação ---------------------#
@@ -3012,7 +2925,6 @@ _papirus()
 		*) _papirus_github;;
 	esac
 }
-
 
 _sierra()
 {
@@ -3060,7 +2972,6 @@ _sierra()
 	./install.sh --color dark
 }
 
-
 _dashtodock_github()
 {
 	# https://micheleg.github.io/dash-to-dock/download.html
@@ -3093,9 +3004,6 @@ _dashtodock()
 	esac
 }
 
-#=============================================================#
-# Drive Menu
-#=============================================================#
 _drive_menu()
 {
 	case "$os_id" in
@@ -3104,9 +3012,6 @@ _drive_menu()
 	esac
 }
 
-#=============================================================#
-# Gnome Backgrounds
-#=============================================================#
 _gnome_backgrounds()
 {
 	case "$os_id" in 
@@ -3116,9 +3021,6 @@ _gnome_backgrounds()
 	esac
 }
 
-#=============================================================#
-# Top icons plus
-#=============================================================#
 _topicons_plus_github()
 {
 	# https://github.com/phocean/TopIcons-plus/archive/master.zip
@@ -3165,8 +3067,6 @@ _gnome_tweaks()
 	_pkg_manager_sys 'gnome-tweaks'
 }
 
-
-
 #=============================================================#
 # Instalar todos os pacotes da categória Sistema.
 #=============================================================#
@@ -3182,8 +3082,6 @@ _System_All()
 	_stacer
 	_virtualbox
 }
-
-
 
 #=============================================================#
 # Instalar todos os pacotes da categória internet.
@@ -3208,8 +3106,6 @@ _Internet_All()
     _youtube_dlgui
 }
 
-
-
 #=============================================================#
 # Instalar todos os pacotes da categória internet.
 #=============================================================#
@@ -3223,8 +3119,6 @@ _Browser_All()
     _opera_stable
     _torbrowser
 }
-
-
 
 #=============================================================#
 # Instalar todos os pacotes da categória Office.
@@ -3259,8 +3153,6 @@ _Midia_All()
 	_vlc
 }
 
-
-
 #=============================================================#
 # Instalar todos os pacotes da categória Desenvolvimento.
 #=============================================================#
@@ -3277,8 +3169,6 @@ _Dev_All()
     _vim
     _vscode
 }
-
-
 
 #=============================================================#
 # Instalar todos os pacotes da categória Acessorios.

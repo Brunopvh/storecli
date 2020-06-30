@@ -58,8 +58,7 @@ _uninstall_packages()
 {
 	[[ -z $1 ]] && return 1
 	while [[ $1 ]]; do
-		_space_text "Removendo" "$1"
-
+		
 		case "$1" in
 			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
