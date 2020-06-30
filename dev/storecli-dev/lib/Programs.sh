@@ -2684,7 +2684,6 @@ _stacer_appimage()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
 	cp -u "$path_file" "${destinationFilesStacer[file_appimage]}"
-	chmod a+x "${destinationFilesStacer[file_appimage]}"
 	
 	_show_info "AddFileDesktop"
 	echo '[Desktop Entry]' | tee "${destinationFilesStacer[file_desktop]}" 1> /dev/null
@@ -2700,6 +2699,9 @@ _stacer_appimage()
 		echo "Type=Application"
 		echo "Categories=Utility;System;"
 	} | tee -a "${destinationFilesStacer[file_desktop]}" 1> /dev/null
+
+	chmod a+x "${destinationFilesStacer[file_appimage]}"
+	chmod +rwx "${destinationFilesStacer[file_desktop]}"
 
 	_yellow "Criando atalho na Área de Trabalho"
 	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
@@ -2728,10 +2730,6 @@ _stacer()
 	esac
 }
 
-
-#=====================================================#
-# Vitualbox
-#=====================================================#
 
 _virtualbox_extpack()
 {
@@ -2820,10 +2818,9 @@ _virtualbox_debian()
 		bionic|tricia|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
-
 	
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	_white "Limpando o cache do (apt)"
+	_msg "Limpando o cache do (apt)"
 	_APT clean
 	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
@@ -2836,11 +2833,8 @@ _virtualbox_debian()
 	echo -ne "Adicionando repositório "
 	echo "$vbox_repo" | sudo tee "$vbox_file"
 	
-	# Atualizar o cache 'apt update' apartit da função _APT.
+	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
-	
-	# Dependências
-	echo "$space_line"
 	
 	#_pkg_manager_sys libvpx6 
 	_pkg_manager_sys 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
@@ -2877,9 +2871,8 @@ _virtualbox_archlinux()
 
 	for c in "${array_vb_archlinux[@]}"; do
 		_space_text "[+] Instalando" "$c"
-		if ! _pkg_manager_sys "$c"; then
-			_space_text "${C_red}[!]${CReset} Falha" "$c"
-		fi
+		_pkg_manager_sys "$c"
+		_space_text "${C_red}[!]${CReset} Falha" "$c"
 	done
 
 	# /etc/modules-load.d/virtualbox.conf
@@ -2920,14 +2913,12 @@ _virtualbox_linux_run()
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
 	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" <<< $(curl -sSL $vbox_pag))
 
-	# Filtrar o url do arquivo executável (.run) 
-	# e atribuir path para download.
+	# Filtrar o url do arquivo executável (.run) e atribuir path para download.
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
 	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
 	path_file="$DirDownloads/$(basename $vbox_url_run)"
 	
-	# Definir o url de download do arquivo com as hashs de seu
-	# destino de download
+	# Definir o url de download do arquivo com as hashs e seu destino de download.
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
 	vbox_path_file_hash="$DirDownloads/virtualbox_$vbox_version.check"
 
@@ -2966,10 +2957,6 @@ _virtualbox()
 
 github='https://github.com'
 
-
-#=====================================================#
-# OhMyBash
-#=====================================================#
 _ohmybash()
 {
 	# github_ohmy_bash="https://github.com/ohmybash/oh-my-bash.git"
@@ -2987,22 +2974,13 @@ _ohmybash()
 	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
 	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
 
-	# Perguntar se o usuário deseja realmente instalar o pacote caso não exista
-	# o argumento '-y' ou --yes.
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar o pacote ohmybash" || return 0
-	fi
-
 	# Download do instalador e dos temas para OhMybash
 	if [[ -f "$ohmybash_installer" ]]; then rm "$ohmybash_installer"; fi
 	__download__ "$url_installer" "$ohmybash_installer" || return 1
 	__download__ "$ohmybash_master" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	chmod +x "$ohmybash_installer" 
 	"$ohmybash_installer"
@@ -3033,7 +3011,7 @@ _ohmybash()
 		*) _red "Opção incorreta saindo"; return 1;;
 	esac
 
-	_white "Habilitando o tema $option para ohmybash"
+	_msg "Habilitando o tema $option para ohmybash"
 	case "$option" in
 		bakke) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
 		bobby) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
@@ -3046,15 +3024,11 @@ _ohmybash()
 	
 }
 
-#=====================================================#
-# ohmyzsh
-#=====================================================#
 _ohmyzsh()
 {
 	# sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
-
 	if ! is_executable 'zsh'; then
 		_yellow "Necessário instalar shell [zsh]"	
 	fi
@@ -3064,9 +3038,6 @@ _ohmyzsh()
 	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
 }
 
-#=====================================================#
-# Papirus
-#=====================================================#
 _papirus_debian()
 {
 	# sudo apt install libreoffice-style-papirus
@@ -3086,8 +3057,6 @@ _papirus_github()
 	local path_file="$DirDownloads/papirus.tar.gz"
 
 	__download__ "$url_papirus_master" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
 	_unpack "$path_file" || return 1
@@ -3117,9 +3086,6 @@ _papirus()
 	esac
 }
 
-#=====================================================#
-# Tema Sierra
-#=====================================================#
 
 _sierra()
 {
@@ -3138,20 +3104,9 @@ _sierra()
     # sudo zypper in sierra-gtk-theme
 	#----------------------------------------------------------------------#
 	#
-	
 	local github_sierra="$github/vinceliuice/Sierra-gtk-theme"
 	local url_sierra='https://github.com/vinceliuice/Sierra-gtk-theme/archive/master.tar.gz'
 	local path_file="$DirDownloads/sierra_gtk_theme.tar.gz"
-
-	__download__ "$url_sierra" "$path_file" || return 1
-
-	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
-
-	_unpack "$path_file" || return 1
 
 	case "$os_id" in
 		fedora) 
@@ -3167,6 +3122,10 @@ _sierra()
 				;;
 	esac
 
+	__download__ "$url_sierra" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+
+	_unpack "$path_file" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d Sierra*) sierra_theme 
 	cd sierra_theme
@@ -3175,32 +3134,24 @@ _sierra()
 }
 
 
-
-
 _dashtodock_github()
 {
 	# https://micheleg.github.io/dash-to-dock/download.html
 	#
-
 	local url='https://github.com/micheleg/dash-to-dock/archive/master.tar.gz'
 	local url_repo='https://github.com/micheleg/dash-to-dock.git'
 	local path_file="$DirDownloads/dash_to_dock.tar.gz"
 
 	_gitclone "$url_repo" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
-
-	# Instalar o pacote make
 	_pkg_manager_sys make
-
 	cd "$DirTemp"/dash-to-dock
 	make
 	make install
 	#sudo make install 
 
 	if _YESNO "Deseja abrir a jenela de configuração gnome-shell-extension-prefs"; then
-		# gnome-shell-extension-prefs dash-to-dock@micxgx.gmail.com
 		gnome-shell-extension-prefs
 	fi
 
@@ -3251,12 +3202,7 @@ _topicons_plus_github()
 	local path_file="$DirDownloads/topicons_plus.tar.gz"
 
 	__download__ "$url" "$path_file" || return 1
-
-	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	_unpack "$path_file" || return 1
 	_pkg_manager_sys make

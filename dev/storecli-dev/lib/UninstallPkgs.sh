@@ -28,7 +28,15 @@ __delete_files__()
 #=============================================================#
 # Removção desinstalação dos pacotes
 #=============================================================#
-_remove_vscode()
+_uninstall_etcher()
+{
+	case "$os_id" in
+		debian|ubuntu|linuxmint) _APT remove etcher;;
+		*) __delete_files__ "${destinationFilesEtcher[@]}";;
+	esac
+}
+
+_uninstall_vscode()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _APT remove code;;
@@ -36,13 +44,8 @@ _remove_vscode()
 	esac
 }
 
-_remove_teamviewer()
-{
-	is_executable 'teamviewer' || { 
-		_red 'Teamviewer não está instalado'
-		return 0
-	}
-	
+_uninstall_teamviewer()
+{	
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _APT remove teamviewer;;
 		fedora) _DNF remove teamviewer;;
@@ -51,20 +54,20 @@ _remove_teamviewer()
 
 }
 
-_remove_packages()
+_uninstall_packages()
 {
 	[[ -z $1 ]] && return 1
 	while [[ $1 ]]; do
 		_space_text "Removendo" "$1"
 
 		case "$1" in
-			etcher) __delete_files__ "${destinationFilesEtcher[@]}";;
+			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
 			'android-studio') __delete_files__ "${destinationFilesAndroidStudio[@]}";;
 			pycharm) __delete_files__ "${destinationFilesPycharm[@]}";;
 			'sublime-text') __delete_files__ "${destinationFilesSublime[@]}";;
-			vscode) _remove_vscode;;
+			vscode) _uninstall_vscode;;
 
 			'libreoffice-appimage') __delete_files__ "${destinationFilesLibreofficeAppimage[@]}";;
 
@@ -72,7 +75,7 @@ _remove_packages()
 
 			telegram) __delete_files__ "${destinationFilesTelegram[@]}";;
 			tixati) __delete_files__ "${destinationFilesTixati[@]}";;
-			teamviewer) _remove_teamviewer;;
+			teamviewer) _uninstall_teamviewer;;
 			youtube-dl) __delete_files__ "$directoryUSERbin/youtube-dl";;
 	
 			peazip) __delete_files__ "${destinationFilesPeazip[@]}";;

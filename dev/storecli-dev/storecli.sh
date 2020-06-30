@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_29_rev2'
+__version__='2020_06_30_rev2'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -834,7 +834,7 @@ argument_parser()
 			-s|--self-update) ;;
 			-y|--yes) ;;
 			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
-			remove) shift; _remove_packages "$@"; return "$?";;
+			remove) shift; _uninstall_packages "$@"; return "$?";;
 			*) _red "(argument_parser) argumento inválido: $1"; return 1; break;;
 		esac
 		shift
