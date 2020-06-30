@@ -14,12 +14,8 @@ Passo 1 - instalar o curl:
      ArchLinux
      sudo pacman -S curl
      
-     GhostBSD/FreeBSD
-     
-     # pkg install -y curl
      
 Passo 2 executar o script de instalação via linha de comando.
-
 
 sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 
@@ -32,3 +28,5 @@ storecli --list           => Lista pacotes disponíveis para instalação.
 storecli install <pacote> => Instala um pacote
 
 storecli remove <pacote> => Remove um pacote
+
+storecli                 => Abre o GUI gráfico

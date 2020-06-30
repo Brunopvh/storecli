@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 #
+#
+#
 
+#=============================================================#
 
 _loop_pid()
 {
@@ -26,7 +29,7 @@ _loop_pid()
 		num_char="$(($num_char+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CSReset} [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${Yellow}finalizado${Reset} [${Char}]"	
 }
 
 
@@ -39,26 +42,14 @@ _DPKG()
 	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
 	Pid_Python_Aptd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(aptd)' | awk '{print $2}')
 
-	while [[ ! -z $Pid_Apt_Install ]]; do
-		_loop_pid "$Pid_Apt_Install"
-		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-	done
-
-
-	while [[ ! -z $Pid_Apt_Systemd ]]; do 
-		_loop_pid "$Pid_Apt_Systemd"
-		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-	done
-	
-	while [[ ! -z $Pid_Dpkg_Install ]]; do 
-		_loop_pid "$Pid_Dpkg_Install"
-		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-	done
+	[[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
+	[[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
+	[[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
 
 	if sudo dpkg "$@"; then
 		return 0
 	else
-		_red "(dpkg) retornou erro"
+		red "Gerenciador de pacotes [dpkg] retornou erro"
 		return 1
 	fi
 }
@@ -102,8 +93,8 @@ _APT()
 	if sudo apt "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [apt] retornou erro"
-		_red "Linha de comando: sudo apt $@"
+		red "Gerenciador de pacotes [apt] retornou erro"
+		red "Linha de comando: sudo apt $@"
 		return 1
 	fi
 }
@@ -114,24 +105,24 @@ _APT()
 _BROKE()
 {
 	if [[ ! -x $(command -v apt 2> /dev/null) ]]; then
-		_yellow "Esta opção só está disponivel para sistemas baseados em Debian"
+		yellow "Esta opção só está disponivel para sistemas baseados em Debian"
 		return 0
 	fi
 
 	
-	_yellow "Executando: dpkg --configure -a"
+	yellow "Executando: dpkg --configure -a"
 	_DPKG --configure -a
 
-	_yellow "Executando: apt clean"
+	yellow "Executando: apt clean"
 	_APT clean
 
-	_yellow "Executando: apt remove"
+	yellow "Executando: apt remove"
 	_APT remove
 	
-	_yellow "Executando: apt install -y -f"
+	yellow "Executando: apt install -y -f"
 	_APT install -y -f
 
-	_yellow "Executando: apt --fix-broken install"
+	yellow "Executando: apt --fix-broken install"
 	_APT --fix-broken install
 	
 	# sudo apt install --yes --force-yes -f 
@@ -143,7 +134,7 @@ _RPM()
 	if sudo rpm "$@"; then
 		return 0
 	else
-		_red "_RPM: Erro"
+		red "[_RPM] retornou erro"
 		return 1
 	fi
 }
@@ -153,7 +144,7 @@ _DNF()
 	if sudo dnf "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [dnf] retornou erro"
+		red "Gerenciador de pacotes [dnf] retornou erro"
 		return 1
 	fi
 }
@@ -172,7 +163,7 @@ _ZYPPER()
 	if sudo zypper "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [zypper] retornou erro"
+		red "Gerenciador de pacotes [zypper] retornou erro"
 		return 1
 	fi
 }
@@ -189,7 +180,7 @@ _PACMAN()
 	if sudo pacman "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [pacman] retornou erro"
+		red "Gerenciador de pacotes [pacman] retornou erro"
 		return 1
 	fi
 }
@@ -203,7 +194,7 @@ _PKG()
 	if sudo pkg "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [pkg] retornou erro"
+		red "Gerenciador de pacotes [pkg] retornou erro"
 		return 1
 	fi
 }
@@ -213,95 +204,122 @@ _FLATPAK()
 	if flatpak "$@"; then
 		return 0
 	else
-		_red "Falha: flatpak $@"
+		red "Falha: flatpak $@"
 		return 1
 	fi
 }
 
-_pkg_manager_sys()
+#=============================================================#
+
+_package_man_distro_remove()
+{
+	# Somente remover, o argumento 'remove' deve ser passado para a função.
+	if [[ -f '/etc/debian_version' ]]; then
+		if _APT "$@"; then
+			return 0
+		else
+			return 1
+		fi
+	elif [[ "$os_id" == 'fedora' ]]; then
+		if _DNF "$@"; then
+			return 0
+		else
+			return 1
+		fi
+	fi
+}
+
+#=============================================================#
+
+_package_man_distro()
 {
 	# Função para instalar os pacotes via linha de comando de
 	# acordo com cada sistema.
 
-	#=============================================================#
+	if [[ "$1" == 'remove' ]]; then
+		_package_man_distro_remove "$@"
+		return 0
+	fi
+
+	#---------------------------------------------------------#
 	# Somente baixar os pacotes caso receber '-d' ou '--downloadonly'
 	# na linha de comando.
-	#=============================================================#
-	if [[ "$DownloadOnly" == 'True' ]] && [[ -f '/etc/debian_version' ]]; then # Debian
+	#---------------------------------------------------------#
+	if [[ "$download_only" == 'True' ]] && [[ -f '/etc/debian_version' ]]; then
 		if _APT install --download-only --yes "$@"; then
-			__yellow 'Executado em modo somente baixar' "$@"
+			_INFO 'download_only' "$@"
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$DownloadOnly" == 'True' ]] && [[ "$os_id" == 'fedora' ]]; then # Fedora
+	elif [[ "$download_only" == 'True' ]] && [[ "$os_id" == 'fedora' ]]; then
 		if _DNF install --downloadonly -y "$@"; then
-			__yellow 'Executado em modo somente baixar' "$@"
+			_INFO 'download_only' "$@"
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$DownloadOnly" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
+	elif [[ "$download_only" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then
 		if _ZYPPER download "$@"; then
-			__yellow 'Executado em modo somente baixar' "$@"
+			_INFO 'download_only' "$@"
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$DownloadOnly" == 'True' ]] && [[ "$os_id" == 'arch' ]]; then # ArchLinux
-		if _PACMAN -S --noconfirm --needed --downloadonly "$@"; then
-			__yellow 'Executado em modo somente baixar' "$@"
+	elif [[ "$download_only" == 'True' ]] && [[ "$os_id" == 'arch' ]]; then
+		if _PACMAN -S --downloadonly "$@"; then
+			_INFO 'download_only' "$@"
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$DownloadOnly" == 'True' ]]; then
-		__yellow 'Executado em modo somente baixar' "$@"
+	elif [[ "$download_only" == 'True' ]]; then
+		_INFO 'pkg_not_found' "$@"
 		return 1
 	fi
 
-	#=============================================================#
+	#---------------------------------------------------------#
 	# Assumir sim/yes para indagações caso receber '-y' ou '--yes'
 	# na linha de comando.
-	#=============================================================#
-	if [[ "$AssumeYes" == 'True' ]] && [[ -f '/etc/debian_version' ]]; then # Debian
+	#---------------------------------------------------------#
+	if [[ "$install_yes" == 'True' ]] && [[ -f '/etc/debian_version' ]]; then
 		if _APT install --yes "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$AssumeYes" == 'True' ]] && [[ "$os_id" == 'fedora' ]]; then # Fedora
+	elif [[ "$install_yes" == 'True' ]] && [[ "$os_id" == 'fedora' ]]; then
 		if _DNF install -y "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$AssumeYes" == 'True' ]] && [[ "$os_id" == 'arch' ]]; then # ArchLinux
+	elif [[ "$install_yes" == 'True' ]] && [[ "$os_id" == 'arch' ]]; then
 		if _PACMAN -S --noconfirm --needed "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$AssumeYes" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then # OpenSuse
+	elif [[ "$install_yes" == 'True' ]] && [[ -x $(which zypper 2> /dev/null) ]]; then
 		if _ZYPPER install -y "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$AssumeYes" == 'True' ]] && [[ -x $(which pkg 2> /dev/null) ]]; then # FreeBSD
+	elif [[ "$install_yes" == 'True' ]] && [[ -x $(which pkg 2> /dev/null) ]]; then
 		if _PKG install -y "$@"; then
 			return 0
 		else
 			return 1
 		fi
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		__red "Seu sistema não é suportado"
+	elif [[ "$install_yes" == 'True' ]]; then
+		_INFO 'pkg_not_found' "$@"
 		return 1
 	fi
 	
-	#=============================================================#
-	# Instalação normal, caso não seja passado os argumentos -y ou -d
-	#=============================================================#
+	#---------------------------------------------------------#
+	# Instalação normal.
+	#---------------------------------------------------------#
 	if [[ -f '/etc/debian_version' ]]; then           # Debia/apt
 		if _APT install "$@"; then
 			return 0
@@ -337,3 +355,5 @@ _pkg_manager_sys()
 		return 1
 	fi
 }
+
+

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_30_rev2'
+__version__='2020_06_30_rev5'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -157,7 +157,6 @@ space_line='-------------------------------------------------------'
 
 "$scriptConfigPath"
 
-
 _red()
 {
 	echo -e "[${CRed}!${CReset}] $@"
@@ -213,7 +212,6 @@ _msg()
 	echo '--------------------------------------------------'
 }
 
-
 _YESNO()
 {
 	# Será necessário indagar o usuário repetidas vezes durante a execução
@@ -237,7 +235,6 @@ _YESNO()
 	fi
 }
 
-
 _space_text()
 {
 	if [[ "${#@}" != '2' ]]; then
@@ -255,7 +252,6 @@ _space_text()
 	echo -e "$1 ${line}> $2"
 }
 
-
 _show_info()
 {
 	case "$1" in
@@ -267,7 +263,6 @@ _show_info()
 		ProgramNotFound) _red "Programa indisponível para o seu sistema: $2";;
 	esac
 }
-
 
 _list_applications()
 {
@@ -405,8 +400,6 @@ _list_applications()
 	done	
 }
 
-
-
 usage()
 {
 	echo ' '
@@ -453,7 +446,6 @@ is_executable()
 	fi
 }
 
-
 _ping()
 {
 	printf "%s" "[>] Aguardando conexão: "
@@ -480,7 +472,6 @@ __sudo__()
 		return 1
 	fi
 }
-
 
 __RMDIR()
 {
@@ -553,7 +544,6 @@ __shasum__()
 	fi
 }
 
-
 __curl__()
 {
 	# Função para baixar arquivos usando a ferramenta 'curl'.
@@ -599,8 +589,6 @@ __wget__()
 	fi	
 }
 
-
-
 __download__()
 {
 	if [[ -f "$2" ]]; then
@@ -615,7 +603,6 @@ __download__()
 	__wget__ "$@" || return 1
 
 }
-
 
 _gitclone()
 {
@@ -644,8 +631,6 @@ _gitclone()
 	fi
 	return 0
 }
-
-
 
 _unpack()
 {
@@ -686,7 +671,6 @@ _unpack()
 	fi
 
 	printf "%s" "[>] Descomprimindo: $path_file "
-	#printf "%s" "[>] Destino: $DirUnpack "
 	
 	# Descomprimir.	
 	case "$type_file" in
@@ -709,9 +693,8 @@ _unpack()
 	fi
 }
 
-#=============================================================#
-# Instalar os pacotes
-#=============================================================#
+
+
 _pkg_manager_storecli()
 {
 	# Instalação dos programas
@@ -733,17 +716,15 @@ _pkg_manager_storecli()
 
 	while [[ $1 ]]; do
 		case "$1" in
-			-d|--downloadonly) ;;
-			-y|--yes) ;;
-			-I|--ignore-cli) ;;
-			*) _space_text "[+] Instalando" "$1";; 
+			-d|--downloadonly) shift;;
+			-y|--yes) shift;;
+			-I|--ignore-cli) shift;; 
+			*) _space_text "[+] Instalando" "$1";;
 		esac
-		 
-
+		
+		[[ -z $1 ]] && return 0 
+		
 		case "$1" in
-			-d|--downloadonly) export DownloadOnly='True';;
-			-y|--yes) export AssumeYes='True';;
-
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
@@ -821,7 +802,6 @@ _pkg_manager_storecli()
 	done
 }
 
-
 argument_parser()
 {
 	while [[ $1 ]]; do
@@ -846,6 +826,7 @@ main()
 	for option in "$@"; do
 		case "$option" in
 			-d|--downloadonly) export DownloadOnly='True';;
+			-I|--ignore-cli) export IgnoreCli='True';;
 			-y|--yes) export AssumeYes='True';;
 			-v|--version) echo "$(basename $scriptStorecli) V${__version__}"; exit 0; break;;
 			-h|--help) usage; exit 0; break;;
@@ -854,12 +835,14 @@ main()
 
 
 	# Verificar se todos os utilitários de linha de comando 
-	# estão instalados - esta operação será IGNORADA caso o parametro
-	# $1 for igual a '--ignore-cli' exemplo:
+	# estão instalados - esta operação será IGNORADA caso a
+	# opção '--ignore-cli' estiver na linha de comando.
 	#   
 	#   storecli --ignore-cli install <pacote>
+	#   storecli install <pacote> -I
+	#   -I|--gnore-cli
 	#
-	if [[ "$1" != '--ignore-cli' ]]; then
+	if [[ "$IgnoreCli" != 'True' ]]; then
 		if ! check_requeriments_sys; then
 			_run_configuration_dep || exit 1
 		fi
@@ -869,7 +852,7 @@ main()
 	# significa que a função de configuração (_run_configuration_dep) ainda não foi
 	# executada no sistema atual, ou seja, se o GREP abaixo retornar status
 	# diferente de '0' a função _run_configuration_dep será invocada.
-	if [[ "$1" != '--ignore-cli' ]]; then
+	if [[ "$IgnoreCli" != 'True' ]]; then
 		grep -q 'requeriments OK' "$configFILE" || {
 			_run_configuration_dep || exit 1
 		}
@@ -878,6 +861,5 @@ main()
 	argument_parser "$@"
 	return "$?"
 }
-
 
 main "$@"

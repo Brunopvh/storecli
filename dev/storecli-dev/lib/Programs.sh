@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 #
 
-
-# Etcher
 _etcher_ubuntu()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
@@ -83,10 +81,7 @@ _etcher_appimage()
 _etcher()
 {
 	# Já instalado.
-	if is_executable 'balena-etcher-electron'; then
-		_show_info 'PkgInstalled' 'Etcher'
-		return 0
-	fi
+	is_executable 'balena-etcher-electron' && _show_info 'PkgInstalled' 'Etcher' && return 0
 
 	case "$os_id" in
 		ubuntu|linuxmint|debian) _etcher_ubuntu;;
@@ -105,13 +100,12 @@ _etcher()
 }
 
 
-# Gnome-Disk
 _gnome_disk()
 {
 	_pkg_manager_sys 'gnome-disk-utility'
 }
 
-# Veracrypt
+
 _veracrypt()
 {
 	# https://www.veracrypt.fr/en/Digital%20Signatures.html
@@ -130,7 +124,7 @@ _veracrypt()
 	# https://launchpad.net/veracrypt/trunk/1.24-update4/&#43;download/veracrypt-1.24-Update4-setup.tar.bz2
 	#
 	# libgtk-x11-2.0.so.0 (ArchLinux)
-	#
+
 	# Necessário sessão gráfica para instalar esse programa.
 	if [[ -z "$DISPLAY" ]]; then
 		_red "Necessário sessão gráfica (Xorg) para instalar esse pacote"
@@ -139,15 +133,13 @@ _veracrypt()
 
 	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
 	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
-	local vc_url__download__=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
-	local vc_url_sig="${vc_url__download__}.sig"
-
-	local path_file="$DirDownloads/$(basename $vc_url__download__)"
+	local vc_url_download=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
+	local vc_url_sig="${vc_url_download}.sig"
+	local path_file="$DirDownloads/$(basename $vc_url_download)"
 	local path_sig="${path_file}.sig"
-	
 
 	__download__ "$vc_url_sig" "$path_sig" || return 1
-	__download__ "$vc_url__download__" "$path_file" || return 1
+	__download__ "$vc_url_download" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -155,11 +147,16 @@ _veracrypt()
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 
-	_green "Importando key [https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc]"
-	curl -sSL 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' -o - | gpg --import
+	printf "%s" "[>] Importando key: "
+	if curl -sSL 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' -o - | gpg --import; then
+		_syellow "OK"
+	else
+		_sred "FALHA"
+		return 1
+	fi
+
 	__gpg__ --verify "$path_sig" "$path_file" || return 1
 	_unpack "$path_file" || return 1
-
 	cd "$DirUnpack"
 	mv $(ls veracrypt*setup-gui-x64) "$DirUnpack/veracryptx64" 1> /dev/null
 	chmod +x "$DirUnpack/veracryptx64" 
@@ -178,9 +175,6 @@ _veracrypt()
 	fi
 }
 
-#=====================================================#
-# ==================>>> WoeUsb <<<====================#
-#=====================================================#
 
 # Debian/Ubuntu/Mint
 _woeusb_debian()
@@ -224,7 +218,7 @@ _woeusb_debian()
 		_green 'WoeUSB foi instalado com sucesso'	
 	else
 		_BROKE # Remover pacotes quebrados.
-		_green '(WoeUSB) falha'
+		_red '(WoeUSB) falha'
 		return 1
 	fi
 
@@ -233,10 +227,9 @@ _woeusb_debian()
 	if _YESNO "Deseja salvar o arquivo woeusb_amd64.deb"; then
 		mkdir -p "$HOME/Downloads"
 		cp -vu "$DirGitclone/WoeUSB_amd64.deb" "$HOME"/Downloads/woeusb_amd64.deb
-		_white "Arquivo salvo em: $HOME/Downloads/woeusb_amd64.deb"
+		_msg "Arquivo salvo em: $HOME/Downloads/woeusb_amd64.deb"
 	fi
 }
-
 
 
 _woeusb_archlinux()
@@ -379,8 +372,6 @@ _android_sdktools()
 
 	# Baixar skdtools.
 	__download__ "$url_sdktools" "$path_sdktools"
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 }
 
@@ -436,8 +427,6 @@ _android_studio_zip()
 
 }
 
-#-----------------------------------------------------#
-
 _android_studio_debian()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
@@ -475,13 +464,12 @@ _android_studio_debian()
 	_android_studio_zip || return 1
 }
 
-#-----------------------------------------------------#
+
 _android_archlinux()
 {
 	_android_studio_zip
 }
 
-#-----------------------------------------------------#
 
 _android_studio_ubuntu()
 {
@@ -550,7 +538,6 @@ _android_studio_opensuseleap()
 	_android_studio_zip
 }
 
-#-----------------------------------------------------#
 
 _android_studio()
 {
@@ -579,7 +566,6 @@ _android_studio()
 	fi
 }
 
-#-----------------------------------------------------#
 _codeblocks_fedora()
 {
 	# https://sempreupdate.com.br/como-instalar-o-codeblocks-no-fedora/
@@ -591,7 +577,6 @@ _codeblocks_fedora()
 	# sudo dnf groupinstall "Development Tools" "Development Libraries" 
 }
 
-#-----------------------------------------------------#
 
 _codeblocks_archlinux()
 {
@@ -599,12 +584,12 @@ _codeblocks_archlinux()
 	_pkg_manager_sys codeblocks
 }
 
-#-----------------------------------------------------#
+
 _codeblocks_debian()
 {
 	_pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1
 }
-#-----------------------------------------------------#
+
 
 _codeblocks()
 {
@@ -669,9 +654,7 @@ _pycharm()
 	fi
 }
 
-#=====================================================#
-# Sublime-text
-#=====================================================#
+
 _sublime_text()
 {
 	sublime_pag='https://www.sublimetext.com/3'
@@ -682,16 +665,10 @@ _sublime_text()
 	__download__ "$sublime_url" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	# Já instalado.
-	if is_executable 'sublime'; then
-		_show_info 'PkgInstalled' 'sublime-text'
-		return 0
-	fi
+	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 	_unpack "$path_file" || return 1
 
 	sudo cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
@@ -712,17 +689,12 @@ _sublime_text()
 }
 
 
-#=====================================================#
-# Vim
-#=====================================================#
 _vim()
 {
 	_pkg_manager_sys vim
 }
 
-#=====================================================#
-# Vscode.
-#=====================================================#
+
 _vscode_package_deb()
 {
 	local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
@@ -734,7 +706,6 @@ _vscode_package_deb()
 	_DPKG --install "$path_file" # .deb
 }
 
-#-----------------------------------------------------#
 
 _vscode_tarfile()
 {
@@ -796,33 +767,13 @@ _vscode()
 }
 
 
-
-_blender()
-{
-	local url_blender='https://ftp.nluug.nl/pub/graphics/blender/release/Blender2.82/blender-2.82a-linux64.tar.xz'
-	local path_file="$DirDownloads/$(basename $url_blender)"
-
-	__download__ "$url_blender" "$path_file" || return 1
-
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' 'Blender'
-		return 0
-	fi
-
-	_unpack "$path_file" || return 1
-
-}
-
-#=====================================================#
-# Codecs
-#=====================================================#
 _codecs_tumbleweed()
 {
 	# https://software.opensuse.org/download/package?package=opensuse-codecs-installer&project=multimedia%3Aapps
 	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
 	
 	# Adicionar repostórios
-	"$scriptAddRepo" --tumbleweed-repos
+	"$scriptAddRepo" --repo tumbleweed
 
 	# Instalar os codecs
 	local array_tumbleweed_codecs=(
@@ -854,7 +805,7 @@ _codecs_tumbleweed()
 	done
 }
 
-#-----------------------------------------------------#
+
 _codecs_opensuse_leap()
 {
 	if [[ "$os_version" != '15.1' ]]; then
@@ -881,14 +832,14 @@ _codecs_opensuse_leap()
 	done
 
 }
-#-----------------------------------------------------#
+
+
 _codecs_ubuntu()
 {
 	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
 	_pkg_manager_sys 'ubuntu-restricted-extras'
 }
 
-#-----------------------------------------------------#
 
 _codecs_debian()
 {
@@ -906,10 +857,7 @@ _codecs_debian()
 	__download__ "$url_wcodecs" "$path_file" || return 1
 	
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
 	_pkg_manager_sys lame
@@ -920,9 +868,6 @@ _codecs_debian()
 	_DPKG --install "$path_file" || return 1
 }
 
-#-----------------------------------------------------#
-
-# Fedora
 _codecs_fedora()
 {
 	# Add repo fusion non free
@@ -988,7 +933,6 @@ _codecs_fedora()
 	done
 }
 
-#-----------------------------------------------------#
 
 _codecs_arch()
 {
@@ -1038,7 +982,6 @@ _codecs_arch()
 }
 
 
-# Codecs
 _codecs()
 {
 case "$os_id" in
@@ -1054,7 +997,6 @@ case "$os_id" in
 esac
 }
 
-#-----------------------------------------------------#
 
 _celluloid()
 {
@@ -1067,9 +1009,7 @@ _cinema()
 	_pkg_manager_sys 'cinema'
 }
 
-#=====================================================#
-# Gnome mpv
-#=====================================================#
+
 _gnome_mpv()
 {
 	if is_executable 'dnf'; then
@@ -1081,25 +1021,19 @@ _gnome_mpv()
 	fi
 }
 
-#=====================================================#
-# Parole
-#=====================================================#
+
 _parole()
 {
 	_pkg_manager_sys parole	
 }
 
-#=====================================================#
-# Smplayer
-#=====================================================#
+
 _smplayer()
 {
 	_pkg_manager_sys smplayer
 }
 
-#=====================================================#
-# Spotify
-#=====================================================#
+
 _spotify_debian()
 {
 	# https://wiki.debian.org/spotify
@@ -1199,9 +1133,7 @@ _spotify()
 	
 }
 
-#=====================================================#
-# Totem
-#=====================================================#
+
 _totem(){
 	_pkg_manager_sys totem
 }
@@ -1349,11 +1281,6 @@ _libreoffice()
 	_libreoffice_ptbr
 }
 
-
-
-#=====================================================#
-# Chomium
-#=====================================================#
 
 _chromium_lang()
 {
@@ -2726,7 +2653,7 @@ _stacer()
 			_pkg_manager_sys 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
 			_stacer_appimage
 			;;
-		*) _show_info 'ProgramNotFound' stacer;;
+		*) _stacer_appimage;;
 	esac
 }
 

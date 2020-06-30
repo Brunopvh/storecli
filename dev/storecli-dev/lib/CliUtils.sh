@@ -139,7 +139,8 @@ _config_requeriments_fedora()
 #=============================================================#
 _config_requeriments_opensuseleap()
 {
-	sudo zypper ref
+	_yellow "Executando: zypper ref"
+	_ZYPPER ref
 	_msg "Instalando: ${requeriments_cli_linux[@]}"
 	_pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
 
@@ -148,8 +149,8 @@ _config_requeriments_opensuseleap()
 	_pkg_manager_sys "${requeriments_python2_debian[@]}" || return 1
 	
 	# Instalar utilitários para python3.
-	_msg "Instalando: ${array_python3_opensuseleap[@]}"
-	_pkg_manager_sys "${array_python3_opensuseleap[@]}" || return 1
+	_msg "Instalando: ${requeriments_python3_opensuseleap[@]}"
+	_pkg_manager_sys "${requeriments_python3_opensuseleap[@]}" || return 1
 		
 	return 0
 }
