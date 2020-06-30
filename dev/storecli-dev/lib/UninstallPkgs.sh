@@ -11,12 +11,16 @@ __delete_files__()
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# A função __sudo__ irá remover o arquivo/diretório.
-	for FILE in "$@"; do
-		if [[ ! -L "$FILE" ]] && [[ ! -f "$FILE" ]] && [[ ! -d "$FILE" ]]; then
-			_red "Não encontrado: $FILE"
+	for X in "$@"; do
+		if [[ ! -L "$X" ]] && [[ ! -f "$X" ]] && [[ ! -d "$X" ]]; then
+			_red "Não encontrado: $X"
 		else
-			_red "Removendo: $FILE"
-			rm -rf "$FILE" 2> /dev/null || __sudo__ rm -rf "$FILE"
+			printf "[>] ${CRed}R${CReset}emovendo: $X "
+			if rm -rf "$X" 2> /dev/null || sudo rm -rf "$X"; then
+				_syellow "OK"
+			else
+				_sred "FALHA"
+			fi
 		fi
 	done
 }

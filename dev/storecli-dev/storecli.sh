@@ -96,7 +96,7 @@ fi
 #=============================================================#
 # Definir as Libs e scripts a serem usados
 #=============================================================#
-# módulos/libs.
+# libs.
 libColors="$dirSTORECLIPathLib/Colors.sh"
 libCliUtils="$dirSTORECLIPathLib/CliUtils.sh"
 libPlatform="$dirSTORECLIPathLib/Platform.sh"
@@ -113,7 +113,6 @@ libInternet="$dirSTORECLIPathPrograms/Internet.sh"
 libSystem="$dirSTORECLIPathPrograms/System.sh"
 libMidia="$dirSTORECLIPathPrograms/Midia.sh"
 libGnomeShell="$dirSTORECLIPathPrograms/GnomeShell.sh"
-
 
 # Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
@@ -485,37 +484,11 @@ _ping()
 		return 1
 	fi
 }
-
-#=============================================================#
-# Verificar se todos os utilitários de linha de comando 
-# estão instalados - esta função será IGNORADA caso o parametro
-# $1 for igual a '--ignore-cli' exemplo:
-#   
-#     storecli --ignore-cli install <pacote>
-#
-#=============================================================#
-if [[ "$1" != '--ignore-cli' ]]; then
-	if ! check_requeriments_sys; then
-		_run_configuration_dep || exit 1
-	fi
-fi
-
-# Se a string 'requeriments OK' não estiver no arquivo de configuração
-# significa que a função de configuração (_run_configuration_dep) ainda não foi
-# executada no sistema atual, ou seja, se o GREP abaixo retornar status
-# diferente de '0' a função _run_configuration_dep será invocada.
-if [[ "$1" != '--ignore-cli' ]]; then
-	grep -q 'requeriments OK' "$configFILE" || {
-		_run_configuration_dep || exit 1
-	}
-fi
-
-#=============================================================#
-# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-#=============================================================#
+ 
 __sudo__()
 {
-	_white "${CYellow}A${CReset}utênticação necessária para executar: sudo $@"
+	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
+	printf "[>] ${CYellow}A${CReset}utênticação necessária para executar: sudo ${@}\n"
 	if sudo "$@"; then
 		return 0
 	else
@@ -524,22 +497,26 @@ __sudo__()
 	fi
 }
 
-# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
-# que o usuário não tem permissão de escrita, para isso será usado o "sudo".
+
 __RMDIR()
 {
+	# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
+	# que o usuário não tem permissão de escrita, para isso será usado o "sudo".
+	#
 	# Use:
-	#     _RMDIR <diretório> ou
-	#     _RMDIR <arquivo>
-	if [[ -z $1 ]]; then
-		return 1
-	fi
+	#     __RMDIR <diretório> ou
+	#     __RMDIR <arquivo>
+	[[ -z $1 ]] && return 1
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# A função __sudo__ irá remover o arquivo/diretório.
 	for i in "$@"; do
-		_red "Removendo: $i"
-		rm -rf "$1" 2> /dev/null || sudo rm -rf "$i"
+		printf "[>] ${CRed}R${CReset}emovendo: $i "
+		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$i"; then
+			_syellow "OK"
+		else
+			_sred "FALHA"
+		fi
 	done
 }
 
@@ -729,7 +706,7 @@ _unpack()
 		return 1
 	fi
 
-	printf "%s" "Descomprimindo: $path_file "
+	printf "%s" "[>] Descomprimindo: $path_file "
 	#printf "%s" "[>] Destino: $DirUnpack "
 	
 	# Descomprimir.	
@@ -896,6 +873,28 @@ argument_parser()
 
 main()
 {	
+	# Verificar se todos os utilitários de linha de comando 
+	# estão instalados - esta operação será IGNORADA caso o parametro
+	# $1 for igual a '--ignore-cli' exemplo:
+	#   
+	#   storecli --ignore-cli install <pacote>
+	#
+	if [[ "$1" != '--ignore-cli' ]]; then
+		if ! check_requeriments_sys; then
+			_run_configuration_dep || exit 1
+		fi
+	fi
+
+	# Se a string 'requeriments OK' não estiver no arquivo de configuração
+	# significa que a função de configuração (_run_configuration_dep) ainda não foi
+	# executada no sistema atual, ou seja, se o GREP abaixo retornar status
+	# diferente de '0' a função _run_configuration_dep será invocada.
+	if [[ "$1" != '--ignore-cli' ]]; then
+		grep -q 'requeriments OK' "$configFILE" || {
+			_run_configuration_dep || exit 1
+		}
+	fi
+
 	argument_parser "$@"
 	return "$?"
 }
