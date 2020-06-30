@@ -800,7 +800,7 @@ _vscode()
 _blender()
 {
 	local url_blender='https://ftp.nluug.nl/pub/graphics/blender/release/Blender2.82/blender-2.82a-linux64.tar.xz'
-	local path_file="$Dir_Downloads/$(basename $url_blender)"
+	local path_file="$DirDownloads/$(basename $url_blender)"
 
 	__download__ "$url_blender" "$path_file" || return 1
 
@@ -901,7 +901,7 @@ _codecs_debian()
 	local deb_multimidia='http://www.deb-multimedia.org'
 	local url_wcodecs="$deb_multimidia/pool/non-free/w/w64codecs/w64codecs_20071007-dmo2_amd64.deb"
 	local hash_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
-	local path_file="$Dir_Downloads/$(basename $url_wcodecs)"
+	local path_file="$DirDownloads/$(basename $url_wcodecs)"
 
 	__download__ "$url_wcodecs" "$path_file" || return 1
 	
@@ -1126,7 +1126,7 @@ _spotify_archlinux()
 	local spotify_url='https://repository-origin.spotify.com/pool/non-free/s/spotify-client'
 	local spotify_file_server=$(curl -sSL "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
 	local Spotify_Url_Server="$spotify_url/$spotify_file_server"
-	local path_file="$Dir_Downloads/$spotify_file_server"
+	local path_file="$DirDownloads/$spotify_file_server"
 	
 	local array_spotify_requeriments=( 
 		gconf 
@@ -1884,22 +1884,6 @@ _skype()
 	esac
 }
 
-# Requeriments teamviewer Fedora
-array_tw_fedora=(
-	'libdbus-1.so.3()(64bit)' 
-	'libQt5Gui.so.5()(64bit)' 
-	'libQt5Widgets.so.5()(64bit)' 
-	'libQt5Qml.so.5()(64bit)' 
-	'libQt5Quick.so.5()(64bit)' 
-	'libQt5WebKitWidgets.so.5()(64bit)' 
-	'libQt5X11Extras.so.5()(64bit)' 
-	'libqtquick2plugin.so()(64bit)' 
-	'libwindowplugin.so()(64bit)' 
-	'libqquicklayoutsplugin.so()(64bit)' 
-	'libqtquickcontrolsplugin.so()(64bit)' 
-	'libdialogplugin.so()(64bit)'
-)
-
 
 _install_teamviewer_debian()
 {
@@ -1949,6 +1933,22 @@ _install_teamviewer_fedora()
 	local tw_html=$(curl -SsL "$tw_pag" | grep "download.*linux.*64")
 	local url_rpm=$(echo "$tw_html" | grep -m 1 'x86_64.rpm' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_x86_64.rpm"
+
+	# Requeriments teamviewer Fedora
+	local array_tw_fedora=(
+		'libdbus-1.so.3()(64bit)' 
+		'libQt5Gui.so.5()(64bit)' 
+		'libQt5Widgets.so.5()(64bit)' 
+		'libQt5Qml.so.5()(64bit)' 
+		'libQt5Quick.so.5()(64bit)' 
+		'libQt5WebKitWidgets.so.5()(64bit)' 
+		'libQt5X11Extras.so.5()(64bit)' 
+		'libqtquick2plugin.so()(64bit)' 
+		'libwindowplugin.so()(64bit)' 
+		'libqquicklayoutsplugin.so()(64bit)' 
+		'libqtquickcontrolsplugin.so()(64bit)' 
+		'libdialogplugin.so()(64bit)'
+	)
 	
 	__download__ "$url_rpm" "$path_file" || return 1
 
@@ -2449,11 +2449,6 @@ _youtube_dlgui()
 }
 
 
-
-
-#=====================================================#
-# Debian Bluetooth
-#=====================================================#
 _bluetooth()
 {
 	if [[ "$os_id" != 'debian' ]]; then
@@ -2490,9 +2485,7 @@ _bluetooth()
 	done
 }
 
-#=====================================================#
-# Compactadores
-#=====================================================#
+
 _compactadores()
 {
 
@@ -2525,9 +2518,6 @@ _compactadores()
 }
 
 
-#=====================================================#
-# Debian Firmwares
-#=====================================================#
 _firmware()
 {
 	if [[ "$os_id" != 'debian' ]]; then
@@ -2544,9 +2534,6 @@ _firmware()
 }
 
 
-#=====================================================#
-# Gparted
-#=====================================================#
 _gparted()
 {
 	_pkg_manager_sys gparted
@@ -2556,7 +2543,7 @@ _peazip()
 {
 	# Url fixo versão 6.8
 	local peazip_url__download__nload='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$Dir_Downloads/$(basename $peazip_url__download__nload)"
+	local path_file="$DirDownloads/$(basename $peazip_url__download__nload)"
 	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
 
 	__download__ "$peazip_url__download__nload" "$path_file" || return 1
@@ -2569,22 +2556,38 @@ _peazip()
 	__shasum__ "$path_file" "$hash_file" || return 1
 	_unpack "$path_file" || return 1
 
-	
 	cd "$DirUnpack"
 	mv -v $(ls -d peazip*) "$DirUnpack/peazip-amd64" 1> /dev/null
-	sudo mv "$DirUnpack/peazip-amd64" '/opt/'
-	sudo chown -R root:root "/opt/peazip-amd64" #1> /dev/null # root é o dono.
-	sudo chmod -R a+x "/opt/peazip-amd64"
+	mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
+	
+	cd "${destinationFilesPeazip[dir]}" 
+	cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[file_png]}"     
+	cp -u "${destinationFilesPeazip[dir]}"/peazip "${destinationFilesPeazip[file_bin]}"
 
-	cd '/opt/peazip-amd64'
-	sudo cp -u FreeDesktop_integration/peazip.desktop "${array_peazip_dirs[0]}" # .desktop
-	sudo cp -u FreeDesktop_integration/peazip.png "${array_peazip_dirs[1]}"     # PNG.
-	sudo cp -u peazip "${array_peazip_dirs[2]}"                                 # binario.
+	echo '[Desktop Entry]' > "${destinationFilesPeazip[file_desktop]}"
+	{
+		echo 'Version=1.0'
+		echo 'Encoding=UTF-8'
+		echo 'Name=PeaZip'
+		echo 'MimeType=application/x-gzip;application/x-tar;application/x-deb;bzip;application/x-rar'
+		echo 'GenericName=Archiving Tool'
+		echo 'Exec=peazip %F'
+		echo 'Icon=peazip.png'
+		echo 'Type=Application'
+		echo 'Terminal=false'
+		echo 'X-KDE-HasTempFileOption=true'
+		echo 'Categories=GTK;KDE;Utility;System;Archiving;'
+	} | tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
 
-	# Atalho desktop
-	cp -u "${array_peazip_dirs[0]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_peazip_dirs[0]}" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "${array_peazip_dirs[0]}" ~/Desktop/ 2> /dev/null
+	chmod -R a+x "${destinationFilesPeazip[dir]}"
+	chmod -R a+rwx "${destinationFilesPeazip[file_desktop]}"                                 
+
+	_show_info 'AddFileDesktop'
+	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
+
+	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
 
 	if is_executable 'peazip'; then
 		_show_info 'SuccessInstalation' 'peazip'
@@ -2595,9 +2598,7 @@ _peazip()
 	fi
 }
 
-#=====================================================#
-# Refind
-#=====================================================#
+
 _refind_zip()
 {
 	# https://sourceforge.net/projects/refind/postdownload
@@ -2606,7 +2607,7 @@ _refind_zip()
 	# https://sourceforge.net/p/refind/code/ci/master/tree/
 	local url_rpm='https://ufpr.dl.sourceforge.net/project/refind/0.6.11/refind-0.6.11-1.x86_64.rpm'
 	local url_zip='https://sourceforge.net/projects/refind/files/0.12.0/refind-bin-0.12.0.zip/download'
-	local path_file="$Dir_Downloads/refind-bin-0.12.0.zip"
+	local path_file="$DirDownloads/refind-bin-0.12.0.zip"
 	
 	__download__ "$url_zip" "$path_file" || return 1
 	
@@ -2619,17 +2620,17 @@ _refind_zip()
 	_unpack "$path_file" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d refind*) refind
-	sudo mv refind "${array_refind_dirs[0]}"
+	sudo mv refind "${destinationFilesRefind[dir]}"
 	
 	# Criar script para execução
-	echo '#!/usr/bin/env bash' | sudo tee "${array_refind_dirs[1]}"
+	echo '#!/usr/bin/env bash' | sudo tee "${destinationFilesRefind[file_script]}" 
 	{
-		echo "cd ${array_refind_dirs[0]}"
+		echo "cd ${destinationFilesRefind[dir]}"
 		echo "./refind-install \$@"
-	} | sudo tee -a "${array_refind_dirs[1]}"
+	} | sudo tee -a "${destinationFilesRefind[file_script]}"
 	
-	sudo chmod -R +x "${array_refind_dirs[0]}"
-	sudo chmod a+x "${array_refind_dirs[1]}"
+	sudo chmod -R +x "${destinationFilesRefind[dir]}"
+	sudo chmod a+x "${destinationFilesRefind[file_script]}"
 	
 }
 
@@ -2650,19 +2651,14 @@ _refind()
 }
 
 
-#=====================================================#
-# Stacer
-#=====================================================#
 _stacer_debian()
 {
 	# https://github.com/oguzhaninan/Stacer/releases
 	# https://github.com/oguzhaninan/Stacer
 	local url='https://github.com/oguzhaninan/Stacer/releases/download/v1.1.0/stacer_1.1.0_amd64.deb'
-	local path_file="$Dir_Downloads/$(basename $url)"
+	local path_file="$DirDownloads/$(basename $url)"
 
 	__download__ "$url" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	_DPKG --install "$path_file"
@@ -2674,27 +2670,24 @@ _stacer_fedora()
 }
 
 
-_stacer_archlinux()
+_stacer_appimage()
 {
 	# https://aur.archlinux.org/packages/stacer/
 	# https://github.com/oguzhaninan/Stacer
 	# https://github.com/oguzhaninan/Stacer/releases
 	#
-	# qt5-charts hicolor-icon-theme qt5-declarative qt5-declarative qt5-tools ccache
-
-	local url_appimage='https://github.com/oguzhaninan/Stacer/releases/download/v1.1.0/Stacer-1.1.0-x64.AppImage'
-	local path_file="$Dir_Downloads/Stacer-1.1.0-x64.AppImage"
+	local stacer_versions='https://github.com/oguzhaninan/Stacer/releases/download'
+	local url_stacer_appimage="$stacer_versions/v1.1.0/Stacer-1.1.0-x64.AppImage"
+	local path_file="$DirDownloads/Stacer-1.1.0-x64.AppImage"
 	
-	_pkg_manager_sys 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
+	__download__ "$url_stacer_appimage" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
-	__download__ "$url_appimage" "$path_file" || return 1
-	sudo cp "$path_file" "${array_stacer_dirs[stacer_file_appimage]}"
-	sudo chmod a+x "${array_stacer_dirs[stacer_file_appimage]}"
-	sudo ln -sf "${array_stacer_dirs[stacer_file_appimage]}" "${array_stacer_dirs[stacer_link]}"
-
-	# Criar arquivo '.desktop'
-	_yellow "Criando arquivo .desktop"
-	echo '[Desktop Entry]' | sudo tee "${array_stacer_dirs[stacer_file_desktop]}"
+	cp -u "$path_file" "${destinationFilesStacer[file_appimage]}"
+	chmod a+x "${destinationFilesStacer[file_appimage]}"
+	
+	_show_info "AddFileDesktop"
+	echo '[Desktop Entry]' | tee "${destinationFilesStacer[file_desktop]}" 1> /dev/null
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Stacer"
@@ -2706,12 +2699,20 @@ _stacer_archlinux()
 		echo "Keywords=stacer;monitor;"
 		echo "Type=Application"
 		echo "Categories=Utility;System;"
-	} | sudo tee -a "${array_stacer_dirs[stacer_file_desktop]}"
+	} | tee -a "${destinationFilesStacer[file_desktop]}" 1> /dev/null
 
 	_yellow "Criando atalho na Área de Trabalho"
-	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "${array_stacer_dirs[stacer_file_desktop]}" ~/Desktop/ 2> /dev/null
+	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesStacer[file_desktop]}" ~/Desktop/ 2> /dev/null
+
+	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
+
+	if is_executable 'stacer'; then
+		_show_info 'SuccessInstalation' 'Stacer'
+	else
+		_show_info 'InstalationFailed' 'stacer'
+	fi
 }
 
 
@@ -2719,7 +2720,10 @@ _stacer()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _stacer_debian;;
-		arch) _stacer_archlinux;;
+		arch) 
+			_pkg_manager_sys 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
+			_stacer_appimage
+			;;
 		*) _show_info 'ProgramNotFound' stacer;;
 	esac
 }
@@ -2742,7 +2746,7 @@ _virtualbox_extpack()
 	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
 	local vb_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" <<< $(curl -sL "$vb_pag"))
 	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
-	local path_file="$Dir_Downloads/$(basename $vb_url)"
+	local path_file="$DirDownloads/$(basename $vb_url)"
 
 	__download__ "$vb_url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -2780,9 +2784,9 @@ _virtualbox_fedora()
 	_pkg_manager_sys $(rpm -qa kernel | sort -V | tail -n 1) 
 	_pkg_manager_sys kernel-devel-$(uname -r)
 
-	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$Dir_Downloads/oracle_vbox.asc"
-	_yellow "Importando: $Dir_Downloads/oracle_vbox.asc"
-	sudo rpm --import "$Dir_Downloads/oracle_vbox.asc"
+	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$DirDownloads/oracle_vbox.asc"
+	_yellow "Importando: $DirDownloads/oracle_vbox.asc"
+	sudo rpm --import "$DirDownloads/oracle_vbox.asc"
 	
 	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
 	sudo sh -c 'curl -s -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
@@ -2807,7 +2811,7 @@ _virtualbox_debian()
 	# find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
 		
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
-	local path_libvpx="$Dir_Downloads/$(basename $url_libvpx)"
+	local path_libvpx="$DirDownloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
 	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
 
@@ -2920,12 +2924,12 @@ _virtualbox_linux_run()
 	# e atribuir path para download.
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
 	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
-	path_file="$Dir_Downloads/$(basename $vbox_url_run)"
+	path_file="$DirDownloads/$(basename $vbox_url_run)"
 	
 	# Definir o url de download do arquivo com as hashs de seu
 	# destino de download
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
-	vbox_path_file_hash="$Dir_Downloads/virtualbox_$vbox_version.check"
+	vbox_path_file_hash="$DirDownloads/virtualbox_$vbox_version.check"
 
 	__download__ "$vbox_url_run" "$path_file" || return 1
 	__download__ "$vbox_url_hash" "$vbox_path_file_hash" || return
@@ -2979,9 +2983,9 @@ _ohmybash()
 	# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
-	local path_file="$Dir_Downloads/ohmybash.zip"
+	local path_file="$DirDownloads/ohmybash.zip"
 	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
-	local ohmybash_installer="$Dir_Downloads/ohmybash_installer.sh"
+	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
 
 	# Perguntar se o usuário deseja realmente instalar o pacote caso não exista
 	# o argumento '-y' ou --yes.
@@ -3079,49 +3083,30 @@ _papirus_github()
 	# https://github.com/PapirusDevelopmentTeam
 
 	local url_papirus_master="$github/PapirusDevelopmentTeam/papirus-icon-theme/archive/master.tar.gz"
-	local path_file="$Dir_Downloads/papirus.tar.gz"
+	local path_file="$DirDownloads/papirus.tar.gz"
 
 	__download__ "$url_papirus_master" "$path_file" || return 1
 
 	# Somente baixar
-	if [[ "$DownloadOnly" == 'True' ]]; then
-		_show_info 'DownloadOnly' "$path_file"
-		return 0 
-	fi
-
-	# Verificar se o tema já está instalado utilizando a lista 
-	# de informações sobre o tema que está no módulo 'Arrays.sh'.
-	for dir in "${array_papirus_dirs[@]}"; do
-		if [[ -d "$dir" ]]; then
-			_show_info 'PkgInstalled' 'papirus'
-			return 0
-			break
-		fi
-	done
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
 	_unpack "$path_file" || return 1
 	cd "$DirUnpack"
 	mv  $(ls -d papirus-*) papirus
 	cd papirus
-	_green "Instalando Papirus-Dark"
-	cp -R Papirus-Dark "$Dir_User_Icons/"
-
-	_green "Instalando Papirus"
-	cp -R Papirus "$Dir_User_Icons/"
 	
-	_green "Instalando Papirus-Light"
-	cp -R Papirus-Light "$Dir_User_Icons/"
+	printf "%s" "[>] Instalando Papirus-Dark "
+	cp -R -u Papirus-Dark "${destinationFilesPapirus[papirus_dark]}" && _syellow "OK"
 
-	_green "Instalando ePapirus"
-	cp -R ePapirus "$Dir_User_Icons/"
+	printf "%s" "[>] Instalando Papirus "
+	cp -R -u Papirus "${destinationFilesPapirus[papirus]}" && _syellow "OK"
 	
-	for dir in "${array_papirus_dirs[@]}"; do
-		if [[ -d "$dir" ]]; then
-			_show_info 'SuccessInstalation' "$dir"
-		else
-			_show_info 'InstalationFailed' "$dir"
-		fi
-	done
+	printf "%s" "[>] Instalando Papirus-Light " 
+	cp -R -u Papirus-Light "${destinationFilesPapirus[papirus_light]}" && _syellow "OK"
+
+	printf "%s" "[>] Instalando ePapirus "
+	cp -R -u ePapirus "${destinationFilesPapirus[epapirus]}" && _syellow "OK"
+	
 }
 
 _papirus()
@@ -3156,7 +3141,7 @@ _sierra()
 	
 	local github_sierra="$github/vinceliuice/Sierra-gtk-theme"
 	local url_sierra='https://github.com/vinceliuice/Sierra-gtk-theme/archive/master.tar.gz'
-	local path_file="$Dir_Downloads/sierra_gtk_theme.tar.gz"
+	local path_file="$DirDownloads/sierra_gtk_theme.tar.gz"
 
 	__download__ "$url_sierra" "$path_file" || return 1
 
@@ -3199,7 +3184,7 @@ _dashtodock_github()
 
 	local url='https://github.com/micheleg/dash-to-dock/archive/master.tar.gz'
 	local url_repo='https://github.com/micheleg/dash-to-dock.git'
-	local path_file="$Dir_Downloads/dash_to_dock.tar.gz"
+	local path_file="$DirDownloads/dash_to_dock.tar.gz"
 
 	_gitclone "$url_repo" || return 1
 
@@ -3263,7 +3248,7 @@ _topicons_plus_github()
 	# https://github.com/phocean/TopIcons-plus
 
 	local url='https://github.com/phocean/TopIcons-plus/archive/master.tar.gz'
-	local path_file="$Dir_Downloads/topicons_plus.tar.gz"
+	local path_file="$DirDownloads/topicons_plus.tar.gz"
 
 	__download__ "$url" "$path_file" || return 1
 
@@ -3381,10 +3366,6 @@ _Office_All()
 	_libreoffice_appimage
 	_libreoffice
 }
-
-
-
-
 
 #=============================================================#
 # Instalar todos os pacotes da categória Midia.

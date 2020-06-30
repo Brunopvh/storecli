@@ -58,28 +58,26 @@ _remove_packages()
 		_space_text "Removendo" "$1"
 
 		case "$1" in
-#-----------------------| ACESSÓRIOS |------------------------------------------#
 			etcher) __delete_files__ "${destinationFilesEtcher[@]}";;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
-#-----------------------| DESENVOLVIMENTO |--------------------------------------#
 			'android-studio') __delete_files__ "${destinationFilesAndroidStudio[@]}";;
 			pycharm) __delete_files__ "${destinationFilesPycharm[@]}";;
 			'sublime-text') __delete_files__ "${destinationFilesSublime[@]}";;
 			vscode) _remove_vscode;;
 
-#-----------------------| ESCRITÓRIO |-------------------------------------------#
 			'libreoffice-appimage') __delete_files__ "${destinationFilesLibreofficeAppimage[@]}";;
 
-#-----------------------| BROWSER |----------------------------------------------#
 			torbrowser) "$scritpTorBrowser" --remove;;	
 
-#-----------------------| INTERNET |---------------------------------------------#
 			telegram) __delete_files__ "${destinationFilesTelegram[@]}";;
 			tixati) __delete_files__ "${destinationFilesTixati[@]}";;
 			teamviewer) _remove_teamviewer;;
 			youtube-dl) __delete_files__ "$directoryUSERbin/youtube-dl";;
 	
+			peazip) __delete_files__ "${destinationFilesPeazip[@]}";;
+			refind) __delete_files__ "${destinationFilesRefind[@]}";;
+			stacer) __delete_files__ "${destinationFilesStacer[@]}";;
 
 			*) _red "Não foi possível remover: $1";;
 		esac

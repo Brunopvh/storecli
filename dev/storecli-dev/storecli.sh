@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_29_rev1'
+__version__='2020_06_29_rev2'
+__author__='Bruno Chaves'
 #
 #=============================================================#
 # REFERÊNCIAS
@@ -43,7 +44,6 @@ fi
 export dirSTORECLIPath=$(dirname $(readlink -f "$0"))
 export scriptStorecli=$(readlink -f "$0")
 export dirSTORECLIPathLib="$dirSTORECLIPath/lib"
-export dirSTORECLIPathPrograms="$dirSTORECLIPath/programs"
 export dirSTORECLIPathScripts="$dirSTORECLIPath/scripts"
 export dirSTORECLIPathPython="$dirSTORECLIPath/python"
 
@@ -103,16 +103,7 @@ libPlatform="$dirSTORECLIPathLib/Platform.sh"
 libPkgManagerSys="$dirSTORECLIPathLib/PkgManagerSys.sh"
 libUninstallPkgs="$dirSTORECLIPathLib/UninstallPkgs.sh"
 libArrayUtils="$dirSTORECLIPathLib/ArrayUtils.sh"
-
-# Programas
-libAcessory="$dirSTORECLIPathPrograms/Acessory.sh"
-libDevelopment="$dirSTORECLIPathPrograms/Dev.sh"
-libOffice="$dirSTORECLIPathPrograms/Office.sh"
-libBrowser="$dirSTORECLIPathPrograms/Browser.sh"
-libInternet="$dirSTORECLIPathPrograms/Internet.sh"
-libSystem="$dirSTORECLIPathPrograms/System.sh"
-libMidia="$dirSTORECLIPathPrograms/Midia.sh"
-libGnomeShell="$dirSTORECLIPathPrograms/GnomeShell.sh"
+libPrograms="$dirSTORECLIPathLib/Programs.sh"
 
 # Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
@@ -128,16 +119,7 @@ source "$libPlatform"
 source "$libPkgManagerSys"
 source "$libUninstallPkgs"
 source "$libArrayUtils"
-
-# Programas
-source "$libAcessory"
-source "$libDevelopment"
-source "$libOffice"
-source "$libInternet"
-source "$libMidia"
-source "$libBrowser"
-source "$libGnomeShell"
-source "$libSystem"
+source "$libPrograms"
 
 # Criar diretórios para arquivos temporários, descompressão dos
 # arquivos baixados e para clonar repositórios do github. 
@@ -627,13 +609,8 @@ __download__()
 	cd "$directoryUSERdownloads"
 	_blue "Baixando: $1"
 
-	#__curl__ "$@"
-	__wget__ "$@"
-
-	if [[ "$?" == '130' ]]; then
-		_red "Cancelado com Ctrl c"
-		return 130
-	fi
+	#__curl__ "$@" || return 1
+	__wget__ "$@" || return 1
 
 }
 
@@ -741,7 +718,7 @@ _pkg_manager_storecli()
 		return 1
 	fi
 
-	_ping
+	#_ping
 	_clear_temp_dirs
 
 	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.

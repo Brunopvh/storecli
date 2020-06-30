@@ -111,36 +111,45 @@ destinationFilesTeamviewer=(
 	'/etc/systemd/system/multi-user.target.wants/teamviewerd.service'
 )
 
-
-
-# Papirus
-array_papirus_dirs=(
-	"$directoryUSERicon/Papirus-Dark" 
-	"$directoryUSERicon/Papirus-Light" 
-	"$directoryUSERicon/ePapirus"
-	"$directoryUSERicon/Papirus" 
-)
-
+#=============================================================#
+# Sistema
+#=============================================================#
 # PeaZip
-array_peazip_dirs=(
-"$directoryROOTapplications/peazip.desktop" # .desktop
-"$directoryROOTicon/256x256/apps/peazip.png" # .png
-"$directoryROOTbin/peazip" # bin
-'/opt/peazip-amd64' # Dir peazip
+declare -A destinationFilesPeazip
+destinationFilesPeazip=(
+	[file_desktop]="$directoryUSERapplications/peazip.desktop" 
+	[file_png]="$directoryUSERicon/peazip.png"
+	[file_bin]="$directoryUSERbin/peazip"
+	[dir]="$directoryUSERbin/peazip-amd64"
 )
+
 
 # Refind
-array_refind_dirs=(
-"/opt/refind"   # Diretório
-"$directoryROOTbin/refind-install"              # Script
+declare -A destinationFilesRefind
+destinationFilesRefind=(  
+	[file_script]="$directoryROOTbin/refind-install"
+	[dir]="/opt/refind"
+)
+
+declare -A destinationFilesStacer
+destinationFilesStacer=( 
+	[file_desktop]="$directoryUSERapplications/stacer.desktop"  
+	[file_appimage]="$directoryUSERbin/stacer"                            
 )
 
 
+#=============================================================#
+# Preferências
+#=============================================================#
 
-
-
-
-
+# Papirus
+declare -A destinationFilesPapirus
+destinationFilesPapirus=(
+	[papirus_dark]="$directoryUSERicon/Papirus-Dark" 
+	[papirus_light]="$directoryUSERicon/Papirus-Light" 
+	[epapirus]="$directoryUSERicon/ePapirus"
+	[papirus]="$directoryUSERicon/Papirus" 
+)
 
 
 
