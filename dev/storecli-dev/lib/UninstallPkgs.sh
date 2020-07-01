@@ -56,7 +56,7 @@ _uninstall_teamviewer()
 
 _uninstall_packages()
 {
-	[[ -z $1 ]] && return 1
+	[[ -z $1 ]] && usage && return 1
 	while [[ $1 ]]; do
 		
 		case "$1" in

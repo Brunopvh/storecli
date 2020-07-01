@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_30_rev9'
+__version__='2020_07_01_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -326,8 +326,8 @@ _list_applications()
 		return 0
 	fi
 
-	while [[ $1 ]]; do
-		case "$1" in
+	for arg in "${@}"; do
+		case "$arg" in
 			Acessorios)
 					printf "%s\n" "  Acessorios: "
 					for APP in "${programs_acessory[@]}"; do
@@ -393,7 +393,7 @@ _list_applications()
 					;;
 			*)
 				printf "\n"
-				_red "Use: --list|-l OU --list|-l Acessorios|Escritorio|Navegadores|Internet"
+				_red "(_list_applications) categoria inválida: $arg"
 				printf "\n"
 					;;
 		esac
@@ -403,7 +403,6 @@ _list_applications()
 
 usage()
 {
-	echo ' '
 cat << EOF
     Use: $scriptStorecli -b|-c|-d|-I|-h|-l|-s|-v
          $scriptStorecli install <pacote>
@@ -418,15 +417,18 @@ cat << EOF
        -I|--ignore-cli               Ignora a verificação dos pacotes/dependências deste script.
                                      $scriptStorecli --ignore-cli install <pacote>
 
-       -l|--list                     Lista aplicativos disponíveis para instalação.
-       -s|--self-update              Instala ultima versão desse script disponível no github.
+       -l|--list                     Lista aplicativos disponíveis para instalação, ou aplicativos
+                                     de uma categoria, argumentos:
+                                     --list Acessorios|Desenvolvimento|Escritorio|Internet|Sistema
+                                     |Preferencias|GnomeShell.
+
+       -u|--self-update              Instala ultima versão desse script disponível no github.
        -v|--version                  Mostra versão.
        -y|--yes                      Assume sim para maioria da indagações.
                                      
      Argumentos:
        remove <remove>             Remove um pacote.
        install <pacote>            Instala um pacote.
-
 
        Instalando vários pacotes:
              $scriptStorecli install etcher sublime-text google-chrome youtube-dl-gui virtualbox
@@ -486,13 +488,14 @@ __RMDIR()
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# A função __sudo__ irá remover o arquivo/diretório.
-	for i in "$@"; do
-		printf "[>] ${CRed}R${CReset}emovendo: $i "
-		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$i"; then
+	while [[ $1 ]]; do
+		printf "[>] Removendo: $1 "
+		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
 			_syellow "OK"
 		else
 			_sred "FALHA"
 		fi
+		shift
 	done
 }
 
@@ -502,7 +505,6 @@ _clear_temp_dirs()
 	cd "$DirUnpack" && __RMDIR $(ls)
 
 }
-
 
 
 _DPKG()
@@ -1083,18 +1085,36 @@ _update_storecli()
 	return 0
 }
 
-
 argument_parser()
 {
+	# Exportar algumas variáveis especiais para o programa de acordo
+	# com os parâmetros recebidos na linha de comando.
+	for arg in "$@"; do
+		case "$arg" in
+		-y|--yes) export AssumeYes='True';;
+		-d|--downloadonly) export DownloadOnly='True';;
+		-I|--ignore-cli) export IgnoreCli='True';;
+		esac
+	done
+
+	# Argumentos que irão encerrar o programa após a sua execução. 
+	for arg in "$@"; do
+		case "$arg" in
+			-l|--list) shift; _list_applications "$@"; return 0; break;;
+			-v|--version) shift; echo "$(basename $scriptStorecli) V${__version__}"; return 0; break;;
+			-h|--help) shift; usage; return 0; break;;
+		esac
+	done
+
 	while [[ $1 ]]; do
 		case "$1" in
-			-b|--broke) _BROKE;;
-			-c|--configure) _run_configuration_dep;;
+			-l|--list) ;;
+			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			-l|--list) shift; _list_applications "$@"; return 0;;
-			-s|--self-update) "$scriptInstallStoreli";;
-			-y|--yes) ;;
+			-b|--broke) _BROKE;;
+			-c|--configure) _run_configuration_dep;;
+			-u|--self-update) "$scriptInstallStoreli";;
 			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
 			remove) shift; _uninstall_packages "$@"; return "$?";;
 			*) _red "(argument_parser) argumento inválido: $1"; return 1; break;;
@@ -1105,16 +1125,8 @@ argument_parser()
 
 main()
 {	
-	for option in "$@"; do
-		case "$option" in
-			-d|--downloadonly) export DownloadOnly='True';;
-			-I|--ignore-cli) export IgnoreCli='True';;
-			-y|--yes) export AssumeYes='True';;
-			-v|--version) echo "$(basename $scriptStorecli) V${__version__}"; exit 0; break;;
-			-h|--help) usage; exit 0; break;;
-		esac
-	done
-
+	argument_parser "$@"
+	_update_storecli
 
 	# Verificar se todos os utilitários de linha de comando 
 	# estão instalados - esta operação será IGNORADA caso a
@@ -1139,9 +1151,6 @@ main()
 			_run_configuration_dep || exit 1
 		}
 	fi
-
-	_update_storecli
-	argument_parser "$@"
 	return "$?"
 }
 

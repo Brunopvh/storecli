@@ -1195,7 +1195,7 @@ _libreoffice_appimage()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Já instalado.
-	is_executable 'libreoffice-appimage' && _show_info 'PkgInstalled' && return 0
+	is_executable 'libreoffice-appimage' && _show_info 'PkgInstalled' 'libreoffice-appimage' && return 0
 
 	_show_info "AddFileDesktop"
 	echo '[Desktop Entry]' | tee "${destinationFilesLibreofficeAppimage[file_desktop]}" 1> /dev/null
