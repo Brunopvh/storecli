@@ -503,6 +503,7 @@ _clear_temp_dirs()
 {
 	cd "$DirTemp" && __RMDIR $(ls)
 	cd "$DirUnpack" && __RMDIR $(ls)
+	cd "$DirGitclone" && __RMDIR $(ls)
 
 }
 
@@ -518,17 +519,20 @@ _DPKG()
 	while [[ ! -z $Pid_Apt_Install ]]; do
 		_loop_pid "$Pid_Apt_Install"
 		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+		sleep 0.2
 	done
 
 
 	while [[ ! -z $Pid_Apt_Systemd ]]; do 
 		_loop_pid "$Pid_Apt_Systemd"
 		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+		sleep 0.2
 	done
 	
 	while [[ ! -z $Pid_Dpkg_Install ]]; do 
 		_loop_pid "$Pid_Dpkg_Install"
 		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+		sleep 0.2
 	done
 
 	if sudo dpkg "$@"; then
@@ -555,18 +559,21 @@ _APT()
 	while [[ ! -z $Pid_Apt_Install ]]; do
 		_loop_pid "$Pid_Apt_Install"
 		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+		sleep 0.2
 	done
 
 	# Processo apt systemd em execução no sistema
 	while [[ ! -z $Pid_Apt_Systemd ]]; do
 		_loop_pid "$Pid_Dpkg_Install"
 		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+		sleep 0.2
 	done
 
 	# Processo dpkg install em execução no sistema
 	while [[ ! -z $Pid_Dpkg_Install ]]; do
 		_loop_pid "$Pid_Dpkg_Install"
 		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+		sleep 0.2
 	done
 
 	# [[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
@@ -987,6 +994,7 @@ _pkg_manager_storecli()
 			libreoffice) _libreoffice;;
 			libreoffice-appimage) _libreoffice_appimage;;
 
+			Navegadores) _Browser_All;;
 			chromium) _chromium;;
 			firefox) _firefox;;
 			'google-chrome') _google_chrome;;

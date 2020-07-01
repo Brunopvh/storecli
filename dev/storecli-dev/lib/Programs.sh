@@ -213,9 +213,14 @@ _woeusb_debian()
 
 	# Instalação do pacote .deb
 	# O pacote .deb será gerado um diretório atrás do diretório de compilação, ou seja cd ..
-	cd "$DirTemp"
+	cd "$DirGitclone"
 	sudo mv woeusb_*amd64.deb woeusb_amd64.deb
-	if _DPKG --install "$DirGitclone/WoeUSB_amd64.deb"; then
+	if [[ ! -f woeusb_amd64.deb ]]; then
+		_red "(_woeusb) arquivo '.deb' não encontrado"
+		return 1
+	fi
+
+	if _DPKG --install "$DirGitclone/woeusb_amd64.deb"; then
 		_green 'WoeUSB foi instalado com sucesso'	
 	else
 		_BROKE # Remover pacotes quebrados.
@@ -1300,7 +1305,7 @@ _firefox()
 	case "$os_id" in
 		arch) _pkg_manager_sys firefox;;
 		debian) _pkg_manager_sys 'firefox-esr';;
-		ubuntu) _pkg_manager_sys firefox;;
+		ubuntu|linuxmint) _pkg_manager_sys firefox;;
 		fedora) _pkg_manager_sys 'firefox.x86_64' 'mozilla-ublock-origin.noarch';;
 		'opensuse-leap') _pkg_manager_sys MozillaFirefox;;
 		*) _show_info 'ProgramNotFound' 'firefox'; return 1;;

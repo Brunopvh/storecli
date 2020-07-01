@@ -60,13 +60,11 @@ else
 	path_link="$HOME/.local/bin/storecli"
 fi
 
-
 dir_temp="/tmp/$USER/update"
 dir_unpack="$dir_temp/unpack"
 
 mkdir -p "$dir_temp"
 mkdir -p "$dir_unpack"
-#mkdir -p "$dir_storecli"
 
 path_file_repo="$dir_temp/storecli.tar.gz"
 
@@ -83,8 +81,6 @@ _WHICH()
 	fi
 }
 
-#----------------------------------------------------------#
-
 if ! _WHICH 'curl'; then
 	_red "Instale a ferramenta [curl]"
 	exit 1
@@ -92,8 +88,8 @@ fi
 
 _download_repo()
 {
-	_msg "Baixando [$url_master]"
-	_msg "Destino [$path_file_repo]"
+	_msg "Baixando: $url_master"
+	_msg "Destino: $path_file_repo"
 	if ! curl -sSL "$url_master" -o "$path_file_repo"; then
 		_red "Falha no download"
 		return 1
@@ -104,7 +100,6 @@ _download_repo()
 
 _RMDIR()
 {
-	# Remove um arquivo ou diretório informado no parametro $1
 	# $1 = arquivo/diretório
 
 	while [ $1 ]; do
@@ -125,12 +120,12 @@ _uninstall()
 		_RMDIR "$path_link" || return 1
 	fi
 
+
 	if [ -L "$path_link_gui" ]; then
 		_RMDIR "$path_link_gui" || return 1
 	fi
 	return 0
 }
-
 
 _unpack()
 {
@@ -145,14 +140,14 @@ _unpack()
 	cd "$dir_unpack" && rm -rf *
 	
 	# Descomprimir
-	_msg "Descomprimindo: $path_file"
-	tar -zxvf "$path_file" -C "$dir_unpack" 1> /dev/null
-
-	if [ $? -eq 0 ]; then
+	printf "%s" "[>] Descomprimindo: $path_file "
+	if tar -zxvf "$path_file" -C "$dir_unpack" 1> /dev/null; then
+		printf "${Yellow}OK${Reset}\n"
 		return 0
 	else
-		_red "Funçao [_unpack] retornou erro"
-		_red "Removendo [$path_file]"
+		printf "${Red}FALHA${Reset}\n"
+		_red "(_unpack) erro ao tentar descomprimir: $path_file"
+		_red "Removendo: $path_file"
 		rm -rf "$path_file"
 		return 1
 	fi
@@ -160,7 +155,7 @@ _unpack()
 
 _install()
 {
-	_msg "Instalando em: $dir_storecli"
+	_msg "Instalando em storecli em: $dir_storecli"
 	cd "$dir_unpack"
 	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
 	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
