@@ -133,6 +133,8 @@ _veracrypt()
 		return 1
 	fi
 
+	# Já instalado?.
+	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 	_yellow "Obtendo url de download aguarde"
 	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
 	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
@@ -147,10 +149,6 @@ _veracrypt()
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-
-	# Já instalado?.
-	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
-
 	printf "%s" "[>] Importando key: "
 	if wget -q "$vc_url_ascpub" -O- | gpg --import 1> /dev/null 2> /dev/null; then
 		_syellow "OK"
@@ -586,16 +584,10 @@ _codeblocks_archlinux()
 }
 
 
-_codeblocks_debian()
-{
-	_pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1
-}
-
-
 _codeblocks()
 {
 	case "$os_id" in
-		debian) _codeblocks_debian;;
+		debian) _pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
 		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
@@ -605,6 +597,8 @@ _codeblocks()
 
 _pycharm()
 {
+	# Já instalado.
+	is_executable 'pycharm' && _show_info 'PkgInstalled' 'pycharm' && return 0
 	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.1.tar.gz'
 	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
@@ -613,9 +607,6 @@ _pycharm()
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-
-	# Já instalado.
-	is_executable 'pycharm' && _show_info 'PkgInstalled' 'pycharm' && return 0
 
 	__shasum__ "$path_file" "$hash_pycharm" || return 1
 	_unpack "$path_file" || return 1
@@ -657,6 +648,8 @@ _pycharm()
 
 _sublime_text()
 {
+	# Já instalado.
+	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 	sublime_pag='https://www.sublimetext.com/3'
 	sublime_html=$(grep -m 1 'http.*sublime.*x64.tar.bz2' <<< $(curl -sL "$sublime_pag"))
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
@@ -666,9 +659,6 @@ _sublime_text()
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
-
-	# Já instalado.
-	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 	_unpack "$path_file" || return 1
 
 	sudo cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
@@ -1184,7 +1174,9 @@ _libreoffice_appimage()
 	# https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage
 	# https://github.com/AppImage/AppImageKit/wiki/FUSE
 	# https://wiki.archlinux.org/index.php/FUSE
-	# 
+	
+	# Já instalado.
+	is_executable 'libreoffice-appimage' && _show_info 'PkgInstalled' 'libreoffice-appimage' && return 0
 	local url='https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage'
 	local path_file="$DirDownloads/$(basename $url)"
 	local hash_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e83c3ef1e6'
@@ -1193,9 +1185,6 @@ _libreoffice_appimage()
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-
-	# Já instalado.
-	is_executable 'libreoffice-appimage' && _show_info 'PkgInstalled' 'libreoffice-appimage' && return 0
 
 	_show_info "AddFileDesktop"
 	echo '[Desktop Entry]' | tee "${destinationFilesLibreofficeAppimage[file_desktop]}" 1> /dev/null
@@ -1392,7 +1381,6 @@ _google_chrome_archlinux()
 	_pkg_manager_sys "base-devel"
 	_pkg_manager_sys pipewire
 
-	
 	_msg "Executando: makepkg -s"
 	cd "$DirTemp/google-chrome"
 	makepkg -s
@@ -1427,8 +1415,7 @@ _opera_stable_debian()
 	
 	_white "Importando key"
 	sudo sh -c 'curl -sSL http://deb.opera.com/archive.key | apt-key add -' || return 1
-	#sudo sh -c 'wget -q -O- http://deb.opera.com/archive.key | apt-key add -'
-
+	
 	find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
 
 	if [[ $? == '0' ]]; then
@@ -1820,9 +1807,7 @@ _install_teamviewer_fedora()
 	)
 	
 	__download__ "$url_rpm" "$path_file" || return 1
-
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_RPM --install "$path_file" || return 1
 }
 
@@ -2059,7 +2044,7 @@ _python_twodict_github()
 	_gitclone 'https://github.com/MrS0m30n3/twodict.git' || return 1
 	_white "Executando: python2 setup.py"
 
-	cd "$DirTemp/twodict"
+	cd "$DirGitclone/twodict"
 	if is_executable 'python2'; then
 		sudo python2 setup.py install 1>> "$LogFile"
 	elif is_executable 'python2.7'; then
@@ -2308,7 +2293,7 @@ _youtube_dlgui()
 _bluetooth()
 {
 	if [[ "$os_id" != 'debian' ]]; then
-		_yellow "Este pacote está disponível apenas para sistemas Debian"
+		_red "Este pacote está disponível apenas para sistemas Debian"
 		return 1
 	fi
 
@@ -2396,17 +2381,15 @@ _gparted()
 
 _peazip()
 {
+	# Já instalado
+	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
 	# Url fixo versão 6.8
-	local peazip_url__download__nload='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$DirDownloads/$(basename $peazip_url__download__nload)"
+	local peazip_url__download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_file="$DirDownloads/$(basename $peazip_url__download)"
 	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
 
-	__download__ "$peazip_url__download__nload" "$path_file" || return 1
-
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-		
-	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0 
+	__download__ "$peazip_url__download" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
 
 	__shasum__ "$path_file" "$hash_file" || return 1
 	_unpack "$path_file" || return 1
@@ -2790,6 +2773,7 @@ _virtualbox_linux_run()
 
 _virtualbox()
 {
+	#is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
 	case "$os_id" in
 		debian|linuxmint|ubuntu) _virtualbox_debian;;
 		fedora) _virtualbox_fedora;;
@@ -3057,12 +3041,36 @@ _topicons_plus()
 	esac
 }
 
-#=============================================================#
-# Gnome tweaks
-#=============================================================#
 _gnome_tweaks()
 {
 	_pkg_manager_sys 'gnome-tweaks'
+}
+
+#=============================================================#
+# Instalar todos os pacotes da categória Acessorios.
+#=============================================================#
+_Acessory_All()
+{
+	if [[ -z "$AssumeYes" ]]; then
+		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
+	fi
+
+	if [[ -z "$AssumeYes" ]]; then
+		"$scriptStorecli" install etcher
+		"$scriptStorecli" install gnome-disk
+		"$scriptStorecli" install veracrypt
+		"$scriptStorecli" install woeusb
+	elif [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" = 'True' ]]; then
+		"$scriptStorecli" --yes --downloadonly install etcher
+		"$scriptStorecli" --yes --downloadonly install gnome-disk
+		"$scriptStorecli" --yes --downloadonly install veracrypt
+		"$scriptStorecli" --yes --downloadonly install woeusb
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" --yes install etcher
+		"$scriptStorecli" --yes install gnome-disk
+		"$scriptStorecli" --yes install veracrypt
+		"$scriptStorecli" --yes install woeusb
+	fi
 }
 
 #=============================================================#
@@ -3073,12 +3081,33 @@ _System_All()
 	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
 	fi
-	_bluetooth
-	_compactadores
-	_firmware
-	_peazip
-	_stacer
-	_virtualbox
+	
+	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
+		"$scriptStorecli" --yes --downloadonly install bluetooth
+		"$scriptStorecli" --yes --downloadonly install compactadores
+		"$scriptStorecli" --yes --downloadonly install gparted
+		"$scriptStorecli" --yes --downloadonly install peazip
+		"$scriptStorecli" --yes --downloadonly install refind
+		"$scriptStorecli" --yes --downloadonly install stacer
+		"$scriptStorecli" --yes --downloadonly install virtualbox
+		
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" --yes install bluetooth
+		"$scriptStorecli" --yes install compactadores
+		"$scriptStorecli" --yes install gparted
+		"$scriptStorecli" --yes install peazip
+		"$scriptStorecli" --yes install refind
+		"$scriptStorecli" --yes install stacer
+		"$scriptStorecli" --yes install virtualbox
+	else
+		"$scriptStorecli" install bluetooth
+		"$scriptStorecli" install compactadores
+		"$scriptStorecli" install gparted
+		"$scriptStorecli" install peazip
+		"$scriptStorecli" install refind
+		"$scriptStorecli" install stacer
+		"$scriptStorecli" install virtualbox
+	fi
 }
 
 #=============================================================#
@@ -3089,19 +3118,38 @@ _Internet_All()
 	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 	fi
-	_chromium
-    _google_chrome
-    _megasync
-    _opera_stable
-    _proxychains
-    _qbittorrent
-    _teamviewer
-    _telegram
-    _tixati
-    _torbrowser
-    _uget
-    _youtube_dl
-    _youtube_dlgui
+
+	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
+		"$scriptStorecli" --yes --downloadonly install megasync
+		"$scriptStorecli" --yes --downloadonly install proxychains
+		"$scriptStorecli" --yes --downloadonly install qbittorrent
+		"$scriptStorecli" --yes --downloadonly install teamviewer
+		"$scriptStorecli" --yes --downloadonly install telegram
+		"$scriptStorecli" --yes --downloadonly install tixati
+		"$scriptStorecli" --yes --downloadonly install uget
+		"$scriptStorecli" --yes --downloadonly install youtube-dl
+		"$scriptStorecli" --yes --downloadonly install youtube-dl-gui
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" --yes install megasync
+		"$scriptStorecli" --yes install proxychains
+		"$scriptStorecli" --yes install qbittorrent
+		"$scriptStorecli" --yes install teamviewer
+		"$scriptStorecli" --yes install telegram
+		"$scriptStorecli" --yes install tixati
+		"$scriptStorecli" --yes install uget
+		"$scriptStorecli" --yes install youtube-dl
+		"$scriptStorecli" --yes install youtube-dl-gui
+	else
+		"$scriptStorecli" install megasync
+		"$scriptStorecli" install proxychains
+		"$scriptStorecli" install qbittorrent
+		"$scriptStorecli" install teamviewer
+		"$scriptStorecli" install telegram
+		"$scriptStorecli" install tixati
+		"$scriptStorecli" install uget
+		"$scriptStorecli" install youtube-dl
+		"$scriptStorecli" install youtube-dl-gui
+	fi
 }
 
 #=============================================================#
@@ -3112,10 +3160,26 @@ _Browser_All()
 	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
 	fi
-	_chromium
-    _google_chrome
-    _opera_stable
-    _torbrowser
+
+	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
+		"$scriptStorecli" --yes --downloadonly install chromium
+		"$scriptStorecli" --yes --downloadonly install firefox
+		"$scriptStorecli" --yes --downloadonly install google-chrome
+		"$scriptStorecli" --yes --downloadonly install opera-stable
+		"$scriptStorecli" --yes --downloadonly install torbrowser
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" --yes install chromium
+		"$scriptStorecli" --yes install firefox
+		"$scriptStorecli" --yes install google-chrome
+		"$scriptStorecli" --yes install opera-stable
+		"$scriptStorecli" --yes install torbrowser
+	else
+		"$scriptStorecli" install chromium
+		"$scriptStorecli" install firefox
+		"$scriptStorecli" install google-chrome
+		"$scriptStorecli" install opera-stable
+		"$scriptStorecli" install torbrowser
+	fi
 }
 
 #=============================================================#
@@ -3126,10 +3190,23 @@ _Office_All()
 	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
 	fi
-	_atril
-	_fontes_microsoft
-	_libreoffice_appimage
-	_libreoffice
+
+	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
+		"$scriptStorecli" -y -d install atril
+		"$scriptStorecli" -y -d install fontes-ms
+		"$scriptStorecli" -y -d install libreoffice-appimage
+		"$scriptStorecli" -y -d install libreoffice
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" -y install atril
+		"$scriptStorecli" -y install fontes-ms
+		"$scriptStorecli" -y install libreoffice-appimage
+		"$scriptStorecli" -y install libreoffice
+	else
+		"$scriptStorecli" install atril
+		"$scriptStorecli" install fontes-ms
+		"$scriptStorecli" install libreoffice-appimage
+		"$scriptStorecli" install libreoffice
+	fi
 }
 
 #=============================================================#
@@ -3140,15 +3217,38 @@ _Midia_All()
 	if [[ -z "$AssumeYes" ]]; then
 		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
 	fi
-	_codecs
-	_celluloid
-	_cinema
-	_gnome_mpv
-	_parole
-	_smplayer
-	_spotify
-	_totem
-	_vlc
+
+	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
+		"$scriptStorecli" -y -d install codecs
+		"$scriptStorecli" -y -d install celluloid
+		"$scriptStorecli" -y -d install cinema
+		"$scriptStorecli" -y -d install gnome-mpv
+		"$scriptStorecli" -y -d install parole
+		"$scriptStorecli" -y -d install smplayer
+		"$scriptStorecli" -y -d install spotify
+		"$scriptStorecli" -y -d install totem
+		"$scriptStorecli" -y -d install vlc
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" -y install codecs
+		"$scriptStorecli" -y install celluloid
+		"$scriptStorecli" -y install cinema
+		"$scriptStorecli" -y install gnome-mpv
+		"$scriptStorecli" -y install parole
+		"$scriptStorecli" -y install smplayer
+		"$scriptStorecli" -y install spotify
+		"$scriptStorecli" -y install totem
+		"$scriptStorecli" -y install vlc
+	else
+		"$scriptStorecli" install codecs
+		"$scriptStorecli" install celluloid
+		"$scriptStorecli" install cinema
+		"$scriptStorecli" install gnome-mpv
+		"$scriptStorecli" install parole
+		"$scriptStorecli" install smplayer
+		"$scriptStorecli" install spotify
+		"$scriptStorecli" install totem
+		"$scriptStorecli" install vlc
+	fi
 }
 
 #=============================================================#
@@ -3160,25 +3260,28 @@ _Dev_All()
 		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
 	fi
 	
-	_android_studio
-    _codeblocks
-    _pycharm
-    _sublime_text
-    _vim
-    _vscode
+	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
+		"$scriptStorecli" -y -d install android-studio
+		"$scriptStorecli" -y -d install codeblocks
+		"$scriptStorecli" -y -d install pycharm
+		"$scriptStorecli" -y -d install sublime-text
+		"$scriptStorecli" -y -d install vim
+		"$scriptStorecli" -y -d install vscode
+	elif [[ "$AssumeYes" == 'True' ]]; then
+		"$scriptStorecli" -y install android-studio
+		"$scriptStorecli" -y install codeblocks
+		"$scriptStorecli" -y install pycharm
+		"$scriptStorecli" -y install sublime-text
+		"$scriptStorecli" -y install vim
+		"$scriptStorecli" -y install vscode
+	else
+		"$scriptStorecli" install android-studio
+		"$scriptStorecli" install codeblocks
+		"$scriptStorecli" install pycharm
+		"$scriptStorecli" install sublime-text
+		"$scriptStorecli" install vim
+		"$scriptStorecli" install vscode
+	fi
 }
 
-#=============================================================#
-# Instalar todos os pacotes da categória Acessorios.
-#=============================================================#
-_Acessory_All()
-{
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
-	fi
-	_etcher
-	_gnome_disk
-	_veracrypt
-	_woeusb
-}
 

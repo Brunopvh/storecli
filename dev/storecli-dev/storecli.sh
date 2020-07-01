@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_01_rev1'
+__version__='2020_07_01_rev2'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -960,7 +960,6 @@ _pkg_manager_storecli()
 	while [[ $1 ]]; do
 		
 		[[ -z $1 ]] && return 0 
-		
 		case "$1" in
 			-d|--downloadonly) shift;;
 			-y|--yes) shift;;
