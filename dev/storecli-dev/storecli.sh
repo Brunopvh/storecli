@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_30_rev7'
+__version__='2020_06_30_rev8'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -110,6 +110,7 @@ libPrograms="$dirSTORECLIPathLib/Programs.sh"
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
 scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
+scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
 
 #=============================================================#
 # importar libs
@@ -421,7 +422,7 @@ cat << EOF
        -v|--version                  Mostra versão.
        -y|--yes                      Assume sim para maioria da indagações.
                                      
-
+     Argumentos:
        remove <remove>             Remove um pacote.
        install <pacote>            Instala um pacote.
 
@@ -586,7 +587,7 @@ _APT()
 _BROKE()
 {
 	if [[ ! -x $(command -v apt 2> /dev/null) ]]; then
-		_yellow "Esta opção só está disponivel para sistemas baseados em Debian"
+		_red "(_BROKE) esta opção só está disponível para sistemas baseados em Debian"
 		return 0
 	fi
 
@@ -1039,16 +1040,59 @@ _pkg_manager_storecli()
 	done
 }
 
+_update_storecli()
+{
+	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+	local FileConfigUpdate="$directoryUSERconfig/update.conf"; touch "$FileConfigUpdate"
+	local tempFileUpdate="$DirTemp/storecli.update"                    	
+	local day=$(date +%d) # Dia atual.
+	
+	# dia em que a ultima busca por atualizaçãoes por executada.
+	local day_update=$(grep -m 1 "day_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
+	
+	if [[ "$day" == "$day_update" ]]; then
+		echo -e "day_update $day" > "$FileConfigUpdate"
+		return 0
+	fi
+		
+	_ping || return 1
+	
+	printf "%s" "[>] Verificando atualização no github aguarde "
+	if curl -fsSL https://raw.github.com/Brunopvh/storecli/master/storecli.sh -o "$tempFileUpdate"; then
+		_syellow "OK"
+		OnlineVersion=$(grep -m 1 ^'VERSION' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
+	else
+		_sred "FALHA"
+		return 1
+	fi
+	
+	if [[ "$OnlineVersion" == "$VERSION" ]]; then
+		_yellow "Não existem atualizações disponíveis para o script storecli"
+		return 0
+	fi
+	
+	_yellow "Atualização disponível: $OnlineVersion"
+	_yellow "Instalando atualização"
+	
+	if ! "$scriptInstallStoreli"; then
+		_red "(_update_storecli) falha"
+		return 1
+	fi
+	echo -e "day_update $day" > "$FileConfigUpdate"
+	return 0
+}
+
+
 argument_parser()
 {
 	while [[ $1 ]]; do
 		case "$1" in
-			-b|--broke) ;;
+			-b|--broke) _BROKE;;
 			-c|--configure) _run_configuration_dep;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
 			-l|--list) shift; _list_applications "$@"; return 0;;
-			-s|--self-update) ;;
+			-s|--self-update) "$scriptInstallStoreli";;
 			-y|--yes) ;;
 			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
 			remove) shift; _uninstall_packages "$@"; return "$?";;
@@ -1095,6 +1139,7 @@ main()
 		}
 	fi
 
+	_update_storecli
 	argument_parser "$@"
 	return "$?"
 }
