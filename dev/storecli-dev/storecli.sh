@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_06_30_rev8'
+__version__='2020_06_30_rev9'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -37,15 +37,6 @@ if ! uname -m | grep '64' 1> /dev/null; then
 	printf "\033[0;31m Seu sistema não e 64 bits. Saindo\033[m\n"
 	exit 1
 fi
-
-#=============================================================#
-# Configuração de diretórios para libs, scripts e programas
-#=============================================================#
-export dirSTORECLIPath=$(dirname $(readlink -f "$0"))
-export scriptStorecli=$(readlink -f "$0")
-export dirSTORECLIPathLib="$dirSTORECLIPath/lib"
-export dirSTORECLIPathScripts="$dirSTORECLIPath/scripts"
-export dirSTORECLIPathPython="$dirSTORECLIPath/python"
 
 #=============================================================#
 # Diretórios do usuário
@@ -94,6 +85,15 @@ if [[ ! -d "$directoryROOTapplications" ]]; then
 fi
 
 #=============================================================#
+# Configuração de diretórios para libs, scripts e programas
+#=============================================================#
+export dirSTORECLIPath=$(dirname $(readlink -f "$0"))
+export scriptStorecli=$(readlink -f "$0")
+export dirSTORECLIPathLib="$dirSTORECLIPath/lib"
+export dirSTORECLIPathScripts="$dirSTORECLIPath/scripts"
+export dirSTORECLIPathPython="$dirSTORECLIPath/python"
+
+#=============================================================#
 # Definir as Libs e scripts a serem usados
 #=============================================================#
 
@@ -111,6 +111,7 @@ scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
 scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
 scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
+scriptOhmybashInstaller="$dirSTORECLIPathScripts/ohmybash.run"
 
 #=============================================================#
 # importar libs

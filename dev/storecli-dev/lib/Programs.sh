@@ -2811,22 +2811,20 @@ _ohmybash()
 	# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
-	local path_file="$DirDownloads/ohmybash.zip"
+	local ohmybashZipFile="$DirDownloads/ohmybash.zip"
 	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
 	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
+	
+	if is_executable "$scriptOhmybashInstaller"; then
+		"$scriptOhmybashInstaller"
+	else 
+		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
+	fi
 
-	# Download do instalador e dos temas para OhMybash
-	if [[ -f "$ohmybash_installer" ]]; then rm "$ohmybash_installer"; fi
-	__download__ "$url_installer" "$ohmybash_installer" || return 1
-	__download__ "$ohmybash_master" "$path_file" || return 1
+	__download__ "$ohmybash_master" "$ohmybashZipFile" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
 
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
-
-	chmod +x "$ohmybash_installer" 
-	"$ohmybash_installer"
-
-	_unpack "$path_file" || return 1
+	_unpack "$ohmybashZipFile" || return 1
 	_msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
 	mkdir -p "$HOME/.bash/themes"
 	cp -R -u "$DirUnpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
