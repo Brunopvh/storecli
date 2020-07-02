@@ -139,18 +139,21 @@ _veracrypt()
 	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
 	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
 	local vc_url_download=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
-	local vc_url_ascpub='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
+	local vc_url_AscPub='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
 	local vc_url_sig="${vc_url_download}.sig"
+	
 	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
 	local veracryptSigFile="${veracryptTarFile}.sig"
+	local veracryptAscFile="$DirDownloads/$(basename $vc_url_AscPub)"
 
 	__download__ "$vc_url_download" "$veracryptTarFile" || return 1
 	__download__ "$vc_url_sig" "$veracryptSigFile" || return 1
+	__download__ "$vc_url_AscPub" "$veracryptAscFile" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	printf "%s" "[>] Importando key: "
-	if wget -q "$vc_url_ascpub" -O- | gpg --import 1> /dev/null 2> /dev/null; then
+	if gpg --import "$veracryptAscFile" 1> /dev/null; then
 		_syellow "OK"
 	else
 		_sred "FALHA"
@@ -906,22 +909,11 @@ _codecs_fedora()
 		'xvidcore' 
 	)
 
-	for c in "${array_codecs_fedora[@]}"; do
-		green "Instalando: $c"
-		if ! _pkg_manager_sys "$c"; then
-			red "Falha $c"
-			sleep 0.5
-		fi
-	done
+	_msg "Instalando: ${array_codecs_fedora[@]}"
+	_pkg_manager_sys "${array_codecs_fedora[@]}"
 
-
-	for c in "${array_gstreamer_fedora[@]}"; do
-		green "Instalando: $c"
-		if ! _pkg_manager_sys "$c"; then
-			red "Falha $c"
-			sleep 0.5
-		fi
-	done
+	_msg "Instalando: ${array_gstreamer_fedora[@]}"	
+	_pkg_manager_sys "${array_gstreamer_fedora[@]}"
 }
 
 _codecs_arch()
@@ -1122,7 +1114,7 @@ _totem(){
 
 _vlc_fedora()
 {
-	"$scriptAddRepo" --repo fedora # Adicionar repositórios fusion non free
+	sudo "$scriptAddRepo" --repo fedora # Adicionar repositórios fusion non free
 	_pkg_manager_sys vlc 'python-vlc'
 }
 
@@ -1899,6 +1891,9 @@ _telegram()
 
 _tixati_tarfile()
 {
+	# Já instalado.
+	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
+
 	_yellow "Obtendo URL de download aguarde."
 	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
 	local tixati_html=$(curl -sSL "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
@@ -1913,11 +1908,8 @@ _tixati_tarfile()
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
-	
-	# Já instalado.
-	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	echo -ne "[>] Importando key tixati "
+	printf "%s" "[>] Importando key tixati "
 	if curl -sSL https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
 		echo -e "${CYellow}OK${CReset}"
 	else
@@ -1927,7 +1919,7 @@ _tixati_tarfile()
 	fi
 
 	# Gpg
-	__gpg__ "$signatureFile" "$TarFile" || return 1
+	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
 	_msg "Instalando gconf2"
@@ -3179,7 +3171,7 @@ _Acessory_All()
 		"$scriptStorecli" install veracrypt
 		"$scriptStorecli" install woeusb
 	elif [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" = 'True' ]]; then
-		"$scriptStorecli" --yes --downloadonly install etcher
+		main --yes --downloadonly install etcher
 		"$scriptStorecli" --yes --downloadonly install gnome-disk
 		"$scriptStorecli" --yes --downloadonly install veracrypt
 		"$scriptStorecli" --yes --downloadonly install woeusb

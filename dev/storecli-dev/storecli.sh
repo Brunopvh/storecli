@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_01_rev2'
+__version__='2020_07_02_dev'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -970,19 +970,17 @@ _pkg_manager_storecli()
 	_space_text "[+] Sistema" "$os_id $os_release"
 
 	while [[ $1 ]]; do
-		
 		[[ -z $1 ]] && return 0 
 		case "$1" in
-			-d|--downloadonly) shift;;
-			-y|--yes) shift;;
-			-I|--ignore-cli) shift;; 
+			-d|--downloadonly) ;;
+			-y|--yes) ;;
+			-I|--ignore-cli) ;; 
 
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
-
 
 			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
 			'android-studio') _android_studio;;
