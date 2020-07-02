@@ -21,7 +21,7 @@ _loop_pid()
 
 		Char="${array_chars[$num_char]}"		
 		echo -ne "Aguardando processo com pid [$Pid] finalizar [${Char}]\r"
-		sleep 0.25
+		sleep 0.2
 		
 		num_char="$(($num_char+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'

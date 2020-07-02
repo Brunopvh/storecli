@@ -162,7 +162,7 @@ _install()
 	_msg "Instalando em: $dir_storecli"
 	cd "$dir_unpack"
 	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
-	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
+	ln -sf "$dir_storecli"/dev/storecli-dev/storecli.sh "$path_link"  # Link do executável
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
 	

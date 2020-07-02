@@ -2100,7 +2100,7 @@ _youtube_dlgui_file_desktop_root()
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | sudo tee -a "$file_desktop_tubedl_gui" 1>> "$LogFile"
+	} | sudo tee -a "$file_desktop_tubedl_gui" 1> /dev/null
 
 	_yellow "Criando atalho na Área de Trabalho"
 	ln -sf "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
@@ -2137,22 +2137,13 @@ _youtube_dlgui_compile()
 
 _youtube_dlgui_pip() 
 {
-
 	# ppa ubuntu.
 	# sudo sh -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
 	# sudo apt install youtube-dlg --yes
 	_pkg_manager_sys 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
 	pip install --user wheel 'youtube-dlg' || return 1
-
 	_youtube_dlgui_file_desktop_user
-	
-	if is_executable 'youtube-dl-gui'; then
-		_show_info 'SuccessInstalation' 'youtube-dl-gui'
-		return 0
-	else
-		_show_info 'InstalationFailed' 'youtube-dl-gui'
-		return 1
-	fi
+	return 0
 } 
 
 _youtube_dlgui_ubuntu()
