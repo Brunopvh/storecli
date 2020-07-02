@@ -151,6 +151,13 @@ destinationFilesPapirus=(
 	[papirus]="$directoryUSERicon/Papirus" 
 )
 
+declare -A destinationFilesEpsxe
+destinationFilesEpsxe=(
+	[file_desktop]="$directoryUSERapplications/epsxe.desktop"
+	[file_png]="$directoryUSERicon/ePSxe.svg"
+	[link]="$directoryUSERbin/epsxe"
+	[dir]="$directoryUSERbin/epsxe-amd64"
+)
 
 
 #=============================================================#

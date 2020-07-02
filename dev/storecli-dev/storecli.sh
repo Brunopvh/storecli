@@ -5,6 +5,11 @@ __version__='2020_07_01_rev2'
 __author__='Bruno Chaves'
 #
 #=============================================================#
+# GitHub
+#=============================================================#
+# https://github.com/Brunopvh/storecli
+#
+#=============================================================#
 # REFERÊNCIAS
 #=============================================================#
 # https://www.dicas-l.com.br/arquivo/fatiando_opcoes_com_o_getopts.php
@@ -1044,6 +1049,9 @@ _pkg_manager_storecli()
 			'gnome-backgrounds') _gnome_backgrounds;;
 			'gnome-tweaks') _gnome_tweaks;;
 			'topicons-plus') _topicons_plus;;
+			
+			epsxe) _epsxe;;
+
 			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
 		esac
 		shift

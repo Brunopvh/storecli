@@ -30,7 +30,7 @@ Dir_User_Themes="$HOME/.themes"
 Dir_User_Application="$HOME/.local/share/applications"
 Dir_User_Icons="$HOME/.local/share/icons"
 #Dir_User_Icons="$HOME/.icons"
-Dir_Downloads="$HOME/.cache/downloads"
+Dir_Downloads="$HOME/.cache/storecli/downloads"
 Dir_User_Config="$HOME/.config"
 
 export array_user_dirs=(

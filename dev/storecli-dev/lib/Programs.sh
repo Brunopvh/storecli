@@ -3051,6 +3051,119 @@ _gnome_tweaks()
 	_pkg_manager_sys 'gnome-tweaks'
 }
 
+
+
+
+_epsxe_archlinux()
+{
+	# https://wiki.archlinux.org/index.php/EPSXe
+	# https://aur.archlinux.org/packages/epsxe/
+	# libncurses.so.5 => not found
+	# libtinfo.so.5 => not found
+	# libSDL_ttf-2.0.so.0 => not found
+	#
+	local urlEpsxe='http://www.epsxe.com/files/ePSXe205linux_x64.zip'
+	local urlLIBinfo5='http://ftp.us.debian.org/debian/pool/main/n/ncurses/libtinfo5_6.1+20181013-2+deb10u2_amd64.deb'
+	local urlLIBncurses5='http://ftp.us.debian.org/debian/pool/main/n/ncurses/libncurses5_6.1+20181013-2+deb10u2_amd64.deb'
+	local urlLIBcurl4='http://ftp.us.debian.org/debian/pool/main/c/curl/libcurl4_7.68.0-1_amd64.deb'
+	local urlOPENssl3='http://ftp.us.debian.org/debian/pool/main/o/openssl/openssl_1.1.0l-1~deb9u1_amd64.deb'
+
+	local pathLIBinfoDEB="$DirDownloads/libtinfo5_6-amd64.deb"
+	local pathLIBncurserDEB="$DirDownloads/libncurses5_6-amd64.deb"
+	local pathLIBcurlDEB="$DirDownloads/libcurl4_7-amd64.deb"
+	local pathOPENsslDEB="$DirDownloads/openssl_1-amd64.deb"
+	local pathFileEpsxe="$DirDownloads/$(basename $urlEpsxe)"
+
+	local archlinuxRequerimentsEpsxe=(
+		'lib32-sdl2_ttf'
+		'sdl_ttf'
+		'lib32-openssl-1.0'
+		'ncurses'
+		)
+
+	__download__ "$urlEpsxe" "$pathFileEpsxe" || return 1
+	__download__ "$urlLIBinfo5" "$pathLIBinfoDEB" || return 1
+	__download__ "$urlLIBncurses5" "$pathLIBncurserDEB" || return 1
+	__download__ "$urlLIBcurl4" "$pathLIBcurlDEB" || return 1 
+	__download__ "$urlOPENssl3" "$pathOPENsslDEB" || return 1
+
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+
+	_unpack "$pathFileEpsxe" || return 0
+	cd "$DirUnpack"
+	mkdir -p "${destinationFilesEpsxe[dir]}"
+	cp -R -u epsxe_x64 "${destinationFilesEpsxe[dir]}"/
+	cp -R -u docs "${destinationFilesEpsxe[dir]}"/
+	ln -sf "${destinationFilesEpsxe[dir]}"/epsxe_x64 "${destinationFilesEpsxe[link]}" 
+	
+	echo "[Desktop Entry]" > "${destinationFilesEpsxe[file_desktop]}"
+	{
+	  echo "Type=Application"
+	  echo "Terminal=false"
+	  echo "Exec='cd ${destinationFilesEpsxe[dir]}; ./epsxe_x64'"
+	  echo "Name=ePSXe"
+	  echo "Comment=Instalado via storecli github: https://github.com/Brunopvh/storecli"
+	  echo "Icon=${destinationFilesEpsxe[file_png]}"
+	  echo "Categories=Game;Emulator;"
+	} >> "${destinationFilesEpsxe[file_desktop]}"
+	
+	chmod -R +x "${destinationFilesEpsxe[dir]}"
+	chmod +x "${destinationFilesEpsxe[file_desktop]}"
+
+	#_msg "Instalando: ${archlinuxRequerimentsEpsxe[@]}"
+	#_pkg_manager_sys "${archlinuxRequerimentsEpsxe[@]}"
+
+	# libtinfo.so.5.9
+	__shasum__ "$pathLIBinfoDEB" 'f9d7df1e86b5376c1ae102739d04a5605386b331c8bc47ea471facaec0f63ae2' || return 1
+	_unpack "$pathLIBinfoDEB" || return 1
+	_unpack "$DirUnpack/data.tar.xz" || return 1
+	cd "$DirUnpack"/lib/x86_64-linux-gnu
+	_yellow "Configurando: /usr/lib/libtinfo.so.5"
+	sudo mv libtinfo.so.5.9 '/usr/lib/libtinfo.so.5.9'
+	sudo mv libtinfo.so.5 '/usr/lib/libtinfo.so.5'
+	sudo chmod +rwx '/usr/lib/libtinfo.so.5.9'
+
+	_clear_temp_dirs
+
+	# libncurses5
+	__shasum__ "$pathLIBncurserDEB" '2bea6e3579991f70c47401a5d70e131b83c34c4c6eee4af478e9232042b1d288' || return 1
+	_unpack "$pathLIBncurserDEB" || return 1
+	_unpack "$DirUnpack/data.tar.xz" || return 1
+	cd "$DirUnpack"/lib/x86_64-linux-gnu
+	_yellow "Configurando: libncurses.so.5"
+	sudo mv libncurses.so.5.9 '/usr/lib/libncurses.so.5.9'
+	sudo mv libncurses.so.5 '/usr/lib/libncurses.so.5'
+	sudo chmod +rwx '/usr/lib/libncurses.so.5'
+
+	_clear_temp_dirs
+
+	# libcurl.so.4
+	__shasum__ "$pathLIBcurlDEB" 'c684a8b58ff5cb5ca353962ab29607ecd999fef29018363e8e794b4e87088c02' || return 1
+	_unpack "$pathLIBcurlDEB" || return 1
+	_unpack "$DirUnpack/data.tar.xz" || return 1
+	cd "$DirUnpack"/usr/lib/x86_64-linux-gnu
+	_yellow "Configurando: libcurl.so.4"
+	sudo mkdir -p /usr/lib/x86_64-linux-gnu
+	sudo mv libcurl.so.4.6.0 '/usr/lib/x86_64-linux-gnu/libcurl.so.4.6.0'
+	sudo mv libcurl.so.4 '/usr/lib/x86_64-linux-gnu/libcurl.so.4'
+	sudo chmod +rwx '/usr/lib/x86_64-linux-gnu/libcurl.so.4.6.0'
+	return
+	# openssl3
+	__shasum__ "$pathOPENsslDEB" 'd9f6a3baca51587eef51a502011d21e1eb56328ebe94db92146de1224306add7'
+	_unpack "$pathOPENsslDEB" || return 1
+	_unpack "$DirUnpack/data.tar.xz" || return 1
+	cd "$DirUnpack"
+	_yellow "Configurando: openssl3"
+}
+
+_epsxe()
+{
+	case "$os_id" in
+		arch) _epsxe_archlinux;;
+		*) _show_info 'ProgramNotFound' 'epsxe'; return 0;;
+	esac
+}
+
 #=============================================================#
 # Instalar todos os pacotes da categória Acessorios.
 #=============================================================#
