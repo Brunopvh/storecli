@@ -846,17 +846,26 @@ __download__()
 		return 0
 	fi
 
-	cd "$directoryUSERdownloads"
+	cd "$DirDownloads"
 	_blue "Baixando: $1"
 
 	if is_executable wget; then
-		__wget__ "$@" || return 1
+		__wget__ "$@" 
 	elif is_executable curl; then
 		__curl__ "$@" || return 1
 	else
 		_red "(__download__) instale o pacote 'wget' ou 'curl'"
 		return 1
 	fi
+
+	while [[ "$?" != '0' ]]; do
+		if _YESNO "Deseja tentar baixar novamente"; then
+			__wget__ "$@"
+		else
+			return 1; break
+		fi
+	done
+	[[ "$?" == '0' ]] || return 1
 }
 
 _gitclone()
