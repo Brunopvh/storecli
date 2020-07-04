@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_02_dev'
+__version__='2020_07_03_dev'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -117,6 +117,7 @@ scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
 scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
 scriptOhmybashInstaller="$dirSTORECLIPathScripts/ohmybash.run"
+GUI="$dirSTORECLIPathPython/pygui.py"
 
 #=============================================================#
 # importar libs
@@ -1058,6 +1059,8 @@ _pkg_manager_storecli()
 			'topicons-plus') _topicons_plus;;
 			
 			epsxe) _epsxe;;
+			epsxe-win) _epsxe_windows;;
+			snapd) _snapd;;
 
 			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
 		esac
@@ -1109,16 +1112,6 @@ _update_storecli()
 
 argument_parser()
 {
-	# Exportar algumas variáveis especiais para o programa de acordo
-	# com os parâmetros recebidos na linha de comando.
-	for arg in "$@"; do
-		case "$arg" in
-		-y|--yes) export AssumeYes='True';;
-		-d|--downloadonly) export DownloadOnly='True';;
-		-I|--ignore-cli) export IgnoreCli='True';;
-		esac
-	done
-
 	# Argumentos que irão encerrar o programa após a sua execução. 
 	for arg in "$@"; do
 		case "$arg" in
@@ -1147,8 +1140,15 @@ argument_parser()
 
 main()
 {	
-	argument_parser "$@"
-	_update_storecli
+	# Exportar algumas variáveis especiais para o programa de acordo
+	# com os parâmetros recebidos na linha de comando.
+	for arg in "$@"; do
+		case "$arg" in
+		-y|--yes) export AssumeYes='True';;
+		-d|--downloadonly) export DownloadOnly='True';;
+		-I|--ignore-cli) export IgnoreCli='True';;
+		esac
+	done
 
 	# Verificar se todos os utilitários de linha de comando 
 	# estão instalados - esta operação será IGNORADA caso a
@@ -1159,9 +1159,7 @@ main()
 	#   -I|--gnore-cli
 	#
 	if [[ "$IgnoreCli" != 'True' ]]; then
-		if ! check_requeriments_sys; then
-			_run_configuration_dep || exit 1
-		fi
+		check_requeriments_sys 
 	fi
 
 	# Se a string 'requeriments OK' não estiver no arquivo de configuração
@@ -1170,10 +1168,17 @@ main()
 	# diferente de '0' a função _run_configuration_dep será invocada.
 	if [[ "$IgnoreCli" != 'True' ]]; then
 		grep -q 'requeriments OK' "$configFILE" || {
-			_run_configuration_dep || exit 1
+			_run_configuration_dep || return 1
 		}
 	fi
+
+	argument_parser "$@"
+	_update_storecli
 	return "$?"
 }
 
-main "$@"
+if [[ -z $1 ]]; then
+	"$GUI"
+else
+	main "$@"
+fi

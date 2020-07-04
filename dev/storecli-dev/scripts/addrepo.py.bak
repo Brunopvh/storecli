@@ -8,7 +8,7 @@ from os import path, geteuid, makedirs, remove, system
 from shutil import copyfile
 from time import sleep
 
-__version__ = '2020-07-02'
+__version__ = '2020-06-05'
 
 # Cores
 CRed='\033[0;31m'
@@ -20,7 +20,7 @@ CReset='\033[0m'
 
 # root
 if geteuid() != int('0'):
-	print(f'{CRed}[!] Você precisa ser o root{CReset}')
+	print(f'{CRed}[!] ({sys.argv[0]}) você precisa ser o root{CReset}')
 	sys.exit('1')
 
  
@@ -66,17 +66,16 @@ class OsInfo:
 				break
 			else:
 				os_codename = ''
-		
+
 		return os_codename
 
 class AddRepo:
-	
-	
-	
+	# Obter o nome é codinome do sistema.
+	os_id = OsInfo.get_id()
+	os_codename = OsInfo.get_codename()
+
 	def __init__(self):
-		# Obter o nome é codinome do sistema.
-		self.os_id = OsInfo.get_id()
-		self.os_codename = OsInfo.get_codename()
+		pass
 
 	def archlinux(self):
 		# Verificar se o sistema e ArchLinux.
@@ -122,14 +121,14 @@ class AddRepo:
 
 	def debian(self):
 		# Verificar se o sistema e Debian.
-		if OsInfo.get_id() != 'debian':
-			print(f'{CRed}[!] Seu sistema não é Debian{CReset}')
+		if self.os_id != 'debian':
+			print(f'{CRed}[!] Seu sistema não é Debin{CReset}')
 			return
 		
-		debianRepoMain = str((f'deb http://deb.debian.org/debian {self.os_codename} main'))
-		debianRepoContrib = str((f'deb http://deb.debian.org/debian {self.os_codename} contrib'))
-		debianRepoNonfree = str((f'deb http://deb.debian.org/debian {self.os_codename} non-free'))
-		debianMainContribNonfree = str((f'deb http://deb.debian.org/debian {self.os_codename} main contrib non-free'))
+		debianRepoMain = str((f'deb http://deb.debian.org/debian {os_codename} main'))
+		debianRepoContrib = str((f'deb http://deb.debian.org/debian {os_codename} contrib'))
+		debianRepoNonfree = str((f'deb http://deb.debian.org/debian {os_codename} non-free'))
+		debianMainContribNonfree = str((f'deb http://deb.debian.org/debian {os_codename} main contrib non-free'))
 
 		debianSourecesList = open('/etc/apt/sources.list', 'rt')
 		contentSources = debianSourecesList.readlines()

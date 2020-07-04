@@ -3034,61 +3034,39 @@ _gnome_tweaks()
 	_pkg_manager_sys 'gnome-tweaks'
 }
 
-
-_epsxe_libs_debian()
+_snapd()
 {
-	local urlLIBinfo5='http://ftp.us.debian.org/debian/pool/main/n/ncurses/libtinfo5_6.1+20181013-2+deb10u2_amd64.deb'
-	local urlLIBncurses5='http://ftp.us.debian.org/debian/pool/main/n/ncurses/libncurses5_6.1+20181013-2+deb10u2_amd64.deb'
-	local urlLIBcurl4='http://ftp.us.debian.org/debian/pool/main/c/curl/libcurl4_7.68.0-1_amd64.deb'
-	local urlOPENssl3='http://ftp.us.debian.org/debian/pool/main/o/openssl/openssl_1.1.0l-1~deb9u1_amd64.deb'
-	
-	local pathLIBinfoDEB="$DirDownloads/libtinfo5_6-amd64.deb"
-	local pathLIBncurserDEB="$DirDownloads/libncurses5_6-amd64.deb"
-	local pathLIBcurlDEB="$DirDownloads/libcurl4_7-amd64.deb"
-	local pathOPENsslDEB="$DirDownloads/openssl_1-amd64.deb"
-	local destinationUSERlib="$HOME/.local/lib"; mkdir -p "$destinationUSERlib"
+	# https://www.edivaldobrito.com.br/suporte-a-pacotes-snap-no-linux/
+	case "$os_id" in
+		debian) _pkg_manager_sys snapd;;
+		fedora) _pkg_manager_sys snapd;;
+		*) _show_info 'ProgramNotFound' 'snapd'; return 1;;
+	esac
+}
 
-	__download__ "$urlLIBinfo5" "$pathLIBinfoDEB" || return 1
-	__download__ "$urlLIBncurses5" "$pathLIBncurserDEB" || return 1
-	__download__ "$urlLIBcurl4" "$pathLIBcurlDEB" || return 1 
-	__download__ "$urlOPENssl3" "$pathOPENsslDEB" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+_epsxe_windows()
+{
+	# ePSXe win 32
+	local URLepsxeWin='http://www.epsxe.com/files/ePSXe205.zip'
+	local pathFileZip="$DirDownloads/$(basename $URLepsxeWin)"
+	local path_script_epsxe="$directoryUSERbin/epsxe-win"
+	local hashFileZip=''
 
-	__shasum__ "$pathLIBinfoDEB" 'f9d7df1e86b5376c1ae102739d04a5605386b331c8bc47ea471facaec0f63ae2' || return 1
-	_unpack "$pathLIBinfoDEB" || return 1
-	_unpack "$DirUnpack/data.tar.xz" || return 1
-	cd "$DirUnpack"/lib/x86_64-linux-gnu
-	cp -u libtinfo.so.5.9 "$destinationUSERlib"/
-	cp -u libtinfo.so.5 "$destinationUSERlib"/
-	
 	_clear_temp_dirs
 
-	# libncurses5
-	__shasum__ "$pathLIBncurserDEB" '2bea6e3579991f70c47401a5d70e131b83c34c4c6eee4af478e9232042b1d288' || return 1
-	_unpack "$pathLIBncurserDEB" || return 1
-	_unpack "$DirUnpack/data.tar.xz" || return 1
-	cd "$DirUnpack"/lib/x86_64-linux-gnu
-	cp -u libncurses.so.5.9 "$destinationUSERlib"/
-	cp -u libncurses.so.5 "$destinationUSERlib"/
-	
-	_clear_temp_dirs
-
-	# libcurl.so.4
-	__shasum__ "$pathLIBcurlDEB" 'c684a8b58ff5cb5ca353962ab29607ecd999fef29018363e8e794b4e87088c02' || return 1
-	_unpack "$pathLIBcurlDEB" || return 1
-	_unpack "$DirUnpack/data.tar.xz" || return 1
-	cd "$DirUnpack"/usr/lib/x86_64-linux-gnu
-	cp -u libcurl.so.4.6.0 "$destinationUSERlib"/
-	cp -u libcurl.so.4 "$destinationUSERlib"/
-	
-	_clear_temp_dirs
-	return
-	
-	# openssl3
-	__shasum__ "$pathOPENsslDEB" 'd9f6a3baca51587eef51a502011d21e1eb56328ebe94db92146de1224306add7'
-	_unpack "$pathOPENsslDEB" || return 1
-	_unpack "$DirUnpack/data.tar.xz" || return 1
+	__download__ "$URLepsxeWin" "$pathFileZip" || return 1
+	_unpack "$pathFileZip" || return 1
 	cd "$DirUnpack"
+	mkdir -p "$directoryUSERbin"/epsxe-win32
+	cp -R -u * "$directoryUSERbin"/epsxe-win32/
+
+	_yellow "Criando: script para execução de ePSXe"
+	echo '#!/usr/bin/env bash' > "$path_script_epsxe"
+	echo -e "\ncd $directoryUSERbin/epsxe-win32" >> "$path_script_epsxe"
+	echo -e "wine ePSXe.exe" >> "$path_script_epsxe"
+	chmod +x "$path_script_epsxe"
+
+	winetricks directx9
 }
 
 _epsxe_zip()
@@ -3125,14 +3103,19 @@ _epsxe_zip()
 	
 	chmod -R +x "${destinationFilesEpsxe[dir]}"
 	chmod +x "${destinationFilesEpsxe[file_desktop]}"
-	_epsxe_libs_debian
-	
+}
+
+_epsxe_snapd()
+{
+	# https://snapcraft.io/epsxe
+	_snapd
+	sudo snap install epsxe --candidate
 }
 
 _epsxe_fedora()
 {
 	_pkg_manager_sys snapd
-	__sudo__ ln -s /var/lib/snapd/snap /snap
+	sudo ln -s /var/lib/snapd/snap /snap
 	sudo snap install epsxe --candidate
 }
 
@@ -3140,6 +3123,7 @@ _epsxe()
 {
 	case "$os_id" in
 		arch) _epsxe_zip;;
+		debian) _epsxe_snapd;;
 		fedora) _epsxe_fedora;;
 		*) _show_info 'ProgramNotFound' 'epsxe'; return 0;;
 	esac
