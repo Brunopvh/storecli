@@ -20,7 +20,7 @@ CReset='\033[0m'
 
 # root
 if geteuid() != int('0'):
-	print(f'{CRed}[!] Você precisa ser o root{CReset}')
+	print(f'{CRed}[!] ({sys.argv[0]}) você precisa ser o root{CReset}')
 	sys.exit('1')
 
  

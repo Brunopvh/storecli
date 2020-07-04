@@ -6,61 +6,57 @@
 # storecli
 #
 #
-VERSION_GUI='2020-05-17'
+VERSION_GUI='2020-07-04'
 #
 
 
-#=============================================================#
 # Diretórios
-#=============================================================#
-export readonly Dir_Root_Storecli=$(dirname $(readlink -f "$0"))       # path deste arquivo no disco.
-export Dir_Root_Storecli_Lib="$Dir_Root_Storecli/lib"
+export readonly DirGui=$(dirname $(readlink -f "$0")) # path deste arquivo no disco.
 
-#=============================================================#
-# Libs
-#=============================================================#
-export Lib_Colors="$Dir_Root_Storecli_Lib/Colors.sh"
-export Lib_Platform="$Dir_Root_Storecli_Lib/Platform.sh"
-export Lib_Arrays="$Dir_Root_Storecli_Lib/Arrays.sh"
-
-#=============================================================#
-# Scripts
-#=============================================================#
-Script_Storecli="$Dir_Root_Storecli/storecli.sh"
-Script_Installer_Storecli="$Dir_Root_Storecli/setup.sh"
-
-#=============================================================#
-# Importar
-#=============================================================#
-source "$Lib_Colors"
-source "$Lib_Arrays"
-
-#=============================================================#
 # Urls
-#=============================================================#
 github='https://github.com'  
 raw='https://raw.github.com'
 
-#=============================================================#
+space_line='=================================================='
+
+_msg()
+{
+	echo -e "[>] $@"
+}
+
+_red()
+{
+	echo -e "\033[0;31m[!]\033[m $@"
+}
+
+_green()
+{
+	echo -e "\033[0;32m[*]\033[m $@"
+}
+
+_yellow()
+{
+	echo -e "\033[0;33m[+]\033[m $@"
+}
+
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
-	red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
+	_red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
 	exit 1
 fi
 
 # Válidar se o Kernel e Linux ou FreeBSD.
 if [[ $(uname -s) != 'Linux' ]] && [[ $(uname -s) != 'FreeBSD' ]]; then
-	red "Execute este programa em sistemas Linux ou FreeBSD."
+	_red "Execute este programa em sistemas Linux ou FreeBSD."
 	exit 1
 fi
 
 # Necessário ter a ferramenta "curl" intalada.
 if [[ ! -x $(which curl 2> /dev/null) ]]; then
-	red "Instale a ferramenta [curl] para prosseguir"
+	_red "Instale a ferramenta [curl] para prosseguir"
 	exit 1
 fi
 
-#=============================================================#
 # Verificar conexão com a internet.
 _ping()
 {
@@ -71,30 +67,20 @@ _ping()
 		return 0
 	else
 		echo ' '
-		red "Falha - AVISO: você está OFF-LINE"
+		_red "Falha - AVISO: você está OFF-LINE"
 		read -p "Pressione enter: " enter
 		return 1
 	fi
 }
 
-#=============================================================#
 # Instalar o script storecli se ele não estiver disponível.
-if [[ ! -x "$Script_Storecli" ]]; then
-	white "Instalando script storecli"
-	sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)" || {
-		red "Falha ao tentar instalar storecli"
+if [[ ! -x $(which storecli 2> /dev/null) ]]; then
+	_yellow "Instalando script storecli"
+	if ! sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)"; then
+		_red "Falha ao tentar instalar storecli"
 		exit 1
-	}
+	fi
 fi
-
-#=============================================================#
-# É necessário incluir o diretório de binários do usuário na 
-# variável PATH se ainda não estiver incluso.
-if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
-	export PATH="$HOME/.local/bin:$PATH"
-fi
-
-#=============================================================#
 
 _zenity_dialog_list()
 {
@@ -104,7 +90,7 @@ _zenity_dialog_list()
 	# o primeiro argumento dessa função ("$1") que será passado como 
 	# ultimo parâmetro para o zenity ("$@").
 	if [[ -z $1 ]]; then
-		red "Parametros incorretos detectados na função [_zenity_dialog_list]"
+		_red "Parametros incorretos detectados na função [_zenity_dialog_list]"
 		return 1
 	fi
 
@@ -218,32 +204,13 @@ list_menu_preferences=(
 # Gnome Shell Extensões
 #=============================================================#
 
-# Fedora
-list_menu_gnome_extensions_fedora=(
-	'gnome-tweaks' 
-	'gnome-shell-extension-topicons-plus'
-	'gnome-shell-extension-drive-menu' 
-	'gnome-shell-extension-dash-to-dock.noarch'
-	'gnome-backgrounds-extras'
-	'verne-backgrounds-gnome'
-)
-
-
-# OpenSuse
-list_menu_gnome_extensions_suse=(
-	'gnome-tweaks' 
-)
-
-# ArchLinux
-list_menu_gnome_extensions_archlinux=(
-	'gnome-tweaks' 'gnome-backgrounds'
-)
-
-# Debian
-list_menu_gnome_extensions_debian=(
-	'gnome-tweaks' 
-	'gnome-shell-extension-top-icons-plus' 
-	'gnome-shell-extension-dashtodock'
+list_menu_gnome_extensions=(
+	'TRUE Voltar'
+	'dash-to-dock'
+    'drive-menu'
+    'gnome-backgrounds'
+    'gnome-tweaks'
+    'topicons-plus'
 )
 
 #=============================================================#
@@ -262,7 +229,7 @@ list_menu_tools=(
 storecli_args()
 {
 	# Argumentos usados para instalação.
-	"$Script_Storecli" install -y "$@"
+	storecli install -y "$@"
 }
 
 #=============================================================#
@@ -277,12 +244,12 @@ menu_acessory(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			etcher) storecli_args etcher;;
 			'gnome-disk') storecli_args gnome-disk;;
 			veracrypt) storecli_args veracrypt;;
@@ -301,12 +268,12 @@ menu_dev(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			'android-studio') storecli_args android-studio;;
 			codeblocks) storecli_args codeblocks;;
 			pycharm) storecli_args pycharm;;
@@ -327,12 +294,12 @@ menu_office(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			atril) storecli_args atril;;
 			fontes-ms) storecli_args fontes-ms;;
 			libreoffice) storecli_args libreoffice;;
@@ -352,12 +319,12 @@ menu_internet(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			chromium) storecli_args chromium;;
 			firefox) storecli_args firefox;;
 			google-chrome) storecli_args google-chrome;;
@@ -388,12 +355,12 @@ menu_midia(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			celluloid) storecli_args celluloid;;
 			codecs) storecli_args codecs;;
 			spotify) storecli_args spotify;;
@@ -416,12 +383,12 @@ menu_system(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			bluetooth) storecli_args bluetooth;;
 			compactadores) storecli_args compactadores;;
 			firmware-atheros) storecli_args firmware-atheros;;
@@ -448,15 +415,41 @@ menu_preferences(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			papirus) storecli_args papirus;;
 			ohmybash) storecli_args ohmybash;;
 			ohmyzsh) storecli_args ohmyzsh;;
+		esac
+		echo -e "Menu Preferências"
+	done
+}
+
+menu_gnomeshell()
+{
+	echo -e "$space_line"
+	echo -e "Menu Gnome Shell"
+	
+	while true; do
+		option=$(_zenity_dialog_list "${list_menu_gnome_extensions[*]}")
+
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
+			_red "Abortando"
+			return 1
+		fi
+
+		case "$option" in
+			Voltar) _yellow "Voltando..."; break;;
+			dash-to-dock) storecli install -y dash-to-dock;;
+			drive-menu) storecli install -y drive-menu;;
+			gnome-backgrounds) storecli install -y gnome-backgrounds;;
+			gnome-tweaks) storecli install -y gnome-tweaks;;
+			topicons-plus) storecli install -y topicons-plus;;
 		esac
 		echo -e "Menu Preferências"
 	done
@@ -472,12 +465,12 @@ menu_tools()
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) white "Voltando..."; break;;
+			Voltar) _yellow "Voltando..."; break;;
 			Atualizar_este_script) "$Script_Storecli" --upgrade;;
 			Remover_pacotes_quebrados) "$Script_Storecli" --broke;;
 			Instalar_dependencias) "$Script_Storecli" --configure;;
@@ -488,19 +481,19 @@ menu_tools()
 
 main(){
 	echo -e "$space_line"
-	white "Menu Principal"
+	_yellow "Menu Principal"
 	
 	while true; do
 		category=$(_zenity_dialog_list "${list_main_menu[*]}")
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			red "Abortando"
+			_red "Abortando"
 			return 1
 		fi 
 
 		case "$category" in
-			Sair) white "Saindo..."; break;;
+			Sair) _yellow "Saindo..."; break;;
 			Acessorios) menu_acessory;;
 			Desenvolvimento) menu_dev;;
 			Escritorio) menu_office;;
@@ -509,8 +502,9 @@ main(){
 			Sistema) menu_system;;
 			Preferencias) menu_preferences;;
 			Ferramentas) menu_tools;;
+			GnomeShell) menu_gnomeshell;;
 		esac
-		white "Menu Principal"
+		_yellow "Menu Principal"
 	done
 }
 
@@ -518,11 +512,11 @@ usage()
 {
 cat << EOF
    Use: $(basename "$0") --help|--upgrade|--version
-   --help          Mostra ajuda.
-   --upgrade       Instala a ultima versão deste programa, disponível
-                   no github
+   --help             Mostra ajuda.
+   --self-update      Instala a ultima versão deste programa, disponível
+                      no github
 
-   --version       Mostra versão.
+   --version         Mostra versão.
 EOF
 }
 
@@ -530,12 +524,12 @@ if [[ ! -z $1 ]]; then
 	case "$1" in
 		--help) usage; exit;;
 		--version) echo -e "$(basename $0) V${VERSION_GUI}"; exit;;
-		--upgrade) 
-				"$Script_Storecli" --upgrade
+		--self-update) 
+				storecli --self-update
 				exit
 				;;
 
-		*) red "Comando não encontrado [$1]"; exit;;
+		*) _red "Comando não encontrado [$1]"; exit;;
 	esac
 else
 	main

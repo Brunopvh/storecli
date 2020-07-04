@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+__version='2020-07-03'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -91,8 +92,8 @@ fi
 
 _download_repo()
 {
-	_msg "Baixando [$url_master]"
-	_msg "Destino [$path_file_repo]"
+	_msg "Baixando: $url_master"
+	_msg "Destino: $path_file_repo"
 	if ! curl -sSL "$url_master" -o "$path_file_repo"; then
 		_red "Falha no download"
 		return 1
@@ -150,8 +151,8 @@ _unpack()
 	if [ $? -eq 0 ]; then
 		return 0
 	else
-		_red "Funçao [_unpack] retornou erro"
-		_red "Removendo [$path_file]"
+		_red "(_unpack) erro"
+		_red "Removendo: $path_file"
 		rm -rf "$path_file"
 		return 1
 	fi
@@ -161,14 +162,16 @@ _install()
 {
 	_msg "Instalando em: $dir_storecli"
 	cd "$dir_unpack"
-	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
-	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
+	mv $(ls -d storecli*) "$dir_storecli"                             # Diretório dos arquivos
+	ln -sf "$dir_storecli"/dev/storecli-dev/storecli.sh "$path_link"  # Link do executável
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
 	
 	if _WHICH 'storecli'; then
+		_msg "OK"
 		return 0
 	else
+		_red "(_install) falha"
 		return 1
 	fi
 }
