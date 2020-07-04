@@ -3078,7 +3078,7 @@ _epsxe_windows()
 	echo '#!/bin/sh' > "${destinationFilesEpsxeWin32[file_script]}"
 	{
 		echo -e "\nWINEPREFIX=/home/bruno/.wine"
-		echo -e "\ncd${destinationFilesEpsxeWin32[dir]}"
+		echo -e "\ncd ${destinationFilesEpsxeWin32[dir]}"
 		echo -e "wine ePSXe.exe" 
 	} >> "${destinationFilesEpsxeWin32[file_script]}"
 
