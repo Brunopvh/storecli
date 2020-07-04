@@ -1,5 +1,6 @@
 #!/bin/sh
 #
+__version='2020-07-03'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip

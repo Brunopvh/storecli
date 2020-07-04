@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-VERSION='2020-06-30'
+__version='2020-07-03'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -60,11 +60,13 @@ else
 	path_link="$HOME/.local/bin/storecli"
 fi
 
+
 dir_temp="/tmp/$USER/update"
 dir_unpack="$dir_temp/unpack"
 
 mkdir -p "$dir_temp"
 mkdir -p "$dir_unpack"
+#mkdir -p "$dir_storecli"
 
 path_file_repo="$dir_temp/storecli.tar.gz"
 
@@ -81,6 +83,8 @@ _WHICH()
 	fi
 }
 
+#----------------------------------------------------------#
+
 if ! _WHICH 'curl'; then
 	_red "Instale a ferramenta [curl]"
 	exit 1
@@ -88,8 +92,8 @@ fi
 
 _download_repo()
 {
-	_msg "Baixando: $url_master"
-	_msg "Destino: $path_file_repo"
+	_msg "Baixando [$url_master]"
+	_msg "Destino [$path_file_repo]"
 	if ! curl -sSL "$url_master" -o "$path_file_repo"; then
 		_red "Falha no download"
 		return 1
@@ -100,6 +104,7 @@ _download_repo()
 
 _RMDIR()
 {
+	# Remove um arquivo ou diretório informado no parametro $1
 	# $1 = arquivo/diretório
 
 	while [ $1 ]; do
@@ -120,12 +125,12 @@ _uninstall()
 		_RMDIR "$path_link" || return 1
 	fi
 
-
 	if [ -L "$path_link_gui" ]; then
 		_RMDIR "$path_link_gui" || return 1
 	fi
 	return 0
 }
+
 
 _unpack()
 {
@@ -140,14 +145,14 @@ _unpack()
 	cd "$dir_unpack" && rm -rf *
 	
 	# Descomprimir
-	printf "%s" "[>] Descomprimindo: $path_file "
-	if tar -zxvf "$path_file" -C "$dir_unpack" 1> /dev/null; then
-		printf "${Yellow}OK${Reset}\n"
+	_msg "Descomprimindo: $path_file"
+	tar -zxvf "$path_file" -C "$dir_unpack" 1> /dev/null
+
+	if [ $? -eq 0 ]; then
 		return 0
 	else
-		printf "${Red}FALHA${Reset}\n"
-		_red "(_unpack) erro ao tentar descomprimir: $path_file"
-		_red "Removendo: $path_file"
+		_red "Funçao [_unpack] retornou erro"
+		_red "Removendo [$path_file]"
 		rm -rf "$path_file"
 		return 1
 	fi
@@ -155,10 +160,10 @@ _unpack()
 
 _install()
 {
-	_msg "Instalando em storecli em: $dir_storecli"
+	_msg "Instalando em: $dir_storecli"
 	cd "$dir_unpack"
 	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
-	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
+	ln -sf "$dir_storecli"/dev/storecli-dev/storecli.sh "$path_link"  # Link do executável
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
 	
@@ -180,11 +185,9 @@ main()
 	_unpack "$path_file_repo" || return 1
 	_install || return 1
 	
-	_msg "OK"
 	echo "$space_line"
 	_yellow "Execute: $(printf $Yellow)storecli --help$(printf $Reset)"
 	echo "$space_line"
-	return 0
 }
 
 
