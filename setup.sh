@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-__version='2020-07-03'
+__version='2020-07-05'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -162,8 +162,8 @@ _install()
 {
 	_msg "Instalando em: $dir_storecli"
 	cd "$dir_unpack"
-	mv $(ls -d storecli*) "$dir_storecli"                             # Diretório dos arquivos
-	ln -sf "$dir_storecli"/dev/storecli-dev/storecli.sh "$path_link"  # Link do executável
+	mv $(ls -d storecli*) "$dir_storecli"            # Diretório dos arquivos
+	ln -sf "$dir_storecli"/storecli.sh "$path_link"  # Link do executável
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
 	

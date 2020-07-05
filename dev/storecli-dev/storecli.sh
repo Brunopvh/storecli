@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_03_dev'
+__version__='2020_07_05_dev'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -1096,6 +1096,7 @@ _update_storecli()
 	
 	if [[ "$OnlineVersion" == "$VERSION" ]]; then
 		_yellow "Não existem atualizações disponíveis para o script storecli"
+		echo -e "day_update $day" > "$FileConfigUpdate"
 		return 0
 	fi
 	
