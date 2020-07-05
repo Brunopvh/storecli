@@ -3060,16 +3060,17 @@ _epsxe_windows()
 	# pathman /rs directoryPath	
 	#
 	#
-	#local URLepsxeWin='http://www.epsxe.com/files/ePSXe205.zip'  # V2.0.5
-	local URLepsxeWin='http://www.epsxe.com/files/ePSXe1925.zip'   # V1.9.25
+	#local URLepsxeWin='http://www.epsxe.com/files/ePSXe1925.zip'   # V1.9.25
+	#local hashFileZip='6145d4faf69f7614ed54d09657a826d115d7e7d1d8f408d8e2fb615df50f63c5' # V1.9.25
+	local URLepsxeWin='http://www.epsxe.com/files/ePSXe205.zip'  # V2.0.5
 	local pathFileZip="$DirDownloads/$(basename $URLepsxeWin)"
-	#local hashFileZip='46e1a7ad3dc9c75763440c153465cdccc9a3ba367e3158542953ece4bcdb7b4f' # V2.0.5
-	local hashFileZip='6145d4faf69f7614ed54d09657a826d115d7e7d1d8f408d8e2fb615df50f63c5' # V1.9.25
+	local hashFileZip='46e1a7ad3dc9c75763440c153465cdccc9a3ba367e3158542953ece4bcdb7b4f' # V2.0.5
 
 	mkdir -p "${destinationFilesEpsxeWin32[dir]}"
 	_clear_temp_dirs
 
 	__download__ "$URLepsxeWin" "$pathFileZip" || return 1
+	__shasum__ "$pathFileZip" "$hashFileZip" || return 1
 	_unpack "$pathFileZip" || return 1
 	cd "$DirUnpack"
 	cp -R -n * "${destinationFilesEpsxeWin32[dir]}"/

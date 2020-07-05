@@ -1108,6 +1108,7 @@ _update_storecli()
 	
 	if [[ "$OnlineVersion" == "$VERSION" ]]; then
 		_yellow "Não existem atualizações disponíveis para o script storecli"
+		echo -e "day_update $day" > "$FileConfigUpdate"
 		return 0
 	fi
 	
@@ -1184,8 +1185,8 @@ main()
 		}
 	fi
 
-	argument_parser "$@"
 	_update_storecli
+	argument_parser "$@"
 	return "$?"
 }
 
