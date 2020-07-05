@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_05_rev2'
+__version__='2020_07_05_rev3'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -525,10 +525,43 @@ _clear_temp_dirs()
 
 }
 
+_GDEBI()
+{
+	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+	Pid_Python_Aptd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(aptd)' | awk '{print $2}')
+
+	while [[ ! -z $Pid_Apt_Install ]]; do
+		_loop_pid "$Pid_Apt_Install"
+		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+		sleep 0.2
+	done
+
+
+	while [[ ! -z $Pid_Apt_Systemd ]]; do 
+		_loop_pid "$Pid_Apt_Systemd"
+		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+		sleep 0.2
+	done
+	
+	while [[ ! -z $Pid_Dpkg_Install ]]; do 
+		_loop_pid "$Pid_Dpkg_Install"
+		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+		sleep 0.2
+	done
+
+	if sudo gdebi "$@"; then
+		return 0
+	else
+		_red "(_GDEBI) erro: gdebi $@"
+		return 1	
+	fi	
+}
+
 
 _DPKG()
 {
-	# Função para executar dpkg --install
 	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
 	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
 	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
@@ -556,7 +589,7 @@ _DPKG()
 	if sudo dpkg "$@"; then
 		return 0
 	else
-		_red "(dpkg) retornou erro"
+		_red "(_DPKG) erro: $@"
 		return 1
 	fi
 }
@@ -564,11 +597,11 @@ _DPKG()
 _APT()
 {
 	# Antes de proseguir com a instalação devemos verificar se já 
-	# existe outro processo instalação com apt em execução para não
+	# existe outro processo de instalação com apt em execução para não
 	# causar erros.
-	# sudo rm /var/lib/dpkg/lock-frontend
-	# sudo rm /var/cache/apt/archives/lock
-	#
+	#sudo rm /var/lib/dpkg/lock-frontend 
+	#sudo rm /var/cache/apt/archives/lock
+	
 	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
 	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
 	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')

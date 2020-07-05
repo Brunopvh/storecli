@@ -3,6 +3,20 @@
 
 github='https://github.com'
 
+_etcher_package_deb()
+{
+	# https://github.com/balena-io/etcher/releases
+	local URLetcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
+	local PathFileEtcher="$DirDownloads/$(basename $URLetcher)"
+
+	_yellow "Adicionando key e repositório"
+	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
+	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
+	__download__ "$URLetcher" "$PathFileEtcher" || return 1
+	_APT update	
+	_GDEBI "$PathFileEtcher"
+}
+
 _etcher_ubuntu()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
@@ -86,7 +100,8 @@ _etcher()
 	is_executable 'balena-etcher-electron' && _show_info 'PkgInstalled' 'Etcher' && return 0
 
 	case "$os_id" in
-		ubuntu|linuxmint|debian) _etcher_ubuntu;;
+		ubuntu|linuxmint) _etcher_ubuntu;;
+		debian) _etcher_package_deb;;
 		fedora) _etcher_fedora;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
