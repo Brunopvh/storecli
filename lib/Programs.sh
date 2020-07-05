@@ -135,25 +135,19 @@ _veracrypt()
 
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
-	_yellow "Obtendo url de download aguarde"
-	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
-	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
-	local vc_url_download=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
-	local vc_url_AscPub='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
-	local vc_url_sig="${vc_url_download}.sig"
 	
+	local vc_url_download='https://launchpadlibrarian.net/461886552/veracrypt-1.24-Update4-setup.tar.bz2'
+	local vc_url_sig="https://launchpadlibrarian.net/461886553/veracrypt-1.24-Update4-setup.tar.bz2.sig"
 	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
-	local veracryptSigFile="${veracryptTarFile}.sig"
-	local veracryptAscFile="$DirDownloads/$(basename $vc_url_AscPub)"
+	local veracryptSigFile="$DirDownloads/$(basename $vc_url_sig)"
 
 	__download__ "$vc_url_download" "$veracryptTarFile" || return 1
 	__download__ "$vc_url_sig" "$veracryptSigFile" || return 1
-	__download__ "$vc_url_AscPub" "$veracryptAscFile" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	printf "%s" "[>] Importando key: "
-	if gpg --import "$veracryptAscFile" 1> /dev/null 2>&1; then
+	if curl -s https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc | gpg --import 1> /dev/null 2>&1; then
 		_syellow "OK"
 	else
 		_sred "FALHA"
