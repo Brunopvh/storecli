@@ -6,7 +6,7 @@
 # storecli
 #
 #
-VERSION_GUI='2020-07-04'
+VERSION_GUI='2020-07-08'
 #
 
 
@@ -111,6 +111,7 @@ list_main_menu=(
 	"FALSE Acessorios"
 	"FALSE Desenvolvimento"
 	"FALSE Escritorio"
+	"FALSE Navegadores"
 	"FALSE Internet"
 	"FALSE Midia"
 	"FALSE Sistema"
@@ -149,20 +150,25 @@ list_menu_office=(
 )
 
 # Lista de opções para categoria internet.
-list_menu_internet=(
+list_menu_navegadores=(
 	'TRUE Voltar'
 	'FALSE chromium'
 	'FALSE firefox'
 	'FALSE google-chrome'
-	'FALSE megasync'
 	'FALSE opera-stable'
+	'FALSE torbrowser'
+)
+
+# Lista de opções para categoria internet.
+list_menu_internet=(
+	'TRUE Voltar'
+	'FALSE megasync'
 	'FALSE proxychains'
 	'FALSE qbittorrent'
 	'FALSE skype'
 	'FALSE teamviewer'
 	'FALSE telegram'
 	'FALSE tixati'
-	'FALSE torbrowser'
 	'FALSE uget'
 	'FALSE youtube-dl'
 	'FALSE youtube-dl-gui'
@@ -310,6 +316,31 @@ menu_office(){
 }
 
 
+menu_navegadores(){
+	echo -e "$space_line"
+	echo -e "Menu Navegadores"
+	
+	while true; do
+		option=$(_zenity_dialog_list "${list_menu_navegadores[*]}")
+
+		# O usuário CANCELOU.
+		if [[ "$?" != '0' ]]; then
+			_red "Abortando"
+			return 1
+		fi 
+
+		case "$option" in
+			Voltar) _yellow "Voltando..."; break;;
+			chromium) storecli_args chromium;;
+			firefox) storecli_args firefox;;
+			google-chrome) storecli_args google-chrome;;
+			'opera-stable') storecli_args opera-stable;;
+			torbrowser) storecli_args torbrowser;;
+		esac
+		echo -e "Menu Navegadores"
+	done
+}
+
 menu_internet(){
 	echo -e "$space_line"
 	echo -e "Menu Internet"
@@ -325,18 +356,13 @@ menu_internet(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			chromium) storecli_args chromium;;
-			firefox) storecli_args firefox;;
-			google-chrome) storecli_args google-chrome;;
 			megasync) storecli_args megasync;;
-			'opera-stable') storecli_args opera-stable;;
 			proxychains) storecli_args proxychains;;
 			qbittorrent) storecli_args qbittorrent;;
 			skype) storecli_args skype;;
 			teamviewer) storecli_args teamviewer;;
 			telegram) storecli_args telegram;;
 			tixati) storecli_args tixati;;
-			torbrowser) storecli_args torbrowser;;
 			uget) storecli_args uget;;
 			youtube-dl) storecli_args youtube-dl;;
 			youtube-dl-gui) storecli_args youtube-dl-gui;;
@@ -497,6 +523,7 @@ main(){
 			Acessorios) menu_acessory;;
 			Desenvolvimento) menu_dev;;
 			Escritorio) menu_office;;
+			Navegadores) menu_navegadores;;
 			Internet) menu_internet;;
 			Midia) menu_midia;;
 			Sistema) menu_system;;
