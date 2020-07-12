@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_05_rev3'
+__version__='2020_07_12_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -129,7 +129,8 @@ scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
 scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
 scriptOhmybashInstaller="$dirSTORECLIPathScripts/ohmybash.run"
-GUI="$dirSTORECLIPathPython/pygui.py"
+#GUI="$dirSTORECLIPathPython/pygui.py"
+GUI="$dirSTORECLIPathScripts/gui.sh"
 
 #=============================================================#
 # importar libs
@@ -437,7 +438,7 @@ cat << EOF
 
        -l|--list                     Lista aplicativos disponíveis para instalação, ou aplicativos
                                      de uma categoria, argumentos:
-                                     --list Acessorios|Desenvolvimento|Escritorio|Internet|Sistema
+                                     --list Acessorios|Desenvolvimento|Escritorio|Navegadores|Internet|Sistema
                                      |Preferencias|GnomeShell.
 
        -u|--self-update              Instala ultima versão desse script disponível no github.
