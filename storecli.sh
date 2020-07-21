@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_12_rev1'
+__version__='2020_07_21_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -798,7 +798,7 @@ _pkg_manager_sys()
 __gpg__()
 {
 	printf "%s" "[>] Verificando integridade "
-	if gpg "$@" 1> /dev/null 2> /dev/null; then
+	if gpg "$@" 1> /dev/null 2> /dev/null; then  
 		_syellow "OK"
 	else
 		_sred "FALHA"

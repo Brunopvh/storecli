@@ -1997,20 +1997,28 @@ _youtube_dl()
 	local url_ytdl_asc_philipp='https://phihag.de/keys/A4826A18.asc'
 	local url_ytdl_asc_sergey='https://dstftw.github.io/keys/18A9236D.asc'
 
-	local path_file_sig="$DirDownloads/youtube-dl.sig"
-	local path_file="$DirDownloads/youtube-dl"   # Path+Nome.
+	local path_file_sig="$DirTemp/youtube-dl.sig"
+	local path_file="$DirDownloads/youtube-dl"   
 	local hash_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
 	
 	__download__ "$url_ytdl_test" "$path_file" || return 1 
-	__download__ "$url_ytdl_sig" "$path_file_sig" || return 1
+	
+	printf '%s' "[+] Baixando: $path_file_sig "
+	if wget -q "$url_ytdl_sig" -O "$path_file_sig"; then
+		_syellow 'OK'
+	else
+		_sred 'FALHA'
+		__RMDIR "$path_file_sig"
+		return 1
+	fi
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
 	
 	# Asc philipp
 	printf "%s" "[>] Importando: $url_ytdl_asc_philipp "
-	if curl -sSL "$url_ytdl_asc_philipp" -o- | gpg --import - 1> /dev/null 2> /dev/null; then  
-		echo -e "${CYellow}OK${CReset}"
+	if wget -q -O- "$url_ytdl_asc_philipp" | gpg --import - 1> /dev/null 2> /dev/null; then  
+		_syellow 'OK'
 	else
 		echo ' '
 		_red "Falha"
@@ -2018,8 +2026,8 @@ _youtube_dl()
 	
 	# Asc sergey
 	printf "%s" "[>] Importando: $url_ytdl_asc_sergey "
-	if curl -sSL "$url_ytdl_asc_sergey" -o- | gpg --import - 1> /dev/null 2> /dev/null; then 
-		echo -e "${CYellow}OK${CReset}"
+	if wget -q -O- "$url_ytdl_asc_sergey" | gpg --import - 1> /dev/null 2> /dev/null; then 
+		_syellow 'OK'
 	else
 		echo ' '
 		_red "Falha"
