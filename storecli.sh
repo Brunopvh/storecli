@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_24_rev1'
+__version__='2020_07_25_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -1005,7 +1005,6 @@ _unpack()
 }
 
 
-
 _pkg_manager_storecli()
 {
 	# Instalação dos programas
@@ -1014,7 +1013,6 @@ _pkg_manager_storecli()
 		return 1
 	fi
 
-	#_ping
 	_clear_temp_dirs
 
 	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
@@ -1022,7 +1020,6 @@ _pkg_manager_storecli()
 		tina|tricia) export os_codename='bionic';;
 	esac
 
-	_yellow "storecli sua loja de aplicativos via linha de comando."
 	_space_text "[+] Sistema" "$os_id $os_release"
 
 	while [[ $1 ]]; do
@@ -1124,7 +1121,11 @@ _update_storecli()
 		echo -e "day_update $day" > "$FileConfigUpdate"
 		return 0
 	fi
-		
+	
+	if [[ ! -z "$day_update" ]]; then	
+		printf '%s\n' "[+] Busca por atualização executada no dia $day_update"
+	fi
+
 	_ping || return 1
 	
 	printf "%s" "[>] Verificando atualização no github aguarde "
@@ -1137,7 +1138,7 @@ _update_storecli()
 	fi
 	
 	if [[ "$OnlineVersion" == "$VERSION" ]]; then
-		_yellow "Não existem atualizações disponíveis para o script storecli"
+		_yellow "Scritp storecli está atualizado versão: $(echo $__version__)"
 		echo -e "day_update $day" > "$FileConfigUpdate"
 		return 0
 	fi

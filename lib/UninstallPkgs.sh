@@ -31,7 +31,10 @@ __delete_files__()
 _uninstall_etcher()
 {
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _APT remove 'balena-etcher-electron';;
+		debian|ubuntu|linuxmint) 
+						_APT remove 'balena-etcher-electron'
+						__delete_files__ '/etc/apt/sources.list.d/balena-etcher.list'
+						;;
 		*) __delete_files__ "${destinationFilesEtcher[@]}";;
 	esac
 }
