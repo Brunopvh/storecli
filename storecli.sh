@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_21_rev1'
+__version__='2020_07_24_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -1027,11 +1027,7 @@ _pkg_manager_storecli()
 
 	while [[ $1 ]]; do
 		[[ -z $1 ]] && return 0 
-		case "$1" in
-			-d|--downloadonly) ;;
-			-y|--yes) ;;
-			-I|--ignore-cli) ;; 
-
+		case "$1" in 
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
@@ -1107,7 +1103,7 @@ _pkg_manager_storecli()
 			epsxe) _epsxe;;
 			epsxe-win) _epsxe_windows;;
 			snapd) _snapd;;
-
+			install) ;;
 			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
 		esac
 		shift
@@ -1159,52 +1155,34 @@ _update_storecli()
 
 argument_parser()
 {
-	# Argumentos que irão encerrar o programa após a sua execução. 
-	for arg in "$@"; do
-		case "$arg" in
-			-l|--list) shift; _list_applications "$@"; return 0; break;;
-			-v|--version) shift; echo "$(basename $scriptStorecli) V${__version__}"; return 0; break;;
-			-h|--help) shift; usage; return 0; break;;
-		esac
-	done
-
-	while [[ $1 ]]; do
+	local num='0'
+	export OptArgs=()
+	while [ $1 ]; do
 		case "$1" in
-			-l|--list) ;;
-			-y|--yes) ;;
-			-d|--downloadonly) ;;
-			-I|--ignore-cli) ;;
-			-b|--broke) _BROKE;;
-			-c|--configure) _run_configuration_dep;;
-			-u|--self-update) "$scriptInstallStoreli";;
-			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
-			remove) shift; _uninstall_packages "$@"; return "$?";;
-			*) _red "(argument_parser) argumento inválido: $1"; return 1; break;;
+			-l|--list) shift; _list_applications "$@"; return 0; break;;
+			-v|--version) shift; echo -e "$(basename $scriptStorecli) V${__version__}"; return 0; break;;
+			-h|--help) shift; usage; return 0; break;;
+			-y|--yes) export AssumeYes='True';;
+			-d|--downloadonly) export DownloadOnly='True';;
+			-I|--ignore-cli) export IgnoreCli='True';;
+			*) OptArgs["$num"]="$1"; num="$(($num+1))";;
 		esac
 		shift
 	done
+
 }
 
 main()
 {	
-	# Exportar algumas variáveis especiais para o programa de acordo
-	# com os parâmetros recebidos na linha de comando.
-	for arg in "$@"; do
-		case "$arg" in
-		-y|--yes) export AssumeYes='True';;
-		-d|--downloadonly) export DownloadOnly='True';;
-		-I|--ignore-cli) export IgnoreCli='True';;
-		esac
-	done
+	argument_parser "$@"
 
-	# Verificar se todos os utilitários de linha de comando 
-	# estão instalados - esta operação será IGNORADA caso a
-	# opção '--ignore-cli' estiver na linha de comando.
-	#   
+	# Verificar se todos os utilitários de linha de comando estão instalados 
+	# esta operação será IGNORADA caso a opção '--ignore-cli' ou '-I' estiver 
+	# na linha de comando.
+	# Exemplos:  
 	#   storecli --ignore-cli install <pacote>
-	#   storecli install <pacote> -I
-	#   -I|--gnore-cli
-	#
+	#   storecli -I install <pacote>
+	
 	if [[ "$IgnoreCli" != 'True' ]]; then
 		check_requeriments_sys 
 	fi
@@ -1220,7 +1198,17 @@ main()
 	fi
 
 	_update_storecli
-	argument_parser "$@"
+
+	for ARG in "${OptArgs[@]}"; do
+		case "$ARG" in
+			-b|--broke) _BROKE;;
+			-c|--configure) _run_configuration_dep;;
+			-u|--self-update) "$scriptInstallStoreli";;
+			install) _pkg_manager_storecli "${OptArgs[@]}"; return "$?"; break;;
+			remove)  _uninstall_packages "${OptArgs[@]}"; return "$?";;
+			*) _red "(argument_parser) argumento inválido: $ARG"; return 1; break;;
+		esac
+	done
 	return "$?"
 }
 
