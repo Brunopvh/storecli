@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_29_rev3'
+__version__='2020_07_29_rev4'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -1125,8 +1125,6 @@ _update_storecli()
 	
 	[[ ! -z "$oldDateUpdate" ]] && printf '%s\n' "[+] Data da última busca por atualizações: $oldDateUpdate"
 	
-	_ping || return 1
-	
 	printf "%s" "[>] Verificando atualização no github aguarde "
 	wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate" || { 
 		_sred "FALHA"
@@ -1148,6 +1146,8 @@ _update_storecli()
 		_red "(_update_storecli) falha"
 		return 1
 	fi
+
+	[[ -f "$tempFileUpdate" ]] && rm "$tempFileUpdate"
 	echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	return 0
 }
