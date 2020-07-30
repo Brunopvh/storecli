@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_25_rev1'
+__version__='2020_07_29_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -227,9 +227,9 @@ _sblue()
 
 _msg()
 {
-	echo '--------------------------------------------------'
+	echo -e "$space_line"
 	echo -e " $@"
-	echo '--------------------------------------------------'
+	echo -e "$space_line"
 }
 
 _YESNO()
@@ -472,17 +472,17 @@ _ping()
 {
 	printf "%s" "[>] Aguardando conexão: "
 
-	if ping -c 1 8.8.8.8 1> /dev/null; then
+	if [[ $(ping -c 1 8.8.8.8) ]]; then
 		_syellow "Conectado"
 		return 0
 	else
 		_sred 'FALHA'
 		_red "AVISO: você está OFF-LINE"
-		read -p "Pressione enter: " enter
+		sleep 2
 		return 1
 	fi
 }
- 
+
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
@@ -1013,7 +1013,7 @@ _pkg_manager_storecli()
 		return 1
 	fi
 
-	_clear_temp_dirs
+	#_clear_temp_dirs
 
 	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
 	case "$os_codename" in
@@ -1112,45 +1112,43 @@ _update_storecli()
 	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	local FileConfigUpdate="$directoryUSERconfig/update.conf"; touch "$FileConfigUpdate"
 	local tempFileUpdate="$DirTemp/storecli.update"                    	
-	local day=$(date +%d) # Dia atual.
+	local nowDate=$(date +%Y_%m_%d) # Data atual /ano/mês/dia.
 	
-	# dia em que a ultima busca por atualizaçãoes por executada.
-	local day_update=$(grep -m 1 "day_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
+	# Data de execução da última busca por atualizações.
+	local oldDateUpdate=$(grep -m 1 "date_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
 	
-	if [[ "$day" == "$day_update" ]]; then
-		echo -e "day_update $day" > "$FileConfigUpdate"
+	if [[ "$nowDate" == "$oldDateUpdate" ]]; then
 		return 0
+	else
+		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	fi
 	
-	if [[ ! -z "$day_update" ]]; then	
-		printf '%s\n' "[+] Busca por atualização executada no dia $day_update"
-	fi
-
+	[[ ! -z "$oldDateUpdate" ]] && printf '%s\n' "[+] Data da última busca por atualizações: $oldDateUpdate"
+	
 	_ping || return 1
 	
 	printf "%s" "[>] Verificando atualização no github aguarde "
-	if curl -fsSL https://raw.github.com/Brunopvh/storecli/master/storecli.sh -o "$tempFileUpdate"; then
-		_syellow "OK"
-		OnlineVersion=$(grep -m 1 ^'VERSION' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
-	else
+	wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate" || { 
 		_sred "FALHA"
 		return 1
-	fi
+	}
+	_syellow 'OK'	
+	OnlineVersion=$(grep -m 1 ^'__version__' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
 	
+	_yellow "Versão local ($__version__) - versão online ($OnlineVersion)"
 	if [[ "$OnlineVersion" == "$VERSION" ]]; then
 		_yellow "Scritp storecli está atualizado versão: $(echo $__version__)"
-		echo -e "day_update $day" > "$FileConfigUpdate"
+		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi
 	
-	_yellow "Atualização disponível: $OnlineVersion"
-	_yellow "Instalando atualização"
+	_yellow "Instalando nova versão: $OnlineVersion"
 	
 	if ! "$scriptInstallStoreli"; then
 		_red "(_update_storecli) falha"
 		return 1
 	fi
-	echo -e "day_update $day" > "$FileConfigUpdate"
+	echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	return 0
 }
 

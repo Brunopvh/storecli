@@ -9,7 +9,7 @@ requeriments_cli_linux=(
 )
 
 requeriments_cli_ubuntu=(
-'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python' 'xterm' 
+'curl' 'wget' 'git' 'gawk' 'unzip' 'python3' 'python' 'xterm' 'zenity'
 )
 
 # Utilitários de linha de comando para sistemas baseados em debian.
