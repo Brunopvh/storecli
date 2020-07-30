@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_29_rev1'
+__version__='2020_07_29_rev2'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -1013,7 +1013,7 @@ _pkg_manager_storecli()
 		return 1
 	fi
 
-	#_clear_temp_dirs
+	_clear_temp_dirs
 
 	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
 	case "$os_codename" in
@@ -1136,8 +1136,8 @@ _update_storecli()
 	OnlineVersion=$(grep -m 1 ^'__version__' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
 	
 	_yellow "Versão local ($__version__) - versão online ($OnlineVersion)"
-	if [[ "$OnlineVersion" == "$VERSION" ]]; then
-		_yellow "Scritp storecli está atualizado versão: $(echo $__version__)"
+	if [[ "$OnlineVersion" == "$__version__" ]]; then
+		_yellow "Scritp storecli está atualizado"
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi
