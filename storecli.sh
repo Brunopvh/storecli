@@ -14,7 +14,7 @@ __author__='Bruno Chaves'
 #   Testado nos seguintes sistemas: Debian 10 - GNOME, Fedora 31/32 - GNOME
 # Ubuntu 18.04/20.04 - GNOME, LinuxMint 19.3, ArchLinux - GNOME.
 #
-#    
+# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 #=============================================================#
 # GitHub

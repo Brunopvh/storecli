@@ -31,7 +31,10 @@ __delete_files__()
 _uninstall_etcher()
 {
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _APT remove etcher;;
+		debian|ubuntu|linuxmint) 
+						_APT remove 'balena-etcher-electron'
+						__delete_files__ '/etc/apt/sources.list.d/balena-etcher.list'
+						;;
 		*) __delete_files__ "${destinationFilesEtcher[@]}";;
 	esac
 }
@@ -81,6 +84,8 @@ _uninstall_packages()
 			refind) __delete_files__ "${destinationFilesRefind[@]}";;
 			stacer) __delete_files__ "${destinationFilesStacer[@]}";;
 
+			epsxe-win) __delete_files__ "${destinationFilesEpsxeWin32[@]}";;
+			remove) ;;
 			*) _red "Não foi possível remover: $1";;
 		esac
 		shift

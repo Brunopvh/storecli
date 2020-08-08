@@ -3,6 +3,20 @@
 
 github='https://github.com'
 
+_etcher_package_deb()
+{
+	# https://github.com/balena-io/etcher/releases
+	local URLetcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
+	local PathFileEtcher="$DirDownloads/$(basename $URLetcher)"
+
+	_yellow "Adicionando key e repositório"
+	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
+	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
+	__download__ "$URLetcher" "$PathFileEtcher" || return 1
+	_APT update	
+	_GDEBI "$PathFileEtcher"
+}
+
 _etcher_ubuntu()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
@@ -38,7 +52,7 @@ _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
 	_white "Adicionando repositório"
-	sudo curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
+	sudo wget -q -O- https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
 	_pkg_manager_sys 'balena-etcher-electron'
 }
 
@@ -86,7 +100,8 @@ _etcher()
 	is_executable 'balena-etcher-electron' && _show_info 'PkgInstalled' 'Etcher' && return 0
 
 	case "$os_id" in
-		ubuntu|linuxmint|debian) _etcher_ubuntu;;
+		ubuntu|linuxmint) _etcher_ubuntu;;
+		debian) _etcher_package_deb;;
 		fedora) _etcher_fedora;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
@@ -133,27 +148,27 @@ _veracrypt()
 		return 1
 	fi
 
+	if ! is_executable xterm; then
+		_msg "Necessário instalar 'xterm'"
+		_pkg_manager_sys xterm
+	fi
+
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
-	_yellow "Obtendo url de download aguarde"
-	local vc_pg='https://www.veracrypt.fr/en/Downloads.html'
-	local vc_html=$(grep -m 1 "http.*verac.*tar.bz2" <<< $(curl -sSL "$vc_pg"))
-	local vc_url_download=$(echo "$vc_html" | sed 's/&#43;/+/g' | sed 's/.*="//g;s/">.*//g')
-	local vc_url_AscPub='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
-	local vc_url_sig="${vc_url_download}.sig"
 	
+	local vc_url_download='https://launchpadlibrarian.net/461886552/veracrypt-1.24-Update4-setup.tar.bz2'
+	local vc_url_sig="https://launchpadlibrarian.net/461886553/veracrypt-1.24-Update4-setup.tar.bz2.sig"
+	local vc_url_asc='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
 	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
-	local veracryptSigFile="${veracryptTarFile}.sig"
-	local veracryptAscFile="$DirDownloads/$(basename $vc_url_AscPub)"
+	local veracryptSigFile="$DirDownloads/$(basename $vc_url_sig)"
 
 	__download__ "$vc_url_download" "$veracryptTarFile" || return 1
 	__download__ "$vc_url_sig" "$veracryptSigFile" || return 1
-	__download__ "$vc_url_AscPub" "$veracryptAscFile" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	printf "%s" "[>] Importando key: "
-	if gpg --import "$veracryptAscFile" 1> /dev/null 2>&1; then
+	if wget -q "$vc_url_asc" -O- | gpg --import 1> /dev/null 2>&1; then
 		_syellow "OK"
 	else
 		_sred "FALHA"
@@ -658,8 +673,9 @@ _sublime_text()
 {
 	# Já instalado.
 	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
+	
 	sublime_pag='https://www.sublimetext.com/3'
-	sublime_html=$(grep -m 1 'http.*sublime.*x64.tar.bz2' <<< $(curl -sL "$sublime_pag"))
+	sublime_html=$(wget -q -O- "$sublime_pag" | grep -m 1 'http.*sublime.*x64.tar.bz2')
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
 	path_file="$DirDownloads/$(basename $sublime_url)"
 
@@ -722,7 +738,7 @@ _vscode_tarfile()
 	cp -u "${destinationFilesVscode[dir]}"/resources/app/resources/linux/code.png "${destinationFilesVscode[file_png]}"
 
 	# Criar atalho para execução na linha de comando.
-	echo "#!/usr/bin/env bash" > "${destinationFilesVscode[link]}"
+	echo "#!/bin/sh" > "${destinationFilesVscode[link]}"
 	echo -e "\ncd ${destinationFilesVscode[dir]}/bin/ && ./code" >> "${destinationFilesVscode[link]}"
 	chmod +x "${destinationFilesVscode[link]}"
 
@@ -754,7 +770,6 @@ _vscode()
 		*) _vscode_tarfile;;
 	esac
 	
-
 	if is_executable 'code'; then
 		_show_info 'SuccessInstalation' 'code'
 		return 0
@@ -1023,7 +1038,7 @@ _spotify_ubuntu()
 {
 	# https://www.spotify.com/br/download/linux/
 	_msg "Adicionando key e repositório"
-	curl -sSL https://download.spotify.com/debian/pubkey.gpg | sudo apt-key add - 
+	wget -q https://download.spotify.com/debian/pubkey.gpg -O- | sudo apt-key add - 
 	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
 	_APT update 
  	_pkg_manager_sys 'spotify-client'
@@ -1033,7 +1048,7 @@ _spotify_archlinux()
 {
 	# https://www.vivaolinux.com.br/dica/Spotify-no-Arch-Linux
 	local spotify_url='https://repository-origin.spotify.com/pool/non-free/s/spotify-client'
-	local spotify_file_server=$(curl -sSL "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
+	local spotify_file_server=$(wget -qO- "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
 	local Spotify_Url_Server="$spotify_url/$spotify_file_server"
 	local path_file="$DirDownloads/spotify-client-amd64.deb"
 	
@@ -1311,7 +1326,7 @@ _google_chrome_debian()
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
 	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
 	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
-	curl -sSL 'https://dl.google.com/linux/linux_signing_key.pub' | sudo apt-key add -
+	wget -q 'https://dl.google.com/linux/linux_signing_key.pub' -O- | sudo apt-key add -
 
 	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
 	_white "Adicionando repositório"
@@ -1336,7 +1351,6 @@ _google_chrome_opensuse()
 {
 	# https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-openSUSE-Leap-15
 	# wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
-	# curl -SL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
 	_yellow "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
@@ -1411,7 +1425,7 @@ _opera_stable_debian()
 	local opera_file='/etc/apt/sources.list.d/opera-stable.list'
 	
 	_white "Importando key"
-	sudo sh -c 'curl -sSL http://deb.opera.com/archive.key | apt-key add -' || return 1
+	sudo sh -c 'wget -q http://deb.opera.com/archive.key -O- | apt-key add -' || return 1
 	
 	find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
 
@@ -1530,7 +1544,7 @@ _megasync_debian()
 	fi
 
 	_white "Adicionando key e repositório"	
-	curl -sSL 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
+	wget -q -O- 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
 	echo "$mega_repos" | sudo tee "$mega_file_list"
 	_APT update
 	_pkg_manager_sys megasync || return 1
@@ -1570,7 +1584,7 @@ _megasync_ubuntu()
 	esac
 
 	_msg "Adicionando key e repositório"
-	curl -sSL "$mega_url_key" -o- | sudo apt-key add - || return 1
+	wget -q -O- "$mega_url_key" -o- | sudo apt-key add - || return 1
 	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list" 1> /dev/null
 	_APT update
 	_msg "Instalando: libc-ares2 libmediainfo0v5" 
@@ -1682,7 +1696,7 @@ _tor_debian()
 
 	_yellow "Importando chaves"
 	
-	curl -sSL "$tor_asc" | sudo gpg --import || _red "Falha" && return 1
+	wget -q -O- "$tor_asc" | sudo gpg --import || _red "Falha" && return 1
 	sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' || return 1
 
 	_yellow "Adicionando repositório"
@@ -1748,7 +1762,7 @@ _install_teamviewer_debian()
 	# sudo apt update; sudo apt install teamviewer
 	#
 	local tw_pag='https://www.teamviewer.com/en/download/linux/'      # Página de download.
-	local tw_html=$(curl -SsL "$tw_pag" | grep "download.*linux.*64")
+	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
 	local url_deb=$(echo "$tw_html" | grep -m 1 'amd64.deb' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_amd64.deb"
 
@@ -1783,7 +1797,7 @@ _install_teamviewer_debian()
 _install_teamviewer_fedora()
 {
 	local tw_pag='https://www.teamviewer.com/en/download/linux/' # Página de download.
-	local tw_html=$(curl -SsL "$tw_pag" | grep "download.*linux.*64")
+	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
 	local url_rpm=$(echo "$tw_html" | grep -m 1 'x86_64.rpm' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_x86_64.rpm"
 
@@ -1812,7 +1826,7 @@ _install_teamviewer_fedora()
 _teamviewer_tar()
 {
 	local tw_pag='https://www.teamviewer.com/en/download/linux/'      # Página de download.
-	local tw_html=$(curl -sSL "$tw_pag" | grep "download.*linux.*64")
+	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
 	local url_tar=$(echo "$tw_html" | grep -m 1 'amd64.tar' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_amd64.tar.xz"
 	
@@ -1896,7 +1910,7 @@ _tixati_tarfile()
 
 	_yellow "Obtendo URL de download aguarde."
 	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
-	local tixati_html=$(curl -sSL "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
+	local tixati_html=$(wget -q -O- "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
@@ -1910,7 +1924,7 @@ _tixati_tarfile()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	printf "%s" "[>] Importando key tixati "
-	if curl -sSL https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
+	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
 		echo -e "${CYellow}OK${CReset}"
 	else
 		echo ' '
@@ -1988,20 +2002,28 @@ _youtube_dl()
 	local url_ytdl_asc_philipp='https://phihag.de/keys/A4826A18.asc'
 	local url_ytdl_asc_sergey='https://dstftw.github.io/keys/18A9236D.asc'
 
-	local path_file_sig="$DirDownloads/youtube-dl.sig"
-	local path_file="$DirDownloads/youtube-dl"   # Path+Nome.
+	local path_file_sig="$DirTemp/youtube-dl.sig"
+	local path_file="$DirDownloads/youtube-dl"   
 	local hash_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
 	
 	__download__ "$url_ytdl_test" "$path_file" || return 1 
-	__download__ "$url_ytdl_sig" "$path_file_sig" || return 1
+	
+	printf '%s' "[+] Baixando: $path_file_sig "
+	if wget -q "$url_ytdl_sig" -O "$path_file_sig"; then
+		_syellow 'OK'
+	else
+		_sred 'FALHA'
+		__RMDIR "$path_file_sig"
+		return 1
+	fi
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
 	
 	# Asc philipp
 	printf "%s" "[>] Importando: $url_ytdl_asc_philipp "
-	if curl -sSL "$url_ytdl_asc_philipp" -o- | gpg --import - 1> /dev/null 2> /dev/null; then  
-		echo -e "${CYellow}OK${CReset}"
+	if wget -q -O- "$url_ytdl_asc_philipp" | gpg --import - 1> /dev/null 2> /dev/null; then  
+		_syellow 'OK'
 	else
 		echo ' '
 		_red "Falha"
@@ -2009,8 +2031,8 @@ _youtube_dl()
 	
 	# Asc sergey
 	printf "%s" "[>] Importando: $url_ytdl_asc_sergey "
-	if curl -sSL "$url_ytdl_asc_sergey" -o- | gpg --import - 1> /dev/null 2> /dev/null; then 
-		echo -e "${CYellow}OK${CReset}"
+	if wget -q -O- "$url_ytdl_asc_sergey" | gpg --import - 1> /dev/null 2> /dev/null; then 
+		_syellow 'OK'
 	else
 		echo ' '
 		_red "Falha"
@@ -2065,8 +2087,7 @@ _youtube_dlgui_file_desktop_user()
 	# Criar arquivo .desktop na HOME para o usuario atual.
 	_show_info "AddFileDesktop"
 
-	file_desktop_tubedl_gui=~/.local/share/applications/youtube-dl-gui.desktop
-	echo '[Desktop Entry]' > "$file_desktop_tubedl_gui"
+	echo '[Desktop Entry]' > "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
@@ -2076,12 +2097,12 @@ _youtube_dlgui_file_desktop_user()
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} >> "$file_desktop_tubedl_gui"
+	} >> "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
 
-	chmod u+x "$file_desktop_tubedl_gui"
-	ln -sf "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
+	chmod u+x "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
+	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/Desktop/ 2> /dev/null
+	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 }
 
 _youtube_dlgui_file_desktop_root()
@@ -2132,6 +2153,42 @@ _youtube_dlgui_compile()
 		
 	# Criar o arquivo ".desktop" após compilar o programa.
 	_youtube_dlgui_file_desktop_root
+	return 0
+}
+
+
+_youtube_dlgui_github_installer()
+{
+	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
+	local path_file="$DirDownloads/youtube-dl-gui.zip"
+	
+	__download__ "$url_ytdl_gui" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	_unpack "$path_file" || return 1
+	
+	_yellow "Copiando arquivos"
+	mkdir -p "${destinationFilesYoutubeDlGuiUser[pixmaps]}"
+	cd "$DirUnpack"/youtube-dl-gui-master
+	cp -R -u youtube_dl_gui "${destinationFilesYoutubeDlGuiUser[dir]}"
+	cd "${destinationFilesYoutubeDlGuiUser[dir]}"
+	cp -R -u data/icons/hicolor/128x128/apps/youtube-dl-gui.png "${destinationFilesYoutubeDlGuiUser[file_png]}"
+	cp -R -u data/pixmaps/. "${destinationFilesYoutubeDlGuiUser[pixmaps]}"/. 
+
+	# Criar script para execução via linha de comando
+	echo -e "#!/bin/sh" > "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	echo -e "\ncd ${destinationFilesYoutubeDlGuiUser[dir]}" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+
+	if is_executable python2; then
+		echo -e "python2 __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	elif is_executable python; then
+		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	else
+		_red "Necessário ter o 'python 2' instalado"
+		return 1
+	fi
+
+	chmod +x "${destinationFilesYoutubeDlGuiUser[file_script]}" 
+	_youtube_dlgui_file_desktop_user
 	return 0
 }
 
@@ -2245,6 +2302,7 @@ _youtube_dlgui_archlinux()
 	return 0
 }
 
+
 _youtube_dlgui_freebsd()
 {
 	# freebsd-12.0-release sudo pkg install py27-wxPython30
@@ -2260,7 +2318,7 @@ _youtube_dlgui_freebsd()
 _youtube_dlgui()
 {
 	case "$os_id" in
-		debian) _youtube_dlgui_debian || return 1;;
+		debian) _youtube_dlgui_github_installer || return 1;;
 		ubuntu|linuxmint) _youtube_dlgui_ubuntu || return 1;;
 		fedora) _youtube_dlgui_fedora || return 1;;
 		arch) _youtube_dlgui_archlinux || return 1;;
@@ -2567,7 +2625,7 @@ _virtualbox_extpack()
 	#
 	_white "Aguarde"
 	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
-	local vb_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" <<< $(curl -sL "$vb_pag"))
+	local vb_html=$(wget -q -O- "$vb_pag" | grep -m 1 "Oracle.*Ext.*vbox.*")
 	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
 	local path_file="$DirDownloads/$(basename $vb_url)"
 
@@ -2610,7 +2668,7 @@ _virtualbox_fedora()
 	sudo rpm --import "$DirDownloads/oracle_vbox.asc"
 	
 	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
-	sudo sh -c 'curl -s -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	sudo sh -c 'wget -q -O /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 	
 	case "$os_version" in
 		31) _pkg_manager_sys 'VirtualBox-6.0' || return 1;;
@@ -2648,10 +2706,10 @@ _virtualbox_debian()
 	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
-	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
+	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
 		
 	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
-	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
+	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
 		
 	echo -ne "Adicionando repositório "
 	echo "$vbox_repo" | sudo tee "$vbox_file"
@@ -2719,7 +2777,7 @@ _virtualbox_linux_run()
 	#
 	# O download do arquivo contendo as hashs e semelhante ao comando
 	# abixo, ATENÇÃO a mudança de versão do virtualbox (6.x)
-	# curl -O https://www.virtualbox.org/download/hashes/6.1.6/SHA256SUMS
+	# wget https://www.virtualbox.org/download/hashes/6.1.6/SHA256SUMS
 	#
 	# https://download.virtualbox.org/virtualbox/6.1.6/VirtualBox-6.1.6-137129-Linux_amd64.run
 	#
@@ -2731,7 +2789,7 @@ _virtualbox_linux_run()
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
 
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
-	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" <<< $(curl -sSL $vbox_pag))
+	vbox_html=$(wget -q -O- $vbox_pag | egrep "(https.*download.*64.run|SHA256)")
 
 	# Filtrar o url do arquivo executável (.run) e atribuir path para download.
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
@@ -2780,7 +2838,7 @@ _ohmybash()
 	# cd home
 	# mkdir -p .bash/themes/agnoster-bash
 	# git clone https://github.com/speedenator/agnoster-bash.git .bash/themes/agnoster-bash
-	# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+	# sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
 	local ohmybashZipFile="$DirDownloads/ohmybash.zip"
@@ -2790,7 +2848,7 @@ _ohmybash()
 	if is_executable "$scriptOhmybashInstaller"; then
 		"$scriptOhmybashInstaller"
 	else 
-		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
+		sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
 	fi
 
 	__download__ "$ohmybash_master" "$ohmybashZipFile" || return 1
@@ -2846,7 +2904,7 @@ _ohmyzsh()
 
 	_pkg_manager_sys zsh
 	_yellow "Instalando ohmyzsh"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
+	sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
 }
 
 _papirus_debian()
@@ -3047,26 +3105,56 @@ _snapd()
 _epsxe_windows()
 {
 	# ePSXe win 32
-	local URLepsxeWin='http://www.epsxe.com/files/ePSXe205.zip'
+	# CONFIGURAÇÃO PATH NO WINE
+	# https://www.windows-commandline.com/set-path-command-line/
+	#
+	# echo %path%
+	# setx path "%path%;c:\directoryPath" 
+	# setx path "%path%;c:\epsxe-win"
+	# setx path "%path%;c:\dir1\dir2"
+	# pathman /as C:\epsxe-win
+	#
+	# REMOVE DIRETÓRIO DO PATH
+	# pathman /rs directoryPath	
+	#
+	#
+	local URLepsxeWin='http://www.epsxe.com/files/ePSXe205.zip'  # V2.0.5
 	local pathFileZip="$DirDownloads/$(basename $URLepsxeWin)"
-	local path_script_epsxe="$directoryUSERbin/epsxe-win"
-	local hashFileZip=''
+	local hashFileZip='46e1a7ad3dc9c75763440c153465cdccc9a3ba367e3158542953ece4bcdb7b4f' # V2.0.5
 
+	mkdir -p "${destinationFilesEpsxeWin32[dir]}"
 	_clear_temp_dirs
 
 	__download__ "$URLepsxeWin" "$pathFileZip" || return 1
+	__shasum__ "$pathFileZip" "$hashFileZip" || return 1
 	_unpack "$pathFileZip" || return 1
 	cd "$DirUnpack"
-	mkdir -p "$directoryUSERbin"/epsxe-win32
-	cp -R -u * "$directoryUSERbin"/epsxe-win32/
+	cp -R -n * "${destinationFilesEpsxeWin32[dir]}"/
 
-	_yellow "Criando: script para execução de ePSXe"
-	echo '#!/usr/bin/env bash' > "$path_script_epsxe"
-	echo -e "\ncd $directoryUSERbin/epsxe-win32" >> "$path_script_epsxe"
-	echo -e "wine ePSXe.exe" >> "$path_script_epsxe"
-	chmod +x "$path_script_epsxe"
+	_yellow "Criando script para execução de ePSXe"
+	echo '#!/bin/sh' > "${destinationFilesEpsxeWin32[file_script]}"
+	{
+		echo -e "\nWINEPREFIX=/home/bruno/.wine"
+		echo -e "\ncd ${destinationFilesEpsxeWin32[dir]}"
+		echo -e "wine ePSXe.exe" 
+	} >> "${destinationFilesEpsxeWin32[file_script]}"
 
-	winetricks directx9
+
+	echo "[Desktop Entry]" > "${destinationFilesEpsxeWin32[file_desktop]}"
+	{
+	  echo "Type=Application"
+	  echo "Terminal=false"
+	  echo "Exec=${destinationFilesEpsxeWin32[file_script]}"
+	  echo "Name=ePSXe-Win32"
+	  echo "Comment=Instalado via storecli github: https://github.com/Brunopvh/storecli"
+	  echo "Categories=Game;Emulator;"
+	} >> "${destinationFilesEpsxeWin32[file_desktop]}"
+
+	chmod +x "${destinationFilesEpsxeWin32[file_script]}"
+	chmod +rwx "${destinationFilesEpsxeWin32[file_desktop]}"
+	_yellow "Instalado: directx9 atmlib"
+	winetricks directx9 atmlib
+	"${destinationFilesEpsxeWin32[file_script]}"
 }
 
 _epsxe_zip()

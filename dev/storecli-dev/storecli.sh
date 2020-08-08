@@ -1,19 +1,29 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_07_05_dev'
+__version__='2020_08_07_rev1'
 __author__='Bruno Chaves'
+#
+#=============================================================#
+# INFO
+#=============================================================#
+#    Este programa serve para instalar os aplicativos comumente mais
+# usados em um computador com Linux. Como por exemplo: Codecs de mídia
+# reprodutores de vídeo, navegadores de internet, IDEs entre outras
+# ferramentas.
+#   Testado nos seguintes sistemas: Debian 10 - GNOME, Fedora 31/32 - GNOME
+# Ubuntu 18.04/20.04 - GNOME, LinuxMint 19.3, ArchLinux - GNOME.
+#
+# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 #=============================================================#
 # GitHub
 #=============================================================#
 # https://github.com/Brunopvh/storecli
 #
-#=============================================================#
-# REFERÊNCIAS
-#=============================================================#
-# https://www.dicas-l.com.br/arquivo/fatiando_opcoes_com_o_getopts.php
-# https://man7.org/linux/man-pages/man1/getopts.1p.html
+
+
+# https://qastack.com.br/programming/263890/how-do-i-find-the-width-height-of-a-terminal-window
 #
 
 #=============================================================#
@@ -31,7 +41,7 @@ if [[ $(id -u) == '0' ]]; then
 	exit 1
 fi
 
-# Necessário ter o pacote "sudo" intalado.
+# Necessário ter o "sudo" intalado.
 if [[ ! -x $(which sudo 2> /dev/null) ]]; then
 	printf "\033[0;31m Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir\033[m\n"
 	exit 1
@@ -117,7 +127,7 @@ scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
 scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
 scriptOhmybashInstaller="$dirSTORECLIPathScripts/ohmybash.run"
-GUI="$dirSTORECLIPathPython/pygui.py"
+GUI="$dirSTORECLIPathScripts/gui.sh"
 
 #=============================================================#
 # importar libs
@@ -130,8 +140,8 @@ source "$libUninstallPkgs"
 source "$libArrayUtils"
 source "$libPrograms"
 
-# Criar diretórios para arquivos temporários, descompressão dos
-# arquivos baixados e para clonar repositórios do github. 
+# Criar diretórios para arquivos temporários para descompressão dos
+# arquivos baixados e clonar repositórios do github. 
 # export TemporaryDirectory=$(mktemp --directory)
 export TemporaryDirectory="/tmp/storecli_$USER"
 export DirTemp="$TemporaryDirectory/temp"
@@ -159,8 +169,6 @@ export LogErro="$HOME/.cache/storecliERROLog.log"
 touch "$configFILE"
 touch "$LogFile"
 touch "$LogErro"
-
-space_line='-------------------------------------------------------'
 
 "$scriptConfigPath"
 
@@ -212,11 +220,14 @@ _sblue()
 	echo -e "${CSBlue}$@${CReset}"
 }
 
-_msg()
+# Função para verifiar se um executável existe no sistema.
+is_executable()
 {
-	echo '--------------------------------------------------'
-	echo -e " $@"
-	echo '--------------------------------------------------'
+	if [[ -x $(which "$1" 2> /dev/null) ]]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 _YESNO()
@@ -241,6 +252,34 @@ _YESNO()
 		return 1
 	fi
 }
+
+
+if is_executable tput; then
+	columns=$(tput cols)
+else
+	columns='40'
+fi
+
+print_line(){
+	local L='='
+	num='1'
+	while [[ "$num" != "$columns" ]]; do
+		L="${L}="
+		num="$(($num+1))"
+	done
+	# echo -ne "$L"
+	printf '%s\n' "$L"
+}
+
+space_line=$(print_line)
+
+_msg()
+{
+	print_line
+	echo -e " $@"
+	print_line
+}
+
 
 _space_text()
 {
@@ -425,7 +464,7 @@ cat << EOF
 
        -l|--list                     Lista aplicativos disponíveis para instalação, ou aplicativos
                                      de uma categoria, argumentos:
-                                     --list Acessorios|Desenvolvimento|Escritorio|Internet|Sistema
+                                     --list Acessorios|Desenvolvimento|Escritorio|Navegadores|Internet|Sistema
                                      |Preferencias|GnomeShell.
 
        -u|--self-update              Instala ultima versão desse script disponível no github.
@@ -445,35 +484,25 @@ cat << EOF
 EOF
 }
 
-# Função para se um executável qualquer existe no sistema.
-is_executable()
-{
-	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
 _ping()
 {
 	printf "%s" "[>] Aguardando conexão: "
 
-	if ping -c 1 8.8.8.8 1> /dev/null; then
-		_syellow "Conectado"
+	if [[ $(ping -c 1 8.8.8.8) ]]; then
+		printf '%s\n' "Conectado"
 		return 0
 	else
 		_sred 'FALHA'
 		_red "AVISO: você está OFF-LINE"
-		read -p "Pressione enter: " enter
+		sleep 2
 		return 1
 	fi
 }
- 
+
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	printf "[>] ${CYellow}A${CReset}utênticação necessária para executar: sudo ${@}\n"
+	printf "[>] Autênticação necessária para executar: sudo ${@}\n"
 	if sudo "$@"; then
 		return 0
 	else
@@ -513,10 +542,43 @@ _clear_temp_dirs()
 
 }
 
+_GDEBI()
+{
+	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+	Pid_Python_Aptd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(aptd)' | awk '{print $2}')
+
+	while [[ ! -z $Pid_Apt_Install ]]; do
+		_loop_pid "$Pid_Apt_Install"
+		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
+		sleep 0.2
+	done
+
+
+	while [[ ! -z $Pid_Apt_Systemd ]]; do 
+		_loop_pid "$Pid_Apt_Systemd"
+		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
+		sleep 0.2
+	done
+	
+	while [[ ! -z $Pid_Dpkg_Install ]]; do 
+		_loop_pid "$Pid_Dpkg_Install"
+		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
+		sleep 0.2
+	done
+
+	if sudo gdebi "$@"; then
+		return 0
+	else
+		_red "(_GDEBI) erro: gdebi $@"
+		return 1	
+	fi	
+}
+
 
 _DPKG()
 {
-	# Função para executar dpkg --install
 	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
 	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
 	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
@@ -544,7 +606,7 @@ _DPKG()
 	if sudo dpkg "$@"; then
 		return 0
 	else
-		_red "(dpkg) retornou erro"
+		_red "(_DPKG) erro: $@"
 		return 1
 	fi
 }
@@ -552,11 +614,11 @@ _DPKG()
 _APT()
 {
 	# Antes de proseguir com a instalação devemos verificar se já 
-	# existe outro processo instalação com apt em execução para não
+	# existe outro processo de instalação com apt em execução para não
 	# causar erros.
-	# sudo rm /var/lib/dpkg/lock-frontend
-	# sudo rm /var/cache/apt/archives/lock
-	#
+	#sudo rm /var/lib/dpkg/lock-frontend 
+	#sudo rm /var/cache/apt/archives/lock
+	
 	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
 	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
 	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
@@ -752,7 +814,7 @@ _pkg_manager_sys()
 __gpg__()
 {
 	printf "%s" "[>] Verificando integridade "
-	if gpg "$@" 1> /dev/null 2> /dev/null; then
+	if gpg "$@" 1> /dev/null 2> /dev/null; then  
 		_syellow "OK"
 	else
 		_sred "FALHA"
@@ -877,6 +939,11 @@ _gitclone()
 		return 1
 	fi
 
+	if ! is_executable git; then
+		_yellow "Necessário instalar o pacote 'git"
+		_pkg_manager_sys git || return 1
+	fi
+
 	cd "$DirGitclone"
 	dir_repo=$(basename "$1" | sed 's/.git//g')
 	if [[ -d "$DirGitclone/$dir_repo" ]]; then
@@ -959,7 +1026,6 @@ _unpack()
 }
 
 
-
 _pkg_manager_storecli()
 {
 	# Instalação dos programas
@@ -968,7 +1034,6 @@ _pkg_manager_storecli()
 		return 1
 	fi
 
-	#_ping
 	_clear_temp_dirs
 
 	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
@@ -976,16 +1041,11 @@ _pkg_manager_storecli()
 		tina|tricia) export os_codename='bionic';;
 	esac
 
-	_yellow "storecli sua loja de aplicativos via linha de comando."
-	_space_text "[+] Sistema" "$os_id $os_release"
+	_yellow "Sistema: $os_id"
 
 	while [[ $1 ]]; do
 		[[ -z $1 ]] && return 0 
-		case "$1" in
-			-d|--downloadonly) ;;
-			-y|--yes) ;;
-			-I|--ignore-cli) ;; 
-
+		case "$1" in 
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
@@ -1061,7 +1121,7 @@ _pkg_manager_storecli()
 			epsxe) _epsxe;;
 			epsxe-win) _epsxe_windows;;
 			snapd) _snapd;;
-
+			install) ;;
 			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
 		esac
 		shift
@@ -1073,92 +1133,76 @@ _update_storecli()
 	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	local FileConfigUpdate="$directoryUSERconfig/update.conf"; touch "$FileConfigUpdate"
 	local tempFileUpdate="$DirTemp/storecli.update"                    	
-	local day=$(date +%d) # Dia atual.
+	local nowDate=$(date +%Y_%m_%d) # Data atual /ano/mês/dia.
 	
-	# dia em que a ultima busca por atualizaçãoes por executada.
-	local day_update=$(grep -m 1 "day_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
+	# Data de execução da última busca por atualizações.
+	local oldDateUpdate=$(grep -m 1 "date_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
 	
-	if [[ "$day" == "$day_update" ]]; then
-		echo -e "day_update $day" > "$FileConfigUpdate"
+	if [[ "$nowDate" == "$oldDateUpdate" ]]; then
 		return 0
+	else
+		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	fi
-		
-	_ping || return 1
+	
+	[[ ! -z "$oldDateUpdate" ]] && printf '%s\n' "[+] Data da última busca por atualizações: $oldDateUpdate"
 	
 	printf "%s" "[>] Verificando atualização no github aguarde "
-	if curl -fsSL https://raw.github.com/Brunopvh/storecli/master/storecli.sh -o "$tempFileUpdate"; then
-		_syellow "OK"
-		OnlineVersion=$(grep -m 1 ^'VERSION' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
-	else
+	wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate" || { 
 		_sred "FALHA"
 		return 1
-	fi
+	}
+	_syellow 'OK'	
+	OnlineVersion=$(grep -m 1 ^'__version__' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
 	
-	if [[ "$OnlineVersion" == "$VERSION" ]]; then
-		_yellow "Não existem atualizações disponíveis para o script storecli"
-		echo -e "day_update $day" > "$FileConfigUpdate"
+	_yellow "Versão local ($__version__) - versão online ($OnlineVersion)"
+	if [[ "$OnlineVersion" == "$__version__" ]]; then
+		_yellow "Scritp storecli está atualizado"
+		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi
 	
-	_yellow "Atualização disponível: $OnlineVersion"
-	_yellow "Instalando atualização"
+	_yellow "Instalando nova versão: $OnlineVersion"
 	
 	if ! "$scriptInstallStoreli"; then
 		_red "(_update_storecli) falha"
 		return 1
 	fi
-	echo -e "day_update $day" > "$FileConfigUpdate"
+
+	[[ -f "$tempFileUpdate" ]] && rm "$tempFileUpdate"
+	echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	return 0
 }
 
 argument_parser()
 {
-	# Argumentos que irão encerrar o programa após a sua execução. 
-	for arg in "$@"; do
-		case "$arg" in
-			-l|--list) shift; _list_applications "$@"; return 0; break;;
-			-v|--version) shift; echo "$(basename $scriptStorecli) V${__version__}"; return 0; break;;
-			-h|--help) shift; usage; return 0; break;;
-		esac
-	done
-
-	while [[ $1 ]]; do
+	local num='0'
+	export OptArgs=()
+	while [ $1 ]; do
 		case "$1" in
-			-l|--list) ;;
-			-y|--yes) ;;
-			-d|--downloadonly) ;;
-			-I|--ignore-cli) ;;
-			-b|--broke) _BROKE;;
-			-c|--configure) _run_configuration_dep;;
-			-u|--self-update) "$scriptInstallStoreli";;
-			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
-			remove) shift; _uninstall_packages "$@"; return "$?";;
-			*) _red "(argument_parser) argumento inválido: $1"; return 1; break;;
+			-l|--list) shift; _list_applications "$@"; return 0; break;;
+			-v|--version) shift; echo -e "$(basename $scriptStorecli) V${__version__}"; return 0; break;;
+			-h|--help) shift; usage; return 0; break;;
+			-y|--yes) export AssumeYes='True';;
+			-d|--downloadonly) export DownloadOnly='True';;
+			-I|--ignore-cli) export IgnoreCli='True';;
+			*) OptArgs["$num"]="$1"; num="$(($num+1))";;
 		esac
 		shift
 	done
+
 }
 
 main()
 {	
-	# Exportar algumas variáveis especiais para o programa de acordo
-	# com os parâmetros recebidos na linha de comando.
-	for arg in "$@"; do
-		case "$arg" in
-		-y|--yes) export AssumeYes='True';;
-		-d|--downloadonly) export DownloadOnly='True';;
-		-I|--ignore-cli) export IgnoreCli='True';;
-		esac
-	done
+	argument_parser "$@"
 
-	# Verificar se todos os utilitários de linha de comando 
-	# estão instalados - esta operação será IGNORADA caso a
-	# opção '--ignore-cli' estiver na linha de comando.
-	#   
+	# Verificar se todos os utilitários de linha de comando estão instalados 
+	# esta operação será IGNORADA caso a opção '--ignore-cli' ou '-I' estiver 
+	# na linha de comando.
+	# Exemplos:  
 	#   storecli --ignore-cli install <pacote>
-	#   storecli install <pacote> -I
-	#   -I|--gnore-cli
-	#
+	#   storecli -I install <pacote>
+	
 	if [[ "$IgnoreCli" != 'True' ]]; then
 		check_requeriments_sys 
 	fi
@@ -1173,12 +1217,26 @@ main()
 		}
 	fi
 
-	argument_parser "$@"
 	_update_storecli
+
+	for ARG in "${OptArgs[@]}"; do
+		case "$ARG" in
+			-b|--broke) _BROKE;;
+			-c|--configure) _run_configuration_dep;;
+			-u|--self-update) "$scriptInstallStoreli";;
+			install) _pkg_manager_storecli "${OptArgs[@]}"; return "$?"; break;;
+			remove)  _uninstall_packages "${OptArgs[@]}"; return "$?";;
+			*) _red "(argument_parser) argumento inválido: $ARG"; return 1; break;;
+		esac
+	done
 	return "$?"
 }
 
 if [[ -z $1 ]]; then
+	if is_executable zenity; then
+		_yellow "Necessário instalar zenity"
+		_pkg_manager_sys zenity
+	fi 
 	"$GUI"
 else
 	main "$@"
