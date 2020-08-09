@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_04_rev1'
+__version__='2020_08_09_rev2'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -21,11 +21,9 @@ __author__='Bruno Chaves'
 #=============================================================#
 # https://github.com/Brunopvh/storecli
 #
-#=============================================================#
-# REFERÊNCIAS
-#=============================================================#
-# https://www.dicas-l.com.br/arquivo/fatiando_opcoes_com_o_getopts.php
-# https://man7.org/linux/man-pages/man1/getopts.1p.html
+
+
+# https://qastack.com.br/programming/263890/how-do-i-find-the-width-height-of-a-terminal-window
 #
 
 #=============================================================#
@@ -43,7 +41,7 @@ if [[ $(id -u) == '0' ]]; then
 	exit 1
 fi
 
-# Necessário ter o pacote "sudo" intalado.
+# Necessário ter o "sudo" intalado.
 if [[ ! -x $(which sudo 2> /dev/null) ]]; then
 	printf "\033[0;31m Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir\033[m\n"
 	exit 1
@@ -122,6 +120,7 @@ libProcessLoop="$dirSTORECLIPathLib/ProcessLoop.sh"
 libUninstallPkgs="$dirSTORECLIPathLib/UninstallPkgs.sh"
 libArrayUtils="$dirSTORECLIPathLib/ArrayUtils.sh"
 libPrograms="$dirSTORECLIPathLib/Programs.sh"
+libWget="$dirSTORECLIPathLib/libwget.sh"
 
 # Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
@@ -129,7 +128,6 @@ scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
 scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
 scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
 scriptOhmybashInstaller="$dirSTORECLIPathScripts/ohmybash.run"
-#GUI="$dirSTORECLIPathPython/pygui.py"
 GUI="$dirSTORECLIPathScripts/gui.sh"
 
 #=============================================================#
@@ -142,9 +140,10 @@ source "$libProcessLoop"
 source "$libUninstallPkgs"
 source "$libArrayUtils"
 source "$libPrograms"
+source "$libWget"
 
-# Criar diretórios para arquivos temporários, descompressão dos
-# arquivos baixados e para clonar repositórios do github. 
+# Criar diretórios para arquivos temporários para descompressão dos
+# arquivos baixados e clonar repositórios do github. 
 # export TemporaryDirectory=$(mktemp --directory)
 export TemporaryDirectory="/tmp/storecli_$USER"
 export DirTemp="$TemporaryDirectory/temp"
@@ -173,8 +172,6 @@ touch "$configFILE"
 touch "$LogFile"
 touch "$LogErro"
 
-space_line='-------------------------------------------------------'
-
 "$scriptConfigPath"
 
 _red()
@@ -184,7 +181,7 @@ _red()
 
 _green()
 {
-	echo -e "[${CGreen}*${CReset}] $@"
+	echo -e "[${CGreen}+${CReset}] $@"
 }
 
 _yellow()
@@ -195,13 +192,13 @@ _yellow()
 
 _blue()
 {
-	echo -e "[${CBlue}~${CReset}] $@"
+	echo -e "[${CBlue}+${CReset}] $@"
 }
 
 
 _white()
 {
-	echo -e "[${CWhite}>${CReset}] $@"
+	echo -e "[${CWhite}+${CReset}] $@"
 }
 
 
@@ -225,11 +222,14 @@ _sblue()
 	echo -e "${CSBlue}$@${CReset}"
 }
 
-_msg()
+# Função para verifiar se um executável existe no sistema.
+is_executable()
 {
-	echo -e "$space_line"
-	echo -e " $@"
-	echo -e "$space_line"
+	if [[ -x $(which "$1" 2> /dev/null) ]]; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 _YESNO()
@@ -254,6 +254,34 @@ _YESNO()
 		return 1
 	fi
 }
+
+
+if is_executable tput; then
+	columns=$(tput cols)
+else
+	columns='40'
+fi
+
+print_line(){
+	local L='='
+	num='1'
+	while [[ "$num" != "$columns" ]]; do
+		L="${L}="
+		num="$(($num+1))"
+	done
+	# echo -ne "$L"
+	printf '%s\n' "$L"
+}
+
+space_line=$(print_line)
+
+_msg()
+{
+	print_line
+	echo -e " $@"
+	print_line
+}
+
 
 _space_text()
 {
@@ -458,22 +486,12 @@ cat << EOF
 EOF
 }
 
-# Função para se um executável qualquer existe no sistema.
-is_executable()
-{
-	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
 _ping()
 {
 	printf "%s" "[>] Aguardando conexão: "
 
 	if [[ $(ping -c 1 8.8.8.8) ]]; then
-		_syellow "Conectado"
+		printf '%s\n' "Conectado"
 		return 0
 	else
 		_sred 'FALHA'
@@ -486,7 +504,7 @@ _ping()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	printf "[>] ${CYellow}A${CReset}utênticação necessária para executar: sudo ${@}\n"
+	printf "[>] Autênticação necessária para executar: sudo ${@}\n"
 	if sudo "$@"; then
 		return 0
 	else
@@ -864,28 +882,6 @@ __curl__()
 
 }
 
-__wget__()
-{
-	# Função para baixar arquivos usando a ferramenta 'wget'.
-	url="$1"
-	path_file="$2"
-	if [[ -z $2 ]]; then
-		wget "$url" || {
-			_red "Falha: wget"
-			return 1
-		}
-		return 0
-	elif [[ $2 ]]; then
-		_blue "Destino: $path_file"
-		wget "$url" -O "$path_file" || {
-			_red "Falha: wget"
-			rm "$path_file" 2> /dev/null
-			return 1
-		}
-		return "$?"
-	fi	
-}
-
 __download__()
 {
 	if [[ -f "$2" ]]; then
@@ -893,26 +889,43 @@ __download__()
 		return 0
 	fi
 
+	url="$1"
+	path_file="$2"
+	
 	cd "$DirDownloads"
 	_blue "Baixando: $1"
 
-	if is_executable wget; then
-		__wget__ "$@" 
-	elif is_executable curl; then
-		__curl__ "$@" || return 1
+	if is_executable wget; then # Usar wget
+		downloader_default='wget'
+	elif is_executable curl; then # Usar curl
+		downloader_default='curl'
+	elif is_executable "$dirSTORECLIPathScripts"/web-cli.py; then # Usar script python local.
+		downloader_default='web-cli'
 	else
 		_red "(__download__) instale o pacote 'wget' ou 'curl'"
 		return 1
 	fi
 
-	while [[ "$?" != '0' ]]; do
+	#downloader_default='web-cli'
+
+	while true; do
+		if [[ "$downloader_default" == 'web-cli' ]]; then
+			"$dirSTORECLIPathScripts"/web-cli.py --url "$url" -o "$path_file" && break
+		elif [[ "$downloader_default" == 'wget' ]]; then
+			__wget__ "$url" "$path_file" && break
+		elif [[ "$downloader_default" == 'curl' ]]; then
+			curl -C - -S -L -o "$path_file" "$url" && break
+		fi
+
 		if _YESNO "Deseja tentar baixar novamente"; then
-			__wget__ "$@"
+			continue
 		else
-			return 1; break
+			return 1
+			break
 		fi
 	done
-	[[ "$?" == '0' ]] || return 1
+	[[ "$?" != '0' ]] && return 1
+	return 0
 }
 
 _gitclone()
@@ -921,6 +934,11 @@ _gitclone()
 	if [[ -z $1 ]]; then
 		_red "(_gitclone) use: _gitclone <repo.git>"
 		return 1
+	fi
+
+	if ! is_executable git; then
+		_yellow "Necessário instalar o pacote 'git"
+		_pkg_manager_sys git || return 1
 	fi
 
 	cd "$DirGitclone"
@@ -1020,7 +1038,7 @@ _pkg_manager_storecli()
 		tina|tricia) export os_codename='bionic';;
 	esac
 
-	_space_text "[+] Sistema" "$os_id $os_release"
+	_yellow "Sistema: $os_id"
 
 	while [[ $1 ]]; do
 		[[ -z $1 ]] && return 0 
@@ -1212,6 +1230,10 @@ main()
 }
 
 if [[ -z $1 ]]; then
+	if is_executable zenity; then
+		_yellow "Necessário instalar zenity"
+		_pkg_manager_sys zenity
+	fi 
 	"$GUI"
 else
 	main "$@"

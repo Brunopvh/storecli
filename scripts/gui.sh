@@ -17,8 +17,6 @@ export readonly DirGui=$(dirname $(readlink -f "$0")) # path deste arquivo no di
 github='https://github.com'  
 raw='https://raw.github.com'
 
-space_line='=================================================='
-
 _msg()
 {
 	echo -e "[>] $@"
@@ -56,6 +54,23 @@ if [[ ! -x $(which curl 2> /dev/null) ]]; then
 	_red "Instale a ferramenta [curl] para prosseguir"
 	exit 1
 fi
+
+if [[ -x $(which tput 2> /dev/null) ]]; then
+	columns=$(tput cols)
+else
+	columns='40'
+fi
+
+print_line(){
+	local L='='
+	num='1'
+	while [[ "$num" != "$columns" ]]; do
+		L="${L}="
+		num="$(($num+1))"
+	done
+	# echo -ne "$L"
+	printf '%s' "$L"
+}
 
 # Verificar conexão com a internet.
 _ping()
@@ -242,7 +257,7 @@ storecli_args()
 # Funções das categorias.
 #=============================================================#
 menu_acessory(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Acessórios"
 	
 	while true; do
@@ -266,7 +281,7 @@ menu_acessory(){
 }
 
 menu_dev(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Desenvolvimento"
 	
 	while true; do
@@ -292,7 +307,7 @@ menu_dev(){
 }
 
 menu_office(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Escritório"
 	
 	while true; do
@@ -317,7 +332,7 @@ menu_office(){
 
 
 menu_navegadores(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Navegadores"
 	
 	while true; do
@@ -342,7 +357,7 @@ menu_navegadores(){
 }
 
 menu_internet(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Internet"
 	
 	while true; do
@@ -373,7 +388,7 @@ menu_internet(){
 
 
 menu_midia(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Midia"
 	
 	while true; do
@@ -401,7 +416,7 @@ menu_midia(){
 
 
 menu_system(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Sistema"
 	
 	while true; do
@@ -433,7 +448,7 @@ menu_system(){
 
 
 menu_preferences(){
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Preferências"
 	
 	while true; do
@@ -457,7 +472,7 @@ menu_preferences(){
 
 menu_gnomeshell()
 {
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Gnome Shell"
 	
 	while true; do
@@ -483,7 +498,7 @@ menu_gnomeshell()
 
 menu_tools()
 {
-	echo -e "$space_line"
+	print_line
 	echo -e "Menu Ferramentas"
 	
 	while true; do
@@ -506,7 +521,7 @@ menu_tools()
 }
 
 main(){
-	echo -e "$space_line"
+	print_line
 	_yellow "Menu Principal"
 	
 	while true; do

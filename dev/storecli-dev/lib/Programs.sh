@@ -148,11 +148,6 @@ _veracrypt()
 		return 1
 	fi
 
-	if ! is_executable xterm; then
-		_msg "Necessário instalar 'xterm'"
-		_pkg_manager_sys xterm
-	fi
-
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 	
@@ -179,6 +174,11 @@ _veracrypt()
 	_unpack "$veracryptTarFile" || return 1
 	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
 	chmod +x "$DirTemp"/veracrypt-setupx64
+
+	if ! is_executable xterm; then
+		_msg "Necessário instalar 'xterm' para prosseguir"
+		_pkg_manager_sys xterm
+	fi
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$os_id" in
@@ -1386,14 +1386,12 @@ _google_chrome_archlinux()
 	local github_chrome='https://aur.archlinux.org/google-chrome.git'
 
  	_gitclone "$github_chrome" || return 1
-	cd "$DirTemp"/google-chrome
-
+	cd "$DirGitclone"/google-chrome
 	_msg "Instalando base-devel"
-	_pkg_manager_sys "base-devel"
-	_pkg_manager_sys pipewire
-
+	_pkg_manager_sys "base-devel" pipewire
+	 
 	_msg "Executando: makepkg -s"
-	cd "$DirTemp/google-chrome"
+	cd "$DirGitclone/google-chrome"
 	makepkg -s
 
 	_msg "Executando sudo pacman -U $(ls google*.tar.*)"
@@ -1627,14 +1625,7 @@ _megasync_archlinux()
 
 	# Requerimentos para compilação no ArchLinux - libpdfium.
 	local array_mega_requeriments_archlinux=(
-		'crypto++' 
-		'c-ares'
-		'lsb-release' 
-		'qt5-tools'
-		libuv 
-		libmediainfo   
-		swig 
-		doxygen 
+		'crypto++' 'c-ares' 'lsb-release' 'qt5-tools' libuv libmediainfo swig doxygen 
 		)
 
 	# Baixar o pacote do repositório MEGA.
@@ -1655,7 +1646,6 @@ _megasync_archlinux()
 	# Syncronizar os repositórios
 	_PACMAN -Sy
 }
-
 
 _megasync()
 {
@@ -1967,6 +1957,9 @@ _tixati_tarfile()
 		gconftool-2 --set --type=string /desktop/gnome/url-handlers/magnet/need-terminal false
 	fi
 
+	if is_executable gtk-update-icon-cache; then
+		sudo gtk-update-icon-cache
+	fi
 
 	if is_executable 'tixati'; then
 		_show_info 'SuccessInstalation' 'tixati'
@@ -1981,7 +1974,6 @@ _tixati()
 {
 	_tixati_tarfile
 }
-
 
 _uget()
 {
@@ -2129,10 +2121,10 @@ _youtube_dlgui_file_desktop_root()
 	ln -sf "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
 }
 
-
-# Baixar e compilar youtube-dl-gui
 _youtube_dlgui_compile()
 {
+	# Baixar e compilar o codigo fonte do github
+	# Instalação no sistema em /usr/local/bin/youtube-dl-gui 
 	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 
@@ -2148,7 +2140,7 @@ _youtube_dlgui_compile()
 	if is_executable python2; then
 		sudo python2 setup.py install 1>> "$LogFile" || return 1
 	elif is_executable python2.7; then
-		sudo python2 setup.py install 1>> "$LogFile" || return 1
+		sudo python2.7 setup.py install 1>> "$LogFile" || return 1
 	fi
 		
 	# Criar o arquivo ".desktop" após compilar o programa.
@@ -2156,8 +2148,7 @@ _youtube_dlgui_compile()
 	return 0
 }
 
-
-_youtube_dlgui_github_installer()
+_youtube_dlgui_user_installer()
 {
 	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
@@ -2165,7 +2156,7 @@ _youtube_dlgui_github_installer()
 	__download__ "$url_ytdl_gui" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_unpack "$path_file" || return 1
-	
+
 	_yellow "Copiando arquivos"
 	mkdir -p "${destinationFilesYoutubeDlGuiUser[pixmaps]}"
 	cd "$DirUnpack"/youtube-dl-gui-master
@@ -2198,7 +2189,8 @@ _youtube_dlgui_pip()
 	# sudo sh -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
 	# sudo apt install youtube-dlg --yes
 	_pkg_manager_sys 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
-	pip install --user wheel 'youtube-dlg' || return 1
+	pip install wheel --user
+	pip install 'youtube-dlg' --user || return 1
 	_youtube_dlgui_file_desktop_user
 	return 0
 } 
@@ -2206,26 +2198,17 @@ _youtube_dlgui_pip()
 _youtube_dlgui_ubuntu()
 {
 	# https://github.com/MrS0m30n3/youtube-dl-gui.git
-	
-	# Ubuntu e Linuxmint.
-	case "$os_codename" in
-		bionic|tricia) 
-				_youtube_dlgui_pip 
-				return
-				;;
-				
-		eoan|focal)
-				_pkg_manager_sys 'python-wxgtk3.0' gettext || return 1
-				_python_twodict_github || return 1
-				_youtube_dlgui_compile || return 1
-				return 0
-				;;	
-				
-		*)
-			_show_info 'ProgramNotFound' 'youtube-dlg-gui'	
-			return 1 
-			;;
-	esac	
+	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then
+		_youtube_dlgui_pip || return 1
+	elif [[ "$os_codename" == 'eoan' ]] || [[ "$os_codename" == 'focal' ]]; then
+		_pkg_manager_sys 'python-wxgtk3.0' gettext || return 1
+		_python_twodict_github || return 1
+		_youtube_dlgui_compile || return 1
+	else
+		_show_info 'ProgramNotFound' 'youtube-dlg-gui'	
+		return 1
+	fi
+
 }
 
 _youtube_dlgui_fedora()
@@ -2242,61 +2225,43 @@ _youtube_dlgui_fedora()
 	local url="$f_packages/$wxpython_rpm"
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
-	# Instalar python2-wxpython3
-	case "$os_version" in
-		31) _pkg_manager_sys 'python2-wxpython' || return 1;;
-		32) 
-			_pkg_manager_sys 'wxGTK3-media' 'python3-wxpython4.x86_64' || return 1
-			__download__ "$url" "$path_file" || return 1
-			_yellow "Instalando: $path_file"
-			_RPM --install "$path_file" 
-			;;
-	esac
+	# Instalar dependências.
+	if [[ "$os_version" == '32' ]]; then
+		_pkg_manager_sys 'wxGTK3-media' || return 1
+		__download__ "$url" "$path_file" || return 1
+		_yellow "Instalando: $path_file"
+		_RPM --install "$path_file" 
+	else
+		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
+		return 1
+	fi
 	
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
 }
 
-_youtube_dlgui_tumbleweed()
-{
-	# https://software.opensuse.org/download/package?package=youtube-dl-gui&project=openSUSE%3AFactory
-	local url_opensuse_repo='https://download.opensuse.org/repositories/openSUSE:'
-	local url_ytdlg_tumbleweed="$url_opensuse_repo/Factory/standard/noarch/youtube-dl-gui-0.4-1.7.noarch.rpm"
-	local path_file="$DirDownloads/$(basename $url_ytdlg_tumbleweed)"
-
-	__download__ "$url_ytdlg_tumbleweed" "$path_file" || return 1 
-	_pkg_manager_sys "$path_file" || return 1
-	
-	if is_executable 'youtube-dl-gui'; then
-		_show_info 'SuccessInstalation' 'youtube-dl-gui'
-		return 0
-	else
-		_show_info 'InstalationFailed' 'youtube-dl-gui'
-		return 1
-	fi
-}
-
 _youtube_dlgui_debian()
 {
 	# Testado apenas no debian 10.
-	case "$os_codename" in
-		buster)
-			_pkg_manager_sys 'python-wxgtk3.0' 'python-twodict' gettext || return 1
-			_youtube_dlgui_compile || return 1
-			return 0
-			;;
-		*)
-			_show_info 'ProgramNotFound' 'youtube-dlg-gui'
-			return 1
-			;;	
-	esac
-}
+	if [[ "$os_codename" == 'buster' ]]; then
+		_msg "Instalando: python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext"
+		_pkg_manager_sys python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
+		
+	else
+		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
+		return 1
+	fi
 
+	pip install wheel --user
+	_youtube_dlgui_compile || return 1
+
+}
 
 _youtube_dlgui_archlinux()
 {
-	_pkg_manager_sys 'python2-wxpython3' || return 1
+	_msg "Instalando: python2 python2-pip python2-setuptools python2-wxpython3"
+	_pkg_manager_sys python2 python2-pip python2-setuptools python2-wxpython3 || return 1
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
@@ -2317,15 +2282,19 @@ _youtube_dlgui_freebsd()
 
 _youtube_dlgui()
 {
-	case "$os_id" in
-		debian) _youtube_dlgui_github_installer || return 1;;
-		ubuntu|linuxmint) _youtube_dlgui_ubuntu || return 1;;
-		fedora) _youtube_dlgui_fedora || return 1;;
-		arch) _youtube_dlgui_archlinux || return 1;;
-		'12.1-STABLE'|'12.1-RELEASE') _youtube_dlgui_freebsd || return 1;;
-		'opensuse-tumbleweed') _youtube_dlgui_tumbleweed || return 1;;
-		*) _show_info 'ProgramNotFound' 'youtube-dl-gui'; return 1;;
-	esac
+	if [[ -f /etc/debian_version ]]; then
+		if [[ "$os_codename" == 'buster' ]]; then
+			_youtube_dlgui_debian || return 1
+		elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+			_youtube_dlgui_ubuntu || return 1
+		fi
+	elif [[ "$os_id" == 'fedora' ]]; then
+		_youtube_dlgui_user_installer || return 1
+	elif [[ "$os_id" == 'arch' ]]; then
+		_youtube_dlgui_archlinux || return 1
+	else
+		_show_info 'ProgramNotFound' 'youtube-dl-gui'; return 1
+	fi
 	
 	if is_executable 'youtube-dl-gui'; then
 		_show_info 'SuccessInstalation' 'youtube-dl-gui'
@@ -2344,7 +2313,7 @@ _bluetooth()
 	fi
 
 	_pkg_manager_sys bluez 'bluez-firmware' 'bluez-hcidump'
-	echo -e "$space_line"
+	print_line
 	_white "1 - ${CGreen}G${CReset}NOME"
 	_white "2 - ${CGreen}K${CReset}DE"
 	_white "3 - ${CGreen}L${CReset}XDE/${CGreen}X${CReset}FCE/${CGreen}L${CReset}XQT/${CGreen}M${CReset}ATE"
@@ -2899,10 +2868,10 @@ _ohmyzsh()
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
 	if ! is_executable 'zsh'; then
-		_yellow "Necessário instalar shell [zsh]"	
+		_yellow "Necessário instalar shell [zsh]"
+		_pkg_manager_sys zsh	
 	fi
-
-	_pkg_manager_sys zsh
+	
 	_yellow "Instalando ohmyzsh"
 	sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
 }
@@ -3092,16 +3061,6 @@ _gnome_tweaks()
 	_pkg_manager_sys 'gnome-tweaks'
 }
 
-_snapd()
-{
-	# https://www.edivaldobrito.com.br/suporte-a-pacotes-snap-no-linux/
-	case "$os_id" in
-		debian) _pkg_manager_sys snapd;;
-		fedora) _pkg_manager_sys snapd;;
-		*) _show_info 'ProgramNotFound' 'snapd'; return 1;;
-	esac
-}
-
 _epsxe_windows()
 {
 	# ePSXe win 32
@@ -3152,12 +3111,23 @@ _epsxe_windows()
 
 	chmod +x "${destinationFilesEpsxeWin32[file_script]}"
 	chmod +rwx "${destinationFilesEpsxeWin32[file_desktop]}"
+
+	if ! is_executable wine; then
+		_red "Necessário ter o wine instalado para prosseguir"
+		return 1
+	fi
+
+	if ! is_executable winetricks; then
+		_red "Necessário ter o winetricks instalado para prosseguir"
+		return 1
+	fi
+
 	_yellow "Instalado: directx9 atmlib"
 	winetricks directx9 atmlib
 	"${destinationFilesEpsxeWin32[file_script]}"
 }
 
-_epsxe_zip()
+_epsxe()
 {
 	# https://wiki.archlinux.org/index.php/EPSXe
 	# https://aur.archlinux.org/packages/epsxe/
@@ -3191,30 +3161,6 @@ _epsxe_zip()
 	
 	chmod -R +x "${destinationFilesEpsxe[dir]}"
 	chmod +x "${destinationFilesEpsxe[file_desktop]}"
-}
-
-_epsxe_snapd()
-{
-	# https://snapcraft.io/epsxe
-	_snapd
-	sudo snap install epsxe --candidate
-}
-
-_epsxe_fedora()
-{
-	_pkg_manager_sys snapd
-	sudo ln -s /var/lib/snapd/snap /snap
-	sudo snap install epsxe --candidate
-}
-
-_epsxe()
-{
-	case "$os_id" in
-		arch) _epsxe_zip;;
-		debian) _epsxe_snapd;;
-		fedora) _epsxe_fedora;;
-		*) _show_info 'ProgramNotFound' 'epsxe'; return 0;;
-	esac
 }
 
 #=============================================================#

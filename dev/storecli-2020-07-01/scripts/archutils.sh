@@ -175,7 +175,7 @@ while getopts :b:e:H:r:t:h Arg; do
 		t) DiskInfoTarget[instalation_disk]="$OPTARG";;  # disco - /dev/sda, /dev/sdb, /dev/sdc
 		h) usage; exit;;
 		\?)  _red "Opição inválida: $OPTARG"; exit 1;;
-		\:)  _red "Falta(m) argumento(s) para uma ou mais opções."; exit 1;;
+		\:)  _red "Falta(m) argumento(s) para uma ou mais opções.";;
 	esac
 	CliArguments[$num]="$OPTARG"
 	num+=1

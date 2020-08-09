@@ -111,6 +111,15 @@ destinationFilesTeamviewer=(
 	'/etc/systemd/system/multi-user.target.wants/teamviewerd.service'
 )
 
+declare -A destinationFilesYoutubeDlGuiUser
+destinationFilesYoutubeDlGuiUser=(
+	[file_desktop]="$directoryUSERapplications/youtube-dl-gui.desktop"
+	[file_png]="$directoryUSERicon/youtube-dl-gui.png" 
+	[pixmaps]="$directoryUSERicon/youtube-dl-gui"
+	[file_script]="$directoryUSERbin/youtube-dl-gui"  
+	[dir]="$directoryUSERbin/youtube_dl_gui"                                     
+)
+
 #=============================================================#
 # Sistema
 #=============================================================#

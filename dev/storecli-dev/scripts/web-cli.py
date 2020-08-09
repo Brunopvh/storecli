@@ -3,6 +3,7 @@
 #
 
 import os, sys
+import platform
 import argparse
 import urllib.request
 from time import sleep
@@ -25,33 +26,46 @@ class DownloadProgressBar(tqdm):
         self.update(b * bsize - self.n)
 
 
-def exec_download(url, output_path):
+def exec_download(url, output_path=None):
     with DownloadProgressBar(
     						unit='B', 
     						unit_scale=True,
 							miniters=1, 
 							desc=url.split('/')[-1]
 							) as t:
-        urllib.request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
+        
+    	if output_path == None:
+    		urllib.request.urlretrieve(url, reporthook=t.update_to)
+    	else:
+        	urllib.request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
 
-class Wcli:
+
+class WebCli:
 	def __init__(self):
 		pass
 
 	def get_info_url(self, url):
 		info = urllib.request.urlopen(url)
-		length = int(info.getheader('content-length'))
-		lengthMB = (length) / int(1024 * 1024)
+		try:
+			length = int(info.getheader('content-length'))
+		except:
+			pass
 
 		if length:
-			print(info.getheader())
+			# lengthMB = float(length / int(1024 * 1024))
+			# print(info.getheader())
 			return length
 
-	def run(self, url, output_path):
-		size = self.get_info_url(url)
-		print('Baixando: {:.2f}'.format(size))
-		exec_download(url, output_path)
+		return None
 
+	def run(self, url, output_path=None):
+		print(f'Conectando .... {url}')
+		
+		if output_path != 'None':
+			print(f'Salvando arquivo em ... {output_path}')
+			exec_download(url, output_path)
+		else:
+			exec_download(url)
 
 
 parser = argparse.ArgumentParser(
@@ -78,7 +92,7 @@ parser.add_argument(
 parser.add_argument(
 	'-u', '--url', 
 	action='store', 
-	dest='url',
+	dest='URL',
 	type=str,
 	required=True,
 	help='Informe um URL'
@@ -87,11 +101,11 @@ parser.add_argument(
 
 args = parser.parse_args()
 
-output_path = '/home/bruno/Downloads/peazip-progresso.exe'
-#url = 'https://ufpr.dl.sourceforge.net/project/peazip/7.3.2/peazip-7.3.2.WIN64.exe'
+# output_path = '/home/bruno/Downloads/peazip-progresso.exe'
+# url = 'https://ufpr.dl.sourceforge.net/project/peazip/7.3.2/peazip-7.3.2.WIN64.exe'
 
 if args.destination_file:
-	Wcli().run(args.url, args.destination_file)
+	WebCli().run(args.URL, args.destination_file)
 
 
 

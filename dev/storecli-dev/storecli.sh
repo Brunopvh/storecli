@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_07_rev1'
+__version__='2020_08_09_rev1'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -120,6 +120,7 @@ libProcessLoop="$dirSTORECLIPathLib/ProcessLoop.sh"
 libUninstallPkgs="$dirSTORECLIPathLib/UninstallPkgs.sh"
 libArrayUtils="$dirSTORECLIPathLib/ArrayUtils.sh"
 libPrograms="$dirSTORECLIPathLib/Programs.sh"
+libWget="$dirSTORECLIPathLib/libwget.sh"
 
 # Scripts
 scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
@@ -139,6 +140,7 @@ source "$libProcessLoop"
 source "$libUninstallPkgs"
 source "$libArrayUtils"
 source "$libPrograms"
+source "$libWget"
 
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados e clonar repositórios do github. 
@@ -179,7 +181,7 @@ _red()
 
 _green()
 {
-	echo -e "[${CGreen}*${CReset}] $@"
+	echo -e "[${CGreen}+${CReset}] $@"
 }
 
 _yellow()
@@ -190,13 +192,13 @@ _yellow()
 
 _blue()
 {
-	echo -e "[${CBlue}~${CReset}] $@"
+	echo -e "[${CBlue}+${CReset}] $@"
 }
 
 
 _white()
 {
-	echo -e "[${CWhite}>${CReset}] $@"
+	echo -e "[${CWhite}+${CReset}] $@"
 }
 
 
@@ -880,28 +882,6 @@ __curl__()
 
 }
 
-__wget__()
-{
-	# Função para baixar arquivos usando a ferramenta 'wget'.
-	url="$1"
-	path_file="$2"
-	if [[ -z $2 ]]; then
-		wget "$url" || {
-			_red "Falha: wget"
-			return 1
-		}
-		return 0
-	elif [[ $2 ]]; then
-		_blue "Destino: $path_file"
-		wget "$url" -O "$path_file" || {
-			_red "Falha: wget"
-			rm "$path_file" 2> /dev/null
-			return 1
-		}
-		return "$?"
-	fi	
-}
-
 __download__()
 {
 	if [[ -f "$2" ]]; then
@@ -909,26 +889,43 @@ __download__()
 		return 0
 	fi
 
+	url="$1"
+	path_file="$2"
+	
 	cd "$DirDownloads"
 	_blue "Baixando: $1"
 
-	if is_executable wget; then
-		__wget__ "$@" 
-	elif is_executable curl; then
-		__curl__ "$@" || return 1
+	if is_executable wget; then # Usar wget
+		downloader_default='wget'
+	elif is_executable curl; then # Usar curl
+		downloader_default='curl'
+	elif is_executable "$dirSTORECLIPathScripts"/web-cli.py; then # Usar script python local.
+		downloader_default='web-cli'
 	else
 		_red "(__download__) instale o pacote 'wget' ou 'curl'"
 		return 1
 	fi
 
-	while [[ "$?" != '0' ]]; do
+	#downloader_default='web-cli'
+
+	while true; do
+		if [[ "$downloader_default" == 'web-cli' ]]; then
+			"$dirSTORECLIPathScripts"/web-cli.py --url "$url" -o "$path_file" && break
+		elif [[ "$downloader_default" == 'wget' ]]; then
+			__wget__ "$url" "$path_file" && break
+		elif [[ "$downloader_default" == 'curl' ]]; then
+			curl -C - -S -L -o "$path_file" "$url" && break
+		fi
+
 		if _YESNO "Deseja tentar baixar novamente"; then
-			__wget__ "$@"
+			continue
 		else
-			return 1; break
+			return 1
+			break
 		fi
 	done
-	[[ "$?" == '0' ]] || return 1
+	[[ "$?" != '0' ]] && return 1
+	return 0
 }
 
 _gitclone()

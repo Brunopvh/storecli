@@ -52,7 +52,7 @@ _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
 	_white "Adicionando repositório"
-	sudo curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
+	sudo wget -q -O- https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
 	_pkg_manager_sys 'balena-etcher-electron'
 }
 
@@ -153,6 +153,7 @@ _veracrypt()
 	
 	local vc_url_download='https://launchpadlibrarian.net/461886552/veracrypt-1.24-Update4-setup.tar.bz2'
 	local vc_url_sig="https://launchpadlibrarian.net/461886553/veracrypt-1.24-Update4-setup.tar.bz2.sig"
+	local vc_url_asc='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
 	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
 	local veracryptSigFile="$DirDownloads/$(basename $vc_url_sig)"
 
@@ -162,7 +163,7 @@ _veracrypt()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	printf "%s" "[>] Importando key: "
-	if curl -s https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc | gpg --import 1> /dev/null 2>&1; then
+	if wget -q "$vc_url_asc" -O- | gpg --import 1> /dev/null 2>&1; then
 		_syellow "OK"
 	else
 		_sred "FALHA"
@@ -173,6 +174,11 @@ _veracrypt()
 	_unpack "$veracryptTarFile" || return 1
 	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
 	chmod +x "$DirTemp"/veracrypt-setupx64
+
+	if ! is_executable xterm; then
+		_msg "Necessário instalar 'xterm' para prosseguir"
+		_pkg_manager_sys xterm
+	fi
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$os_id" in
@@ -667,8 +673,9 @@ _sublime_text()
 {
 	# Já instalado.
 	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
+	
 	sublime_pag='https://www.sublimetext.com/3'
-	sublime_html=$(grep -m 1 'http.*sublime.*x64.tar.bz2' <<< $(curl -sL "$sublime_pag"))
+	sublime_html=$(wget -q -O- "$sublime_pag" | grep -m 1 'http.*sublime.*x64.tar.bz2')
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
 	path_file="$DirDownloads/$(basename $sublime_url)"
 
@@ -731,7 +738,7 @@ _vscode_tarfile()
 	cp -u "${destinationFilesVscode[dir]}"/resources/app/resources/linux/code.png "${destinationFilesVscode[file_png]}"
 
 	# Criar atalho para execução na linha de comando.
-	echo "#!/usr/bin/env bash" > "${destinationFilesVscode[link]}"
+	echo "#!/bin/sh" > "${destinationFilesVscode[link]}"
 	echo -e "\ncd ${destinationFilesVscode[dir]}/bin/ && ./code" >> "${destinationFilesVscode[link]}"
 	chmod +x "${destinationFilesVscode[link]}"
 
@@ -763,7 +770,6 @@ _vscode()
 		*) _vscode_tarfile;;
 	esac
 	
-
 	if is_executable 'code'; then
 		_show_info 'SuccessInstalation' 'code'
 		return 0
@@ -1032,7 +1038,7 @@ _spotify_ubuntu()
 {
 	# https://www.spotify.com/br/download/linux/
 	_msg "Adicionando key e repositório"
-	curl -sSL https://download.spotify.com/debian/pubkey.gpg | sudo apt-key add - 
+	wget -q https://download.spotify.com/debian/pubkey.gpg -O- | sudo apt-key add - 
 	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
 	_APT update 
  	_pkg_manager_sys 'spotify-client'
@@ -1042,7 +1048,7 @@ _spotify_archlinux()
 {
 	# https://www.vivaolinux.com.br/dica/Spotify-no-Arch-Linux
 	local spotify_url='https://repository-origin.spotify.com/pool/non-free/s/spotify-client'
-	local spotify_file_server=$(curl -sSL "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
+	local spotify_file_server=$(wget -qO- "$spotify_url" | grep -m 1 'spotify.*amd64.deb' | sed 's/">.*//g;s/.*="//g')
 	local Spotify_Url_Server="$spotify_url/$spotify_file_server"
 	local path_file="$DirDownloads/spotify-client-amd64.deb"
 	
@@ -1320,7 +1326,7 @@ _google_chrome_debian()
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
 	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
 	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
-	curl -sSL 'https://dl.google.com/linux/linux_signing_key.pub' | sudo apt-key add -
+	wget -q 'https://dl.google.com/linux/linux_signing_key.pub' -O- | sudo apt-key add -
 
 	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
 	_white "Adicionando repositório"
@@ -1345,7 +1351,6 @@ _google_chrome_opensuse()
 {
 	# https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-openSUSE-Leap-15
 	# wget -c https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
-	# curl -SL https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.rpm
 	_yellow "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
@@ -1381,14 +1386,12 @@ _google_chrome_archlinux()
 	local github_chrome='https://aur.archlinux.org/google-chrome.git'
 
  	_gitclone "$github_chrome" || return 1
-	cd "$DirTemp"/google-chrome
-
+	cd "$DirGitclone"/google-chrome
 	_msg "Instalando base-devel"
-	_pkg_manager_sys "base-devel"
-	_pkg_manager_sys pipewire
-
+	_pkg_manager_sys "base-devel" pipewire
+	 
 	_msg "Executando: makepkg -s"
-	cd "$DirTemp/google-chrome"
+	cd "$DirGitclone/google-chrome"
 	makepkg -s
 
 	_msg "Executando sudo pacman -U $(ls google*.tar.*)"
@@ -1420,7 +1423,7 @@ _opera_stable_debian()
 	local opera_file='/etc/apt/sources.list.d/opera-stable.list'
 	
 	_white "Importando key"
-	sudo sh -c 'curl -sSL http://deb.opera.com/archive.key | apt-key add -' || return 1
+	sudo sh -c 'wget -q http://deb.opera.com/archive.key -O- | apt-key add -' || return 1
 	
 	find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
 
@@ -1539,7 +1542,7 @@ _megasync_debian()
 	fi
 
 	_white "Adicionando key e repositório"	
-	curl -sSL 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
+	wget -q -O- 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
 	echo "$mega_repos" | sudo tee "$mega_file_list"
 	_APT update
 	_pkg_manager_sys megasync || return 1
@@ -1579,7 +1582,7 @@ _megasync_ubuntu()
 	esac
 
 	_msg "Adicionando key e repositório"
-	curl -sSL "$mega_url_key" -o- | sudo apt-key add - || return 1
+	wget -q -O- "$mega_url_key" -o- | sudo apt-key add - || return 1
 	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list" 1> /dev/null
 	_APT update
 	_msg "Instalando: libc-ares2 libmediainfo0v5" 
@@ -1622,14 +1625,7 @@ _megasync_archlinux()
 
 	# Requerimentos para compilação no ArchLinux - libpdfium.
 	local array_mega_requeriments_archlinux=(
-		'crypto++' 
-		'c-ares'
-		'lsb-release' 
-		'qt5-tools'
-		libuv 
-		libmediainfo   
-		swig 
-		doxygen 
+		'crypto++' 'c-ares' 'lsb-release' 'qt5-tools' libuv libmediainfo swig doxygen 
 		)
 
 	# Baixar o pacote do repositório MEGA.
@@ -1650,7 +1646,6 @@ _megasync_archlinux()
 	# Syncronizar os repositórios
 	_PACMAN -Sy
 }
-
 
 _megasync()
 {
@@ -1691,7 +1686,7 @@ _tor_debian()
 
 	_yellow "Importando chaves"
 	
-	curl -sSL "$tor_asc" | sudo gpg --import || _red "Falha" && return 1
+	wget -q -O- "$tor_asc" | sudo gpg --import || _red "Falha" && return 1
 	sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' || return 1
 
 	_yellow "Adicionando repositório"
@@ -1757,7 +1752,7 @@ _install_teamviewer_debian()
 	# sudo apt update; sudo apt install teamviewer
 	#
 	local tw_pag='https://www.teamviewer.com/en/download/linux/'      # Página de download.
-	local tw_html=$(curl -SsL "$tw_pag" | grep "download.*linux.*64")
+	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
 	local url_deb=$(echo "$tw_html" | grep -m 1 'amd64.deb' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_amd64.deb"
 
@@ -1792,7 +1787,7 @@ _install_teamviewer_debian()
 _install_teamviewer_fedora()
 {
 	local tw_pag='https://www.teamviewer.com/en/download/linux/' # Página de download.
-	local tw_html=$(curl -SsL "$tw_pag" | grep "download.*linux.*64")
+	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
 	local url_rpm=$(echo "$tw_html" | grep -m 1 'x86_64.rpm' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_x86_64.rpm"
 
@@ -1821,7 +1816,7 @@ _install_teamviewer_fedora()
 _teamviewer_tar()
 {
 	local tw_pag='https://www.teamviewer.com/en/download/linux/'      # Página de download.
-	local tw_html=$(curl -sSL "$tw_pag" | grep "download.*linux.*64")
+	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
 	local url_tar=$(echo "$tw_html" | grep -m 1 'amd64.tar' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_amd64.tar.xz"
 	
@@ -1905,7 +1900,7 @@ _tixati_tarfile()
 
 	_yellow "Obtendo URL de download aguarde."
 	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
-	local tixati_html=$(curl -sSL "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
+	local tixati_html=$(wget -q -O- "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
@@ -1919,7 +1914,7 @@ _tixati_tarfile()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	printf "%s" "[>] Importando key tixati "
-	if curl -sSL https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
+	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
 		echo -e "${CYellow}OK${CReset}"
 	else
 		echo ' '
@@ -1962,6 +1957,9 @@ _tixati_tarfile()
 		gconftool-2 --set --type=string /desktop/gnome/url-handlers/magnet/need-terminal false
 	fi
 
+	if is_executable gtk-update-icon-cache; then
+		sudo gtk-update-icon-cache
+	fi
 
 	if is_executable 'tixati'; then
 		_show_info 'SuccessInstalation' 'tixati'
@@ -1976,7 +1974,6 @@ _tixati()
 {
 	_tixati_tarfile
 }
-
 
 _uget()
 {
@@ -2082,8 +2079,7 @@ _youtube_dlgui_file_desktop_user()
 	# Criar arquivo .desktop na HOME para o usuario atual.
 	_show_info "AddFileDesktop"
 
-	file_desktop_tubedl_gui=~/.local/share/applications/youtube-dl-gui.desktop
-	echo '[Desktop Entry]' > "$file_desktop_tubedl_gui"
+	echo '[Desktop Entry]' > "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
@@ -2093,12 +2089,12 @@ _youtube_dlgui_file_desktop_user()
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} >> "$file_desktop_tubedl_gui"
+	} >> "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
 
-	chmod u+x "$file_desktop_tubedl_gui"
-	ln -sf "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
+	chmod u+x "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
+	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/Desktop/ 2> /dev/null
+	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 }
 
 _youtube_dlgui_file_desktop_root()
@@ -2125,10 +2121,10 @@ _youtube_dlgui_file_desktop_root()
 	ln -sf "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
 }
 
-
-# Baixar e compilar youtube-dl-gui
 _youtube_dlgui_compile()
 {
+	# Baixar e compilar o codigo fonte do github
+	# Instalação no sistema em /usr/local/bin/youtube-dl-gui 
 	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 
@@ -2144,11 +2140,46 @@ _youtube_dlgui_compile()
 	if is_executable python2; then
 		sudo python2 setup.py install 1>> "$LogFile" || return 1
 	elif is_executable python2.7; then
-		sudo python2 setup.py install 1>> "$LogFile" || return 1
+		sudo python2.7 setup.py install 1>> "$LogFile" || return 1
 	fi
 		
 	# Criar o arquivo ".desktop" após compilar o programa.
 	_youtube_dlgui_file_desktop_root
+	return 0
+}
+
+_youtube_dlgui_user_installer()
+{
+	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
+	local path_file="$DirDownloads/youtube-dl-gui.zip"
+	
+	__download__ "$url_ytdl_gui" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	_unpack "$path_file" || return 1
+
+	_yellow "Copiando arquivos"
+	mkdir -p "${destinationFilesYoutubeDlGuiUser[pixmaps]}"
+	cd "$DirUnpack"/youtube-dl-gui-master
+	cp -R -u youtube_dl_gui "${destinationFilesYoutubeDlGuiUser[dir]}"
+	cd "${destinationFilesYoutubeDlGuiUser[dir]}"
+	cp -R -u data/icons/hicolor/128x128/apps/youtube-dl-gui.png "${destinationFilesYoutubeDlGuiUser[file_png]}"
+	cp -R -u data/pixmaps/. "${destinationFilesYoutubeDlGuiUser[pixmaps]}"/. 
+
+	# Criar script para execução via linha de comando
+	echo -e "#!/bin/sh" > "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	echo -e "\ncd ${destinationFilesYoutubeDlGuiUser[dir]}" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+
+	if is_executable python2; then
+		echo -e "python2 __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	elif is_executable python; then
+		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	else
+		_red "Necessário ter o 'python 2' instalado"
+		return 1
+	fi
+
+	chmod +x "${destinationFilesYoutubeDlGuiUser[file_script]}" 
+	_youtube_dlgui_file_desktop_user
 	return 0
 }
 
@@ -2158,7 +2189,8 @@ _youtube_dlgui_pip()
 	# sudo sh -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
 	# sudo apt install youtube-dlg --yes
 	_pkg_manager_sys 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
-	pip install --user wheel 'youtube-dlg' || return 1
+	pip install wheel --user
+	pip install 'youtube-dlg' --user || return 1
 	_youtube_dlgui_file_desktop_user
 	return 0
 } 
@@ -2166,26 +2198,17 @@ _youtube_dlgui_pip()
 _youtube_dlgui_ubuntu()
 {
 	# https://github.com/MrS0m30n3/youtube-dl-gui.git
-	
-	# Ubuntu e Linuxmint.
-	case "$os_codename" in
-		bionic|tricia) 
-				_youtube_dlgui_pip 
-				return
-				;;
-				
-		eoan|focal)
-				_pkg_manager_sys 'python-wxgtk3.0' gettext || return 1
-				_python_twodict_github || return 1
-				_youtube_dlgui_compile || return 1
-				return 0
-				;;	
-				
-		*)
-			_show_info 'ProgramNotFound' 'youtube-dlg-gui'	
-			return 1 
-			;;
-	esac	
+	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then
+		_youtube_dlgui_pip || return 1
+	elif [[ "$os_codename" == 'eoan' ]] || [[ "$os_codename" == 'focal' ]]; then
+		_pkg_manager_sys 'python-wxgtk3.0' gettext || return 1
+		_python_twodict_github || return 1
+		_youtube_dlgui_compile || return 1
+	else
+		_show_info 'ProgramNotFound' 'youtube-dlg-gui'	
+		return 1
+	fi
+
 }
 
 _youtube_dlgui_fedora()
@@ -2202,65 +2225,48 @@ _youtube_dlgui_fedora()
 	local url="$f_packages/$wxpython_rpm"
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
-	# Instalar python2-wxpython3
-	case "$os_version" in
-		31) _pkg_manager_sys 'python2-wxpython' || return 1;;
-		32) 
-			_pkg_manager_sys 'wxGTK3-media' 'python3-wxpython4.x86_64' || return 1
-			__download__ "$url" "$path_file" || return 1
-			_yellow "Instalando: $path_file"
-			_RPM --install "$path_file" 
-			;;
-	esac
+	# Instalar dependências.
+	if [[ "$os_version" == '32' ]]; then
+		_pkg_manager_sys 'wxGTK3-media' || return 1
+		__download__ "$url" "$path_file" || return 1
+		_yellow "Instalando: $path_file"
+		_RPM --install "$path_file" 
+	else
+		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
+		return 1
+	fi
 	
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
-}
-
-_youtube_dlgui_tumbleweed()
-{
-	# https://software.opensuse.org/download/package?package=youtube-dl-gui&project=openSUSE%3AFactory
-	local url_opensuse_repo='https://download.opensuse.org/repositories/openSUSE:'
-	local url_ytdlg_tumbleweed="$url_opensuse_repo/Factory/standard/noarch/youtube-dl-gui-0.4-1.7.noarch.rpm"
-	local path_file="$DirDownloads/$(basename $url_ytdlg_tumbleweed)"
-
-	__download__ "$url_ytdlg_tumbleweed" "$path_file" || return 1 
-	_pkg_manager_sys "$path_file" || return 1
-	
-	if is_executable 'youtube-dl-gui'; then
-		_show_info 'SuccessInstalation' 'youtube-dl-gui'
-		return 0
-	else
-		_show_info 'InstalationFailed' 'youtube-dl-gui'
-		return 1
-	fi
 }
 
 _youtube_dlgui_debian()
 {
 	# Testado apenas no debian 10.
-	case "$os_codename" in
-		buster)
-			_pkg_manager_sys 'python-wxgtk3.0' 'python-twodict' gettext || return 1
-			_youtube_dlgui_compile || return 1
-			return 0
-			;;
-		*)
-			_show_info 'ProgramNotFound' 'youtube-dlg-gui'
-			return 1
-			;;	
-	esac
-}
+	if [[ "$os_codename" == 'buster' ]]; then
+		_msg "Instalando: python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext"
+		_pkg_manager_sys python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
+		
+	else
+		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
+		return 1
+	fi
 
+	pip install wheel --user
+	_youtube_dlgui_compile || return 1
+
+}
 
 _youtube_dlgui_archlinux()
 {
-	_pkg_manager_sys 'python2-wxpython3' || return 1
+	_msg "Instalando: python2 python2-pip python2-setuptools python2-wxpython3"
+	_pkg_manager_sys python2 python2-pip python2-setuptools python2-wxpython3 || return 1
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
 }
+
 
 _youtube_dlgui_freebsd()
 {
@@ -2276,15 +2282,19 @@ _youtube_dlgui_freebsd()
 
 _youtube_dlgui()
 {
-	case "$os_id" in
-		debian) _youtube_dlgui_debian || return 1;;
-		ubuntu|linuxmint) _youtube_dlgui_ubuntu || return 1;;
-		fedora) _youtube_dlgui_fedora || return 1;;
-		arch) _youtube_dlgui_archlinux || return 1;;
-		'12.1-STABLE'|'12.1-RELEASE') _youtube_dlgui_freebsd || return 1;;
-		'opensuse-tumbleweed') _youtube_dlgui_tumbleweed || return 1;;
-		*) _show_info 'ProgramNotFound' 'youtube-dl-gui'; return 1;;
-	esac
+	if [[ -f /etc/debian_version ]]; then
+		if [[ "$os_codename" == 'buster' ]]; then
+			_youtube_dlgui_debian || return 1
+		elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
+			_youtube_dlgui_ubuntu || return 1
+		fi
+	elif [[ "$os_id" == 'fedora' ]]; then
+		_youtube_dlgui_user_installer || return 1
+	elif [[ "$os_id" == 'arch' ]]; then
+		_youtube_dlgui_archlinux || return 1
+	else
+		_show_info 'ProgramNotFound' 'youtube-dl-gui'; return 1
+	fi
 	
 	if is_executable 'youtube-dl-gui'; then
 		_show_info 'SuccessInstalation' 'youtube-dl-gui'
@@ -2303,7 +2313,7 @@ _bluetooth()
 	fi
 
 	_pkg_manager_sys bluez 'bluez-firmware' 'bluez-hcidump'
-	echo -e "$space_line"
+	print_line
 	_white "1 - ${CGreen}G${CReset}NOME"
 	_white "2 - ${CGreen}K${CReset}DE"
 	_white "3 - ${CGreen}L${CReset}XDE/${CGreen}X${CReset}FCE/${CGreen}L${CReset}XQT/${CGreen}M${CReset}ATE"
@@ -2584,7 +2594,7 @@ _virtualbox_extpack()
 	#
 	_white "Aguarde"
 	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
-	local vb_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" <<< $(curl -sL "$vb_pag"))
+	local vb_html=$(wget -q -O- "$vb_pag" | grep -m 1 "Oracle.*Ext.*vbox.*")
 	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
 	local path_file="$DirDownloads/$(basename $vb_url)"
 
@@ -2627,7 +2637,7 @@ _virtualbox_fedora()
 	sudo rpm --import "$DirDownloads/oracle_vbox.asc"
 	
 	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
-	sudo sh -c 'curl -s -o /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	sudo sh -c 'wget -q -O /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 	
 	case "$os_version" in
 		31) _pkg_manager_sys 'VirtualBox-6.0' || return 1;;
@@ -2665,10 +2675,10 @@ _virtualbox_debian()
 	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
-	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
+	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
 		
 	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
-	sudo sh -c 'curl -sL https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
+	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
 		
 	echo -ne "Adicionando repositório "
 	echo "$vbox_repo" | sudo tee "$vbox_file"
@@ -2736,7 +2746,7 @@ _virtualbox_linux_run()
 	#
 	# O download do arquivo contendo as hashs e semelhante ao comando
 	# abixo, ATENÇÃO a mudança de versão do virtualbox (6.x)
-	# curl -O https://www.virtualbox.org/download/hashes/6.1.6/SHA256SUMS
+	# wget https://www.virtualbox.org/download/hashes/6.1.6/SHA256SUMS
 	#
 	# https://download.virtualbox.org/virtualbox/6.1.6/VirtualBox-6.1.6-137129-Linux_amd64.run
 	#
@@ -2748,7 +2758,7 @@ _virtualbox_linux_run()
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
 
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
-	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" <<< $(curl -sSL $vbox_pag))
+	vbox_html=$(wget -q -O- $vbox_pag | egrep "(https.*download.*64.run|SHA256)")
 
 	# Filtrar o url do arquivo executável (.run) e atribuir path para download.
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
@@ -2797,7 +2807,7 @@ _ohmybash()
 	# cd home
 	# mkdir -p .bash/themes/agnoster-bash
 	# git clone https://github.com/speedenator/agnoster-bash.git .bash/themes/agnoster-bash
-	# sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+	# sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
 	local ohmybashZipFile="$DirDownloads/ohmybash.zip"
@@ -2807,7 +2817,7 @@ _ohmybash()
 	if is_executable "$scriptOhmybashInstaller"; then
 		"$scriptOhmybashInstaller"
 	else 
-		sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
+		sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
 	fi
 
 	__download__ "$ohmybash_master" "$ohmybashZipFile" || return 1
@@ -2858,12 +2868,12 @@ _ohmyzsh()
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
 	if ! is_executable 'zsh'; then
-		_yellow "Necessário instalar shell [zsh]"	
+		_yellow "Necessário instalar shell [zsh]"
+		_pkg_manager_sys zsh	
 	fi
-
-	_pkg_manager_sys zsh
+	
 	_yellow "Instalando ohmyzsh"
-	sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
+	sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
 }
 
 _papirus_debian()
@@ -3051,16 +3061,6 @@ _gnome_tweaks()
 	_pkg_manager_sys 'gnome-tweaks'
 }
 
-_snapd()
-{
-	# https://www.edivaldobrito.com.br/suporte-a-pacotes-snap-no-linux/
-	case "$os_id" in
-		debian) _pkg_manager_sys snapd;;
-		fedora) _pkg_manager_sys snapd;;
-		*) _show_info 'ProgramNotFound' 'snapd'; return 1;;
-	esac
-}
-
 _epsxe_windows()
 {
 	# ePSXe win 32
@@ -3111,12 +3111,23 @@ _epsxe_windows()
 
 	chmod +x "${destinationFilesEpsxeWin32[file_script]}"
 	chmod +rwx "${destinationFilesEpsxeWin32[file_desktop]}"
+
+	if ! is_executable wine; then
+		_red "Necessário ter o wine instalado para prosseguir"
+		return 1
+	fi
+
+	if ! is_executable winetricks; then
+		_red "Necessário ter o winetricks instalado para prosseguir"
+		return 1
+	fi
+
 	_yellow "Instalado: directx9 atmlib"
 	winetricks directx9 atmlib
 	"${destinationFilesEpsxeWin32[file_script]}"
 }
 
-_epsxe_zip()
+_epsxe()
 {
 	# https://wiki.archlinux.org/index.php/EPSXe
 	# https://aur.archlinux.org/packages/epsxe/
@@ -3150,30 +3161,6 @@ _epsxe_zip()
 	
 	chmod -R +x "${destinationFilesEpsxe[dir]}"
 	chmod +x "${destinationFilesEpsxe[file_desktop]}"
-}
-
-_epsxe_snapd()
-{
-	# https://snapcraft.io/epsxe
-	_snapd
-	sudo snap install epsxe --candidate
-}
-
-_epsxe_fedora()
-{
-	_pkg_manager_sys snapd
-	sudo ln -s /var/lib/snapd/snap /snap
-	sudo snap install epsxe --candidate
-}
-
-_epsxe()
-{
-	case "$os_id" in
-		arch) _epsxe_zip;;
-		debian) _epsxe_snapd;;
-		fedora) _epsxe_fedora;;
-		*) _show_info 'ProgramNotFound' 'epsxe'; return 0;;
-	esac
 }
 
 #=============================================================#
