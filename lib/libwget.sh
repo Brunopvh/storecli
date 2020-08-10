@@ -20,7 +20,7 @@ __wget__()
 	fi
 	
 	cd "$DirDownloads"
-	[[ -z $(pidof wget) ]] || kill -9 $(pidof wget)
+	#[[ -z $(pidof wget) ]] || kill -9 $(pidof wget)
 	[[ -f "$wgetLogfile" ]] && rm "$wgetLogfile"
 	
 	echo -e "Conectando: $url"
@@ -57,7 +57,7 @@ __wget__()
 		sleep 0.1
 		PidWget=$(pidof wget)
 
-		if [[ -z "$PidWget" ]] || [[ $(grep -q '100%' "$wgetLogfile" 1> /dev/null) ]]; then
+		if [[ -z "$PidWget" ]] || [[ $(grep '100%' "$wgetLogfile" 1> /dev/null) ]]; then
 			if [[ -z $ProgressInfo ]]; then
 				echo -e "Baixando: aguarde OK"
 				break

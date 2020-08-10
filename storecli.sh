@@ -1057,6 +1057,8 @@ _pkg_manager_storecli()
 			sublime-text) _sublime_text;;
 			vim) _vim;;
 			vscode) _vscode;;
+			python37-windows-portable) _python37_windows32_portable;;
+			python37-windows) _python37_windows32;;
 
 			Escritorio) _Office_All;;
 			atril) _atril;;
@@ -1072,6 +1074,7 @@ _pkg_manager_storecli()
 			torbrowser) _torbrowser;;
 
 			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
+			clipgrab) _clipgrab_appimage;;
 			megasync) _megasync;;
 			proxychains) _proxychains;;
 			qbittorrent) _qbittorrent;;
@@ -1082,6 +1085,7 @@ _pkg_manager_storecli()
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
+			youtube-dl-gui-windows) _youtube_dlgui_windows;;
 
 			Midia) _Midia_All;;
 			blender) _blender;;
