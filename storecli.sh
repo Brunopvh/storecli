@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_09_rev3'
+__version__='2020_08_12'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -1234,7 +1234,7 @@ main()
 }
 
 if [[ -z $1 ]]; then
-	if is_executable zenity; then
+	if ! is_executable zenity; then
 		_yellow "Necessário instalar zenity"
 		_pkg_manager_sys zenity
 	fi 

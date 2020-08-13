@@ -41,9 +41,9 @@ __wget__()
 		current_speed=$(echo "$line_progress" | awk '{print $8}')
 		current_ETA=$(echo "$line_progress" | awk '{print $9}')
 		
-		show_prog=$(printf '%10s%%\n' "Prog[$current_prog]")
-		show_rec=$(printf '%14s\n' "Rec[$current_rec]")
-		show_speed=$(printf '%12s' "Vel[$current_speed]")
+		show_prog=$(printf '%10s%%\n' "$current_prog")
+		show_rec=$(printf '%14s\n' "$current_rec")
+		show_speed=$(printf '%12s' "($current_speed)")
 		show_eta="$(printf '%13s\n' "ETA[$current_ETA]")"
 		
 		[[ ! -z $current_prog ]] && ProgressInfo="$show_rec $show_speed $show_prog $show_eta (${chars[$num]})"
@@ -59,7 +59,7 @@ __wget__()
 
 		if [[ -z "$PidWget" ]] || [[ $(grep '100%' "$wgetLogfile" 1> /dev/null) ]]; then
 			if [[ -z $ProgressInfo ]]; then
-				echo -e "Baixando: aguarde OK"
+				echo -e "Baixando: aguarde  OK"
 				break
 			elif [[ ! -z $ProgressInfo ]]; then
 				echo -e "$ProgressInfo OK"

@@ -69,7 +69,7 @@ print_line(){
 		num="$(($num+1))"
 	done
 	# echo -ne "$L"
-	printf '%s' "$L"
+	printf '%s\n' "$L"
 }
 
 # Verificar conexão com a internet.
