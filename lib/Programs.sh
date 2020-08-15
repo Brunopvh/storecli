@@ -3136,7 +3136,7 @@ _dashtodock_github()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
 	_pkg_manager_sys make
-	cd "$DirTemp"/dash-to-dock
+	cd "$DirGitclone"/dash-to-dock
 	make
 	make install
 	#sudo make install 

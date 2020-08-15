@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_12'
+__version__='2020_08_15'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -32,7 +32,7 @@ __author__='Bruno Chaves'
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
-	exit 1
+	#exit 1
 fi
 
 # Usuário não pode ser o root.
@@ -368,7 +368,6 @@ _list_applications()
 			printf "%s\n" "      $APP"
 		done
 		printf "\n"
-
 
 		return 0
 	fi
@@ -906,13 +905,11 @@ __download__()
 		return 1
 	fi
 
-	#downloader_default='web-cli'
-
 	while true; do
 		if [[ "$downloader_default" == 'web-cli' ]]; then
 			"$dirSTORECLIPathScripts"/web-cli.py --url "$url" -o "$path_file" && break
 		elif [[ "$downloader_default" == 'wget' ]]; then
-			__wget__ "$url" "$path_file" && break
+			wget -c "$url" -O "$path_file" && break
 		elif [[ "$downloader_default" == 'curl' ]]; then
 			curl -C - -S -L -o "$path_file" "$url" && break
 		fi
@@ -1033,7 +1030,7 @@ _pkg_manager_storecli()
 
 	_clear_temp_dirs
 
-	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
+	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
 	case "$os_codename" in
 		tina|tricia) export os_codename='bionic';;
 	esac

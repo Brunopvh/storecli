@@ -13,11 +13,6 @@ requeriments_cli_debian=(
 'aptitude' 'gdebi' 'dirmngr' 'apt-transport-https' 'gnupg' 'gpgv2' 'gpgv' 'xz-utils'
 )
 
-# FreeBSD
-requeriments_cli_freebsd=(
-'wget' 'git' 'gawk' 'unzip'
-)
-
 #=============================================================#
 # Utilitários para python2/python3
 # alguns pacotes são equivalentes porem com nomes diferentes de 
@@ -87,13 +82,12 @@ _config_python3()
 _config_requeriments_freebsd()
 {
 	# Instalar ferramentas de linha de comando.
-	_msg "Instalando: ${requeriments_cli_freebsd[@]}"
-	_pkg_manager_sys "${requeriments_cli_freebsd[@]}" || return 1
+	_msg "Instalando: ${requeriments_cli_linux[@]}"
+	_pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
 
 	# Instalar utilitários para python3.
 	_msg "Instalando: ${requeriments_python3_freebsd[@]}"
 	_pkg_manager_sys "${requeriments_python3_freebsd[@]}" || return 1
-	
 	return 0
 }
 
@@ -190,6 +184,11 @@ _install_requeriments_all_system()
 	elif [[ "$os_id" == 'opensuse-leap' ]] || [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
 		_config_requeriments_opensuseleap || { 
 			_red 'Falha: (_config_requeriments_opensuseleap)'
+			return 1
+		}
+	elif [[ $(uname -s) == 'FreeBSB' ]]; then
+		_config_requeriments_freebsd || { 
+			_red 'Falha: (_config_requeriments_freebsd)'
 			return 1
 		}
 	else

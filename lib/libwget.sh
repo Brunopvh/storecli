@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 #
+VERSION='1.0'
+
 
 __wget__()
 {
@@ -41,17 +43,17 @@ __wget__()
 		current_speed=$(echo "$line_progress" | awk '{print $8}')
 		current_ETA=$(echo "$line_progress" | awk '{print $9}')
 		
-		show_prog=$(printf '%10s%%\n' "$current_prog")
-		show_rec=$(printf '%14s\n' "$current_rec")
-		show_speed=$(printf '%12s' "($current_speed)")
+		show_prog=$(printf '%7s%%\n' "$current_prog")
+		show_rec=$(printf '%10s\n' "$current_rec")
+		show_speed=$(printf '%10s' "($current_speed)")
 		show_eta="$(printf '%13s\n' "ETA[$current_ETA]")"
 		
-		[[ ! -z $current_prog ]] && ProgressInfo="$show_rec $show_speed $show_prog $show_eta (${chars[$num]})"
+		[[ ! -z $current_prog ]] && ProgressInfo="$show_rec $show_prog $show_speed $show_eta (${chars[$num]})"
 
 		if [[ -z $current_rec ]]; then
 			echo -ne "Baixando: aguarde (${chars[$num]})" "\r"
 		elif [[ ! -z $show_prog ]]; then
-			echo -ne "Baixando: $ProgressInfo" "\r"
+			echo -ne "Progresso: $ProgressInfo" "\r"
 		fi
 		
 		sleep 0.1
