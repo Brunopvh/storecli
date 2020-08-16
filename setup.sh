@@ -68,7 +68,7 @@ dir_unpack="$dir_temp/unpack"
 
 mkdir -p "$dir_temp"
 mkdir -p "$dir_unpack"
-#mkdir -p "$dir_storecli"
+mkdir -p "$dir_storecli"
 
 path_file_repo="$dir_temp/storecli.tar.gz"
 
