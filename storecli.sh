@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_15'
+__version__='2020_08_16'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -780,13 +780,16 @@ _pkg_manager_sys()
 	# na linha de comando.
 	#=============================================================#
 	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only --yes "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
 			fedora) _DNF install --downloadonly -y "$@" || return 1;;
 			arch) _PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1;;
-		esac
+			*) _red "(_pkg_manager_sys) Erro";;
+		esac	
 	elif [[ "$DownloadOnly" == 'True' ]]; then
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
@@ -794,6 +797,7 @@ _pkg_manager_sys()
 			arch) _PACMAN -S --needed --downloadonly "$@" || return 1;;
 		esac
 	elif [[ "$AssumeYes" == 'True' ]]; then 
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --yes "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER install -y "$@" || return 1;;
@@ -801,6 +805,7 @@ _pkg_manager_sys()
 			arch) _PACMAN -S --noconfirm --needed "$@" || return 1;;
 		esac
 	else
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER install "$@" || return 1;;

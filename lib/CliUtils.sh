@@ -186,7 +186,7 @@ _install_requeriments_all_system()
 			_red 'Falha: (_config_requeriments_opensuseleap)'
 			return 1
 		}
-	elif [[ $(uname -s) == 'FreeBSB' ]]; then
+	elif [[ $(uname -s) == 'FreeBSD' ]]; then
 		_config_requeriments_freebsd || { 
 			_red 'Falha: (_config_requeriments_freebsd)'
 			return 1

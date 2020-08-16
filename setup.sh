@@ -55,9 +55,11 @@ url_master="${url_proj}/archive/master.tar.gz"
 if [ $(id -u) -eq 0 ]; then
 	dir_storecli="/opt/storecli-amd64"
 	path_link='/usr/local/bin/storecli'
+	mkdir -p /opt
 else
 	dir_storecli="$HOME/.local/bin/storecli-amd64"
 	path_link="$HOME/.local/bin/storecli"
+	mkdir -p "$HOME/.local/bin"
 fi
 
 
