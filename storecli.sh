@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_16'
+__version__='2020_09_06'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -897,7 +897,7 @@ __download__()
 	path_file="$2"
 	
 	cd "$DirDownloads"
-	_blue "Baixando: $1"
+	_blue "Conectando ... $1"
 
 	if is_executable wget; then # Usar wget
 		downloader_default='wget'
