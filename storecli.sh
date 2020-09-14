@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_09_06'
+__version__='2020_09_13'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -903,7 +903,7 @@ __download__()
 		downloader_default='wget'
 	elif is_executable curl; then # Usar curl
 		downloader_default='curl'
-	elif is_executable "$dirSTORECLIPathScripts"/web-cli.py; then # Usar script python local.
+	elif is_executable "$dirSTORECLIPathScripts"/py-downloader.py; then # Usar script python local.
 		downloader_default='web-cli'
 	else
 		_red "(__download__) instale o pacote 'wget' ou 'curl'"

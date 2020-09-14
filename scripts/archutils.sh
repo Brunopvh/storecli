@@ -19,13 +19,20 @@ VERSION='2020-06-16'
 # genfstab -U -p /mnt >> /mnt/etc/fstab
 # 
 #
+#----------------------------------------------------------------#
+# CONFIGURAR O GRUB EFI
+#----------------------------------------------------------------#
 # grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 # grub-mkconfig -o /boot/grub/grub.cfg
 #
+#----------------------------------------------------------------#
+# WIFI
+#----------------------------------------------------------------#
 # systemctl status NetworkManager
 # systemctl start NetworkManager
 # systemctl enable NetwokrManager
 # systemctl enable gdm
+#----------------------------------------------------------------#
 #
 # pacman -Sy
 # pacman -S xorg-server

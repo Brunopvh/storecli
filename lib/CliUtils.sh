@@ -5,7 +5,7 @@
 
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(
-'wget' 'gawk' 'unzip' 'python3' 
+'wget' 'curl' 'gawk' 'unzip' 'python3' 
 )
 
 # Utilitários de linha de comando para sistemas baseados em debian.
