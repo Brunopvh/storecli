@@ -172,7 +172,7 @@ _install_requeriments_all_system()
 			return 1
 		}
 	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		_config_requeriments_debians || { 
+		_config_requeriments_debian || { 
 			_red 'Falha: (_config_requeriments_ubuntu)'
 			return 1
 		}

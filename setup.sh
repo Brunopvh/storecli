@@ -175,7 +175,7 @@ _install()
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
 	
-	if _WHICH 'storecli'; then
+	if _WHICH 'storecli' || [ -x "$HOME/.local/bin/storecli" ]; then
 		_msg "OK"
 		return 0
 	else

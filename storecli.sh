@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_09_13'
+__version__='2020_09_18'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -20,11 +20,6 @@ __author__='Bruno Chaves'
 # GitHub
 #=============================================================#
 # https://github.com/Brunopvh/storecli
-#
-
-
-# https://qastack.com.br/programming/263890/how-do-i-find-the-width-height-of-a-terminal-window
-#
 
 #=============================================================#
 # Verificar requesitos minimos do sistema.
