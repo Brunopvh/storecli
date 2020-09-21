@@ -610,7 +610,7 @@ _codeblocks_archlinux()
 _codeblocks()
 {
 	case "$os_id" in
-		debian) _pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
+		debian|ubuntu) _pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
 		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
@@ -2310,7 +2310,7 @@ _youtube_dlgui()
 			_youtube_dlgui_ubuntu || return 1
 		fi
 	elif [[ "$os_id" == 'fedora' ]]; then
-		_youtube_dlgui_user_installer || return 1
+		_youtube_dlgui_fedora || return 1
 	elif [[ "$os_id" == 'arch' ]]; then
 		_youtube_dlgui_archlinux || return 1
 	else
