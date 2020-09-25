@@ -52,7 +52,7 @@ _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
 	_white "Adicionando repositório"
-	sudo wget -q -O- https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
+	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
 	_pkg_manager_sys 'balena-etcher-electron'
 }
 
@@ -2237,6 +2237,8 @@ _youtube_dlgui_fedora()
 	# https://fedora.pkgs.org/31/fedora-x86_64/python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm.html
 	# https://wiki.wxpython.org/How%20to%20install%20wxPython
 	#
+	# https://fedora.pkgs.org/31/fedora-x86_64/wxGTK3-gl-3.0.4-10.fc31.x86_64.rpm.html
+	#
 	# Apartir da versão 32 do Fedora o pacote python2-wxpython3 não está mais
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
 	# Fedora 31 e instalar usando o comando "rpm --install".
@@ -2246,12 +2248,14 @@ _youtube_dlgui_fedora()
 	local url="$f_packages/$wxpython_rpm"
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
+	
 	# Instalar dependências.
 	if [[ "$os_version" == '32' ]]; then
-		_pkg_manager_sys 'wxGTK3-media' || return 1
+		_pkg_manager_sys 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
 		__download__ "$url" "$path_file" || return 1
-		_yellow "Instalando: $path_file"
-		_RPM --install "$path_file" 
+		__download__ "$url_wxgtk3" "$path_wxgtk3" || return 1 
+		_yellow "Instalando: $path_file"; _RPM --install "$path_file" 
+
 	else
 		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
 		return 1

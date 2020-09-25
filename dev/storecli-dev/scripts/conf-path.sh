@@ -3,7 +3,7 @@
 # Este script serve para inserir os diretórios que contém binário na
 # HOME('~/bin' e '~/.local/bin') na variável PATH do usuario atual.
 #
-VERSION='2020-06-20'
+VERSION='2020-08-16'
 #
 
 # NÃO pode ser root.
@@ -12,6 +12,17 @@ VERSION='2020-06-20'
 	exit 1
 }
 
+KERNEL_TYPE=$(uname -s)
+
+if [ "$KERNEL_TYPE" = 'FreeBSD' ]; then
+	bash_config="/usr/$HOME/.bashrc"
+	zsh_config="/usr/$HOME/.zshrc"
+elif [ "$KERNEL_TYPE" = 'Linux' ]; then
+	bash_config="$HOME/.bashrc"
+	zsh_config="$HOME/.bashrc"
+fi
+
+touch "$bash_config"
 
 # Inserir ~/.local/bin em PATH.
 echo "$PATH" | grep -q "$HOME/.local/bin" || {
@@ -22,32 +33,32 @@ echo "$PATH" | grep -q "$HOME/.local/bin" || {
 path_bash()
 {
 	# Criar o arquivo ~/.bashrc se não existir
-	if [ ! -f "$HOME/.bashrc" ]; then
-		echo ' ' >> "$HOME/.bashrc"
+	if [ ! -f "$bash_config" ]; then
+		echo ' ' >> "$bash_config"
 	fi
 
 	# Se a linha de configuração já existir, encerrar a função aqui.
-	grep "$HOME/.local/bin" "$HOME/.bashrc" 1> /dev/null && return 0
+	grep "$HOME/.local/bin" "$bash_config" 1> /dev/null && return 0
 
 	# Continuar
-	echo "Configurando o arquivo [$HOME/.bashrc]"
-	echo "export PATH=$PATH" >> "$HOME/.bashrc"
-	bash "source $HOME/.bashrc"
+	echo "Configurando o arquivo [$bash_config]"
+	echo "export PATH=$PATH" >> "$bash_config"
+	bash "source $bash_config"
 }
 
 path_zsh()
 {
 	# Criar o arquivo ~/.zshrc se não existir
-	if [ ! -f "$HOME/.zshrc" ]; then
-		echo ' ' >> "$HOME/.zshrc"
+	if [ ! -f "$zsh_config" ]; then
+		echo ' ' >> "$zsh_config"
 	fi
 
 	# Se a linha de configuração já existir, encerrar a função aqui.
-	grep "$HOME/.local/bin" "$HOME/.zshrc" 1> /dev/null && return 0
+	grep "$HOME/.local/bin" "$zsh_config" 1> /dev/null && return 0
 
 	# Continuar
-	echo "Configurando o arquivo [$HOME/.zshrc]"
-	echo "export PATH=$PATH" >> "$HOME/.zshrc"
+	echo "Configurando o arquivo [$zsh_config]"
+	echo "export PATH=$PATH" >> "$zsh_config"
 }
 
 main()
@@ -58,14 +69,6 @@ main()
 
 	Bash_Shell=$(command -v bash)
 	Zsh_Shell=$(command -v zsh)
-
-	if [ -x "$Bash_Shell" ]; then
-		bash -c ". $HOME/.bashrc"
-	fi
-
-	if [ -x "$Zsh_Shell" ]; then
-		zsh -c ". ~/.zshrc"
-	fi
 }
 
 main

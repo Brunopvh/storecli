@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_08_09_rev1'
+__version__='2020_09_24'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -20,11 +20,6 @@ __author__='Bruno Chaves'
 # GitHub
 #=============================================================#
 # https://github.com/Brunopvh/storecli
-#
-
-
-# https://qastack.com.br/programming/263890/how-do-i-find-the-width-height-of-a-terminal-window
-#
 
 #=============================================================#
 # Verificar requesitos minimos do sistema.
@@ -32,7 +27,7 @@ __author__='Bruno Chaves'
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
-	exit 1
+	#exit 1
 fi
 
 # Usuário não pode ser o root.
@@ -102,8 +97,8 @@ fi
 #=============================================================#
 # Configuração de diretórios para libs, scripts e programas
 #=============================================================#
-export dirSTORECLIPath=$(dirname $(readlink -f "$0"))
-export scriptStorecli=$(readlink -f "$0")
+export __script__=$(readlink -f "$0")
+export dirSTORECLIPath=$(dirname "$__script__")
 export dirSTORECLIPathLib="$dirSTORECLIPath/lib"
 export dirSTORECLIPathScripts="$dirSTORECLIPath/scripts"
 export dirSTORECLIPathPython="$dirSTORECLIPath/python"
@@ -369,7 +364,6 @@ _list_applications()
 		done
 		printf "\n"
 
-
 		return 0
 	fi
 
@@ -451,9 +445,9 @@ _list_applications()
 usage()
 {
 cat << EOF
-    Use: $scriptStorecli -b|-c|-d|-I|-h|-l|-s|-v
-         $scriptStorecli install <pacote>
-         $scriptStorecli remove <pacote>
+    Use: $__script__ -b|-c|-d|-I|-h|-l|-s|-v
+         $__script__ install <pacote>
+         $__script__ remove <pacote>
 
     Opções:
 
@@ -462,7 +456,7 @@ cat << EOF
        -d|--downloadonly             Apenas baixa os pacotes, quando disponíveis.
        -h|--help                     Mostra ajuda.
        -I|--ignore-cli               Ignora a verificação dos pacotes/dependências deste script.
-                                     $scriptStorecli --ignore-cli install <pacote>
+                                     $__script__ --ignore-cli install <pacote>
 
        -l|--list                     Lista aplicativos disponíveis para instalação, ou aplicativos
                                      de uma categoria, argumentos:
@@ -478,10 +472,10 @@ cat << EOF
        install <pacote>            Instala um pacote.
 
        Instalando vários pacotes:
-             $scriptStorecli install etcher sublime-text google-chrome youtube-dl-gui virtualbox
+             $__script__ install etcher sublime-text google-chrome youtube-dl-gui virtualbox
 
        Instalando uma categoria/grupo de pacotes:
-             $scriptStorecli --install Acessorios Desenvolvimento Escritorio Internet
+             $__script__ --install Acessorios Desenvolvimento Escritorio Internet
 
 EOF
 }
@@ -780,14 +774,19 @@ _pkg_manager_sys()
 	# Somente baixar os pacotes caso receber '-d' ou '--downloadonly'
 	# na linha de comando.
 	#=============================================================#
+	_msg "Instalando ... $@"
+
 	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only --yes "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
 			fedora) _DNF install --downloadonly -y "$@" || return 1;;
 			arch) _PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1;;
-		esac
+			*) _red "(_pkg_manager_sys) Erro";;
+		esac	
 	elif [[ "$DownloadOnly" == 'True' ]]; then
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
@@ -795,6 +794,7 @@ _pkg_manager_sys()
 			arch) _PACMAN -S --needed --downloadonly "$@" || return 1;;
 		esac
 	elif [[ "$AssumeYes" == 'True' ]]; then 
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --yes "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER install -y "$@" || return 1;;
@@ -802,6 +802,7 @@ _pkg_manager_sys()
 			arch) _PACMAN -S --noconfirm --needed "$@" || return 1;;
 		esac
 	else
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER install "$@" || return 1;;
@@ -893,26 +894,24 @@ __download__()
 	path_file="$2"
 	
 	cd "$DirDownloads"
-	_blue "Baixando: $1"
+	_blue "Conectando ... $1"
 
 	if is_executable wget; then # Usar wget
 		downloader_default='wget'
 	elif is_executable curl; then # Usar curl
 		downloader_default='curl'
-	elif is_executable "$dirSTORECLIPathScripts"/web-cli.py; then # Usar script python local.
+	elif is_executable "$dirSTORECLIPathScripts"/py-downloader.py; then # Usar script python local.
 		downloader_default='web-cli'
 	else
 		_red "(__download__) instale o pacote 'wget' ou 'curl'"
 		return 1
 	fi
 
-	#downloader_default='web-cli'
-
 	while true; do
 		if [[ "$downloader_default" == 'web-cli' ]]; then
 			"$dirSTORECLIPathScripts"/web-cli.py --url "$url" -o "$path_file" && break
 		elif [[ "$downloader_default" == 'wget' ]]; then
-			__wget__ "$url" "$path_file" && break
+			wget -c "$url" -O "$path_file" && break
 		elif [[ "$downloader_default" == 'curl' ]]; then
 			curl -C - -S -L -o "$path_file" "$url" && break
 		fi
@@ -941,6 +940,7 @@ _gitclone()
 		_pkg_manager_sys git || return 1
 	fi
 
+	_green "Entrando no diretório ...$DirGitclone" 
 	cd "$DirGitclone"
 	dir_repo=$(basename "$1" | sed 's/.git//g')
 	if [[ -d "$DirGitclone/$dir_repo" ]]; then
@@ -952,8 +952,7 @@ _gitclone()
 		fi
 	fi
 
-	_blue "Clonando: $1"
-	_blue "Destino: $(pwd)"
+	_blue "Clonando ... $1"
 	if ! git clone "$1"; then
 		_red "(_gitclone): falha"
 		return 1
@@ -979,6 +978,7 @@ _unpack()
 		return 1
 	fi 
 	
+	_yellow "Entrando no diretório ... $DirUnpack"
 	cd "$DirUnpack"
 	path_file="$1"
 
@@ -1025,7 +1025,9 @@ _unpack()
 
 _pkg_manager_storecli()
 {
-	# Instalação dos programas
+	# Instalação dos programas, esta função recebe como parâmetro os pacotes a serem instalados
+	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro.
+	# Enquanto outros são instalados seguindo um processo de download, descompressão e configuração.
 	if [[ -z $1 ]]; then
 		usage
 		return 1
@@ -1033,12 +1035,10 @@ _pkg_manager_storecli()
 
 	_clear_temp_dirs
 
-	# Se o sistema for LinuxMint, deverá ser tratado como Ubuntu.
+	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
 	case "$os_codename" in
 		tina|tricia) export os_codename='bionic';;
 	esac
-
-	_yellow "Sistema: $os_id"
 
 	while [[ $1 ]]; do
 		[[ -z $1 ]] && return 0 
@@ -1057,6 +1057,8 @@ _pkg_manager_storecli()
 			sublime-text) _sublime_text;;
 			vim) _vim;;
 			vscode) _vscode;;
+			python37-windows-portable) _python37_windows32_portable;;
+			python37-windows) _python37_windows32;;
 
 			Escritorio) _Office_All;;
 			atril) _atril;;
@@ -1072,6 +1074,7 @@ _pkg_manager_storecli()
 			torbrowser) _torbrowser;;
 
 			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
+			clipgrab) _clipgrab_appimage;;
 			megasync) _megasync;;
 			proxychains) _proxychains;;
 			qbittorrent) _qbittorrent;;
@@ -1082,6 +1085,7 @@ _pkg_manager_storecli()
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
+			youtube-dl-gui-windows) _youtube_dlgui_windows;;
 
 			Midia) _Midia_All;;
 			blender) _blender;;
@@ -1170,28 +1174,15 @@ _update_storecli()
 	return 0
 }
 
-argument_parser()
-{
-	local num='0'
-	export OptArgs=()
-	while [ $1 ]; do
-		case "$1" in
-			-l|--list) shift; _list_applications "$@"; return 0; break;;
-			-v|--version) shift; echo -e "$(basename $scriptStorecli) V${__version__}"; return 0; break;;
-			-h|--help) shift; usage; return 0; break;;
-			-y|--yes) export AssumeYes='True';;
-			-d|--downloadonly) export DownloadOnly='True';;
-			-I|--ignore-cli) export IgnoreCli='True';;
-			*) OptArgs["$num"]="$1"; num="$(($num+1))";;
-		esac
-		shift
-	done
-
-}
-
 main()
 {	
-	argument_parser "$@"
+	for ARG in "$@"; do
+		case ARG in
+		-y|--yes) export AssumeYes='True';;
+		-d|--downloadonly) export DownloadOnly='True';;
+		-I|--ignore-cli) export IgnoreCli='True';;
+		esac
+	done
 
 	# Verificar se todos os utilitários de linha de comando estão instalados 
 	# esta operação será IGNORADA caso a opção '--ignore-cli' ou '-I' estiver 
@@ -1216,21 +1207,27 @@ main()
 
 	_update_storecli
 
-	for ARG in "${OptArgs[@]}"; do
-		case "$ARG" in
+	while [[ $1 ]]; do
+		case "$1" in
 			-b|--broke) _BROKE;;
 			-c|--configure) _run_configuration_dep;;
+			-l) shift; _list_applications "$@"; return 0; break;;
+			-h|--help) usage; return 0; break;;
 			-u|--self-update) "$scriptInstallStoreli";;
-			install) _pkg_manager_storecli "${OptArgs[@]}"; return "$?"; break;;
-			remove)  _uninstall_packages "${OptArgs[@]}"; return "$?";;
-			*) _red "(argument_parser) argumento inválido: $ARG"; return 1; break;;
+			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
+			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
+			remove)  shift; _uninstall_packages "$@"; return "$?";;
+			-y|--yes) ;;
+			-d|--downloadonly) ;;
+			-I|--ignore-cli) ;;
+			*) _red "(main) argumento inválido: $ARG"; return 1; break;;
 		esac
 	done
 	return "$?"
 }
 
 if [[ -z $1 ]]; then
-	if is_executable zenity; then
+	if ! is_executable zenity; then
 		_yellow "Necessário instalar zenity"
 		_pkg_manager_sys zenity
 	fi 

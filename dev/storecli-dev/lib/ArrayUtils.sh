@@ -193,6 +193,8 @@ programs_development=(
 	'sublime-text'
 	vim
 	vscode
+	python37-windows
+	python37-windows-portable
 	)
 
 programs_office=(
@@ -211,6 +213,7 @@ programs_browser=(
 	)
 
 programs_internet=(
+	clipgrab
 	megasync
 	proxychains
 	qbittorrent
@@ -221,6 +224,7 @@ programs_internet=(
 	uget
 	youtube-dl
 	youtube-dl-gui
+	youtube-dl-gui-windows
 	)
 
 programs_midia=(

@@ -69,7 +69,7 @@ print_line(){
 		num="$(($num+1))"
 	done
 	# echo -ne "$L"
-	printf '%s' "$L"
+	printf '%s\n' "$L"
 }
 
 # Verificar conexão com a internet.
@@ -91,7 +91,7 @@ _ping()
 # Instalar o script storecli se ele não estiver disponível.
 if [[ ! -x $(which storecli 2> /dev/null) ]]; then
 	_yellow "Instalando script storecli"
-	if ! sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/install.sh)"; then
+	if ! sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"; then
 		_red "Falha ao tentar instalar storecli"
 		exit 1
 	fi

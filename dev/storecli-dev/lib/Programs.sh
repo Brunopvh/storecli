@@ -52,7 +52,7 @@ _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
 	_white "Adicionando repositório"
-	sudo wget -q -O- https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
+	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -O /etc/yum.repos.d/etcher-rpm.repo
 	_pkg_manager_sys 'balena-etcher-electron'
 }
 
@@ -176,7 +176,6 @@ _veracrypt()
 	chmod +x "$DirTemp"/veracrypt-setupx64
 
 	if ! is_executable xterm; then
-		_msg "Necessário instalar 'xterm' para prosseguir"
 		_pkg_manager_sys xterm
 	fi
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
@@ -610,7 +609,7 @@ _codeblocks_archlinux()
 _codeblocks()
 {
 	case "$os_id" in
-		debian) _pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
+		debian|ubuntu) _pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
 		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
@@ -1516,6 +1515,27 @@ _torbrowser()
 	fi
 }
 
+_clipgrab_appimage()
+{
+	local url_clipgrab_appimage='https://download.clipgrab.org/ClipGrab-3.8.13-x86_64.AppImage'
+	local path_file="$DirDownloads/$(basename $url_clipgrab_appimage)"
+
+	__download__ "$url_clipgrab_appimage" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	cp -u "$path_file" "$directoryUSERbin"/clipgrab
+	chmod +x "$directoryUSERbin"/clipgrab
+	clipgrab&
+
+	if is_executable clipgrab; then
+		_show_info 'SuccessInstalation' 'clipgrab'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'clipgrab'
+		return 1
+	fi
+}
+
+
 _megasync_opensuse_tumbleweed()
 {
 	# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
@@ -2216,6 +2236,8 @@ _youtube_dlgui_fedora()
 	# https://fedora.pkgs.org/31/fedora-x86_64/python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm.html
 	# https://wiki.wxpython.org/How%20to%20install%20wxPython
 	#
+	# https://fedora.pkgs.org/31/fedora-x86_64/wxGTK3-gl-3.0.4-10.fc31.x86_64.rpm.html
+	#
 	# Apartir da versão 32 do Fedora o pacote python2-wxpython3 não está mais
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
 	# Fedora 31 e instalar usando o comando "rpm --install".
@@ -2225,12 +2247,14 @@ _youtube_dlgui_fedora()
 	local url="$f_packages/$wxpython_rpm"
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
+	
 	# Instalar dependências.
 	if [[ "$os_version" == '32' ]]; then
-		_pkg_manager_sys 'wxGTK3-media' || return 1
+		_pkg_manager_sys 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
 		__download__ "$url" "$path_file" || return 1
-		_yellow "Instalando: $path_file"
-		_RPM --install "$path_file" 
+		__download__ "$url_wxgtk3" "$path_wxgtk3" || return 1 
+		_yellow "Instalando: $path_file"; _RPM --install "$path_file" 
+
 	else
 		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
 		return 1
@@ -2289,7 +2313,7 @@ _youtube_dlgui()
 			_youtube_dlgui_ubuntu || return 1
 		fi
 	elif [[ "$os_id" == 'fedora' ]]; then
-		_youtube_dlgui_user_installer || return 1
+		_youtube_dlgui_fedora || return 1
 	elif [[ "$os_id" == 'arch' ]]; then
 		_youtube_dlgui_archlinux || return 1
 	else
@@ -2303,6 +2327,140 @@ _youtube_dlgui()
 		_show_info 'InstalationFailed' 'youtube-dl-gui'
 		return 1
 	fi
+}
+
+_youtube_dlgui_windows()
+{
+	# https://mrs0m30n3.github.io/youtube-dl-gui/
+	# https://github.com/MrS0m30n3/youtube-dl-gui
+	# https://wxpython.org/pages/downloads/
+	# https://pypi.org/project/twodict/
+	# https://www.python.org/downloads/release/python-278/
+	#
+	local url_youtube_DLGUI_win='https://github.com/MrS0m30n3/youtube-dl-gui/releases/download/0.4/youtube-dl-gui-0.4-win-setup.zip'
+	local url_youtube_DL='https://yt-dl.org/downloads/2020.07.28/youtube-dl.exe'
+	local url_visualC='https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe'
+	local url_wxpython_win32='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe/download'
+	local url_gnu_gettext='https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.20.2-v1.16/gettext0.20.2-iconv1.16-static-32.exe'
+	local url_python27='https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi'
+
+	local path_file_ytDL="$DirDownloads/youtube-dl.exe"
+	local path_file_ytDLGUI="$DirDownloads/youtube-dl-gui-0.4-win-setup.zip"
+	local path_file_visualC="$DirDownloads/$(basename $url_visualC)"
+	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
+	local path_file_GNU_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
+	local path_file_python27="$DirDownloads/$(basename $url_python27)"
+
+	#__download__ "$url_youtube_DL" "$path_file_ytDL" || return 1
+	# Instalar o python27 com o script winetricks (winetricks dlls list | grep python)
+	#__download__ "$url_python27" "$path_file_python27" || return 1 
+	__download__ "$url_youtube_DLGUI_win" "$path_file_ytDLGUI" || return 1
+	__download__ "$url_visualC" "$path_file_visualC" || return 1 
+	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
+	__download__ "$url_gnu_gettext" "$path_file_GNU_gettext" || return 1
+	
+	if ! is_executable wine; then
+		_red "Necessário ter o wine instalado para prosseguir"
+		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
+		_install_wine	
+	fi
+
+	cd "$DirDownloads"
+	_msg "Instalando: atmlib"; winetricks atmlib
+	_msg "Instalando: dotnet45"; winetricks dotnet45
+	_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
+	_msg "Instalando: python2.7"; winetricks python27
+	_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
+	_msg "Instalando: visual C"; wine "$path_file_visualC"
+	_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
+	_get_pip_windows # Instalar o pip.exe
+
+	_unpack "$path_file_ytDLGUI" || return 1
+	cd "$DirUnpack"
+	_msg "Instalando: youtubedlg-0.4.exe"; wine youtubedlg-0.4.exe
+	_msg "Executando: wine pip.exe install twodict"
+	wine pip.exe install twodict
+}
+
+_python37_windows32()
+{
+	local url_python37_windows32='https://www.python.org/ftp/python/3.7.6/python-3.7.6rc1-amd64.exe'
+	local path_file_python37="$DirDownloads/$(basename $url_python37_windows32)"
+
+	if ! is_executable wine; then
+		_red "Necessário ter o wine instalado para prosseguir"
+		_install_wine	
+	fi
+
+	if ! is_executable winetricks; then
+		_pkg_manager_sys winetricks
+	fi
+
+	__download__ "$url_python37_windows32" "$path_file_python37" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	_msg "Executando: winetricks atmlib cmd"
+	winetricks atmlib cmd
+	_msg "Instalando: python37" 
+	wine "$path_file_python37"
+}
+
+_python37_windows32_portable()
+{
+	local url_python37_portable='https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-win32.zip'
+	local path_file_python37_portable="$DirDownloads/$(basename $url_python37_portable)"
+
+	if ! is_executable wine; then
+		_red "Necessário ter o wine instalado para prosseguir"
+		_install_wine	
+	fi
+
+	if ! is_executable winetricks; then
+		_pkg_manager_sys winetricks
+	fi
+
+	__download__ "$url_python37_portable" "$path_file_python37_portable" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	_msg "Executando: winetricks atmlib dotnet45 cmd"
+	winetricks atmlib dotnet45 cmd
+
+	_unpack "$path_file_python37_portable" || return 1
+	mkdir -p "$HOME"/.wine/drive_c/python37
+	cp -R -u "$DirUnpack"/. "$HOME"/.wine/drive_c/python37/.
+	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
+	wine "$HOME"/.wine/drive_c/python37/python.exe -V
+	_get_pip_windows
+}
+
+_get_pip_windows()
+{
+	local url_get_pip='https://bootstrap.pypa.io/get-pip.py'
+	local path_file_getPIP="$DirDownloads/$(basename $url_get_pip)"
+
+	__download__ "$url_get_pip" "$path_file_getPIP" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	cd wine "$HOME"/.wine/drive_c/python37/
+	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe $path_file_getPIP"
+	wine "$HOME"/.wine/drive_c/python37/python.exe "$path_file_getPIP"
+}
+
+_install_wine()
+{
+	# pywine
+	# https://github.com/Brunopvh/pywine/archive/master.zip
+	local url_pywine='https://github.com/Brunopvh/pywine/archive/master.zip'
+	local path_file="$DirDownloads/pywine.zip"
+
+	_msg "Obtendo o script 'pywine.py' em: https://github.com/Brunopvh/pywine"
+	__download__ "$url_pywine" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	_unpack "$DirDownloads/pywine.zip" || return 1
+	cd "$DirUnpack"/pywine-master
+	chmod +x wine_install.py
+	
+	# Instalar o wine
+	./wine_install.py --install wine || return 1
+	./wine_install.py --install winetricks || return 1
+	return 0
 }
 
 _bluetooth()
@@ -2799,7 +2957,7 @@ _virtualbox()
 
 _ohmybash()
 {
-	# github_ohmy_bash="https://github.com/ohmybash/oh-my-bash.git"
+	# https://github.com/ohmybash/oh-my-bash.git
 	# https://github.com/ohmybash/oh-my-bash/wiki/Themes#agnoster
 	#
 	# Temas:
@@ -2827,6 +2985,7 @@ _ohmybash()
 	_msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
 	mkdir -p "$HOME/.bash/themes"
 	cp -R -u "$DirUnpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
+	sed -i "s|OSH_THEME=.*|OSH_THEME=mairan|g" "$HOME/.bashrc"
 	
 	_YESNO "Gostaria de habilitar um tema para ohmybash" || return 1
 
@@ -2836,6 +2995,9 @@ _ohmybash()
 	_yellow "4 => emperor"
 	_yellow "5 => mairan (recomendado)"
 	_yellow "6 => rjorgenson"
+	_yellow "7 => agnoster"
+	_yellow "8 => kitsune"
+	_yellow "9 => powerline-plain"
 	read -n 1 -t 15 -p "Selecione um numero correspondente a opção desejada: " option
 	echo ' '
 
@@ -2846,18 +3008,14 @@ _ohmybash()
 		4) option='emperor';;
 		5) option='mairan';;
 		6) option='rjorgenson';;
+		7) option='agnoster';;
+		8) option='kitsune';;
+		9) option='powerline-plain';;
 		*) _red "Opção incorreta saindo"; return 1;;
 	esac
 
 	_msg "Habilitando o tema $option para ohmybash"
-	case "$option" in
-		bakke) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
-		bobby) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
-		'bobby-python') sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
-		emperor) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
-		mairan) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
-		rjorgenson) sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc";;
-	esac
+	sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc"
 	_white "OK"
 	
 }
@@ -2981,7 +3139,7 @@ _dashtodock_github()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
 	_pkg_manager_sys make
-	cd "$DirTemp"/dash-to-dock
+	cd "$DirGitclone"/dash-to-dock
 	make
 	make install
 	#sudo make install 

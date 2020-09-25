@@ -1,6 +1,6 @@
 #!/bin/sh
 #
-__version='2020-07-05'
+__version__='2020-09-06'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -55,18 +55,19 @@ url_master="${url_proj}/archive/master.tar.gz"
 if [ $(id -u) -eq 0 ]; then
 	dir_storecli="/opt/storecli-amd64"
 	path_link='/usr/local/bin/storecli'
+	mkdir -p /opt
 else
 	dir_storecli="$HOME/.local/bin/storecli-amd64"
 	path_link="$HOME/.local/bin/storecli"
+	mkdir -p "$HOME/.local/bin"
 fi
 
-
-dir_temp="/tmp/$USER/update"
+dir_temp=$(mktemp --directory) || dir_temp="/tmp/$USER/update"
 dir_unpack="$dir_temp/unpack"
 
 mkdir -p "$dir_temp"
 mkdir -p "$dir_unpack"
-#mkdir -p "$dir_storecli"
+mkdir -p "$dir_storecli"
 
 path_file_repo="$dir_temp/storecli.tar.gz"
 
@@ -85,8 +86,8 @@ _WHICH()
 
 #----------------------------------------------------------#
 
-if ! _WHICH 'curl'; then
-	_red "Instale a ferramenta [curl]"
+if ! _WHICH curl && ! _WHICH wget; then
+	_red "Instale a ferramenta 'curl' ou 'wget'"
 	exit 1
 fi
 
@@ -94,9 +95,16 @@ _download_repo()
 {
 	_msg "Baixando: $url_master"
 	_msg "Destino: $path_file_repo"
-	if ! curl -sSL "$url_master" -o "$path_file_repo"; then
+    if _WHICH curl; then
+	    curl -sSL "$url_master" -o "$path_file_repo" || {
 		_red "Falha no download"
 		return 1
+        }
+    elif _WHICH wget; then
+        wget -q "$url_master" -O "$path_file_repo" || {
+		_red "Falha no download"
+		return 1
+        }
 	fi
 	return 0
 }
@@ -167,7 +175,7 @@ _install()
 	chmod -R a+x "$dir_storecli"
 	chmod a+x "$path_link" 
 	
-	if _WHICH 'storecli'; then
+	if _WHICH 'storecli' || [ -x "$HOME/.local/bin/storecli" ]; then
 		_msg "OK"
 		return 0
 	else
@@ -188,12 +196,13 @@ main()
 	_install || return 1
 	
 	echo "$space_line"
-	_yellow "Execute: $(printf $Yellow)storecli --help$(printf $Reset)"
+	_yellow "Execute ... storecli --help"
 	echo "$space_line"
 }
 
-
 main "$@" || exit 1
+
+if [ -d "$dir_temp" ]; then rm -rf "$dir_temp"; fi
 exit 0
 
 
