@@ -3,28 +3,6 @@
 #
 #
 
-__delete_files__()
-{
-	if [[ -z $1 ]]; then
-		return 1
-	fi
-
-	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
-	# A função __sudo__ irá remover o arquivo/diretório.
-	for X in "$@"; do
-		if [[ ! -L "$X" ]] && [[ ! -f "$X" ]] && [[ ! -d "$X" ]]; then
-			_red "Não encontrado: $X"
-		else
-			printf "[>] ${CRed}R${CReset}emovendo: $X "
-			if rm -rf "$X" 2> /dev/null || sudo rm -rf "$X"; then
-				_syellow "OK"
-			else
-				_sred "FALHA"
-			fi
-		fi
-	done
-}
-
 #=============================================================#
 # Removção desinstalação dos pacotes
 #=============================================================#
@@ -33,9 +11,9 @@ _uninstall_etcher()
 	case "$os_id" in
 		debian|ubuntu|linuxmint) 
 						_APT remove 'balena-etcher-electron'
-						__delete_files__ '/etc/apt/sources.list.d/balena-etcher.list'
+						__rmdir__ '/etc/apt/sources.list.d/balena-etcher.list'
 						;;
-		*) __delete_files__ "${destinationFilesEtcher[@]}";;
+		*) __rmdir__ "${destinationFilesEtcher[@]}";;
 	esac
 }
 
@@ -43,7 +21,7 @@ _uninstall_vscode()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _APT remove code;;
-		*) __delete_files__ "${destinationFilesVscode[@]}";;
+		*) __rmdir__ "${destinationFilesVscode[@]}";;
 	esac
 }
 
@@ -52,7 +30,7 @@ _uninstall_teamviewer()
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _APT remove teamviewer;;
 		fedora) _DNF remove teamviewer;;
-		*) __delete_files__ "${destinationFilesTeamviewer[@]}";;
+		*) __rmdir__ "${destinationFilesTeamviewer[@]}";;
 	esac
 
 }
@@ -66,25 +44,25 @@ _uninstall_packages()
 			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
-			'android-studio') __delete_files__ "${destinationFilesAndroidStudio[@]}";;
-			pycharm) __delete_files__ "${destinationFilesPycharm[@]}";;
-			'sublime-text') __delete_files__ "${destinationFilesSublime[@]}";;
+			'android-studio') __rmdir__ "${destinationFilesAndroidStudio[@]}";;
+			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
+			'sublime-text') __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;
 
-			'libreoffice-appimage') __delete_files__ "${destinationFilesLibreofficeAppimage[@]}";;
+			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
 
 			torbrowser) "$scritpTorBrowser" --remove;;	
 
-			telegram) __delete_files__ "${destinationFilesTelegram[@]}";;
-			tixati) __delete_files__ "${destinationFilesTixati[@]}";;
+			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
+			tixati) __rmdir__ "${destinationFilesTixati[@]}";;
 			teamviewer) _uninstall_teamviewer;;
-			youtube-dl) __delete_files__ "$directoryUSERbin/youtube-dl";;
+			youtube-dl) __rmdir__ "$directoryUSERbin/youtube-dl";;
 	
-			peazip) __delete_files__ "${destinationFilesPeazip[@]}";;
-			refind) __delete_files__ "${destinationFilesRefind[@]}";;
-			stacer) __delete_files__ "${destinationFilesStacer[@]}";;
+			peazip) __rmdir__ "${destinationFilesPeazip[@]}";;
+			refind) __rmdir__ "${destinationFilesRefind[@]}";;
+			stacer) __rmdir__ "${destinationFilesStacer[@]}";;
 
-			epsxe-win) __delete_files__ "${destinationFilesEpsxeWin32[@]}";;
+			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;
 			*) _red "Não foi possível remover: $1";;
 		esac

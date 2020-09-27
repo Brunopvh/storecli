@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_09_24'
+__version__='2020_09_26'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -27,7 +27,7 @@ __author__='Bruno Chaves'
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
-	#exit 1
+	exit 1
 fi
 
 # Usuário não pode ser o root.
@@ -49,102 +49,88 @@ if ! uname -m | grep '64' 1> /dev/null; then
 fi
 
 #=============================================================#
+# Configuração de diretórios para libs, scripts e programas
+#=============================================================#
+export app_name='storecli'
+export __script__=$(readlink -f "$0") # Este arquivo.
+export dir_of_executable=$(dirname "$__script__")
+export path_libs="$dir_of_executable/lib"
+export dir_local_scripts="$dir_of_executable/scripts"
+export dir_local_python="$dir_of_executable/python"
+
+# Definir os scripts locais.
+scriptConfigPath="$dir_local_scripts/conf-path.sh"
+scriptAddRepo="$dir_local_scripts/addrepo.py"
+scritpTorBrowser="$dir_local_scripts/tor-installer.sh"
+scriptInstallStoreli="$dir_of_executable/setup.sh"
+scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
+GUI="$dir_local_scripts/gui.sh"
+
+#=============================================================#
 # Diretórios do usuário
 #=============================================================#
-directoryUSERbin="$HOME/.local/bin"
-directoryUSERicon="$HOME/.local/share/icons"
-directoryUSERthemes="$HOME/.themes"
-directoryUSERapplications="$HOME/.local/share/applications"
-directoryUSERconfig="$HOME/.config/storecli"
+DIR_BIN_USER="$HOME/.local/bin"
+DIR_ICON_USER="$HOME/.local/share/icons"
+DIR_THEMES_USER="$HOME/.themes"
+DIR_DESKTOP_USER="$HOME/.local/share/applications"
+DIR_CONFIG_USER="$HOME/.config/$app_name"
 
-mkdir -p "$directoryUSERbin"
-mkdir -p "$directoryUSERicon"
-mkdir -p "$directoryUSERthemes"
-mkdir -p "$directoryUSERapplications"
-mkdir -p "$directoryUSERconfig"
+mkdir -p "$DIR_BIN_USER"
+mkdir -p "$DIR_ICON_USER"
+mkdir -p "$DIR_THEMES_USER"
+mkdir -p "$DIR_DESKTOP_USER"
+mkdir -p "$DIR_CONFIG_USER"
 
 #=============================================================#
 # Diretórios do root
 #=============================================================#
-directoryROOTbin='/usr/local/bin'
-directoryROOTicon='/usr/share/icons/hicolor'
-directoryROOTthemes='/usr/share/themes/'
-directoryROOTapplications='/usr/share/applications'
+DIR_BIN_ROOT='/usr/local/bin'
+DIR_ICON_ROOT='/usr/share/icons/hicolor'
+DIR_THEME_ROOT='/usr/share/themes/'
+DIR_DESKTOP_ROOT='/usr/share/applications'
 
-if [[ ! -d "$directoryROOTbin" ]]; then
-	printf "%s\n" "Criando o diretório: $directoryROOTbin"
-	sudo mkdir "$directoryROOTbin"
+if [[ ! -d "$DIR_BIN_ROOT" ]]; then
+	printf "%s\n" "Criando o diretório: $DIR_BIN_ROOT"
+	sudo mkdir "$DIR_BIN_ROOT"
 fi
 
 
-if [[ ! -d "$directoryROOTicon" ]]; then
-	printf "%s\n" "Criando o diretório: $directoryROOTicon"
-	sudo mkdir "$directoryROOTicon"
+if [[ ! -d "$DIR_ICON_ROOT" ]]; then
+	printf "%s\n" "Criando o diretório: $DIR_ICON_ROOT"
+	sudo mkdir "$DIR_ICON_ROOT"
 fi
 
 
-if [[ ! -d "$directoryROOTthemes" ]]; then
-	printf "%s\n" "Criando o diretório: $directoryROOTthemes"
-	sudo mkdir "$directoryROOTthemes"
+if [[ ! -d "$DIR_THEME_ROOT" ]]; then
+	printf "%s\n" "Criando o diretório: $DIR_THEME_ROOT"
+	sudo mkdir "$DIR_THEME_ROOT"
 fi
 
 
-if [[ ! -d "$directoryROOTapplications" ]]; then
-	printf "%s\n" "Criando o diretório: $directoryROOTapplications"
-	sudo mkdir "$directoryROOTapplications"
+if [[ ! -d "$DIR_DESKTOP_ROOT" ]]; then
+	printf "%s\n" "Criando o diretório: $DIR_DESKTOP_ROOT"
+	sudo mkdir "$DIR_DESKTOP_ROOT"
 fi
 
 #=============================================================#
-# Configuração de diretórios para libs, scripts e programas
+# Importar Libs
 #=============================================================#
-export __script__=$(readlink -f "$0")
-export dirSTORECLIPath=$(dirname "$__script__")
-export dirSTORECLIPathLib="$dirSTORECLIPath/lib"
-export dirSTORECLIPathScripts="$dirSTORECLIPath/scripts"
-export dirSTORECLIPathPython="$dirSTORECLIPath/python"
-
-#=============================================================#
-# Definir as Libs e scripts a serem usados
-#=============================================================#
-
-# libs.
-libColors="$dirSTORECLIPathLib/Colors.sh"
-libCliUtils="$dirSTORECLIPathLib/CliUtils.sh"
-libPlatform="$dirSTORECLIPathLib/Platform.sh"
-libProcessLoop="$dirSTORECLIPathLib/ProcessLoop.sh"
-libUninstallPkgs="$dirSTORECLIPathLib/UninstallPkgs.sh"
-libArrayUtils="$dirSTORECLIPathLib/ArrayUtils.sh"
-libPrograms="$dirSTORECLIPathLib/Programs.sh"
-libWget="$dirSTORECLIPathLib/libwget.sh"
-
-# Scripts
-scriptConfigPath="$dirSTORECLIPathScripts/conf-path.sh"
-scriptAddRepo="$dirSTORECLIPathScripts/addrepo.py"
-scritpTorBrowser="$directoryUSERbin/tor-installer.sh"
-scriptInstallStoreli="$dirSTORECLIPath/setup.sh"
-scriptOhmybashInstaller="$dirSTORECLIPathScripts/ohmybash.run"
-GUI="$dirSTORECLIPathScripts/gui.sh"
-
-#=============================================================#
-# importar libs
-#=============================================================#
-source "$libColors"
-source "$libCliUtils"
-source "$libPlatform"
-source "$libProcessLoop"
-source "$libUninstallPkgs"
-source "$libArrayUtils"
-source "$libPrograms"
-source "$libWget"
+source "$path_libs/colors.sh"
+source "$path_libs/requeriments.sh"
+source "$path_libs/platform.sh"
+source "$path_libs/pkg_manager.sh"
+source "$path_libs/UninstallPkgs.sh"
+source "$path_libs/ArrayUtils.sh"
+source "$path_libs/programs.sh"
 
 # Criar diretórios para arquivos temporários para descompressão dos
-# arquivos baixados e clonar repositórios do github. 
+# arquivos baixados, e clone(s) de repositórios do github. 
 # export TemporaryDirectory=$(mktemp --directory)
-export TemporaryDirectory="/tmp/storecli_$USER"
+export TemporaryDirectory="/tmp/$app_name_$USER"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
-export DirDownloads="$HOME/.cache/storecli/downloads"
+export DirDownloads="$HOME/.cache/$app_name/downloads"
 
 mkdir -p "$TemporaryDirectory"
 mkdir -p "$DirTemp"
@@ -159,7 +145,7 @@ mkdir -p "$DirDownloads"
 # dos requirimentos são instaladas no sistema. Quando o programa 
 # inicia ele irá procurar por este arquivo é também irá verificar
 # se o conteudo do arquivo tem uma linha com as seguintes informações: requeriments OK 
-export configFILE="$directoryUSERconfig/requeriments.conf"
+export configFILE="$DIR_CONFIG_USER/requeriments.conf"
 export LogFile="$HOME/.cache/storecliLOG.log"
 export LogErro="$HOME/.cache/storecliERROLog.log"
 
@@ -167,6 +153,7 @@ touch "$configFILE"
 touch "$LogFile"
 touch "$LogErro"
 
+# Sempre verificar a configuração do PATH do usuário ao iniciar.
 "$scriptConfigPath"
 
 _red()
@@ -217,6 +204,12 @@ _sblue()
 	echo -e "${CSBlue}$@${CReset}"
 }
 
+_println()
+{
+	# Imprimir mensagens com printf sem quebrar linhas.
+	printf "[+] $@"
+}
+
 # Função para verifiar se um executável existe no sistema.
 is_executable()
 {
@@ -226,6 +219,34 @@ is_executable()
 		return 1
 	fi
 }
+
+if is_executable tput; then
+	columns=$(tput cols)
+else
+	columns='45'
+fi
+
+print_line(){
+	local L='='
+	num='1'
+	while [[ "$num" != "$columns" ]]; do
+		L="${L}="
+		num="$(($num+1))"
+	done
+	# echo -ne "$L"
+	printf '%s\n' "$L"
+}
+
+space_line=$(print_line)
+
+_msg()
+{
+	print_line
+	echo -e " $@"
+	print_line
+}
+
+
 
 _YESNO()
 {
@@ -250,53 +271,10 @@ _YESNO()
 	fi
 }
 
-
-if is_executable tput; then
-	columns=$(tput cols)
-else
-	columns='40'
-fi
-
-print_line(){
-	local L='='
-	num='1'
-	while [[ "$num" != "$columns" ]]; do
-		L="${L}="
-		num="$(($num+1))"
-	done
-	# echo -ne "$L"
-	printf '%s\n' "$L"
-}
-
-space_line=$(print_line)
-
-_msg()
-{
-	print_line
-	echo -e " $@"
-	print_line
-}
-
-
-_space_text()
-{
-	if [[ "${#@}" != '2' ]]; then
-		_red "Falha: informe apenas 2 argumentos para serem exibidos como string"
-		return 1
-	fi
-
-	local line='-'
-	num="$((45-${#2}))"  
-	
-	for i in $(seq "$num"); do
-		line="${line}-"
-	done
-	
-	echo -e "$1 ${line}> $2"
-}
-
 _show_info()
 {
+	# Função para exibir mensagens padrão, como erro generico durante a instalação de um 
+	# programa ou um mensagem generica de sucesso.
 	case "$1" in
 		AddFileDestktop) _green "Criando arquivo (.desktop)";;
 		DownloadOnly) _green "Feito somente download";;
@@ -309,6 +287,12 @@ _show_info()
 
 _list_applications()
 {
+	# Função para listar os programas disponíveis para instalação no sistema
+	# também lista programas de uma categoria especifica, bastando informar essa
+	# categoria como argumento.
+	# EXEMPLO:
+	#   storecli -l Acessorios  -> Lista somente a categoria acessorios
+
 	if [[ -z $1 ]]; then
 		printf "%s\n" "  Acessorios: " # Acessorios
 		for APP in "${programs_acessory[@]}"; do
@@ -507,24 +491,29 @@ __sudo__()
 	fi
 }
 
-__RMDIR()
+__rmdir__()
 {
 	# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
 	# que o usuário não tem permissão de escrita, para isso será usado o "sudo".
 	#
 	# Use:
-	#     __RMDIR <diretório> ou
-	#     __RMDIR <arquivo>
+	#     __rmdir__ <diretório> ou
+	#     __rmdir__ <arquivo>
 	[[ -z $1 ]] && return 1
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
-	# A função __sudo__ irá remover o arquivo/diretório.
+	# o arquivo/diretório será removido com 'sudo'.
+	cd "$DirTemp"
 	while [[ $1 ]]; do
-		printf "[>] Removendo: $1 "
-		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
-			_syellow "OK"
+		if [[ -e "$1" ]]; then
+			printf "[>] Removendo: $1 "
+			if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
+				_syellow "OK"
+			else
+				_sred "FALHA"
+			fi
 		else
-			_sred "FALHA"
+			_red "Arquivo ou diretório não encontrado ... $1"
 		fi
 		shift
 	done
@@ -532,240 +521,13 @@ __RMDIR()
 
 _clear_temp_dirs()
 {
-	cd "$DirTemp" && __RMDIR $(ls)
-	cd "$DirUnpack" && __RMDIR $(ls)
-	cd "$DirGitclone" && __RMDIR $(ls)
-
+	# Limpar diretórios temporários.
+	cd "$DirTemp" && __rmdir__ $(ls)
+	cd "$DirUnpack" && __rmdir__ $(ls)
+	cd "$DirGitclone" && __rmdir__ $(ls)
 }
 
-_GDEBI()
-{
-	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-	Pid_Python_Aptd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(aptd)' | awk '{print $2}')
-
-	while [[ ! -z $Pid_Apt_Install ]]; do
-		_loop_pid "$Pid_Apt_Install"
-		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-
-	while [[ ! -z $Pid_Apt_Systemd ]]; do 
-		_loop_pid "$Pid_Apt_Systemd"
-		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-		sleep 0.2
-	done
-	
-	while [[ ! -z $Pid_Dpkg_Install ]]; do 
-		_loop_pid "$Pid_Dpkg_Install"
-		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-	if sudo gdebi "$@"; then
-		return 0
-	else
-		_red "(_GDEBI) erro: gdebi $@"
-		return 1	
-	fi	
-}
-
-
-_DPKG()
-{
-	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-	Pid_Python_Aptd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(aptd)' | awk '{print $2}')
-
-	while [[ ! -z $Pid_Apt_Install ]]; do
-		_loop_pid "$Pid_Apt_Install"
-		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-
-	while [[ ! -z $Pid_Apt_Systemd ]]; do 
-		_loop_pid "$Pid_Apt_Systemd"
-		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-		sleep 0.2
-	done
-	
-	while [[ ! -z $Pid_Dpkg_Install ]]; do 
-		_loop_pid "$Pid_Dpkg_Install"
-		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-	if sudo dpkg "$@"; then
-		return 0
-	else
-		_red "(_DPKG) erro: $@"
-		return 1
-	fi
-}
-
-_APT()
-{
-	# Antes de proseguir com a instalação devemos verificar se já 
-	# existe outro processo de instalação com apt em execução para não
-	# causar erros.
-	#sudo rm /var/lib/dpkg/lock-frontend 
-	#sudo rm /var/cache/apt/archives/lock
-	
-	Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-	Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-	Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-
-	# Processo apt install em execução no sistema
-	while [[ ! -z $Pid_Apt_Install ]]; do
-		_loop_pid "$Pid_Apt_Install"
-		Pid_Apt_Install=$(ps aux | grep 'root.*apt' | egrep -m 1 '(install|upgrade|update)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-	# Processo apt systemd em execução no sistema
-	while [[ ! -z $Pid_Apt_Systemd ]]; do
-		_loop_pid "$Pid_Dpkg_Install"
-		Pid_Apt_Systemd=$(ps aux | grep 'root.*apt' | egrep -m 1 '(apt.systemd)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-	# Processo dpkg install em execução no sistema
-	while [[ ! -z $Pid_Dpkg_Install ]]; do
-		_loop_pid "$Pid_Dpkg_Install"
-		Pid_Dpkg_Install=$(ps aux | grep 'root.*dpkg' | egrep -m 1 '(install)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-	# [[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
-	# [[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
-	# [[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
-	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
-	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
-
-	if sudo apt "$@"; then
-		return 0
-	else
-		_red "Gerenciador de pacotes [apt] retornou erro"
-		_red "Linha de comando: sudo apt $@"
-		return 1
-	fi
-}
-
-#=============================================================#
-# Remover pacotes quebrados em sistemas debian.
-#=============================================================#
-_BROKE()
-{
-	if [[ ! -x $(command -v apt 2> /dev/null) ]]; then
-		_red "(_BROKE) esta opção só está disponível para sistemas baseados em Debian"
-		return 0
-	fi
-
-	
-	_yellow "Executando: dpkg --configure -a"
-	_DPKG --configure -a
-
-	_yellow "Executando: apt clean"
-	_APT clean
-
-	_yellow "Executando: apt remove"
-	_APT remove
-	
-	_yellow "Executando: apt install -y -f"
-	_APT install -y -f
-
-	_yellow "Executando: apt --fix-broken install"
-	_APT --fix-broken install
-	
-	# sudo apt install --yes --force-yes -f 
-}
-
-
-_RPM()
-{
-	if sudo rpm "$@"; then
-		return 0
-	else
-		_red "_RPM: Erro"
-		return 1
-	fi
-}
-
-_DNF()
-{
-	if sudo dnf "$@"; then
-		return 0
-	else
-		_red "Gerenciador de pacotes [dnf] retornou erro"
-		return 1
-	fi
-}
-
-_ZYPPER()
-{
-
-	pidZypperInstall=$(ps aux | grep 'root.*zypper' | egrep -m 1 '(install)' | awk '{print $2}')
-
-	# Processo zypper install em execução no sistema.
-	while [[ ! -z $pidZypperInstall ]]; do
-		_loop_pid "$pidZypperInstall"
-		pidZypperInstall=$(ps aux | grep 'root.*zypper' | egrep -m 1 '(install)' | awk '{print $2}')
-	done
-
-	if sudo zypper "$@"; then
-		return 0
-	else
-		_red "Gerenciador de pacotes [zypper] retornou erro"
-		return 1
-	fi
-}
-
-_PACMAN()
-{
-	Pid_Pacman_Install=$(ps aux | grep 'root.*pacman' | egrep -m 1 '(-S|y)' | awk '{print $2}')
-	while [[ ! -z $Pid_Pacman_Install ]]; do
-		_loop_pid "$Pid_Pacman_Install"
-		Pid_Pacman_Install=$(ps aux | grep 'root.*pacman' | egrep -m 1 '(-S|y)' | awk '{print $2}')
-		sleep 0.2
-	done
-
-	if sudo pacman "$@"; then
-		return 0
-	else
-		_red "Gerenciador de pacotes [pacman] retornou erro"
-		return 1
-	fi
-}
-
-_PKG()
-{
-	# FreeBSD
-	Pid_Pkg_Install=$(ps aux | grep 'root.*pkg' | egrep -m 1 '(install|update)' | awk '{print $2}')
-	[[ ! -z $Pid_Pkg_Install ]] && _loop_pid "$Pid_Pkg_Install"
-
-	if sudo pkg "$@"; then
-		return 0
-	else
-		_red "Gerenciador de pacotes [pkg] retornou erro"
-		return 1
-	fi
-}
-
-_FLATPAK()
-{
-	if flatpak "$@"; then
-		return 0
-	else
-		_red "Falha: flatpak $@"
-		return 1
-	fi
-}
-
-_pkg_manager_sys()
+__pkg__()
 {
 	# Função para instalar os pacotes via linha de comando de acordo 
 	# o gerenciador de pacotes de cada sistema.
@@ -777,15 +539,17 @@ _pkg_manager_sys()
 	_msg "Instalando ... $@"
 
 	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
+		# Somente baixar os pacotes se possivel e assumir yes para indagações.
 		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only --yes "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
 			fedora) _DNF install --downloadonly -y "$@" || return 1;;
 			arch) _PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1;;
-			*) _red "(_pkg_manager_sys) Erro";;
+			*) _red "(__pkg__) Erro";;
 		esac	
 	elif [[ "$DownloadOnly" == 'True' ]]; then
+		# Somente baixar os pacotes.
 		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
@@ -794,6 +558,8 @@ _pkg_manager_sys()
 			arch) _PACMAN -S --needed --downloadonly "$@" || return 1;;
 		esac
 	elif [[ "$AssumeYes" == 'True' ]]; then 
+		# Assumir yes para indagações durante a instalação, equivalênte ao comando
+		# apt install -y / aptitude install -y em sistemas debian.
 		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --yes "$@" || return 1;;
@@ -812,8 +578,6 @@ _pkg_manager_sys()
 	fi
 }
 
-
-
 __gpg__()
 {
 	printf "%s" "[>] Verificando integridade "
@@ -822,7 +586,7 @@ __gpg__()
 	else
 		_sred "FALHA"
 		for X in "${@}"; do
-			[[ -f "$X" ]] && __RMDIR "$X"
+			[[ -f "$X" ]] && __rmdir__ "$X"
 		done
 		return 1
 	fi
@@ -893,29 +657,21 @@ __download__()
 	url="$1"
 	path_file="$2"
 	
+	_yellow "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
 	_blue "Conectando ... $1"
 
-	if is_executable wget; then # Usar wget
-		downloader_default='wget'
-	elif is_executable curl; then # Usar curl
-		downloader_default='curl'
-	elif is_executable "$dirSTORECLIPathScripts"/py-downloader.py; then # Usar script python local.
-		downloader_default='web-cli'
-	else
-		_red "(__download__) instale o pacote 'wget' ou 'curl'"
-		return 1
-	fi
-
 	while true; do
-		if [[ "$downloader_default" == 'web-cli' ]]; then
-			"$dirSTORECLIPathScripts"/web-cli.py --url "$url" -o "$path_file" && break
-		elif [[ "$downloader_default" == 'wget' ]]; then
+		if is_executable wget; then
 			wget -c "$url" -O "$path_file" && break
-		elif [[ "$downloader_default" == 'curl' ]]; then
+		elif is_executable curl; then
 			curl -C - -S -L -o "$path_file" "$url" && break
+		else
+			return 1
+			break
 		fi
 
+		_red "Falha no download"
 		if _YESNO "Deseja tentar baixar novamente"; then
 			continue
 		else
@@ -929,7 +685,6 @@ __download__()
 
 _gitclone()
 {
-
 	if [[ -z $1 ]]; then
 		_red "(_gitclone) use: _gitclone <repo.git>"
 		return 1
@@ -937,7 +692,7 @@ _gitclone()
 
 	if ! is_executable git; then
 		_yellow "Necessário instalar o pacote 'git"
-		_pkg_manager_sys git || return 1
+		__pkg__ git || return 1
 	fi
 
 	_green "Entrando no diretório ...$DirGitclone" 
@@ -946,7 +701,7 @@ _gitclone()
 	if [[ -d "$DirGitclone/$dir_repo" ]]; then
 		_yellow "Encontrado: $DirGitclone/$dir_repo"
 		if _YESNO "Deseja remover o diretório clonado anteriormente"; then
-			__RMDIR "$dir_repo"
+			__rmdir__ "$dir_repo"
 		else
 			return 0
 		fi
@@ -995,11 +750,11 @@ _unpack()
 		type_file='deb'
 	else
 		_red "(_unpack) arquivo não suportado: $path_file"
-		__RMDIR "$path_file"
+		__rmdir__ "$path_file"
 		return 1
 	fi
 
-	printf "%s" "[>] Descomprimindo: $path_file "
+	_println "Descomprimindo: $path_file "
 	
 	# Descomprimir.	
 	case "$type_file" in
@@ -1017,7 +772,7 @@ _unpack()
 	else
 		_sred "FALHA"
 		_red "(_unpack) erro: $path_file"
-		__RMDIR "$path_file"
+		__rmdir__ "$path_file"
 		return 1
 	fi
 }
@@ -1132,7 +887,7 @@ _pkg_manager_storecli()
 _update_storecli()
 {
 	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
-	local FileConfigUpdate="$directoryUSERconfig/update.conf"; touch "$FileConfigUpdate"
+	local FileConfigUpdate="$DIR_CONFIG_USER/update.conf"; touch "$FileConfigUpdate"
 	local tempFileUpdate="$DirTemp/storecli.update"                    	
 	local nowDate=$(date +%Y_%m_%d) # Data atual /ano/mês/dia.
 	
@@ -1140,14 +895,17 @@ _update_storecli()
 	local oldDateUpdate=$(grep -m 1 "date_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
 	
 	if [[ "$nowDate" == "$oldDateUpdate" ]]; then
+		# Atualização já foi executada no dia atual.
 		return 0
 	else
+		# Atualização ainda não foi executada no dia atual, gravar a data atual
+		# no arquivo de configuração de atualizações e prosseguir.
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	fi
 	
 	[[ ! -z "$oldDateUpdate" ]] && printf '%s\n' "[+] Data da última busca por atualizações: $oldDateUpdate"
 	
-	printf "%s" "[>] Verificando atualização no github aguarde "
+	_println "Verificando atualização no github aguarde "
 	wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate" || { 
 		_sred "FALHA"
 		return 1
@@ -1155,14 +913,15 @@ _update_storecli()
 	_syellow 'OK'	
 	OnlineVersion=$(grep -m 1 ^'__version__' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
 	
-	_yellow "Versão local ($__version__) - versão online ($OnlineVersion)"
+	_yellow "Versão local ($__version__)" 
+	_yellow "Versão online ($OnlineVersion)"
 	if [[ "$OnlineVersion" == "$__version__" ]]; then
 		_yellow "Scritp storecli está atualizado"
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi
 	
-	_yellow "Instalando nova versão: $OnlineVersion"
+	_yellow "Atualizando para versão ... $OnlineVersion"
 	
 	if ! "$scriptInstallStoreli"; then
 		_red "(_update_storecli) falha"
@@ -1229,7 +988,7 @@ main()
 if [[ -z $1 ]]; then
 	if ! is_executable zenity; then
 		_yellow "Necessário instalar zenity"
-		_pkg_manager_sys zenity
+		__pkg__ zenity
 	fi 
 	"$GUI"
 else

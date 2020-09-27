@@ -3,7 +3,7 @@
 # Este script serve para inserir os diretórios que contém binário na
 # HOME('~/bin' e '~/.local/bin') na variável PATH do usuario atual.
 #
-VERSION='2020-08-16'
+VERSION='2020-09-26'
 #
 
 # NÃO pode ser root.
@@ -13,16 +13,11 @@ VERSION='2020-08-16'
 }
 
 KERNEL_TYPE=$(uname -s)
-
-if [ "$KERNEL_TYPE" = 'FreeBSD' ]; then
-	bash_config="/usr/$HOME/.bashrc"
-	zsh_config="/usr/$HOME/.zshrc"
-elif [ "$KERNEL_TYPE" = 'Linux' ]; then
-	bash_config="$HOME/.bashrc"
-	zsh_config="$HOME/.bashrc"
-fi
+bash_config="$HOME/.bashrc"
+zsh_config="$HOME/.zshrc"
 
 touch "$bash_config"
+touch "$zsh_config"
 
 # Inserir ~/.local/bin em PATH.
 echo "$PATH" | grep -q "$HOME/.local/bin" || {
@@ -42,8 +37,9 @@ path_bash()
 
 	# Continuar
 	echo "Configurando o arquivo [$bash_config]"
+	sed -i "/^export.*PATH.*:/d" ~/.bashrc
 	echo "export PATH=$PATH" >> "$bash_config"
-	bash "source $bash_config"
+	echo "Execute ... bash -c \"source $bash_config\""
 }
 
 path_zsh()
@@ -61,14 +57,30 @@ path_zsh()
 	echo "export PATH=$PATH" >> "$zsh_config"
 }
 
+backup()
+{
+	if [ -f "$bash_config" ]; then
+		if [ ! -f ~/.bashrc.backup ]; then
+			printf "\033[5;33mCriando backup do arquivo\033[m ..... ~/.bashrc => ~/.bashrc.backup\n"
+			cp -v ~/.bashrc ~/.bashrc.backup
+			sleep 1
+		fi
+	fi
+
+	if [ -f "$zsh_config" ]; then
+		if [ ! -f ~/.zshrc.backup ]; then
+			printf "\033[5;33mCriando backup do arquivo\033[m ..... ~/.zshrc => ~/.zshrc.backup\n"
+			cp -v ~/.zshrc ~/.zshrc.backup
+			sleep 1
+		fi
+	fi
+}
+
 main()
 {
-
+	backup
 	path_bash
 	path_zsh
-
-	Bash_Shell=$(command -v bash)
-	Zsh_Shell=$(command -v zsh)
 }
 
 main
