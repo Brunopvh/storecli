@@ -2358,7 +2358,7 @@ _youtube_dlgui_windows()
 	if ! is_executable wine; then
 		_red "Necessário ter o wine instalado para prosseguir"
 		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
-		_install_wine	
+		_install_wine || return 1	
 	fi
 
 	cd "$DirDownloads"
@@ -2439,6 +2439,60 @@ _get_pip_windows()
 	wine "$HOME"/.wine/drive_c/python37/python.exe "$path_file_getPIP"
 }
 
+_install_wine_debian()
+{
+	_yellow "Entrando no diretório ... $DirTemp"
+	cd "$DirTemp"
+	_clear_temp_dirs
+
+	url_key_wine_stable='https://dl.winehq.org/wine-builds/winehq.key'
+	case "$os_codename" in
+		tricia|bionic) 
+			repo_wine_stable='deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main'
+			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./'
+			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key'
+			;;
+		buster) 
+			repo_wine_stable='deb https://dl.winehq.org/wine-builds/debian/ buster main'
+			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10 ./'
+			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10/Release.key'
+			;;
+		*) _red "Intale o wine manualmente usado o 'apt'"; return 1;;
+	esac
+
+	_yellow "Adicionado key e repositório"
+	case "$os_id" in
+		ubuntu|linuxmint)
+			wget -q "$url_key_wine_stable" -O wine.key
+			wget -q "$url_key_libfaudio" -O libfaudio.key
+			sudo apt-key add wine.key
+			sudo apt-key add libfaudio.key
+			sudo add-apt-repository "$repo_wine_stable"
+			sudo add-apt-repository "$repo_libfaudio"
+			;;
+		debian)
+			wget -q "$url_key_wine_stable" -O wine.key
+			wget -q "$url_key_libfaudio" -O libfaudio.key
+			sudo apt-key add wine.key
+			sudo apt-key add libfaudio.key
+			echo "$repo_wine_stable" | sudo tee /etc/apt/sources.list.d/wine.list
+			echo "$repo_libfaudio" |sudo tee /etc/apt/sources.list.d/libfaudio.list
+			;;
+	esac
+
+	# Adicionar suporte a ARCH i386.
+	_yellow "Executando ... sudo dpkg --add-architecture i386"
+	sudo dpkg --add-architecture i386
+	_APT update
+	__pkg__ 'libfaudio0:i386'
+
+	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
+	for APP in "${requeriments_wine_debian[@]}"; do
+		__pkg__ "$APP" || break
+	done
+
+}
+
 _install_wine()
 {
 	# pywine
@@ -2447,8 +2501,18 @@ _install_wine()
 	local url_pywine='https://github.com/Brunopvh/pywine/archive/master.zip'
 	local path_file="$DirTemp/install-pywine.sh"
 
-	_msg "Executando ... https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh"
-	sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
+	if [[ -f '/etc/debian_version' ]]; then
+		_install_wine_debian
+	else
+		_msg "Executando ... https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh"
+		sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
+	fi
+
+	if is_executable 'wine'; then
+		return 0
+	else
+		return 1
+	fi
 }
 
 _bluetooth()
