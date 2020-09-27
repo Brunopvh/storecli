@@ -973,7 +973,7 @@ main()
 			-c|--configure) _run_configuration_dep;;
 			-l) shift; _list_applications "$@"; return 0; break;;
 			-h|--help) usage; return 0; break;;
-			-u|--self-update) "$scriptInstallStoreli";;
+			-u|--self-update) "$scriptInstallStoreli"; break;;
 			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
 			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
 			remove)  shift; _uninstall_packages "$@"; return "$?";;
@@ -982,6 +982,7 @@ main()
 			-I|--ignore-cli) ;;
 			*) _red "(main) argumento inválido: $ARG"; return 1; break;;
 		esac
+		shift
 	done
 	return "$?"
 }
