@@ -24,7 +24,7 @@ _etcher_ubuntu()
 	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
 	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
 	_APT update
-	_pkg_manager_sys 'balena-etcher-electron'
+	__pkg__ 'balena-etcher-electron'
 }
 
 _etcher_archlinux()
@@ -52,8 +52,8 @@ _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
 	_white "Adicionando repositório"
-	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
-	_pkg_manager_sys 'balena-etcher-electron'
+	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -O /etc/yum.repos.d/etcher-rpm.repo
+	__pkg__ 'balena-etcher-electron'
 }
 
 _etcher_appimage()
@@ -119,7 +119,7 @@ _etcher()
 
 _gnome_disk()
 {
-	_pkg_manager_sys 'gnome-disk-utility'
+	__pkg__ 'gnome-disk-utility'
 }
 
 
@@ -176,13 +176,12 @@ _veracrypt()
 	chmod +x "$DirTemp"/veracrypt-setupx64
 
 	if ! is_executable xterm; then
-		_msg "Necessário instalar 'xterm' para prosseguir"
-		_pkg_manager_sys xterm
+		__pkg__ xterm
 	fi
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$os_id" in
-		arch) _green "Instalando o pacote: gtk2"; _pkg_manager_sys gtk2;;
+		arch) _green "Instalando o pacote: gtk2"; __pkg__ gtk2;;
 	esac
 
 	if is_executable 'veracrypt'; then
@@ -207,12 +206,12 @@ _woeusb_debian()
 	_APT update || return 1
 	
 	_yellow "Instalando: ${woeusbRequeriments[@]}"
-	_pkg_manager_sys "${woeusbRequeriments[@]}" || return 1
+	__pkg__ "${woeusbRequeriments[@]}" || return 1
 	
 	# Instalar libwxgtk3
 	case "$os_codename" in
-		buster|bionic|tricia) _pkg_manager_sys 'libwxgtk3.0-dev' || return 1;;
-		focal) _pkg_manager_sys 'libwxgtk3.0-gtk3-dev' || return 1;;
+		buster|bionic|tricia) __pkg__ 'libwxgtk3.0-dev' || return 1;;
+		focal) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
 		*) _show_info 'ProgramNotFound' 'WoeUSB'; return 1;;
 	esac
 	
@@ -271,7 +270,7 @@ _woeusb_archlinux()
 	}	
 
 	# Instalar requerimentos antes de compilar
-	_pkg_manager_sys 'wxgtk3' 'lib32-wxgtk2'
+	__pkg__ 'wxgtk3' 'lib32-wxgtk2'
 			
 	_gitclone "$github_woeusb" || return 1
 	chmod -R +x "$dir_woeusb" 
@@ -363,9 +362,9 @@ _woeusb()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _woeusb_debian;;
-		fedora) _pkg_manager_sys 'WoeUSB.x86_64';;
+		fedora) __pkg__ 'WoeUSB.x86_64';;
 		arch) _woeusb_archlinux;;
-		'opensuse-leap') _pkg_manager_sys WoeUSB;;
+		'opensuse-leap') __pkg__ WoeUSB;;
 		*) _woeusb_github;;
 	esac
 		
@@ -472,11 +471,11 @@ _android_studio_debian()
 
 	_APT update
 	_green "Instalando: openjdk-11-jdk"
-	_pkg_manager_sys 'openjdk-11-jdk'
+	__pkg__ 'openjdk-11-jdk'
 
 	for c in "${debianBusterRequeriments[@]}"; do
 		_msg "Instalando: $c"
-		_pkg_manager_sys "$c"
+		__pkg__ "$c"
 	done
 	
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
@@ -516,11 +515,11 @@ _android_studio_ubuntu()
 
 	_APT update
 	_msg "Instalando: openjdk-8-jdk"
-	_pkg_manager_sys 'openjdk-8-jdk'
+	__pkg__ 'openjdk-8-jdk'
 
 	for c in "${ubuntuBionicRequeriments[@]}"; do
 		_msg "Instalando: $c"
-		_pkg_manager_sys "$c"
+		__pkg__ "$c"
 	done
 	
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
@@ -539,7 +538,7 @@ _android_studio_fedora()
 			)
 
 	__msg "Instalando: ${array_libs_fedora[@]}"
-	_pkg_manager_sys "${array_libs_fedora[@]}"
+	__pkg__ "${array_libs_fedora[@]}"
 
 	_android_studio_zip || return 1
 	#_android_sdktools
@@ -548,7 +547,7 @@ _android_studio_fedora()
 
 _android_studio_opensuseleap()
 {
-	_pkg_manager_sys 'java-1_8_0-openjdk-devel' 'qemu-kvm'
+	__pkg__ 'java-1_8_0-openjdk-devel' 'qemu-kvm'
 
 	local requerimentsOpenSuse=(
 			'libstdc++6-32bit' 
@@ -557,7 +556,7 @@ _android_studio_opensuseleap()
 			'libbz2-1-32bit'
 		)
 	_yellow "Instalando: ${requerimentsOpenSuse[@]}"
-	_pkg_manager_sys "${requerimentsOpenSuse[@]}"
+	__pkg__ "${requerimentsOpenSuse[@]}"
 	_android_studio_zip
 }
 
@@ -595,22 +594,22 @@ _codeblocks_fedora()
 	#
 	# local url_codeblocks_fedora='http://sourceforge.net/projects/codeblocks/files/Binaries/17.12/Linux/Fedora%2028%20(aka%20Rawhide)/codeblock-17.12-1.fc28.x86_64.tar.xz'
 
-	_pkg_manager_sys codeblocks || return 1
-	_pkg_manager_sys make automake gcc 'gcc-c++' 'kernel-devel' || return 1
+	__pkg__ codeblocks || return 1
+	__pkg__ make automake gcc 'gcc-c++' 'kernel-devel' || return 1
 	# sudo dnf groupinstall "Development Tools" "Development Libraries" 
 }
 
 _codeblocks_archlinux()
 {
 	# https://www.archlinux.org/packages/community/x86_64/codeblocks/
-	_pkg_manager_sys codeblocks
+	__pkg__ codeblocks
 }
 
 
 _codeblocks()
 {
 	case "$os_id" in
-		debian|ubuntu) _pkg_manager_sys codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
+		debian|ubuntu) __pkg__ codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
 		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
@@ -674,6 +673,7 @@ _sublime_text()
 	# Já instalado.
 	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 	
+	_yellow "Obtendo url de download aguarde..."
 	sublime_pag='https://www.sublimetext.com/3'
 	sublime_html=$(wget -q -O- "$sublime_pag" | grep -m 1 'http.*sublime.*x64.tar.bz2')
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
@@ -705,7 +705,7 @@ _sublime_text()
 
 _vim()
 {
-	_pkg_manager_sys vim
+	__pkg__ vim
 }
 
 
@@ -813,7 +813,7 @@ _codecs_tumbleweed()
 
 	for c in "${array_tumbleweed_codecs[@]}"; do
 		_yellow "Instalando [$c]"
-		_pkg_manager_sys "$c"		
+		__pkg__ "$c"		
 	done
 }
 
@@ -839,15 +839,15 @@ _codecs_opensuse_leap()
 	sudo zypper addrepo -f http://opensuse-guide.org/repo/openSUSE_Leap_15.1/ dvd
 	sudo zypper ref
 	for i in "${codecsOpesSuseLeap[@]}"; do
-		_pkg_manager_sys "$i"
+		__pkg__ "$i"
 	done
 
 }
 
 _codecs_ubuntu()
 {
-	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
-	_pkg_manager_sys 'ubuntu-restricted-extras'
+	__pkg__ --install-recommends ffmpeg ffmpegthumbnailer
+	__pkg__ 'ubuntu-restricted-extras'
 }
 
 _codecs_debian()
@@ -868,8 +868,8 @@ _codecs_debian()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	_pkg_manager_sys --install-recommends ffmpeg ffmpegthumbnailer
-	_pkg_manager_sys lame
+	__pkg__ --install-recommends ffmpeg ffmpegthumbnailer
+	__pkg__ lame
 
 	__shasum__ "$path_file" "$hash_wcodecs" || return 1
 	
@@ -925,10 +925,10 @@ _codecs_fedora()
 	)
 
 	_msg "Instalando: ${array_codecs_fedora[@]}"
-	_pkg_manager_sys "${array_codecs_fedora[@]}"
+	__pkg__ "${array_codecs_fedora[@]}"
 
 	_msg "Instalando: ${array_gstreamer_fedora[@]}"	
-	_pkg_manager_sys "${array_gstreamer_fedora[@]}"
+	__pkg__ "${array_gstreamer_fedora[@]}"
 }
 
 _codecs_arch()
@@ -966,14 +966,14 @@ _codecs_arch()
 		)
 
 	for x in "${list_codecs_arch[@]}"; do 
-		_space_text "Instalando" "$x"
-		_pkg_manager_sys "$x"
+		_msg "Instalando" "$x"
+		__pkg__ "$x"
 	done
 
 	
 	for x in "${list_codecs_parole[@]}"; do 
-		_space_text "Instalando" "$x"
-		_pkg_manager_sys "$x"
+		_msg "Instalando" "$x"
+		__pkg__ "$x"
 	done
 	
 }
@@ -981,7 +981,7 @@ _codecs_arch()
 _codecs()
 {
 case "$os_id" in
-	freebsd12.0-release) _pkg_manager_sys ffmpeg ffmpegthumbnailer 'gstreamer-ffmpeg';;
+	freebsd12.0-release) __pkg__ ffmpeg ffmpegthumbnailer 'gstreamer-ffmpeg';;
 	debian) _codecs_debian;;
 	linuxmint|ubuntu) _codecs_ubuntu;;
 	fedora) _codecs_fedora;;
@@ -995,33 +995,33 @@ esac
 
 _celluloid()
 {
-	_pkg_manager_sys 'celluloid'
+	__pkg__ 'celluloid'
 }
 
 _cinema()
 {
-	_pkg_manager_sys 'cinema'
+	__pkg__ 'cinema'
 }
 
 _gnome_mpv()
 {
 	if is_executable 'dnf'; then
-		_pkg_manager_sys 'gnome-mpv' 'smplayer-themes'
+		__pkg__ 'gnome-mpv' 'smplayer-themes'
 	elif [[ -f '/etc/debian_version' ]]; then
-		_pkg_manager_sys 'gnome-mpv'
+		__pkg__ 'gnome-mpv'
 	else
-		_pkg_manager_sys 'gnome-mpv' 
+		__pkg__ 'gnome-mpv' 
 	fi
 }
 
 _parole()
 {
-	_pkg_manager_sys parole	
+	__pkg__ parole	
 }
 
 _smplayer()
 {
-	_pkg_manager_sys smplayer
+	__pkg__ smplayer
 }
 
 _spotify_debian()
@@ -1031,7 +1031,7 @@ _spotify_debian()
 	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45
 	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
 	_APT update
-	_pkg_manager_sys 'spotify-client'
+	__pkg__ 'spotify-client'
 }
 
 _spotify_ubuntu()
@@ -1041,7 +1041,7 @@ _spotify_ubuntu()
 	wget -q https://download.spotify.com/debian/pubkey.gpg -O- | sudo apt-key add - 
 	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
 	_APT update 
- 	_pkg_manager_sys 'spotify-client'
+ 	__pkg__ 'spotify-client'
 }
 
 _spotify_archlinux()
@@ -1069,7 +1069,7 @@ _spotify_archlinux()
 	
 	for X in "${array_spotify_requeriments[@]}"; do
 		_msg "Instalando: $X"
-		_pkg_manager_sys "$X"
+		__pkg__ "$X"
 	done
 		
 	__download__ "$Spotify_Url_Server" "$path_file" || return 1
@@ -1094,7 +1094,7 @@ _spotify_fedora()
 
 	local FlatpakRepoSpotity='flathub https://flathub.org/repo/flathub.flatpakrepo'
 
-	is_executable flatpak || _pkg_manager_sys flatpak
+	is_executable flatpak || __pkg__ flatpak
 
 	echo -ne "[>] Executando: remote-add --if-not-exists $FlatpakRepoSpotity "
 	if flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo; then
@@ -1124,22 +1124,22 @@ _spotify()
 }
 
 _totem(){
-	_pkg_manager_sys totem
+	__pkg__ totem
 }
 
 _vlc_fedora()
 {
 	sudo "$scriptAddRepo" --repo fedora # Adicionar repositórios fusion non free
-	_pkg_manager_sys vlc 'python-vlc'
+	__pkg__ vlc 'python-vlc'
 }
 
 _vlc()
 {
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _pkg_manager_sys vlc;;
-		'opensuse-leap') _pkg_manager_sys vlc;;
+		debian|ubuntu|linuxmint) __pkg__ vlc;;
+		'opensuse-leap') __pkg__ vlc;;
 		fedora) _vlc_fedora;;
-		arch) _pkg_manager_sys vlc;;
+		arch) __pkg__ vlc;;
 	esac
 
 	if is_executable 'vlc'; then
@@ -1151,7 +1151,7 @@ _vlc()
 
 _atril()
 {
-	_pkg_manager_sys atril
+	__pkg__ atril
 }
 
 _ubuntu_msttcorefonts()
@@ -1164,7 +1164,7 @@ _ubuntu_msttcorefonts()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
 	 
-	_pkg_manager_sys cabextract || return 1
+	__pkg__ cabextract || return 1
 	_DPKG --install "$path_file" || return 1
 	return 0
 
@@ -1174,9 +1174,9 @@ _fontes_microsoft()
 {
 	case "$os_id" in
 		linuxmint|ubuntu) _ubuntu_msttcorefonts;;
-		debian) _pkg_manager_sys msttcorefonts 'ttf-mscorefonts-installer';;
-		fedora) _pkg_manager_sys 'mscore-fonts';;
-		'opensuse-tumbleweed'|'opensuse-leap') _pkg_manager_sys fetchmsttfonts;;
+		debian) __pkg__ msttcorefonts 'ttf-mscorefonts-installer';;
+		fedora) __pkg__ 'mscore-fonts';;
+		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ fetchmsttfonts;;
 		*) _show_info 'ProgramNotFound' 'fontes-ms'; return 1;;
 	esac
 }
@@ -1238,23 +1238,23 @@ _libreoffice_ptbr(){
 	[[ "$lang" != 'pt_BR.UTF-8' ]] && return 0
 
 	case "$os_id" in
-		debian) _pkg_manager_sys 'libreoffice-help-pt-br' 'libreoffice-l10n-pt-br';;
-		ubuntu|linuxmint) _pkg_manager_sys 'libreoffice-help-pt-br' 'libreoffice-l10n-pt-br';;
-		fedora) _pkg_manager_sys 'libreoffice-langpack-pt-BR';;
-		'open-suse') _pkg_manager_sys 'libreoffice-l10n-pt_BR';;
-		arch) _pkg_manager_sys 'libreoffice-fresh-pt-br';;
-		freebsd) _pkg_manager_sys 'pt_BR-libreoffice';;
+		debian) __pkg__ 'libreoffice-help-pt-br' 'libreoffice-l10n-pt-br';;
+		ubuntu|linuxmint) __pkg__ 'libreoffice-help-pt-br' 'libreoffice-l10n-pt-br';;
+		fedora) __pkg__ 'libreoffice-langpack-pt-BR';;
+		'open-suse') __pkg__ 'libreoffice-l10n-pt_BR';;
+		arch) __pkg__ 'libreoffice-fresh-pt-br';;
+		freebsd) __pkg__ 'pt_BR-libreoffice';;
 	esac
 }
 
 _libreoffice()
 {
 	case "$os_id" in 
-		debian|ubuntu|linuxmint) _pkg_manager_sys libreoffice;;
-		fedora) _pkg_manager_sys libreoffice;;
-		'open-suse') _pkg_manager_sys 'libreoffice-l10n-pt_BR';;
-		arch) _pkg_manager_sys libreoffice;;
-		freebsd) _pkg_manager_sys libreoffice;;
+		debian|ubuntu|linuxmint) __pkg__ libreoffice;;
+		fedora) __pkg__ libreoffice;;
+		'open-suse') __pkg__ 'libreoffice-l10n-pt_BR';;
+		arch) __pkg__ libreoffice;;
+		freebsd) __pkg__ libreoffice;;
 		*) _libreoffice_appimage; return;;
 	esac
 
@@ -1272,8 +1272,8 @@ _chromium_lang()
 
 	_white "Instalando pacote de idioma para chromium"
 	case "$os_id" in
-		debian) _pkg_manager_sys 'chromium-l10n';;
-		ubuntu) _pkg_manager_sys 'chromium-browser-l10n';;
+		debian) __pkg__ 'chromium-l10n';;
+		ubuntu) __pkg__ 'chromium-browser-l10n';;
 		*) return 0;;
 	esac
 }
@@ -1281,12 +1281,12 @@ _chromium_lang()
 _chromium()
 {
 	case "$os_id" in
-		debian) _pkg_manager_sys chromium;;
-		ubuntu|linuxmint) _pkg_manager_sys 'chromium-browser';;
-		fedora) _pkg_manager_sys chromium;;
-		arch) _pkg_manager_sys chromium;;
-		'opensuse-tumbleweed'|'opensuse-leap') _pkg_manager_sys chromium;; 
-		freebsd12) _pkg_manager_sys chromium;;
+		debian) __pkg__ chromium;;
+		ubuntu|linuxmint) __pkg__ 'chromium-browser';;
+		fedora) __pkg__ chromium;;
+		arch) __pkg__ chromium;;
+		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ chromium;; 
+		freebsd12) __pkg__ chromium;;
 		*) _show_info 'ProgramNotFound' 'chromium'; return 1;;
 	esac
 
@@ -1301,20 +1301,20 @@ _firefox_lang()
 	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
 
 	case "$os_id" in
-		arch) _pkg_manager_sys 'firefox-i18n-pt-br';;
-		debian) _pkg_manager_sys 'firefox-esr-l10n-pt-br';;
-		ubuntu) _pkg_manager_sys 'firefox-locale-pt';;
+		arch) __pkg__ 'firefox-i18n-pt-br';;
+		debian) __pkg__ 'firefox-esr-l10n-pt-br';;
+		ubuntu) __pkg__ 'firefox-locale-pt';;
 	esac
 }
 
 _firefox()
 {
 	case "$os_id" in
-		arch) _pkg_manager_sys firefox;;
-		debian) _pkg_manager_sys 'firefox-esr';;
-		ubuntu|linuxmint) _pkg_manager_sys firefox;;
-		fedora) _pkg_manager_sys 'firefox.x86_64' 'mozilla-ublock-origin.noarch';;
-		'opensuse-leap') _pkg_manager_sys MozillaFirefox;;
+		arch) __pkg__ firefox;;
+		debian) __pkg__ 'firefox-esr';;
+		ubuntu|linuxmint) __pkg__ firefox;;
+		fedora) __pkg__ 'firefox.x86_64' 'mozilla-ublock-origin.noarch';;
+		'opensuse-leap') __pkg__ MozillaFirefox;;
 		*) _show_info 'ProgramNotFound' 'firefox'; return 1;;
 	esac
 
@@ -1334,7 +1334,7 @@ _google_chrome_debian()
 
 	# sudo apt install libu2f-udev
 	_APT update
-	_pkg_manager_sys 'google-chrome-stable' 
+	__pkg__ 'google-chrome-stable' 
 }
 
 
@@ -1344,7 +1344,7 @@ _google_chrome_fedora()
 	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 	sudo dnf install fedora-workstation-repositories
 	sudo dnf config-manager --set-enabled google-chrome
-	_pkg_manager_sys 'google-chrome-stable'
+	__pkg__ 'google-chrome-stable'
 }
 
 _google_chrome_opensuse()
@@ -1356,7 +1356,7 @@ _google_chrome_opensuse()
 
 	_yellow "Adicionando repositório: http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google"
 	sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google || return 1
-	_pkg_manager_sys 'google-chrome-stable'
+	__pkg__ 'google-chrome-stable'
 }
 
 _google_chrome_tumbleweed()
@@ -1367,7 +1367,7 @@ _google_chrome_tumbleweed()
 
 	_white "Adicionando repositório [http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google]"
 	sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google || return 1
-	_pkg_manager_sys 'google-chrome-stable'
+	__pkg__ 'google-chrome-stable'
 }
 
 _google_chrome_archlinux()
@@ -1388,7 +1388,7 @@ _google_chrome_archlinux()
  	_gitclone "$github_chrome" || return 1
 	cd "$DirGitclone"/google-chrome
 	_msg "Instalando base-devel"
-	_pkg_manager_sys "base-devel" pipewire
+	__pkg__ "base-devel" pipewire
 	 
 	_msg "Executando: makepkg -s"
 	cd "$DirGitclone/google-chrome"
@@ -1434,7 +1434,7 @@ _opera_stable_debian()
 		echo "$opera_repo" | sudo tee "$opera_file"
 	fi
 	_APT update
-	_pkg_manager_sys 'opera-stable' || return 1	
+	__pkg__ 'opera-stable' || return 1	
 }
 
 _opera_stable_fedora()
@@ -1456,7 +1456,7 @@ _opera_stable_fedora()
 		echo "enabled=1"
 	} | sudo tee -a /etc/yum.repos.d/opera.repo
 
-	_pkg_manager_sys 'opera-stable'
+	__pkg__ 'opera-stable'
 }
 
 _opera_stable_suse()
@@ -1479,7 +1479,7 @@ _opera_stable_suse()
 
 	_yellow "Syncronizando repositórios"
 	sudo zypper ref
-	_pkg_manager_sys 'opera-stable'  || return 1
+	__pkg__ 'opera-stable'  || return 1
 }
 
 _opera_stable()
@@ -1523,8 +1523,8 @@ _clipgrab_appimage()
 
 	__download__ "$url_clipgrab_appimage" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	cp -u "$path_file" "$directoryUSERbin"/clipgrab
-	chmod +x "$directoryUSERbin"/clipgrab
+	cp -u "$path_file" "$DIR_BIN_USER"/clipgrab
+	chmod +x "$DIR_BIN_USER"/clipgrab
 	clipgrab&
 
 	if is_executable clipgrab; then
@@ -1548,7 +1548,7 @@ _megasync_opensuse_tumbleweed()
 	sudo zypper ref
 
 	_white "Instalando megasync"
-	_pkg_manager_sys megasync || return 1	
+	__pkg__ megasync || return 1	
 }
 
 _megasync_debian()
@@ -1566,7 +1566,7 @@ _megasync_debian()
 	wget -q -O- 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
 	echo "$mega_repos" | sudo tee "$mega_file_list"
 	_APT update
-	_pkg_manager_sys megasync || return 1
+	__pkg__ megasync || return 1
 }
 
 _megasync_ubuntu()
@@ -1607,8 +1607,8 @@ _megasync_ubuntu()
 	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list" 1> /dev/null
 	_APT update
 	_msg "Instalando: libc-ares2 libmediainfo0v5" 
-	_pkg_manager_sys 'libc-ares2' libmediainfo0v5 
-	_pkg_manager_sys megasync
+	__pkg__ 'libc-ares2' libmediainfo0v5 
+	__pkg__ megasync
 }
 
 _megasync_fedora()
@@ -1626,7 +1626,7 @@ _megasync_fedora()
 		echo "gpgkey=https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"	
 	} | sudo tee -a /etc/yum.repos.d/megasync.repo 1> /dev/null
 
-	_pkg_manager_sys megasync
+	__pkg__ megasync
 }
 
 _megasync_archlinux()
@@ -1657,7 +1657,7 @@ _megasync_archlinux()
 
 	# Instalar dependências.
 	_msg "Instalando: ${array_mega_requeriments_archlinux[@]}"
-	_pkg_manager_sys "${array_mega_requeriments_archlinux[@]}"
+	__pkg__ "${array_mega_requeriments_archlinux[@]}"
 
 	# Copiar o instalador para o diretório temporário e em seguida instalar o pacote.
 	cp "$path_mega_tar" "$DirTemp/megasync-x86_64.pkg.tar.xz" || return 1
@@ -1715,25 +1715,25 @@ _tor_debian()
 	_APT update
 
 	_yellow "Instalando tor deb.torproject.org-keyring"
-	_pkg_manager_sys tor deb.torproject.org-keyring
-	_pkg_manager_sys proxychains || return 1
+	__pkg__ tor deb.torproject.org-keyring
+	__pkg__ proxychains || return 1
 }
 
 _tor_fedora()
 {
 	case "$os_version" in
-		32) _pkg_manager_sys tor;;
+		32) __pkg__ tor;;
 		*) _show_info 'ProgramNotFound' 'tor';;
 	esac
 
-	_pkg_manager_sys proxychains || return 1
+	__pkg__ proxychains || return 1
 }
 
 _proxychains()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _tor_debian;;
-		arch) _pkg_manager_sys 'proxychains-ng' 'tor';;
+		arch) __pkg__ 'proxychains-ng' 'tor';;
 		fedora) _tor_fedora;;
 		*) _show_info 'ProgramNotFound' 'proxychains tor';;
 	esac
@@ -1741,7 +1741,7 @@ _proxychains()
 
 _qbittorrent()
 {
-	_pkg_manager_sys qbittorrent || return 1
+	__pkg__ qbittorrent || return 1
 }
 
 _skype_debian()
@@ -1800,7 +1800,7 @@ _install_teamviewer_debian()
 
 	for i in "${array_tw_debian[@]}"; do
 		_msg "Instalando: $i"
-		_pkg_manager_sys "$i" 
+		__pkg__ "$i" 
 	done
 	_DPKG --install "$path_file" || _BROKE # Remover pacotes quebrados.
 }
@@ -1886,9 +1886,9 @@ _telegram()
 	# Instalar gconf2.
 	_msg "Instalando gconf2"
 	case "$os_id" in
-		'opensuse-tumbleweed'|'opensuse-leap') _pkg_manager_sys gconf2;;
-		ubuntu|linuxmint|debian) _pkg_manager_sys gconf2;;
-		fedora) _pkg_manager_sys GConf2;;
+		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ gconf2;;
+		ubuntu|linuxmint|debian) __pkg__ gconf2;;
+		fedora) __pkg__ GConf2;;
 	esac
 
 	# Somente baixar
@@ -1949,9 +1949,9 @@ _tixati_tarfile()
 	# Instalar gconf2.
 	_msg "Instalando gconf2"
 	case "$os_id" in
-		'opensuse-tumbleweed'|'opensuse-leap') _pkg_manager_sys gconf2;;
-		ubuntu|linuxmint|debian) _pkg_manager_sys gconf2;;
-		fedora) _pkg_manager_sys GConf2;;
+		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ gconf2;;
+		ubuntu|linuxmint|debian) __pkg__ gconf2;;
+		fedora) __pkg__ GConf2;;
 	esac	
 
 	_unpack "$TarFile" || return 1
@@ -1998,7 +1998,7 @@ _tixati()
 
 _uget()
 {
-	_pkg_manager_sys uget 
+	__pkg__ uget 
 }
 
 
@@ -2026,7 +2026,7 @@ _youtube_dl()
 		_syellow 'OK'
 	else
 		_sred 'FALHA'
-		__RMDIR "$path_file_sig"
+		__rmdir__ "$path_file_sig"
 		return 1
 	fi
 
@@ -2055,11 +2055,11 @@ _youtube_dl()
 	__gpg__ --verify "$path_file_sig" "$path_file" || return 1
 	
 	# Já instalado.
-	is_executable "$directoryUSERbin/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
+	is_executable "$DIR_BIN_USER/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
 
 	_white "Instalando youtube-dl em ~/.local/bin"
-	cp -u "$path_file" "$directoryUSERbin"/youtube-dl
-	chmod a+x "$directoryUSERbin"/youtube-dl
+	cp -u "$path_file" "$DIR_BIN_USER"/youtube-dl
+	chmod a+x "$DIR_BIN_USER"/youtube-dl
 
 	if is_executable 'youtube-dl'; then
 		_show_info 'SuccessInstalation' 'youtube-dl'
@@ -2209,7 +2209,7 @@ _youtube_dlgui_pip()
 	# ppa ubuntu.
 	# sudo sh -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
 	# sudo apt install youtube-dlg --yes
-	_pkg_manager_sys 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
+	__pkg__ 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
 	pip install wheel --user
 	pip install 'youtube-dlg' --user || return 1
 	_youtube_dlgui_file_desktop_user
@@ -2222,7 +2222,7 @@ _youtube_dlgui_ubuntu()
 	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then
 		_youtube_dlgui_pip || return 1
 	elif [[ "$os_codename" == 'eoan' ]] || [[ "$os_codename" == 'focal' ]]; then
-		_pkg_manager_sys 'python-wxgtk3.0' gettext || return 1
+		__pkg__ 'python-wxgtk3.0' gettext || return 1
 		_python_twodict_github || return 1
 		_youtube_dlgui_compile || return 1
 	else
@@ -2248,12 +2248,10 @@ _youtube_dlgui_fedora()
 	local url="$f_packages/$wxpython_rpm"
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
-	
 	# Instalar dependências.
 	if [[ "$os_version" == '32' ]]; then
-		_pkg_manager_sys 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
-		__download__ "$url" "$path_file" || return 1
-		__download__ "$url_wxgtk3" "$path_wxgtk3" || return 1 
+		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
+		__download__ "$url" "$path_file" || return 1 
 		_yellow "Instalando: $path_file"; _RPM --install "$path_file" 
 
 	else
@@ -2271,7 +2269,7 @@ _youtube_dlgui_debian()
 	# Testado apenas no debian 10.
 	if [[ "$os_codename" == 'buster' ]]; then
 		_msg "Instalando: python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext"
-		_pkg_manager_sys python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
+		__pkg__ python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
 		
 	else
 		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
@@ -2286,7 +2284,7 @@ _youtube_dlgui_debian()
 _youtube_dlgui_archlinux()
 {
 	_msg "Instalando: python2 python2-pip python2-setuptools python2-wxpython3"
-	_pkg_manager_sys python2 python2-pip python2-setuptools python2-wxpython3 || return 1
+	__pkg__ python2 python2-pip python2-setuptools python2-wxpython3 || return 1
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
@@ -2297,7 +2295,7 @@ _youtube_dlgui_freebsd()
 {
 	# freebsd-12.0-release sudo pkg install py27-wxPython30
 	_yellow "Instalando: py27-wxPython30"
-	_pkg_manager_sys py27-wxPython30 || return 1
+	__pkg__ py27-wxPython30 || return 1
 	_python_twodict_github || return 1
 	_gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
 	cd "$DirTemp/youtube-dl-gui"
@@ -2351,10 +2349,7 @@ _youtube_dlgui_windows()
 	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
 	local path_file_GNU_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
 	local path_file_python27="$DirDownloads/$(basename $url_python27)"
-
-	#__download__ "$url_youtube_DL" "$path_file_ytDL" || return 1
-	# Instalar o python27 com o script winetricks (winetricks dlls list | grep python)
-	#__download__ "$url_python27" "$path_file_python27" || return 1 
+	
 	__download__ "$url_youtube_DLGUI_win" "$path_file_ytDLGUI" || return 1
 	__download__ "$url_visualC" "$path_file_visualC" || return 1 
 	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
@@ -2394,7 +2389,7 @@ _python37_windows32()
 	fi
 
 	if ! is_executable winetricks; then
-		_pkg_manager_sys winetricks
+		__pkg__ winetricks
 	fi
 
 	__download__ "$url_python37_windows32" "$path_file_python37" || return 1
@@ -2412,11 +2407,11 @@ _python37_windows32_portable()
 
 	if ! is_executable wine; then
 		_red "Necessário ter o wine instalado para prosseguir"
-		_install_wine	
+		_install_wine
 	fi
 
 	if ! is_executable winetricks; then
-		_pkg_manager_sys winetricks
+		__pkg__ winetricks
 	fi
 
 	__download__ "$url_python37_portable" "$path_file_python37_portable" || return 1
@@ -2439,7 +2434,7 @@ _get_pip_windows()
 
 	__download__ "$url_get_pip" "$path_file_getPIP" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	cd wine "$HOME"/.wine/drive_c/python37/
+	cd "$HOME"/.wine/drive_c/python37/
 	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe $path_file_getPIP"
 	wine "$HOME"/.wine/drive_c/python37/python.exe "$path_file_getPIP"
 }
@@ -2448,20 +2443,12 @@ _install_wine()
 {
 	# pywine
 	# https://github.com/Brunopvh/pywine/archive/master.zip
+	# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
 	local url_pywine='https://github.com/Brunopvh/pywine/archive/master.zip'
-	local path_file="$DirDownloads/pywine.zip"
+	local path_file="$DirTemp/install-pywine.sh"
 
-	_msg "Obtendo o script 'pywine.py' em: https://github.com/Brunopvh/pywine"
-	__download__ "$url_pywine" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
-	_unpack "$DirDownloads/pywine.zip" || return 1
-	cd "$DirUnpack"/pywine-master
-	chmod +x wine_install.py
-	
-	# Instalar o wine
-	./wine_install.py --install wine || return 1
-	./wine_install.py --install winetricks || return 1
-	return 0
+	_msg "Executando ... https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh"
+	sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
 }
 
 _bluetooth()
@@ -2471,7 +2458,7 @@ _bluetooth()
 		return 1
 	fi
 
-	_pkg_manager_sys bluez 'bluez-firmware' 'bluez-hcidump'
+	__pkg__ bluez 'bluez-firmware' 'bluez-hcidump'
 	print_line
 	_white "1 - ${CGreen}G${CReset}NOME"
 	_white "2 - ${CGreen}K${CReset}DE"
@@ -2483,9 +2470,9 @@ _bluetooth()
 		read -t 10 -n 1 desktop; echo ' '
 
 		case "${desktop,,}" in
-			1) _pkg_manager_sys 'gnome-bluetooth';;
-			2) _pkg_manager_sys bluedevil;;
-			3) _pkg_manager_sys blueman;;
+			1) __pkg__ 'gnome-bluetooth';;
+			2) __pkg__ bluedevil;;
+			3) __pkg__ blueman;;
 			*) 
 			_white "Opição inválida, você pode ${CGreen}repetir${CReset} ou ${_red}cancelar${CReset} [r/c]: " 
 			read -t 10 -n 1 input; echo ' '
@@ -2519,13 +2506,13 @@ _compactadores()
 
 
 	if is_executable 'zypper'; then
-		_pkg_manager_sys "${compactadores_fedora[@]}"
+		__pkg__ "${compactadores_fedora[@]}"
 	elif is_executable 'dnf'; then
-		_pkg_manager_sys "${compactadores_fedora[@]}"
+		__pkg__ "${compactadores_fedora[@]}"
 	elif is_executable 'apt'; then
-		_pkg_manager_sys "${compactadores_debian[@]}"
+		__pkg__ "${compactadores_debian[@]}"
 	elif is_executable 'pacman'; then
-		_pkg_manager_sys "${compactadores_arch[@]}"
+		__pkg__ "${compactadores_arch[@]}"
 	else
 		_show_info 'ProgramNotFound' 'compactadores'
 		return 1
@@ -2540,17 +2527,17 @@ _firmware()
 	fi
 
 	case "$1" in
-		firmware-ralink) _pkg_manager_sys 'firmware-ralink';;
-		firmware-atheros) _pkg_manager_sys 'firmware-atheros';;
-		firmware-realtek) _pkg_manager_sys 'firmware-realtek';;
-		firmware-linux-nonfree) _pkg_manager_sys 'firmware-linux-nonfree';;
+		firmware-ralink) __pkg__ 'firmware-ralink';;
+		firmware-atheros) __pkg__ 'firmware-atheros';;
+		firmware-realtek) __pkg__ 'firmware-realtek';;
+		firmware-linux-nonfree) __pkg__ 'firmware-linux-nonfree';;
 	esac
 }
 
 
 _gparted()
 {
-	_pkg_manager_sys gparted
+	__pkg__ gparted
 }
 
 _peazip()
@@ -2648,7 +2635,7 @@ _refind_zip()
 _refind()
 {
 	case "$os_id" in
-		debian|ubuntu|linuxmint|arch) _pkg_manager_sys refind;;
+		debian|ubuntu|linuxmint|arch) __pkg__ refind;;
 		*) _refind_zip;;
 	esac
 	
@@ -2677,7 +2664,7 @@ _stacer_debian()
 
 _stacer_fedora()
 {
-	_pkg_manager_sys stacer	
+	__pkg__ stacer	
 }
 
 
@@ -2734,7 +2721,7 @@ _stacer()
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _stacer_debian;;
 		arch) 
-			_pkg_manager_sys 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
+			__pkg__ 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
 			_stacer_appimage
 			;;
 		*) _stacer_appimage;;
@@ -2787,9 +2774,9 @@ _virtualbox_fedora()
 		'patch'
 	)
 
-	_pkg_manager_sys "${requeriments_vb_fedora[@]}"
-	_pkg_manager_sys $(rpm -qa kernel | sort -V | tail -n 1) 
-	_pkg_manager_sys kernel-devel-$(uname -r)
+	__pkg__ "${requeriments_vb_fedora[@]}"
+	__pkg__ $(rpm -qa kernel | sort -V | tail -n 1) 
+	__pkg__ kernel-devel-$(uname -r)
 
 	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$DirDownloads/oracle_vbox.asc"
 	_yellow "Importando: $DirDownloads/oracle_vbox.asc"
@@ -2799,8 +2786,8 @@ _virtualbox_fedora()
 	sudo sh -c 'wget -q -O /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
 	
 	case "$os_version" in
-		31) _pkg_manager_sys 'VirtualBox-6.0' || return 1;;
-		32) _pkg_manager_sys 'VirtualBox-6.1' || return 1;;
+		31) __pkg__ 'VirtualBox-6.0' || return 1;;
+		32) __pkg__ 'VirtualBox-6.1' || return 1;;
 	esac
 	
 	# Módulos
@@ -2845,9 +2832,9 @@ _virtualbox_debian()
 	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
 	
-	# _pkg_manager_sys libvpx6 
-	_pkg_manager_sys 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
-	_pkg_manager_sys linux-headers-$(uname -r)
+	# __pkg__ libvpx6 
+	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
+	__pkg__ linux-headers-$(uname -r)
 	
 	if [[ "$os_codename" == 'focal' ]]; then
 		__download__ "$url_libvpx" "$path_libvpx" || return 1
@@ -2856,7 +2843,7 @@ _virtualbox_debian()
 	fi
 	
 	echo -e "$space_line"
-	_pkg_manager_sys 'virtualbox-6.0' || return 1
+	__pkg__ 'virtualbox-6.0' || return 1
 	_virtualbox_extpack
 }
 
@@ -2878,9 +2865,9 @@ _virtualbox_archlinux()
 	)
 
 	for c in "${array_vb_archlinux[@]}"; do
-		_space_text "[+] Instalando" "$c"
-		_pkg_manager_sys "$c"
-		_space_text "${C_red}[!]${CReset} Falha" "$c"
+		_msg "[+] Instalando" "$c"
+		__pkg__ "$c"
+		_msg "${C_red}[!]${CReset} Falha" "$c"
 	done
 
 	# /etc/modules-load.d/virtualbox.conf
@@ -3028,7 +3015,7 @@ _ohmyzsh()
 	#
 	if ! is_executable 'zsh'; then
 		_yellow "Necessário instalar shell [zsh]"
-		_pkg_manager_sys zsh	
+		__pkg__ zsh	
 	fi
 	
 	_yellow "Instalando ohmyzsh"
@@ -3038,7 +3025,7 @@ _ohmyzsh()
 _papirus_debian()
 {
 	# sudo apt install libreoffice-style-papirus
-	_pkg_manager_sys 'papirus-icon-theme'
+	__pkg__ 'papirus-icon-theme'
 }
 
 _papirus_github()
@@ -3105,15 +3092,15 @@ _sierra()
 
 	case "$os_id" in
 		fedora) 
-				_pkg_manager_sys 'gtk-murrine-engine' 'gtk2-engines'
+				__pkg__ 'gtk-murrine-engine' 'gtk2-engines'
 				;;
 
 		arch) 
-				_pkg_manager_sys 'gtk-engine-murrine' 'gtk-engines'
+				__pkg__ 'gtk-engine-murrine' 'gtk-engines'
 				;;
 
 		debian|ubuntu|linuxmint) 
-				_pkg_manager_sys 'gtk2-engines-murrine' 'gtk2-engines-pixbuf'
+				__pkg__ 'gtk2-engines-murrine' 'gtk2-engines-pixbuf'
 				;;
 	esac
 
@@ -3139,7 +3126,7 @@ _dashtodock_github()
 	_gitclone "$url_repo" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 
-	_pkg_manager_sys make
+	__pkg__ make
 	cd "$DirGitclone"/dash-to-dock
 	make
 	make install
@@ -3154,8 +3141,8 @@ _dashtodock_github()
 _dashtodock()
 {
 	case "$os_id" in
-		fedora) _pkg_manager_sys 'gnome-shell-extension-dash-to-dock.noarch';;
-		debian) _pkg_manager_sys 'gnome-shell-extension-dashtodock';;
+		fedora) __pkg__ 'gnome-shell-extension-dash-to-dock.noarch';;
+		debian) __pkg__ 'gnome-shell-extension-dashtodock';;
 		*) _dashtodock_github;;
 	esac
 }
@@ -3163,7 +3150,7 @@ _dashtodock()
 _drive_menu()
 {
 	case "$os_id" in
-		fedora) _pkg_manager_sys 'gnome-shell-extension-drive-menu';;
+		fedora) __pkg__ 'gnome-shell-extension-drive-menu';;
 		*) _show_info 'ProgramNotFound' 'drive-menu'; return 1;;
 	esac
 }
@@ -3171,8 +3158,8 @@ _drive_menu()
 _gnome_backgrounds()
 {
 	case "$os_id" in 
-		arch) _pkg_manager_sys 'gnome-backgrounds';;
-		fedora) _pkg_manager_sys 'gnome-backgrounds-extras' 'verne-backgrounds-gnome';;
+		arch) __pkg__ 'gnome-backgrounds';;
+		fedora) __pkg__ 'gnome-backgrounds-extras' 'verne-backgrounds-gnome';;
 		*) _show_info 'ProgramNotFound' 'gnome-backgrounds'; return 1;;
 	esac
 }
@@ -3190,7 +3177,7 @@ _topicons_plus_github()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
 	_unpack "$path_file" || return 1
-	_pkg_manager_sys make
+	__pkg__ make
 
 	cd "$DirUnpack"
 	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
@@ -3209,15 +3196,15 @@ _topicons_plus_github()
 _topicons_plus()
 {
 	case "$os_id" in
-		fedora) _pkg_manager_sys 'gnome-shell-extension-topicons-plus';;
-		debian) _pkg_manager_sys 'gnome-shell-extension-top-icons-plus';;
+		fedora) __pkg__ 'gnome-shell-extension-topicons-plus';;
+		debian) __pkg__ 'gnome-shell-extension-top-icons-plus';;
 		*) _topicons_plus_github;;
 	esac
 }
 
 _gnome_tweaks()
 {
-	_pkg_manager_sys 'gnome-tweaks'
+	__pkg__ 'gnome-tweaks'
 }
 
 _epsxe_windows()

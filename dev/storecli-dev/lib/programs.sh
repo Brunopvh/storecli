@@ -673,6 +673,7 @@ _sublime_text()
 	# Já instalado.
 	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 	
+	_yellow "Obtendo url de download aguarde..."
 	sublime_pag='https://www.sublimetext.com/3'
 	sublime_html=$(wget -q -O- "$sublime_pag" | grep -m 1 'http.*sublime.*x64.tar.bz2')
 	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')

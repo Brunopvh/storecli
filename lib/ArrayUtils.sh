@@ -14,8 +14,8 @@
 # Etcher
 declare -A destinationFilesEtcher
 destinationFilesEtcher=(
-	[file_desktop]="$directoryUSERapplications/balena-etcher-electron.desktop"
-	[file_appimage]="$directoryUSERbin/balena-etcher-electron"
+	[file_desktop]="$DIR_DESKTOP_USER/balena-etcher-electron.desktop"
+	[file_appimage]="$DIR_BIN_USER/balena-etcher-electron"
 	)
 
 #=============================================================#
@@ -24,34 +24,34 @@ destinationFilesEtcher=(
 # Android Studio
 declare -A destinationFilesAndroidStudio
 destinationFilesAndroidStudio=(
-	[file_desktop]="$directoryUSERapplications/jetbrains-studio.desktop"
-	[file_png]="$directoryUSERicon/studio.png"
-	[link]="$directoryUSERbin/studio"
-	[dir]="$directoryUSERbin/android-studio"
+	[file_desktop]="$DIR_DESKTOP_USER/jetbrains-studio.desktop"
+	[file_png]="$DIR_ICON_USER/studio.png"
+	[link]="$DIR_BIN_USER/studio"
+	[dir]="$DIR_BIN_USER/android-studio"
 	)
 
 declare -A destinationFilesPycharm
 destinationFilesPycharm=(
-	[file_desktop]="$directoryUSERapplications/pycharm.desktop"
-	[file_png]="$directoryUSERicon/pycharm.png"
-	[link]="$directoryUSERbin/pycharm"
-	[dir]="$directoryUSERbin/pycharm-community"
+	[file_desktop]="$DIR_DESKTOP_USER/pycharm.desktop"
+	[file_png]="$DIR_ICON_USER/pycharm.png"
+	[link]="$DIR_BIN_USER/pycharm"
+	[dir]="$DIR_BIN_USER/pycharm-community"
 	)
 
 declare -A destinationFilesSublime
 destinationFilesSublime=(
-	[file_desktop]="$directoryROOTapplications/sublime_text.desktop"
-	[file_png]="$directoryROOTicon/256x256/apps/sublime-text.png"
-	[link]="$directoryROOTbin/sublime"
+	[file_desktop]="$DIR_DESKTOP_ROOT/sublime_text.desktop"
+	[file_png]="$DIR_ICON_ROOT/256x256/apps/sublime-text.png"
+	[link]="$DIR_BIN_ROOT/sublime"
 	[dir]="/opt/sublime_text"
 	)
 
 declare -A destinationFilesVscode
 destinationFilesVscode=(
-	[file_desktop]="$directoryUSERapplications/code.desktop"  
-	[file_png]="$directoryUSERicon/code.png"             
-	[link]="$directoryUSERbin/code"                  
-	[dir]="$directoryUSERbin/code-amd64"            
+	[file_desktop]="$DIR_DESKTOP_USER/code.desktop"  
+	[file_png]="$DIR_ICON_USER/code.png"             
+	[link]="$DIR_BIN_USER/code"                  
+	[dir]="$DIR_BIN_USER/code-amd64"            
 )
 
 #=============================================================#
@@ -61,8 +61,8 @@ destinationFilesVscode=(
 # Libreoffice AppImage.
 declare -A destinationFilesLibreofficeAppimage
 destinationFilesLibreofficeAppimage=(
-	[file_desktop]="$directoryUSERapplications/libreoffice-appimage.desktop"   
-	[file_appimage]="$directoryUSERbin/libreoffice-appimage"                            
+	[file_desktop]="$DIR_DESKTOP_USER/libreoffice-appimage.desktop"   
+	[file_appimage]="$DIR_BIN_USER/libreoffice-appimage"                            
 )
 
 #=============================================================#
@@ -80,31 +80,31 @@ destinationFilesLibreofficeAppimage=(
 
 declare -A destinationFilesTelegram
 destinationFilesTelegram=(
-	[file_desktop]="$directoryUSERapplications/telegramdesktop.desktop" 
-	[file_png]="$directoryUSERicon/telegram.png"                  
-	[link]="$directoryUSERbin/telegram"                       
-	[dir]="$directoryUSERbin/telegram-amd64"                  
+	[file_desktop]="$DIR_DESKTOP_USER/telegramdesktop.desktop" 
+	[file_png]="$DIR_ICON_USER/telegram.png"                  
+	[link]="$DIR_BIN_USER/telegram"                       
+	[dir]="$DIR_BIN_USER/telegram-amd64"                  
 )
 
 
 declare -A destinationFilesTixati
 destinationFilesTixati=(
-	[file_desktop]="$directoryROOTapplications/tixati.desktop"
-	[file_png]="$directoryROOTicon/48x48/apps/tixati.png" 
-	[file_bin]="$directoryROOTbin/tixati"                                       
+	[file_desktop]="$DIR_DESKTOP_ROOT/tixati.desktop"
+	[file_png]="$DIR_ICON_ROOT/48x48/apps/tixati.png" 
+	[file_bin]="$DIR_BIN_ROOT/tixati"                                       
 )
 
 
 destinationFilesTeamviewer=(
 	'/opt/teamviewer'
 	'/usr/bin/teamviewer'
-	"$directoryROOTicon/16x16/apps/TeamViewer.png"
-	"$directoryROOTicon/20x20/apps/TeamViewer.png"
-	"$directoryROOTicon/24x24/apps/TeamViewer.png"
-	"$directoryROOTicon/32x32/apps/TeamViewer.png"
-	"$directoryROOTicon/48x48/apps/TeamViewer.png"
-	"$directoryROOTicon/256x256/apps/TeamViewer.png"
-	"$directoryROOTapplications/com.teamviewer.TeamViewer.desktop"
+	"$DIR_ICON_ROOT/16x16/apps/TeamViewer.png"
+	"$DIR_ICON_ROOT/20x20/apps/TeamViewer.png"
+	"$DIR_ICON_ROOT/24x24/apps/TeamViewer.png"
+	"$DIR_ICON_ROOT/32x32/apps/TeamViewer.png"
+	"$DIR_ICON_ROOT/48x48/apps/TeamViewer.png"
+	"$DIR_ICON_ROOT/256x256/apps/TeamViewer.png"
+	"$DIR_DESKTOP_ROOT/com.teamviewer.TeamViewer.desktop"
 	'/usr/share/dbus-1/services/com.teamviewer.TeamViewer.Desktop.service'
 	'/usr/share/dbus-1/services/com.teamviewer.TeamViewer.service'
 	'/usr/share/polkit-1/actions/com.teamviewer.TeamViewer.policy'
@@ -113,11 +113,11 @@ destinationFilesTeamviewer=(
 
 declare -A destinationFilesYoutubeDlGuiUser
 destinationFilesYoutubeDlGuiUser=(
-	[file_desktop]="$directoryUSERapplications/youtube-dl-gui.desktop"
-	[file_png]="$directoryUSERicon/youtube-dl-gui.png" 
-	[pixmaps]="$directoryUSERicon/youtube-dl-gui"
-	[file_script]="$directoryUSERbin/youtube-dl-gui"  
-	[dir]="$directoryUSERbin/youtube_dl_gui"                                     
+	[file_desktop]="$DIR_DESKTOP_USER/youtube-dl-gui.desktop"
+	[file_png]="$DIR_ICON_USER/youtube-dl-gui.png" 
+	[pixmaps]="$DIR_ICON_USER/youtube-dl-gui"
+	[file_script]="$DIR_BIN_USER/youtube-dl-gui"  
+	[dir]="$DIR_BIN_USER/youtube_dl_gui"                                     
 )
 
 #=============================================================#
@@ -126,24 +126,24 @@ destinationFilesYoutubeDlGuiUser=(
 # PeaZip
 declare -A destinationFilesPeazip
 destinationFilesPeazip=(
-	[file_desktop]="$directoryUSERapplications/peazip.desktop" 
-	[file_png]="$directoryUSERicon/peazip.png"
-	[file_bin]="$directoryUSERbin/peazip"
-	[dir]="$directoryUSERbin/peazip-amd64"
+	[file_desktop]="$DIR_DESKTOP_USER/peazip.desktop" 
+	[file_png]="$DIR_ICON_USER/peazip.png"
+	[file_bin]="$DIR_BIN_USER/peazip"
+	[dir]="$DIR_BIN_USER/peazip-amd64"
 )
 
 
 # Refind
 declare -A destinationFilesRefind
 destinationFilesRefind=(  
-	[file_script]="$directoryROOTbin/refind-install"
+	[file_script]="$DIR_BIN_ROOT/refind-install"
 	[dir]="/opt/refind"
 )
 
 declare -A destinationFilesStacer
 destinationFilesStacer=( 
-	[file_desktop]="$directoryUSERapplications/stacer.desktop"  
-	[file_appimage]="$directoryUSERbin/stacer"                            
+	[file_desktop]="$DIR_DESKTOP_USER/stacer.desktop"  
+	[file_appimage]="$DIR_BIN_USER/stacer"                            
 )
 
 
@@ -154,24 +154,24 @@ destinationFilesStacer=(
 # Papirus
 declare -A destinationFilesPapirus
 destinationFilesPapirus=(
-	[papirus_dark]="$directoryUSERicon/Papirus-Dark" 
-	[papirus_light]="$directoryUSERicon/Papirus-Light" 
-	[epapirus]="$directoryUSERicon/ePapirus"
-	[papirus]="$directoryUSERicon/Papirus" 
+	[papirus_dark]="$DIR_ICON_USER/Papirus-Dark" 
+	[papirus_light]="$DIR_ICON_USER/Papirus-Light" 
+	[epapirus]="$DIR_ICON_USER/ePapirus"
+	[papirus]="$DIR_ICON_USER/Papirus" 
 )
 
 declare -A destinationFilesEpsxe
 destinationFilesEpsxe=(
-	[file_desktop]="$directoryUSERapplications/epsxe.desktop"
-	[file_png]="$directoryUSERicon/ePSxe.svg"
-	[link]="$directoryUSERbin/epsxe"
-	[dir]="$directoryUSERbin/epsxe-amd64"
+	[file_desktop]="$DIR_DESKTOP_USER/epsxe.desktop"
+	[file_png]="$DIR_ICON_USER/ePSxe.svg"
+	[link]="$DIR_BIN_USER/epsxe"
+	[dir]="$DIR_BIN_USER/epsxe-amd64"
 )
 
 declare -A destinationFilesEpsxeWin32
 destinationFilesEpsxeWin32=(
-	[file_desktop]="$directoryUSERapplications/epsxe-win.desktop"
-	[file_script]="$directoryUSERbin/epsxe-win"
+	[file_desktop]="$DIR_DESKTOP_USER/epsxe-win.desktop"
+	[file_script]="$DIR_BIN_USER/epsxe-win"
 	[dir]="$HOME/bin/epsxe-win"
 	)
 
