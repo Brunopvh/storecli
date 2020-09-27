@@ -64,6 +64,7 @@ scriptAddRepo="$dir_local_scripts/addrepo.py"
 scritpTorBrowser="$dir_local_scripts/tor-installer.sh"
 scriptInstallStoreli="$dir_of_executable/setup.sh"
 scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
+scriptWinetricks="$dir_local_scripts/winetricks_script.sh"
 GUI="$dir_local_scripts/gui.sh"
 
 #=============================================================#
@@ -504,14 +505,18 @@ __rmdir__()
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# o arquivo/diretório será removido com 'sudo'.
 	cd "$DirTemp"
-	while [[ $1 ]]; do
-		printf "[>] Removendo: $1 "
-		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
-			_syellow "OK"
+	for DIR in "$@"; do
+		if [[ -f "$DIR" ]] || [[ -d "$DIR" ]] || [[ -L "$DIR" ]]; then
+			_println "Removendo ... $1 "
+			if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
+				_syellow 'OK'
+			else
+				_red "FALHA"
+			fi
 		else
-			_sred "FALHA"
+			_red "Arquivo ou diretório não encontrado ... $1"
+			return 1
 		fi
-		shift
 	done
 }
 

@@ -2360,7 +2360,7 @@ _youtube_dlgui_windows()
 		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
 		_install_wine || return 1	
 	fi
-
+	
 	cd "$DirDownloads"
 	_msg "Instalando: atmlib"; winetricks atmlib
 	_msg "Instalando: dotnet45"; winetricks dotnet45
@@ -2373,9 +2373,9 @@ _youtube_dlgui_windows()
 
 	_unpack "$path_file_ytDLGUI" || return 1
 	cd "$DirUnpack"
+	_msg "Executando: wine pip.exe install twodict"; wine pip.exe install twodict
 	_msg "Instalando: youtubedlg-0.4.exe"; wine youtubedlg-0.4.exe
-	_msg "Executando: wine pip.exe install twodict"
-	wine pip.exe install twodict
+	rm -rf "$DirUnpack"
 }
 
 _python37_windows32()
@@ -2421,10 +2421,12 @@ _python37_windows32_portable()
 
 	_unpack "$path_file_python37_portable" || return 1
 	mkdir -p "$HOME"/.wine/drive_c/python37
-	cp -R -u "$DirUnpack"/. "$HOME"/.wine/drive_c/python37/.
+	cd "$DirUnpack"
+	cp -n * "$HOME"/.wine/drive_c/python37/
 	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
 	wine "$HOME"/.wine/drive_c/python37/python.exe -V
 	_get_pip_windows
+	rm -rf "$DirUnpack"
 }
 
 _get_pip_windows()
@@ -2491,6 +2493,15 @@ _install_wine_debian()
 		__pkg__ "$APP" || break
 	done
 
+	# Instalar o script winetricks
+	URL_WINETRICKS='https://raw.githubusercontent.com/Winetricks/winetricks/master/src/winetricks'
+	path_winetricks="$DirDownloads/winetricks.sh"
+	SCRIPT_WINETRICKS="$DIR_BIN_USER/winetricks"
+
+	__download__ "$URL_WINETRICKS" "$path_winetricks" || return 1
+	cp -u "$path_winetricks" "$SCRIPT_WINETRICKS"
+	chmod +x "$SCRIPT_WINETRICKS"
+	winetricks --version
 }
 
 _install_wine()
