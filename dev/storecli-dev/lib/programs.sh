@@ -2364,7 +2364,7 @@ _youtube_dlgui_windows()
 	_msg "Instalando: atmlib"; winetricks atmlib
 	_msg "Instalando: dotnet45"; winetricks dotnet45
 	_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
-	#_msg "Instalando: python2.7"; winetricks python27
+	_msg "Instalando: python2.7"; winetricks python27
 	_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
 	_msg "Instalando: visual C"; wine "$path_file_visualC"
 	_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
@@ -2406,7 +2406,7 @@ _python37_windows32_portable()
 
 	if ! is_executable wine; then
 		_red "Necessário ter o wine instalado para prosseguir"
-		_install_wine	
+		_install_wine
 	fi
 
 	if ! is_executable winetricks; then
@@ -2442,20 +2442,12 @@ _install_wine()
 {
 	# pywine
 	# https://github.com/Brunopvh/pywine/archive/master.zip
+	# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
 	local url_pywine='https://github.com/Brunopvh/pywine/archive/master.zip'
-	local path_file="$DirDownloads/pywine.zip"
+	local path_file="$DirTemp/install-pywine.sh"
 
-	_msg "Obtendo o script 'pywine.py' em: https://github.com/Brunopvh/pywine"
-	__download__ "$url_pywine" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
-	_unpack "$DirDownloads/pywine.zip" || return 1
-	cd "$DirUnpack"/pywine-master
-	chmod +x wine_install.py
-	
-	# Instalar o wine
-	./wine_install.py --install wine || return 1
-	./wine_install.py --install winetricks || return 1
-	return 0
+	_msg "Executando ... https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh"
+	sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
 }
 
 _bluetooth()
