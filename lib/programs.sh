@@ -2484,7 +2484,7 @@ _install_wine_debian()
 	_yellow "Executando ... sudo dpkg --add-architecture i386"
 	sudo dpkg --add-architecture i386
 	_APT update
-	__pkg__ 'libfaudio0:i386'
+	__pkg__ 'libfaudio0:i386' || return 1
 
 	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
 	for APP in "${requeriments_wine_debian[@]}"; do
@@ -2503,9 +2503,13 @@ _install_wine()
 
 	if [[ -f '/etc/debian_version' ]]; then
 		_install_wine_debian
+		__pkg__ 'winetricks'
+	elif [[ "$os_id" == 'fedora' ]]; then
+		_pkg__ wine
 	else
 		_msg "Executando ... https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh"
 		sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
+		wine-install --install wine winetricks
 	fi
 
 	if is_executable 'wine'; then
