@@ -126,7 +126,7 @@ source "$path_libs/programs.sh"
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 # export TemporaryDirectory=$(mktemp --directory)
-export TemporaryDirectory="/tmp/$app_name_$USER"
+export TemporaryDirectory="/tmp/storecli_$USER"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
@@ -505,15 +505,11 @@ __rmdir__()
 	# o arquivo/diretório será removido com 'sudo'.
 	cd "$DirTemp"
 	while [[ $1 ]]; do
-		if [[ -e "$1" ]]; then
-			printf "[>] Removendo: $1 "
-			if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
-				_syellow "OK"
-			else
-				_sred "FALHA"
-			fi
+		printf "[>] Removendo: $1 "
+		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
+			_syellow "OK"
 		else
-			_red "Arquivo ou diretório não encontrado ... $1"
+			_sred "FALHA"
 		fi
 		shift
 	done

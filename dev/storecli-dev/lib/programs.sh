@@ -2247,12 +2247,10 @@ _youtube_dlgui_fedora()
 	local url="$f_packages/$wxpython_rpm"
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
-	
 	# Instalar dependências.
 	if [[ "$os_version" == '32' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
-		__download__ "$url" "$path_file" || return 1
-		__download__ "$url_wxgtk3" "$path_wxgtk3" || return 1 
+		__download__ "$url" "$path_file" || return 1 
 		_yellow "Instalando: $path_file"; _RPM --install "$path_file" 
 
 	else
@@ -2350,10 +2348,7 @@ _youtube_dlgui_windows()
 	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
 	local path_file_GNU_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
 	local path_file_python27="$DirDownloads/$(basename $url_python27)"
-
-	#__download__ "$url_youtube_DL" "$path_file_ytDL" || return 1
-	# Instalar o python27 com o script winetricks (winetricks dlls list | grep python)
-	#__download__ "$url_python27" "$path_file_python27" || return 1 
+	
 	__download__ "$url_youtube_DLGUI_win" "$path_file_ytDLGUI" || return 1
 	__download__ "$url_visualC" "$path_file_visualC" || return 1 
 	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
@@ -2369,7 +2364,7 @@ _youtube_dlgui_windows()
 	_msg "Instalando: atmlib"; winetricks atmlib
 	_msg "Instalando: dotnet45"; winetricks dotnet45
 	_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
-	_msg "Instalando: python2.7"; winetricks python27
+	#_msg "Instalando: python2.7"; winetricks python27
 	_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
 	_msg "Instalando: visual C"; wine "$path_file_visualC"
 	_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
@@ -2438,7 +2433,7 @@ _get_pip_windows()
 
 	__download__ "$url_get_pip" "$path_file_getPIP" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	cd wine "$HOME"/.wine/drive_c/python37/
+	cd "$HOME"/.wine/drive_c/python37/
 	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe $path_file_getPIP"
 	wine "$HOME"/.wine/drive_c/python37/python.exe "$path_file_getPIP"
 }
