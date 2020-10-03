@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_09_27'
+__version__='2020_10_02'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -504,19 +504,19 @@ __rmdir__()
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# o arquivo/diretório será removido com 'sudo'.
-	cd "$DirTemp"
-	for DIR in "$@"; do
-		if [[ -f "$DIR" ]] || [[ -d "$DIR" ]] || [[ -L "$DIR" ]]; then
-			_println "Removendo ... $1 "
-			if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
-				_syellow 'OK'
-			else
-				_red "FALHA"
-			fi
+	dir_content_file=$(dirname "$1")
+	cd "$dir_content_file"
+	printf '%s\n' "[+] Entrando no diretório ... $(pwd)"
+	
+	while [[ $1 ]]; do
+		#if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -x "$1" ]] || [[ -L "$1" ]]; then
+		if ls "$1" 1> /dev/null 2>&1; then
+			_yellow "Removendo ... $1"
+			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
-			_red "Arquivo ou diretório não encontrado ... $1"
-			return 1
+			_red "Não encontrado ... $1"
 		fi
+		shift
 	done
 }
 
@@ -736,6 +736,7 @@ _unpack()
 	
 	_yellow "Entrando no diretório ... $DirUnpack"
 	cd "$DirUnpack"
+	__rmdir__ $(ls)
 	path_file="$1"
 
 	# Detectar a extensão do arquivo.

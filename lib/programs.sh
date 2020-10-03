@@ -1919,7 +1919,7 @@ _tixati_tarfile()
 	# Já instalado.
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	_yellow "Obtendo URL de download aguarde."
+	_yellow "Obtendo url de download tixati aguarde..."
 	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
 	local tixati_html=$(wget -q -O- "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
