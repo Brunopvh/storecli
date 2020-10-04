@@ -94,7 +94,7 @@ _DPKG()
 	if sudo dpkg "$@"; then
 		return 0
 	else
-		_red "(_DPKG) erro: $@"
+		_sred "(_DPKG): Erro sudo dpkg $@"
 		return 1
 	fi
 }
@@ -141,8 +141,7 @@ _APT()
 	if sudo apt "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [apt] retornou erro"
-		_red "Linha de comando: sudo apt $@"
+		_sred "(_APT): Erro sudo apt $@"
 		return 1
 	fi
 }
@@ -184,7 +183,7 @@ _RPM()
 	if sudo rpm "$@"; then
 		return 0
 	else
-		_red "_RPM: Erro"
+		_sred "(_RPM): Erro sudo rpm $@"
 		return 1
 	fi
 }
@@ -194,7 +193,7 @@ _DNF()
 	if sudo dnf "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [dnf] retornou erro"
+		_sred "(_DNF): Erro sudo dnf $@"
 		return 1
 	fi
 }
@@ -213,7 +212,7 @@ _ZYPPER()
 	if sudo zypper "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [zypper] retornou erro"
+		_red "(_ZYPPER): Erro sudo zypper $@"
 		return 1
 	fi
 }
@@ -230,7 +229,7 @@ _PACMAN()
 	if sudo pacman "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [pacman] retornou erro"
+		_red "(_PACMAN): Erro sudo pacman $@"
 		return 1
 	fi
 }
@@ -244,7 +243,7 @@ _PKG()
 	if sudo pkg "$@"; then
 		return 0
 	else
-		_red "Gerenciador de pacotes [pkg] retornou erro"
+		_red "(PKG): Erro sudo pkg $@"
 		return 1
 	fi
 }

@@ -123,11 +123,12 @@ source "$path_libs/pkg_manager.sh"
 source "$path_libs/UninstallPkgs.sh"
 source "$path_libs/ArrayUtils.sh"
 source "$path_libs/programs.sh"
+source "$path_libs/wineutils.sh"
 
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
-# export TemporaryDirectory=$(mktemp --directory)
-export TemporaryDirectory="/tmp/storecli_$USER"
+#export TemporaryDirectory=$(mktemp --directory)
+export TemporaryDirectory="/tmp/${USER}_storecli"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
@@ -208,7 +209,13 @@ _sblue()
 _println()
 {
 	# Imprimir mensagens com printf sem quebrar linhas.
-	printf "[+] $@"
+	printf "[>] $@"
+}
+
+_print()
+{
+	# Imprimir texto com formatação e quebra de linha.
+	printf '%s\n' "[>] $@"
 }
 
 # Função para verifiar se um executável existe no sistema.
@@ -228,10 +235,10 @@ else
 fi
 
 print_line(){
-	local L='='
+	local L='-' # Caractere que será impresso ocupando todas as colunas do terminal.
 	num='1'
 	while [[ "$num" != "$columns" ]]; do
-		L="${L}="
+		L="${L}-"
 		num="$(($num+1))"
 	done
 	# echo -ne "$L"
@@ -509,9 +516,8 @@ __rmdir__()
 	printf '%s\n' "[+] Entrando no diretório ... $(pwd)"
 	
 	while [[ $1 ]]; do
-		#if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -x "$1" ]] || [[ -L "$1" ]]; then
 		if ls "$1" 1> /dev/null 2>&1; then
-			_yellow "Removendo ... $1"
+			_yellow "Removendo ... $1"; sleep 0.2
 			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
 			_red "Não encontrado ... $1"
@@ -727,12 +733,15 @@ _unpack()
 	# Destino para descompressão.
 	if [[ -d "$2" ]]; then 
 		DirUnpack="$2"
-	elif [[ -d "$DirUnpack" ]]; then
-		DirUnpack="$DirUnpack"
-	else
-		_red "(_unpack): diretório para descompressão não encontrado."
+	elif [[ -z "$DirUnpack" ]]; then
+		_red "(_unpack): o diretório de descompressão e 'nulo'."
 		return 1
-	fi 
+	fi
+
+	if [[ ! -d "$DirUnpack" ]]; then
+		_yellow "(_unpack): criando o diretório ... $DirUnpack"
+		mkdir -p "$DirUnpack"
+	fi
 	
 	_yellow "Entrando no diretório ... $DirUnpack"
 	cd "$DirUnpack"
@@ -842,8 +851,7 @@ _pkg_manager_storecli()
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
-			youtube-dl-gui-windows) _youtube_dlgui_windows;;
-
+		
 			Midia) _Midia_All;;
 			blender) _blender;;
 			celluloid) _celluloid;;
@@ -876,9 +884,10 @@ _pkg_manager_storecli()
 			'gnome-tweaks') _gnome_tweaks;;
 			'topicons-plus') _topicons_plus;;
 			
-			epsxe) _epsxe;;
+			wine) _install_wine;;
+			winetricks) _install_script_winetricks;;
 			epsxe-win) _epsxe_windows;;
-			snapd) _snapd;;
+			youtube-dl-gui-windows) _youtube_dlgui_windows;;
 			install) ;;
 			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
 		esac
@@ -997,4 +1006,6 @@ if [[ -z $1 ]]; then
 else
 	main "$@"
 fi
+
+#__rmdir__ "$TemporaryDirectory"
 
