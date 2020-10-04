@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_02'
+__version__='2020_10_04'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -730,7 +730,7 @@ _unpack()
 	elif [[ -d "$DirUnpack" ]]; then
 		DirUnpack="$DirUnpack"
 	else
-		_red "(_unpack): nenhum diretório para descompressão foi informado"
+		_red "(_unpack): diretório para descompressão não encontrado."
 		return 1
 	fi 
 	

@@ -2362,14 +2362,14 @@ _youtube_dlgui_windows()
 	fi
 	
 	cd "$DirDownloads"
-	_msg "Instalando: atmlib"; winetricks atmlib
-	_msg "Instalando: dotnet45"; winetricks dotnet45
-	_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
-	_msg "Instalando: python2.7"; winetricks python27
-	_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
-	_msg "Instalando: visual C"; wine "$path_file_visualC"
-	_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
-	_get_pip_windows # Instalar o pip.exe
+	#_msg "Instalando: atmlib"; winetricks atmlib
+	#_msg "Instalando: dotnet45"; winetricks dotnet45
+	#_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
+	#_msg "Instalando: python2.7"; winetricks python27
+	#_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
+	#_msg "Instalando: visual C"; wine "$path_file_visualC"
+	#_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
+	#_get_pip_windows # Instalar o pip.exe
 
 	_unpack "$path_file_ytDLGUI" || return 1
 	cd "$DirUnpack"
@@ -2860,6 +2860,7 @@ _virtualbox_fedora()
 	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$DirDownloads/oracle_vbox.asc"
 	_yellow "Importando: $DirDownloads/oracle_vbox.asc"
 	sudo rpm --import "$DirDownloads/oracle_vbox.asc"
+	__rmdir__ "$DirDownloads/oracle_vbox.asc"
 	
 	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
 	sudo sh -c 'wget -q -O /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
@@ -2890,7 +2891,7 @@ _virtualbox_debian()
 
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		bionic|tricia|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
+		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
 	
