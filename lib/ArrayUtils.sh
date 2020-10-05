@@ -172,7 +172,7 @@ declare -A destinationFilesEpsxeWin32
 destinationFilesEpsxeWin32=(
 	[file_desktop]="$DIR_DESKTOP_USER/epsxe-win.desktop"
 	[file_script]="$DIR_BIN_USER/epsxe-win"
-	[dir]="$HOME/bin/epsxe-win"
+	[dir]="$HOME/.wine/drive_c/epsxe-win"
 	)
 
 

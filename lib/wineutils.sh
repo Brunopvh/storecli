@@ -154,6 +154,7 @@ _epsxe_windows()
 	local PATH_FILE_EPSXE="$DirDownloads/$(basename $URL_EPSXE_WIN)"
 	local HASH_FILE_ZIP='46e1a7ad3dc9c75763440c153465cdccc9a3ba367e3158542953ece4bcdb7b4f' # V2.0.5
 
+	# Criar o diretório de instalação para epsxe.
 	mkdir -p "${destinationFilesEpsxeWin32[dir]}"
 	_clear_temp_dirs
 
@@ -165,11 +166,9 @@ _epsxe_windows()
 
 	_yellow "Criando script para execução do ePSXe"
 	echo '#!/bin/sh' > "${destinationFilesEpsxeWin32[file_script]}"
-	{
-		echo -e "\nWINEPREFIX=/home/bruno/.wine"
-		echo -e "\ncd ${destinationFilesEpsxeWin32[dir]}"
-		echo -e "wine ePSXe.exe" 
-	} >> "${destinationFilesEpsxeWin32[file_script]}"
+	echo -e "\nWINEPREFIX=$HOME/.wine"  >> "${destinationFilesEpsxeWin32[file_script]}"
+	echo -e "\ncd ${destinationFilesEpsxeWin32[dir]}" >> "${destinationFilesEpsxeWin32[file_script]}"
+	echo -e "wine ePSXe.exe" >> "${destinationFilesEpsxeWin32[file_script]}"
 
 
 	echo "[Desktop Entry]" > "${destinationFilesEpsxeWin32[file_desktop]}"
@@ -194,7 +193,7 @@ _epsxe_windows()
 		_sred "Necessário ter o winetricks instalado para prosseguir"
 		_install_script_winetricks 
 	fi
-
+	
 	_yellow "Instalado: directx9 atmlib"
 	winetricks directx9 atmlib
 	"${destinationFilesEpsxeWin32[file_script]}"
@@ -230,7 +229,7 @@ _install_wine_ubuntu()
 	wget -q "$url_key_wine_stable" -O wine.key
 	sudo apt-key add wine.key
 
-	_println "Adicionado key libfaudio"
+	_println "Adicionado key libfaudio "
 	wget -q "$url_key_libfaudio" -O libfaudio.key
 	sudo apt-key add libfaudio.key
 

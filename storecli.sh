@@ -517,7 +517,7 @@ __rmdir__()
 	
 	while [[ $1 ]]; do
 		if ls "$1" 1> /dev/null 2>&1; then
-			_yellow "Removendo ... $1"; sleep 0.2
+			_yellow "Removendo ... $1"; sleep 0.04
 			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
 			_red "Não encontrado ... $1"
