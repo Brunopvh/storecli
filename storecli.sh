@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_04'
+__version__='2020_10_05'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -24,6 +24,10 @@ __author__='Bruno Chaves'
 #=============================================================#
 # Verificar requesitos minimos do sistema.
 #=============================================================#
+
+# Controlo do status de saida ao longo do script
+export STATUS_OUTPUT='0'
+
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
@@ -127,8 +131,8 @@ source "$path_libs/wineutils.sh"
 
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
-#export TemporaryDirectory=$(mktemp --directory)
-export TemporaryDirectory="/tmp/${USER}_storecli"
+export TemporaryDirectory=$(mktemp --directory)
+#export TemporaryDirectory="/tmp/${USER}_storecli"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
@@ -889,10 +893,11 @@ _pkg_manager_storecli()
 			epsxe-win) _epsxe_windows;;
 			youtube-dl-gui-windows) _youtube_dlgui_windows;;
 			install) ;;
-			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
+			*) _red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
 		esac
 		shift
 	done
+	return "$?"
 }
 
 _update_storecli()
@@ -986,11 +991,11 @@ main()
 			-u|--self-update) "$scriptInstallStoreli"; break;;
 			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
 			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
-			remove)  shift; _uninstall_packages "$@"; return "$?";;
+			remove)  shift; _uninstall_packages "$@" || return 1 && break;;
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			*) _red "(main) argumento inválido: $ARG"; return 1; break;;
+			*) _red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
 		esac
 		shift
 	done
@@ -1004,8 +1009,18 @@ if [[ -z $1 ]]; then
 	fi 
 	"$GUI"
 else
-	main "$@"
+	# Executar a função main passando todos os argumentos recebidos na linha de comando.
+	main "$@" || STATUS_OUTPUT='1'
+
+	# Remover diretórios e subdiretórios temporários.
+	__rmdir__ "$TemporaryDirectory" 1> /dev/null 
+
+	if [[ "$STATUS_OUTPUT" == '1' ]]; then
+		exit 1
+	else
+		exit 0
+	fi
 fi
 
-#__rmdir__ "$TemporaryDirectory"
+
 

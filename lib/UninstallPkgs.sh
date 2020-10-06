@@ -39,7 +39,6 @@ _uninstall_packages()
 {
 	[[ -z $1 ]] && usage && return 1
 	while [[ $1 ]]; do
-		
 		case "$1" in
 			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
@@ -64,11 +63,10 @@ _uninstall_packages()
 
 			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;
-			*) _red "Não foi possível remover: $1";;
+			*) _red "Não foi possível remover: $1"; return 1; break;;
 		esac
 		shift
 	done
-
-
-return "$?"
+	
+	return "$?"
 }

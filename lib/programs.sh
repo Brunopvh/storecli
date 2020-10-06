@@ -15,6 +15,7 @@ _etcher_package_deb()
 	__download__ "$URLetcher" "$PathFileEtcher" || return 1
 	_APT update	
 	_GDEBI "$PathFileEtcher"
+	_BROKE
 }
 
 _etcher_ubuntu()
@@ -621,8 +622,8 @@ _pycharm()
 {
 	# Já instalado.
 	is_executable 'pycharm' && _show_info 'PkgInstalled' 'pycharm' && return 0
-	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.1.tar.gz'
-	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
+	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.2.tar.gz'
+	local sha256_pycharm='60b2eeea5237f536e5d46351fce604452ce6b16d037d2b7696ef37726e1ff78a'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
 	
 	__download__ "$url_pycharm" "$path_file" || return 1
@@ -630,7 +631,7 @@ _pycharm()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	__shasum__ "$path_file" "$hash_pycharm" || return 1
+	__shasum__ "$path_file" "$sha256_pycharm" || return 1
 	_unpack "$path_file" || return 1
 
 	cd "$DirUnpack" 
@@ -654,7 +655,6 @@ _pycharm()
         echo "Type=Application"
     } >> "${destinationFilesPycharm[file_desktop]}"
 
-    
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/Desktop/ 2> /dev/null 
