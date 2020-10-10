@@ -222,9 +222,9 @@ programs_internet=(
 	telegram
 	tixati
 	uget
-	youtube-dl
-	youtube-dl-gui
-	youtube-dl-gui-windows
+	'youtube-dl'
+	'youtube-dl-gui'
+	'youtube-dl-gui-windows'
 	)
 
 programs_midia=(

@@ -538,7 +538,7 @@ _android_studio_fedora()
 			'zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686'
 			)
 
-	__msg "Instalando: ${array_libs_fedora[@]}"
+	_msg "Instalando: ${array_libs_fedora[@]}"
 	__pkg__ "${array_libs_fedora[@]}"
 
 	_android_studio_zip || return 1
@@ -3095,23 +3095,39 @@ _Acessory_All()
 		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" = 'True' ]]; then
-		main --yes --downloadonly install etcher
-		main --yes --downloadonly install gnome-disk
-		main --yes --downloadonly install veracrypt
-		main --yes --downloadonly install woeusb
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		main --yes install etcher
-		main --yes install gnome-disk
-		main --yes install veracrypt
-		main --yes install woeusb
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_acessory[@]}"
+		else
+			main install --yes "${programs_acessory[@]}"
+		fi
 	else
-		main install etcher
-		main install gnome-disk
-		main install veracrypt
-		main install woeusb
+		main install "${programs_acessory[@]}"
 	fi
 }
+
+
+#=============================================================#
+# Instalar todos os pacotes da categória Desenvolvimento.
+#=============================================================#
+_Dev_All()
+{
+	if [[ -z "$AssumeYes" ]]; then
+		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
+	fi
+	
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_development[@]}"
+		else
+			main install --yes "${programs_development[@]}"
+		fi
+	else
+		main install "${programs_development[@]}"
+	fi
+}
+
+
 
 #=============================================================#
 # Instalar todos os pacotes da categória Sistema.
@@ -3122,31 +3138,14 @@ _System_All()
 		_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
 	fi
 	
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		main --yes --downloadonly install bluetooth
-		main --yes --downloadonly install compactadores
-		main --yes --downloadonly install gparted
-		main --yes --downloadonly install peazip
-		main --yes --downloadonly install refind
-		main --yes --downloadonly install stacer
-		main --yes --downloadonly install virtualbox
-		
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" --yes install bluetooth
-		"$scriptStorecli" --yes install compactadores
-		"$scriptStorecli" --yes install gparted
-		"$scriptStorecli" --yes install peazip
-		"$scriptStorecli" --yes install refind
-		"$scriptStorecli" --yes install stacer
-		"$scriptStorecli" --yes install virtualbox
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_system[@]}"
+		else
+			main install --yes "${programs_system[@]}"
+		fi
 	else
-		"$scriptStorecli" install bluetooth
-		"$scriptStorecli" install compactadores
-		"$scriptStorecli" install gparted
-		"$scriptStorecli" install peazip
-		"$scriptStorecli" install refind
-		"$scriptStorecli" install stacer
-		"$scriptStorecli" install virtualbox
+		main install "${programs_system[@]}"
 	fi
 }
 
@@ -3159,36 +3158,14 @@ _Internet_All()
 		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" --yes --downloadonly install megasync
-		"$scriptStorecli" --yes --downloadonly install proxychains
-		"$scriptStorecli" --yes --downloadonly install qbittorrent
-		"$scriptStorecli" --yes --downloadonly install teamviewer
-		"$scriptStorecli" --yes --downloadonly install telegram
-		"$scriptStorecli" --yes --downloadonly install tixati
-		"$scriptStorecli" --yes --downloadonly install uget
-		"$scriptStorecli" --yes --downloadonly install youtube-dl
-		"$scriptStorecli" --yes --downloadonly install youtube-dl-gui
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" --yes install megasync
-		"$scriptStorecli" --yes install proxychains
-		"$scriptStorecli" --yes install qbittorrent
-		"$scriptStorecli" --yes install teamviewer
-		"$scriptStorecli" --yes install telegram
-		"$scriptStorecli" --yes install tixati
-		"$scriptStorecli" --yes install uget
-		"$scriptStorecli" --yes install youtube-dl
-		"$scriptStorecli" --yes install youtube-dl-gui
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_internet[@]}"
+		else
+			main install --yes "${programs_internet[@]}"
+		fi
 	else
-		"$scriptStorecli" install megasync
-		"$scriptStorecli" install proxychains
-		"$scriptStorecli" install qbittorrent
-		"$scriptStorecli" install teamviewer
-		"$scriptStorecli" install telegram
-		"$scriptStorecli" install tixati
-		"$scriptStorecli" install uget
-		"$scriptStorecli" install youtube-dl
-		"$scriptStorecli" install youtube-dl-gui
+		main install "${programs_internet[@]}"
 	fi
 }
 
@@ -3201,24 +3178,14 @@ _Browser_All()
 		_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" --yes --downloadonly install chromium
-		"$scriptStorecli" --yes --downloadonly install firefox
-		"$scriptStorecli" --yes --downloadonly install google-chrome
-		"$scriptStorecli" --yes --downloadonly install opera-stable
-		"$scriptStorecli" --yes --downloadonly install torbrowser
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" --yes install chromium
-		"$scriptStorecli" --yes install firefox
-		"$scriptStorecli" --yes install google-chrome
-		"$scriptStorecli" --yes install opera-stable
-		"$scriptStorecli" --yes install torbrowser
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_browser[@]}"
+		else
+			main install --yes "${programs_browser[@]}"
+		fi
 	else
-		"$scriptStorecli" install chromium
-		"$scriptStorecli" install firefox
-		"$scriptStorecli" install google-chrome
-		"$scriptStorecli" install opera-stable
-		"$scriptStorecli" install torbrowser
+		main install "${programs_browser[@]}"
 	fi
 }
 
@@ -3231,21 +3198,14 @@ _Office_All()
 		_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" -y -d install atril
-		"$scriptStorecli" -y -d install fontes-ms
-		"$scriptStorecli" -y -d install libreoffice-appimage
-		"$scriptStorecli" -y -d install libreoffice
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" -y install atril
-		"$scriptStorecli" -y install fontes-ms
-		"$scriptStorecli" -y install libreoffice-appimage
-		"$scriptStorecli" -y install libreoffice
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_office[@]}"
+		else
+			main install --yes "${programs_office[@]}"
+		fi
 	else
-		"$scriptStorecli" install atril
-		"$scriptStorecli" install fontes-ms
-		"$scriptStorecli" install libreoffice-appimage
-		"$scriptStorecli" install libreoffice
+		main install "${programs_office[@]}"
 	fi
 }
 
@@ -3258,70 +3218,14 @@ _Midia_All()
 		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" -y -d install codecs
-		"$scriptStorecli" -y -d install celluloid
-		"$scriptStorecli" -y -d install cinema
-		"$scriptStorecli" -y -d install gnome-mpv
-		"$scriptStorecli" -y -d install parole
-		"$scriptStorecli" -y -d install smplayer
-		"$scriptStorecli" -y -d install spotify
-		"$scriptStorecli" -y -d install totem
-		"$scriptStorecli" -y -d install vlc
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" -y install codecs
-		"$scriptStorecli" -y install celluloid
-		"$scriptStorecli" -y install cinema
-		"$scriptStorecli" -y install gnome-mpv
-		"$scriptStorecli" -y install parole
-		"$scriptStorecli" -y install smplayer
-		"$scriptStorecli" -y install spotify
-		"$scriptStorecli" -y install totem
-		"$scriptStorecli" -y install vlc
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_midia[@]}"
+		else
+			main install --yes "${programs_midia[@]}"
+		fi
 	else
-		"$scriptStorecli" install codecs
-		"$scriptStorecli" install celluloid
-		"$scriptStorecli" install cinema
-		"$scriptStorecli" install gnome-mpv
-		"$scriptStorecli" install parole
-		"$scriptStorecli" install smplayer
-		"$scriptStorecli" install spotify
-		"$scriptStorecli" install totem
-		"$scriptStorecli" install vlc
+		main install "${programs_midia[@]}"
 	fi
 }
-
-#=============================================================#
-# Instalar todos os pacotes da categória Desenvolvimento.
-#=============================================================#
-_Dev_All()
-{
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
-	fi
-	
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" -y -d install android-studio
-		"$scriptStorecli" -y -d install codeblocks
-		"$scriptStorecli" -y -d install pycharm
-		"$scriptStorecli" -y -d install sublime-text
-		"$scriptStorecli" -y -d install vim
-		"$scriptStorecli" -y -d install vscode
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" -y install android-studio
-		"$scriptStorecli" -y install codeblocks
-		"$scriptStorecli" -y install pycharm
-		"$scriptStorecli" -y install sublime-text
-		"$scriptStorecli" -y install vim
-		"$scriptStorecli" -y install vscode
-	else
-		"$scriptStorecli" install android-studio
-		"$scriptStorecli" install codeblocks
-		"$scriptStorecli" install pycharm
-		"$scriptStorecli" install sublime-text
-		"$scriptStorecli" install vim
-		"$scriptStorecli" install vscode
-	fi
-}
-
 

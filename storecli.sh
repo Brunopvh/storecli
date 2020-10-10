@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_08'
+__version__='2020_10_09'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -25,7 +25,7 @@ __author__='Bruno Chaves'
 # Verificar requesitos minimos do sistema.
 #=============================================================#
 
-# Controlo do status de saida ao longo do script
+# Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
 
 is_executable()
@@ -60,7 +60,6 @@ _yellow()
 	[[ "$silent" == 'True' ]] && return 0
 	echo -e "[${CYellow}+${CReset}] $@"
 }
-
 
 _blue()
 {
@@ -233,18 +232,17 @@ fi
 # Importar Libs
 #=============================================================#
 source "$path_libs/colors.sh"
+source "$path_libs/ArrayUtils.sh"
 source "$path_libs/requeriments.sh"
 source "$path_libs/platform.sh"
 source "$path_libs/pkg_manager.sh"
 source "$path_libs/UninstallPkgs.sh"
-source "$path_libs/ArrayUtils.sh"
 source "$path_libs/programs.sh"
 source "$path_libs/wineutils.sh"
 
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 export TemporaryDirectory=$(mktemp --directory)
-#export TemporaryDirectory="/tmp/${USER}_storecli"
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
@@ -658,29 +656,6 @@ __shasum__()
 	fi
 }
 
-__curl__()
-{
-	# Função para baixar arquivos usando a ferramenta 'curl'.
-	url="$1"
-	path_file="$2"
-	if [[ -z $2 ]]; then
-		curl -C - -S -L -O "$url" || {
-			_red "Falha: curl -S -L -O"
-			return 1
-		}
-		return 0
-	elif [[ $2 ]]; then
-		_blue "Destino: $path_file"
-		curl -C - -S -L -o "$path_file" "$url" || {
-			_red "Falha: curl -S -L -o"
-			rm "$path_file" 2> /dev/null
-			return 1
-		}
-		return "$?"
-	fi
-
-}
-
 __download__()
 {
 	if [[ -f "$2" ]]; then
@@ -696,10 +671,10 @@ __download__()
 	_blue "Conectando ... $1"
 
 	while true; do
-		if is_executable wget; then
-			wget -c "$url" -O "$path_file" && break
-		elif is_executable curl; then
+		if is_executable curl; then
 			curl -C - -S -L -o "$path_file" "$url" && break
+		elif is_executable wget; then
+			wget -c "$url" -O "$path_file" && break
 		else
 			return 1
 			break
@@ -850,8 +825,6 @@ _pkg_manager_storecli()
 			sublime-text) _sublime_text;;
 			vim) _vim;;
 			vscode) _vscode;;
-			python37-windows-portable) _python37_windows32_portable;;
-			python37-windows) _python37_windows32;;
 
 			Escritorio) _Office_All;;
 			atril) _atril;;
@@ -914,8 +887,12 @@ _pkg_manager_storecli()
 			wine) _install_wine;;
 			winetricks) _install_script_winetricks;;
 			epsxe-win) _epsxe_windows;;
+			python37-windows-portable) _python37_windows32_portable;;
+			python37-windows) _python37_windows32;;
 			youtube-dl-gui-windows) _youtube_dlgui_windows;;
 			install) ;;
+			-y|--yes) ;;
+			-d|--downloadonly) ;;
 			*) _red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
 		esac
 		shift
