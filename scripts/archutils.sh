@@ -61,6 +61,7 @@ CBlue='\033[0;34m'
 CWhite='\033[0;37m'
 CReset='\033[m'
 
+echo -e "$CGreen"
 
 is_executable()
 {
@@ -97,6 +98,7 @@ _blue()
 
 _println()
 {
+	# Imprimir texto sem quebrar linha
 	printf "$@"
 }
 
@@ -175,12 +177,11 @@ FileTemp="$TempDir/Tempfile.txt"
 url_storecli='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 url_archutils='https://raw.github.com/Brunopvh/storecli/master/scripts/archutils.sh'
 
+_green "$url_archutils"
+
 declare -A DiskInfoTarget
 DiskInfoTarget=() # Array com informações do disco selecionado para instalação.
 CliArguments="$@"
-
-OPTIND=1
-num=0
 
 while [[ $1 ]]; do
 	case "$1" in
@@ -229,7 +230,6 @@ function parse_disk_partitions()
 	}
 }
 
-
 parse_table_disk()
 {
 	# Se a tabela de partição do disco for GPT e o usuário não informar uma partição
@@ -245,8 +245,6 @@ parse_table_disk()
 		return 1
 	fi
 }
-
-#=======================================================#
 
 _ping()
 {
@@ -403,8 +401,11 @@ _FORMAT_FAT()
 
 _FORMAT_EXT4()
 {
-	# Formatar uma partição com ext4
-	# USE _FORMAT_EXT4 devicie label
+	# Formatar uma partição com ext4. Use _FORMAT_EXT4 devicie label
+	if [[ -z $1 ]]; then
+		_red "(_FORMAT_EXT4): nenhuma partição foi informada como argumento."
+		return 1
+	fi
 	local device="$1"
 	local label="$2"
 
@@ -414,7 +415,7 @@ _FORMAT_EXT4()
 
 	# Desmontar caso esteja montado
 	if _ismount "$device"; then 
-		_umount_partiton "$device" 
+		_umount_partiton "$device" || return 1
 	fi
 
 
@@ -425,6 +426,7 @@ _FORMAT_EXT4()
 		_yellow "Executando ... mkfs.ext4 $device"
 		mkfs.ext4 "$device"
 	fi
+	return 0
 }
 
 
@@ -477,47 +479,46 @@ _configure_partition_home()
 
 _configure_base_system()
 {
+	# Configuração básica de instalação do sistema. Está função deve é executada antes da instalação do
+	# sistema é interface gráfica.
 	mkdir -p /mnt
 	mkdir -p /mnt/boot
 	mkdir -p /mnt/home
 
-	# Formatar a partição raiz '/'. 
-	_FORMAT_EXT4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX'
+	# Formatar a partição raiz para o ponto de montagem '/'. 
+	_FORMAT_EXT4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX' || return 1
 	_mount_partiton "${DiskInfoTarget[partition_root]}" '/mnt' || return 1
-	
 	_configure_partition_home || return 1
 	_configure_partition_boot || return 1
 	_configure_partition_efi || return 1
 
 	# Loadkeys
-	_yellow "Configurando teclado como abnt2"
+	_yellow "Executando ... loadkeys br-abnt2"
 	loadkeys br-abnt2
 
 	_yellow "Configurando idioma pt_BR.UTF-8"
-	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 2> "$LogErro"
-	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 2> "$LogErro"
+	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 
+	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen
 
 	_yellow "Configurando horário do sistema"
 	timedatectl set-ntp true
 
 	# Pacstrap
-	_yellow "Executando: pacstrap /mnt base base-devel linux linux-firmware"
-	if ! pacstrap /mnt base 'base-devel' linux 'linux-firmware'; then
+	_yellow "Executando: pacstrap /mnt base base-devel linux linux-firmware python3"
+	if ! pacstrap /mnt base 'base-devel' linux 'linux-firmware' python3; then
 		_red "(_configure_base_system) erro: pacstrap"
 		return 1
 	fi
 
-	# Configuar FSTAB.
+	# Configuar fstab.
 	_yellow "Executando: genfstab -U -p /mnt >> /mnt/etc/fstab"
 	genfstab -p /mnt >> /mnt/etc/fstab
-
 	_yellow "Executando: arch-chroot /mnt /bin/bash"
 	_green "Execute os comandos a seguir para proxima fase"
 	_green "curl -L -S $url_archutils -o archutils.sh"
 	_green "chmod +x archutils.sh; ./archutils.sh"
 	
 	arch-chroot /mnt /bin/bash
-	return 0
 }
 
 _configure_pos_base()
@@ -528,9 +529,6 @@ _configure_pos_base()
 	ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime
 
 	# Idioma pt_BR.UTF-8
-	# _yellow "Criando backup de /etc/locale.gen em /etc/locale.gen.backup"
-	# cp '/etc/locale.gen' '/etc/locale.gen.backup' # Criar backup
-
 	_yellow "Configurando: /etc/locale.gen"
 	sed -i 's/#pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen
 
@@ -540,7 +538,7 @@ _configure_pos_base()
 	_yellow "Configurando: KEYMAP=br-abnt2 em /etc/vconsole.conf"
 	echo 'KEYMAP=br-abnt2' > '/etc/vconsole.conf'
 
-	_yellow "Executando [locale-gen]"
+	_yellow "Executando ... locale-gen"
 	locale-gen
 
 	# Hostname
@@ -557,8 +555,7 @@ _configure_pos_base()
 	pacman -Syy
 
 	for pkg in "${pkgs_cli_utils[@]}"; do
-		echo -e "$space_line"
-		_yellow "Instalando: $pkg"
+		_msg "Instalando: $pkg"
 		_PACMAN "$pkg"
 	done
 
@@ -567,55 +564,31 @@ _configure_pos_base()
 	_green "Em seguida execute este programa novamente e escolha a opição 3 no menu"
 }
 
-
-_install_grub_mbr()
-{
-	# grub-install ${DiskInfoTarget[instalation_disk]} --target=i386-pc --bootloader-id=ArchLinux --recheck
-	# grub-mkconfig -o /boot/grub/grub.cfg
-
-	_yellow "Instalando: grub os-prober"
-	_PACMAN grub 'os-prober' || return 1
- 
-	_yellow "Instalando grub em: ${DiskInfoTarget[instalation_disk]}"
-	grub-install "${DiskInfoTarget[instalation_disk]}" --target=i386-pc --bootloader-id=ArchLinux --recheck || return 1
-
-	_yellow "Executando grub-mkconfig -o /boot/grub/grub.cfg"
-	grub-mkconfig -o /boot/grub/grub.cfg || return 1
-
-	_yellow "Execute este programa novamente e selecione a opição 4 no menu"
-	return 0
-}
-
-
-_install_grub_efi()
+_install_grub()
 {
 	# grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 	# grub-mkconfig -o /boot/grub/grub.cfg
 
-	_yellow "Instalando: grub os-prober efibootmgr"
-	_PACMAN grub 'os-prober' efibootmgr || return 1
+	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]]; then
+		_yellow "Instalando: grub os-prober efibootmgr"
+		_PACMAN grub os-prober efibootmgr || return 1
+	else
+		_yellow "Instalando: grub os-prober"
+		_PACMAN grub os-prober || return 1
+	fi
  
+
 	_yellow "Instalando grub em: ${DiskInfoTarget[instalation_disk]}"
-	grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck || return 1
+	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]]; then
+		grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck || return 1
+	else
+		grub-install "${DiskInfoTarget[instalation_disk]}" --target=i386-pc --bootloader-id=ArchLinux --recheck || return 1
+	fi
 
 	_yellow "Executando grub-mkconfig -o /boot/grub/grub.cfg"
 	grub-mkconfig -o /boot/grub/grub.cfg || return 1
-
-	_yellow "Execute este programa novamente e selecione a opição 4 no menu"
 	return 0
 }
-
-
-_install_grub()
-{
-	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]]; then
-		_install_grub_efi
-	else
-		_install_grub_mbr
-	fi
-}
-
-#=============================================================#
 
 _configure_systemctl()
 {
@@ -623,7 +596,6 @@ _configure_systemctl()
 	# systemctl start NetworkManager
 	# systemctl enable NetworkManager
 	# systemctl enable gdm
-
 	#_yellow "Executando: systemctl status NetworkManager"
 	_yellow "systemctl start NetworkManager"; systemctl start NetworkManager
 	_yellow "systemctl enable NetworkManager"; systemctl enable NetworkManager
@@ -633,10 +605,9 @@ _configure_systemctl()
 _install_gnome()
 {
 	for X in "${pks_cli_utils[@]}"; do
-		_yellow "Instalando: $X"
+		_msg "Instalando: $X"
 		_PACMAN "$X"
 	done
-
 
 	for c in "${pkgs_gnomeshell[@]}"; do
 		echo -e "$scpace_line"
@@ -645,17 +616,13 @@ _install_gnome()
 	done
 
 	_configure_systemctl
-
-	echo -e "$space_line"
+	print_line
 	_yellow "Execute as ações a seguir manualmente"
 	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
 	_yellow "usermod -aG wheel"
 	_yellow "Edite o arquivo visudo"
 	_yellow "umount -R /mnt"
-	echo ' '
 }
-
-
 
 main()
 {
@@ -685,6 +652,8 @@ main()
 				return 0
 			fi
 			_configure_base_system "$@"
+			_yellow "(_configure_base_system) -> (main): Saindo..."
+			exit 0
 			;;
 		2) _configure_pos_base "$@";;
 		3) _install_grub;;
@@ -696,5 +665,5 @@ main()
 
 main "$@"
 
-
+echo -e "$CReset"
 
