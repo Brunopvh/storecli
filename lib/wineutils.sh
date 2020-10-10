@@ -254,7 +254,6 @@ _install_wine_debian()
 	# Instalação do wine no Debian buster.
 	_yellow "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
-	# Limpar arquivos temporarios.
 	_clear_temp_dirs
 
 	case "$os_codename" in
@@ -309,7 +308,6 @@ _install_wine_archlinux()
 	# Adicionar suporte ao repositório multilib no archlinux.
 	sudo ./addrepo.py --repo arch
 	_PACMAN -Sy
-	# Instalar o wine.
 	__pkg__ wine 'wine-mono' 'wine-gecko'
 }
 
