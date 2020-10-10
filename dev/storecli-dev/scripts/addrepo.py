@@ -70,9 +70,6 @@ class OsInfo:
 		return os_codename
 
 class AddRepo:
-	
-	
-	
 	def __init__(self):
 		# Obter o nome é codinome do sistema.
 		self.os_id = OsInfo.get_id()
@@ -84,8 +81,7 @@ class AddRepo:
 			print(f'{CRed}[!] Seu sistema não é ArchLinux{CReset}')
 			return
 		
-		# Criar backup do arquivo /etc/pacman.conf se ainda não existir
-		# um backup.
+		# Criar backup do arquivo /etc/pacman.conf se ainda não existir.
 		if path.isfile('/etc/pacman.conf.copia') == True:
 			print(f'{CYellow}[+] Backup encontrado: /etc/pacman.conf.copia{CReset}')
 		else:
@@ -119,7 +115,6 @@ class AddRepo:
 		print(f'{CYellow}[+] Atualizando repostórios {CReset}')
 		system('pacman -Sy')
 			
-
 	def debian(self):
 		# Verificar se o sistema e Debian.
 		if OsInfo.get_id() != 'debian':

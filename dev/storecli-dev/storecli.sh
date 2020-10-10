@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_09_27'
+__version__='2020_10_09'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -24,27 +24,142 @@ __author__='Bruno Chaves'
 #=============================================================#
 # Verificar requesitos minimos do sistema.
 #=============================================================#
+
+# Controle do status de saida ao longo do script.
+export STATUS_OUTPUT='0'
+
+is_executable()
+{
+	# Função para verificar se um executável existe no PATH do sistema.
+	if [[ -x $(which "$1" 2> /dev/null) ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#=============================================================#
+# Imprimir textos com formatação e cores.
+#=============================================================#
+_red()
+{
+	# Não imprimir nada se a opção -s|--silent estiver na linha de comando.
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "[${CRed}!${CReset}] $@"
+}
+
+_green()
+{
+	# Não imprimir nada se a opção -s|--silent estiver na linha de comando.
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "[${CGreen}+${CReset}] $@"
+}
+
+_yellow()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "[${CYellow}+${CReset}] $@"
+}
+
+_blue()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "[${CBlue}+${CReset}] $@"
+}
+
+_white()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "[${CWhite}+${CReset}] $@"
+}
+
+_sred()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "${CSRed}$@${CReset}"
+}
+
+_sgreen()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "${CSGreen}$@${CReset}"
+}
+
+_syellow()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "${CSYellow}$@${CReset}"
+}
+
+_sblue()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	echo -e "${CSBlue}$@${CReset}"
+}
+
+_println()
+{
+	# Imprimir mensagens com printf sem quebrar linhas.
+	[[ "$silent" == 'True' ]] && return 0
+	printf "[>] $@"
+}
+
+_print()
+{
+	# Imprimir texto com formatação e quebra de linha.
+	[[ "$silent" == 'True' ]] && return 0
+	printf '%s\n' "[>] $@"
+}
+
+if is_executable tput; then
+	columns=$(tput cols)
+else
+	columns='45'
+fi
+
+print_line(){
+	# Função para imprimir um caractere que preencha todo espaço horizontal do terminal.
+
+	local L='-' # Caractere que será impresso ocupando todas as colunas do terminal.
+	num='1'
+	while [[ "$num" != "$columns" ]]; do
+		L="${L}-"
+		num="$(($num+1))"
+	done
+	[[ "$silent" == 'True' ]] && return 0
+	printf '%s\n' "$L"
+}
+
+_msg()
+{
+	[[ "$silent" == 'True' ]] && return 0
+	print_line
+	echo -e " $@"
+	print_line
+}
+
+
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
-	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
+	_red "Execute este programa apenas em sistemas Linux."
 	exit 1
 fi
 
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
-	printf "\033[0;31m Usuário não pode ser o [root] execute novamente sem o [sudo]\033[m\n"
+	_red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
 	exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
 if [[ ! -x $(which sudo 2> /dev/null) ]]; then
-	printf "\033[0;31m Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir\033[m\n"
+	_red "Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir"
 	exit 1
 fi
 
 # Verificar se a arquitetura do Sistema e 64 bits
 if ! uname -m | grep '64' 1> /dev/null; then
-	printf "\033[0;31m Seu sistema não e 64 bits. Saindo\033[m\n"
+	_red "Seu sistema não e 64 bits. Saindo"
 	exit 1
 fi
 
@@ -64,6 +179,7 @@ scriptAddRepo="$dir_local_scripts/addrepo.py"
 scritpTorBrowser="$dir_local_scripts/tor-installer.sh"
 scriptInstallStoreli="$dir_of_executable/setup.sh"
 scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
+scriptWinetricks="$dir_local_scripts/winetricks_script.sh"
 GUI="$dir_local_scripts/gui.sh"
 
 #=============================================================#
@@ -90,25 +206,25 @@ DIR_THEME_ROOT='/usr/share/themes/'
 DIR_DESKTOP_ROOT='/usr/share/applications'
 
 if [[ ! -d "$DIR_BIN_ROOT" ]]; then
-	printf "%s\n" "Criando o diretório: $DIR_BIN_ROOT"
+	_print "Criando o diretório: $DIR_BIN_ROOT"
 	sudo mkdir "$DIR_BIN_ROOT"
 fi
 
 
 if [[ ! -d "$DIR_ICON_ROOT" ]]; then
-	printf "%s\n" "Criando o diretório: $DIR_ICON_ROOT"
+	_print "Criando o diretório: $DIR_ICON_ROOT"
 	sudo mkdir "$DIR_ICON_ROOT"
 fi
 
 
 if [[ ! -d "$DIR_THEME_ROOT" ]]; then
-	printf "%s\n" "Criando o diretório: $DIR_THEME_ROOT"
+	_print "Criando o diretório: $DIR_THEME_ROOT"
 	sudo mkdir "$DIR_THEME_ROOT"
 fi
 
 
 if [[ ! -d "$DIR_DESKTOP_ROOT" ]]; then
-	printf "%s\n" "Criando o diretório: $DIR_DESKTOP_ROOT"
+	_print "Criando o diretório: $DIR_DESKTOP_ROOT"
 	sudo mkdir "$DIR_DESKTOP_ROOT"
 fi
 
@@ -116,17 +232,17 @@ fi
 # Importar Libs
 #=============================================================#
 source "$path_libs/colors.sh"
+source "$path_libs/ArrayUtils.sh"
 source "$path_libs/requeriments.sh"
 source "$path_libs/platform.sh"
 source "$path_libs/pkg_manager.sh"
 source "$path_libs/UninstallPkgs.sh"
-source "$path_libs/ArrayUtils.sh"
 source "$path_libs/programs.sh"
+source "$path_libs/wineutils.sh"
 
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
-# export TemporaryDirectory=$(mktemp --directory)
-export TemporaryDirectory="/tmp/storecli_$USER"
+export TemporaryDirectory=$(mktemp --directory)
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
@@ -156,98 +272,6 @@ touch "$LogErro"
 # Sempre verificar a configuração do PATH do usuário ao iniciar.
 "$scriptConfigPath"
 
-_red()
-{
-	echo -e "[${CRed}!${CReset}] $@"
-}
-
-_green()
-{
-	echo -e "[${CGreen}+${CReset}] $@"
-}
-
-_yellow()
-{
-	echo -e "[${CYellow}+${CReset}] $@"
-}
-
-
-_blue()
-{
-	echo -e "[${CBlue}+${CReset}] $@"
-}
-
-
-_white()
-{
-	echo -e "[${CWhite}+${CReset}] $@"
-}
-
-
-_sred()
-{
-	echo -e "${CSRed}$@${CReset}"
-}
-
-_sgreen()
-{
-	echo -e "${CSGreen}$@${CReset}"
-}
-
-_syellow()
-{
-	echo -e "${CSYellow}$@${CReset}"
-}
-
-_sblue()
-{
-	echo -e "${CSBlue}$@${CReset}"
-}
-
-_println()
-{
-	# Imprimir mensagens com printf sem quebrar linhas.
-	printf "[+] $@"
-}
-
-# Função para verifiar se um executável existe no sistema.
-is_executable()
-{
-	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
-if is_executable tput; then
-	columns=$(tput cols)
-else
-	columns='45'
-fi
-
-print_line(){
-	local L='='
-	num='1'
-	while [[ "$num" != "$columns" ]]; do
-		L="${L}="
-		num="$(($num+1))"
-	done
-	# echo -ne "$L"
-	printf '%s\n' "$L"
-}
-
-space_line=$(print_line)
-
-_msg()
-{
-	print_line
-	echo -e " $@"
-	print_line
-}
-
-
-
 _YESNO()
 {
 	# Será necessário indagar o usuário repetidas vezes durante a execução
@@ -259,7 +283,7 @@ _YESNO()
 	#
 	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
 	
-	echo -en "[>] $@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
+	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
 	read -t 15 -n 1 sn
 	echo ' '
 
@@ -275,6 +299,7 @@ _show_info()
 {
 	# Função para exibir mensagens padrão, como erro generico durante a instalação de um 
 	# programa ou um mensagem generica de sucesso.
+	[[ "$silent" == 'True' ]] && return 0
 	case "$1" in
 		AddFileDestktop) _green "Criando arquivo (.desktop)";;
 		DownloadOnly) _green "Feito somente download";;
@@ -466,10 +491,10 @@ EOF
 
 _ping()
 {
-	printf "%s" "[>] Aguardando conexão: "
+	_println "Aguardando conexão: "
 
 	if [[ $(ping -c 1 8.8.8.8) ]]; then
-		printf '%s\n' "Conectado"
+		_print "Conectado"
 		return 0
 	else
 		_sred 'FALHA'
@@ -502,14 +527,17 @@ __rmdir__()
 	[[ -z $1 ]] && return 1
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
-	# o arquivo/diretório será removido com 'sudo'.
-	cd "$DirTemp"
+	# o comando de remoção será com 'sudo'.
+	dir_content_file=$(dirname "$1")
+	cd "$dir_content_file"
+	_print "Entrando no diretório ... $(pwd)"
+	
 	while [[ $1 ]]; do
-		printf "[>] Removendo: $1 "
-		if rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"; then
-			_syellow "OK"
+		if ls "$1" 1> /dev/null 2>&1; then
+			_yellow "Removendo ... $1"; sleep 0.04
+			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
-			_sred "FALHA"
+			_red "Não encontrado ... $1"
 		fi
 		shift
 	done
@@ -535,15 +563,23 @@ __pkg__()
 	_msg "Instalando ... $@"
 
 	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
-		# Somente baixar os pacotes se possivel e assumir yes para indagações.
-		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
-		case "$os_id" in
-			debian|ubuntu|linuxmint) _APT install --download-only --yes "$@" || return 1;;
-			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
-			fedora) _DNF install --downloadonly -y "$@" || return 1;;
-			arch) _PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1;;
-			*) _red "(__pkg__) Erro";;
-		esac	
+		# Somente baixar os pacotes e assumir yes para indagações.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then 
+			_PKG install -y "$@" || return 1
+		elif [[ -f /etc/debian_version ]] && [[ -x $(which apt 2> /dev/null) ]]; then
+			_APT install --download-only --yes "$@" || return 1
+		elif [[ -f /etc/fedora-release ]] && [[ -x $(which dnf 2> /dev/null) ]]; then
+			_DNF install --downloadonly -y "$@" || return 1
+		elif [[ "$os_id" == 'opensuse-leap' ]] || [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
+			_ZYPPER download "$@" || return 1
+		elif [[ "$os_id" == 'arch' ]]; then
+			_PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1
+		else
+			_red "(__pkg__) Erro: $@"
+			return 1
+		fi
+		return "$?"
+	
 	elif [[ "$DownloadOnly" == 'True' ]]; then
 		# Somente baixar os pacotes.
 		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
@@ -576,7 +612,7 @@ __pkg__()
 
 __gpg__()
 {
-	printf "%s" "[>] Verificando integridade "
+	_println "Verificando integridade "
 	if gpg "$@" 1> /dev/null 2> /dev/null; then  
 		_syellow "OK"
 	else
@@ -605,10 +641,10 @@ __shasum__()
 		return 1
 	fi
 
-	_white "Gerando hash do arquivo: $1"
+	_print "Gerando hash do arquivo: $1"
 	local hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
 	
-	echo -ne "[>] Comparando valores "
+	_println "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
 		echo -e "${CYellow}OK${CReset}"
 		return 0
@@ -620,31 +656,13 @@ __shasum__()
 	fi
 }
 
-__curl__()
-{
-	# Função para baixar arquivos usando a ferramenta 'curl'.
-	url="$1"
-	path_file="$2"
-	if [[ -z $2 ]]; then
-		curl -C - -S -L -O "$url" || {
-			_red "Falha: curl -S -L -O"
-			return 1
-		}
-		return 0
-	elif [[ $2 ]]; then
-		_blue "Destino: $path_file"
-		curl -C - -S -L -o "$path_file" "$url" || {
-			_red "Falha: curl -S -L -o"
-			rm "$path_file" 2> /dev/null
-			return 1
-		}
-		return "$?"
-	fi
-
-}
-
 __download__()
 {
+	if [[ -z $2 ]]; then
+		_red "Necessário informar um arquivo de destino."
+		return 1
+	fi
+
 	if [[ -f "$2" ]]; then
 		_blue "Arquivo encontrado: $2"
 		return 0
@@ -655,6 +673,7 @@ __download__()
 	
 	_yellow "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
+	_blue "Baixando ... $2"
 	_blue "Conectando ... $1"
 
 	while true; do
@@ -722,15 +741,19 @@ _unpack()
 	# Destino para descompressão.
 	if [[ -d "$2" ]]; then 
 		DirUnpack="$2"
-	elif [[ -d "$DirUnpack" ]]; then
-		DirUnpack="$DirUnpack"
-	else
-		_red "(_unpack): nenhum diretório para descompressão foi informado"
+	elif [[ -z "$DirUnpack" ]]; then
+		_red "(_unpack): o diretório de descompressão e 'nulo'."
 		return 1
-	fi 
+	fi
+
+	if [[ ! -d "$DirUnpack" ]]; then
+		_yellow "(_unpack): criando o diretório ... $DirUnpack"
+		mkdir -p "$DirUnpack"
+	fi
 	
 	_yellow "Entrando no diretório ... $DirUnpack"
 	cd "$DirUnpack"
+	__rmdir__ $(ls)
 	path_file="$1"
 
 	# Detectar a extensão do arquivo.
@@ -808,8 +831,6 @@ _pkg_manager_storecli()
 			sublime-text) _sublime_text;;
 			vim) _vim;;
 			vscode) _vscode;;
-			python37-windows-portable) _python37_windows32_portable;;
-			python37-windows) _python37_windows32;;
 
 			Escritorio) _Office_All;;
 			atril) _atril;;
@@ -836,8 +857,7 @@ _pkg_manager_storecli()
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
-			youtube-dl-gui-windows) _youtube_dlgui_windows;;
-
+		
 			Midia) _Midia_All;;
 			blender) _blender;;
 			celluloid) _celluloid;;
@@ -870,14 +890,20 @@ _pkg_manager_storecli()
 			'gnome-tweaks') _gnome_tweaks;;
 			'topicons-plus') _topicons_plus;;
 			
-			epsxe) _epsxe;;
+			wine) _install_wine;;
+			winetricks) _install_script_winetricks;;
 			epsxe-win) _epsxe_windows;;
-			snapd) _snapd;;
+			python37-windows-portable) _python37_windows32_portable;;
+			python37-windows) _python37_windows32;;
+			youtube-dl-gui-windows) _youtube_dlgui_windows;;
 			install) ;;
-			*) _red "(_pkg_manager_storecli) programa não encontrado: $1";;
+			-y|--yes) ;;
+			-d|--downloadonly) ;;
+			*) _red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
 		esac
 		shift
 	done
+	return "$?"
 }
 
 _update_storecli()
@@ -932,10 +958,13 @@ _update_storecli()
 main()
 {	
 	for ARG in "$@"; do
-		case ARG in
-		-y|--yes) export AssumeYes='True';;
-		-d|--downloadonly) export DownloadOnly='True';;
-		-I|--ignore-cli) export IgnoreCli='True';;
+		case "$ARG" in
+			-y|--yes) export AssumeYes='True';;
+			-d|--downloadonly) export DownloadOnly='True';;
+			-I|--ignore-cli) export IgnoreCli='True';;
+			-s|--silent) export silent='True';;
+			-h|--help) usage; return 0; break;;
+			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
 		esac
 	done
 
@@ -967,16 +996,15 @@ main()
 			-b|--broke) _BROKE;;
 			-c|--configure) _run_configuration_dep;;
 			-l) shift; _list_applications "$@"; return 0; break;;
-			-h|--help) usage; return 0; break;;
-			-u|--self-update) "$scriptInstallStoreli";;
-			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
+			-u|--self-update) "$scriptInstallStoreli"; break;;
 			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
-			remove)  shift; _uninstall_packages "$@"; return "$?";;
+			remove)  shift; _uninstall_packages "$@" || return 1 && break;;
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			*) _red "(main) argumento inválido: $ARG"; return 1; break;;
+			*) _red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
 		esac
+		shift
 	done
 	return "$?"
 }
@@ -988,6 +1016,19 @@ if [[ -z $1 ]]; then
 	fi 
 	"$GUI"
 else
-	main "$@"
+	# Executar a função main passando todos os argumentos recebidos na linha de comando.
+	main "${@}" || STATUS_OUTPUT='1'
+
+	# Remover diretórios e subdiretórios temporários.
+	silent='True'
+	__rmdir__ "$TemporaryDirectory"
+
+	if [[ "$STATUS_OUTPUT" == '1' ]]; then
+		exit 1
+	else
+		exit 0
+	fi
 fi
+
+
 

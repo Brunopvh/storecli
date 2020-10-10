@@ -1945,12 +1945,11 @@ _tixati_tarfile()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	printf "%s" "[>] Importando key tixati "
+	_println "Importando key tixati "
 	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
-		echo -e "${CYellow}OK${CReset}"
+		_syellow "OK"
 	else
-		echo ' '
-		_red "Falha: gpg --import"
+		_sred "(_tixati): Falha"
 		return 1
 	fi
 
@@ -1958,7 +1957,6 @@ _tixati_tarfile()
 	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
-	_msg "Instalando gconf2"
 	case "$os_id" in
 		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ gconf2;;
 		ubuntu|linuxmint|debian) __pkg__ gconf2;;

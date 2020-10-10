@@ -5,7 +5,7 @@
 
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(
-'wget' 'curl' 'gawk' 'unzip' 'python3' 
+'wget' 'curl' 'gawk' 'unzip' 'python3' 'git' 
 )
 
 # Utilitários de linha de comando para sistemas baseados em debian.
@@ -57,13 +57,13 @@ _config_python3()
 	_msg "Instalando os seguintes módulos python3: wget wheel tqdm"
 
 	if is_executable 'pip3'; then
-		_yellow "Executando: pip3 install wget wheel tqdm --user"
+		_yellow "Executando: pip3 install wget wheel --user"
 		pip3 install wheel wget tqdm --user || return 1 
 		return 0
 	fi
 
 	if is_executable 'pip'; then
-		_yellow "Executando: pip install wget wheel tqdm --user"
+		_yellow "Executando: pip install wget wheel --user"
 		pip install wheel wget tqdm --user || return 1 
 		return 0
 	fi
@@ -82,12 +82,11 @@ _config_python3()
 _config_requeriments_freebsd()
 {
 	# Instalar ferramentas de linha de comando.
-	_msg "Instalando: ${requeriments_cli_linux[@]}"
-	_pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
+	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 
 	# Instalar utilitários para python3.
 	_msg "Instalando: ${requeriments_python3_freebsd[@]}"
-	_pkg_manager_sys "${requeriments_python3_freebsd[@]}" || return 1
+	__pkg__ "${requeriments_python3_freebsd[@]}" || return 1
 	return 0
 }
 
@@ -98,12 +97,10 @@ _config_requeriments_freebsd()
 _config_requeriments_fedora()
 {
 	# Instalar ferramentas de linha de comando.
-	_msg "Instalando: ${requeriments_cli_linux[@]}"
-	_pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
+	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 
 	# Instalar utilitários para python3.
-	_msg "Instalando: ${requeriments_python3_fedora[@]}"
-	_pkg_manager_sys "${requeriments_python3_fedora[@]}" || return 1
+	__pkg__ "${requeriments_python3_fedora[@]}" || return 1
 	return 0
 }
 
@@ -114,12 +111,10 @@ _config_requeriments_opensuseleap()
 {
 	_yellow "Executando: zypper ref"
 	_ZYPPER ref
-	_msg "Instalando: ${requeriments_cli_linux[@]}"
-	_pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
+	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 	
 	# Instalar utilitários para python3.
-	_msg "Instalando: ${requeriments_python3_opensuseleap[@]}"
-	_pkg_manager_sys "${requeriments_python3_opensuseleap[@]}" || return 1
+	__pkg__ "${requeriments_python3_opensuseleap[@]}" || return 1
 		
 	return 0
 }
@@ -128,31 +123,21 @@ _config_requeriments_opensuseleap()
 _config_requeriments_debian()
 {
 	_APT update
-	_msg "Instalando: ${requeriments_cli_linux[@]}"
-	_pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
-
-	_msg "Instalando: ${requeriments_cli_debian[@]}"
-	_pkg_manager_sys "${requeriments_cli_debian[@]}" || return 1
-
-	_msg "Instalando: ${requeriments_python3_debian[@]}"
-	_pkg_manager_sys "${requeriments_python3_debian[@]}" || return 1
+	__pkg__ "${requeriments_cli_linux[@]}" || return 1
+	__pkg__ "${requeriments_cli_debian[@]}" || return 1
+	__pkg__ "${requeriments_python3_debian[@]}" || return 1
 	return 0
 }
 
 _config_requeriments_archlinux()
 {
-	 _msg "Instalando: ${requeriments_cli_linux[@]}"
-	 _pkg_manager_sys "${requeriments_cli_linux[@]}" || return 1
-
-	 _msg "Instalando: python3 python-pip python-setuptools python-pmw"
-	 _pkg_manager_sys python3 'python-pip' 'python-setuptools' 'python-pmw' || return 1
-
-	 _msg "Instalando: binutils"
-	 _pkg_manager_sys binutils || return 1
+	__pkg__ "${requeriments_cli_linux[@]}" || return 1
+	__pkg__ python3 'python-pip' 'python-setuptools' 'python-pmw' || return 1
+	__pkg__ binutils || return 1
 	return 0
 
 	# xdpinfo
-	# _pkg_manager_sys 'xorg-xdpyinfo'
+	# __pkg__ 'xorg-xdpyinfo'
 }
 
 

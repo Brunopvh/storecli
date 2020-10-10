@@ -15,6 +15,7 @@ _etcher_package_deb()
 	__download__ "$URLetcher" "$PathFileEtcher" || return 1
 	_APT update	
 	_GDEBI "$PathFileEtcher"
+	_BROKE
 }
 
 _etcher_ubuntu()
@@ -537,7 +538,7 @@ _android_studio_fedora()
 			'zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686'
 			)
 
-	__msg "Instalando: ${array_libs_fedora[@]}"
+	_msg "Instalando: ${array_libs_fedora[@]}"
 	__pkg__ "${array_libs_fedora[@]}"
 
 	_android_studio_zip || return 1
@@ -621,8 +622,8 @@ _pycharm()
 {
 	# Já instalado.
 	is_executable 'pycharm' && _show_info 'PkgInstalled' 'pycharm' && return 0
-	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.1.tar.gz'
-	local hash_pycharm='1aa49fd01ec9020c288a583ac90e777df3ae5c5dfcf4cc73d93ac7be1284a9d1'
+	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.2.tar.gz'
+	local sha256_pycharm='60b2eeea5237f536e5d46351fce604452ce6b16d037d2b7696ef37726e1ff78a'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
 	
 	__download__ "$url_pycharm" "$path_file" || return 1
@@ -630,7 +631,7 @@ _pycharm()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	__shasum__ "$path_file" "$hash_pycharm" || return 1
+	__shasum__ "$path_file" "$sha256_pycharm" || return 1
 	_unpack "$path_file" || return 1
 
 	cd "$DirUnpack" 
@@ -654,7 +655,6 @@ _pycharm()
         echo "Type=Application"
     } >> "${destinationFilesPycharm[file_desktop]}"
 
-    
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/Desktop/ 2> /dev/null 
@@ -1518,6 +1518,13 @@ _torbrowser()
 
 _clipgrab_appimage()
 {
+	# Instalar o clipgrab na versão AppImage.
+
+	if is_executable clipgrab; then
+		_show_info 'PkgInstalled' 'clipgrab'
+		return 0
+	fi
+
 	local url_clipgrab_appimage='https://download.clipgrab.org/ClipGrab-3.8.13-x86_64.AppImage'
 	local path_file="$DirDownloads/$(basename $url_clipgrab_appimage)"
 
@@ -1830,6 +1837,10 @@ _install_teamviewer_fedora()
 	
 	__download__ "$url_rpm" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+
+
+	# Instalar dependências
+	__pkg__ 'qt5-qtquickcontrols'
 	_RPM --install "$path_file" || return 1
 }
 
@@ -1919,7 +1930,7 @@ _tixati_tarfile()
 	# Já instalado.
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	_yellow "Obtendo URL de download aguarde."
+	_yellow "Obtendo url de download tixati aguarde..."
 	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
 	local tixati_html=$(wget -q -O- "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
@@ -2328,129 +2339,6 @@ _youtube_dlgui()
 	fi
 }
 
-_youtube_dlgui_windows()
-{
-	# https://mrs0m30n3.github.io/youtube-dl-gui/
-	# https://github.com/MrS0m30n3/youtube-dl-gui
-	# https://wxpython.org/pages/downloads/
-	# https://pypi.org/project/twodict/
-	# https://www.python.org/downloads/release/python-278/
-	#
-	local url_youtube_DLGUI_win='https://github.com/MrS0m30n3/youtube-dl-gui/releases/download/0.4/youtube-dl-gui-0.4-win-setup.zip'
-	local url_youtube_DL='https://yt-dl.org/downloads/2020.07.28/youtube-dl.exe'
-	local url_visualC='https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe'
-	local url_wxpython_win32='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe/download'
-	local url_gnu_gettext='https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.20.2-v1.16/gettext0.20.2-iconv1.16-static-32.exe'
-	local url_python27='https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi'
-
-	local path_file_ytDL="$DirDownloads/youtube-dl.exe"
-	local path_file_ytDLGUI="$DirDownloads/youtube-dl-gui-0.4-win-setup.zip"
-	local path_file_visualC="$DirDownloads/$(basename $url_visualC)"
-	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
-	local path_file_GNU_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
-	local path_file_python27="$DirDownloads/$(basename $url_python27)"
-	
-	__download__ "$url_youtube_DLGUI_win" "$path_file_ytDLGUI" || return 1
-	__download__ "$url_visualC" "$path_file_visualC" || return 1 
-	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
-	__download__ "$url_gnu_gettext" "$path_file_GNU_gettext" || return 1
-	
-	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
-		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
-		_install_wine	
-	fi
-
-	cd "$DirDownloads"
-	_msg "Instalando: atmlib"; winetricks atmlib
-	_msg "Instalando: dotnet45"; winetricks dotnet45
-	_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
-	_msg "Instalando: python2.7"; winetricks python27
-	_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
-	_msg "Instalando: visual C"; wine "$path_file_visualC"
-	_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
-	_get_pip_windows # Instalar o pip.exe
-
-	_unpack "$path_file_ytDLGUI" || return 1
-	cd "$DirUnpack"
-	_msg "Instalando: youtubedlg-0.4.exe"; wine youtubedlg-0.4.exe
-	_msg "Executando: wine pip.exe install twodict"
-	wine pip.exe install twodict
-}
-
-_python37_windows32()
-{
-	local url_python37_windows32='https://www.python.org/ftp/python/3.7.6/python-3.7.6rc1-amd64.exe'
-	local path_file_python37="$DirDownloads/$(basename $url_python37_windows32)"
-
-	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
-		_install_wine	
-	fi
-
-	if ! is_executable winetricks; then
-		__pkg__ winetricks
-	fi
-
-	__download__ "$url_python37_windows32" "$path_file_python37" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	_msg "Executando: winetricks atmlib cmd"
-	winetricks atmlib cmd
-	_msg "Instalando: python37" 
-	wine "$path_file_python37"
-}
-
-_python37_windows32_portable()
-{
-	local url_python37_portable='https://www.python.org/ftp/python/3.7.6/python-3.7.6-embed-win32.zip'
-	local path_file_python37_portable="$DirDownloads/$(basename $url_python37_portable)"
-
-	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
-		_install_wine
-	fi
-
-	if ! is_executable winetricks; then
-		__pkg__ winetricks
-	fi
-
-	__download__ "$url_python37_portable" "$path_file_python37_portable" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	_msg "Executando: winetricks atmlib dotnet45 cmd"
-	winetricks atmlib dotnet45 cmd
-
-	_unpack "$path_file_python37_portable" || return 1
-	mkdir -p "$HOME"/.wine/drive_c/python37
-	cp -R -u "$DirUnpack"/. "$HOME"/.wine/drive_c/python37/.
-	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
-	wine "$HOME"/.wine/drive_c/python37/python.exe -V
-	_get_pip_windows
-}
-
-_get_pip_windows()
-{
-	local url_get_pip='https://bootstrap.pypa.io/get-pip.py'
-	local path_file_getPIP="$DirDownloads/$(basename $url_get_pip)"
-
-	__download__ "$url_get_pip" "$path_file_getPIP" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	cd "$HOME"/.wine/drive_c/python37/
-	_msg "Executando: wine $HOME/.wine/drive_c/python37/python.exe $path_file_getPIP"
-	wine "$HOME"/.wine/drive_c/python37/python.exe "$path_file_getPIP"
-}
-
-_install_wine()
-{
-	# pywine
-	# https://github.com/Brunopvh/pywine/archive/master.zip
-	# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
-	local url_pywine='https://github.com/Brunopvh/pywine/archive/master.zip'
-	local path_file="$DirTemp/install-pywine.sh"
-
-	_msg "Executando ... https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh"
-	sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/pywine/master/INSTALL.sh)"
-}
-
 _bluetooth()
 {
 	if [[ "$os_id" != 'debian' ]]; then
@@ -2781,6 +2669,7 @@ _virtualbox_fedora()
 	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$DirDownloads/oracle_vbox.asc"
 	_yellow "Importando: $DirDownloads/oracle_vbox.asc"
 	sudo rpm --import "$DirDownloads/oracle_vbox.asc"
+	__rmdir__ "$DirDownloads/oracle_vbox.asc"
 	
 	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
 	sudo sh -c 'wget -q -O /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
@@ -2811,7 +2700,7 @@ _virtualbox_debian()
 
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		bionic|tricia|focal) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
+		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
 	
@@ -3207,107 +3096,6 @@ _gnome_tweaks()
 	__pkg__ 'gnome-tweaks'
 }
 
-_epsxe_windows()
-{
-	# ePSXe win 32
-	# CONFIGURAÇÃO PATH NO WINE
-	# https://www.windows-commandline.com/set-path-command-line/
-	#
-	# echo %path%
-	# setx path "%path%;c:\directoryPath" 
-	# setx path "%path%;c:\epsxe-win"
-	# setx path "%path%;c:\dir1\dir2"
-	# pathman /as C:\epsxe-win
-	#
-	# REMOVE DIRETÓRIO DO PATH
-	# pathman /rs directoryPath	
-	#
-	#
-	local URLepsxeWin='http://www.epsxe.com/files/ePSXe205.zip'  # V2.0.5
-	local pathFileZip="$DirDownloads/$(basename $URLepsxeWin)"
-	local hashFileZip='46e1a7ad3dc9c75763440c153465cdccc9a3ba367e3158542953ece4bcdb7b4f' # V2.0.5
-
-	mkdir -p "${destinationFilesEpsxeWin32[dir]}"
-	_clear_temp_dirs
-
-	__download__ "$URLepsxeWin" "$pathFileZip" || return 1
-	__shasum__ "$pathFileZip" "$hashFileZip" || return 1
-	_unpack "$pathFileZip" || return 1
-	cd "$DirUnpack"
-	cp -R -n * "${destinationFilesEpsxeWin32[dir]}"/
-
-	_yellow "Criando script para execução de ePSXe"
-	echo '#!/bin/sh' > "${destinationFilesEpsxeWin32[file_script]}"
-	{
-		echo -e "\nWINEPREFIX=/home/bruno/.wine"
-		echo -e "\ncd ${destinationFilesEpsxeWin32[dir]}"
-		echo -e "wine ePSXe.exe" 
-	} >> "${destinationFilesEpsxeWin32[file_script]}"
-
-
-	echo "[Desktop Entry]" > "${destinationFilesEpsxeWin32[file_desktop]}"
-	{
-	  echo "Type=Application"
-	  echo "Terminal=false"
-	  echo "Exec=${destinationFilesEpsxeWin32[file_script]}"
-	  echo "Name=ePSXe-Win32"
-	  echo "Comment=Instalado via storecli github: https://github.com/Brunopvh/storecli"
-	  echo "Categories=Game;Emulator;"
-	} >> "${destinationFilesEpsxeWin32[file_desktop]}"
-
-	chmod +x "${destinationFilesEpsxeWin32[file_script]}"
-	chmod +rwx "${destinationFilesEpsxeWin32[file_desktop]}"
-
-	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
-		return 1
-	fi
-
-	if ! is_executable winetricks; then
-		_red "Necessário ter o winetricks instalado para prosseguir"
-		return 1
-	fi
-
-	_yellow "Instalado: directx9 atmlib"
-	winetricks directx9 atmlib
-	"${destinationFilesEpsxeWin32[file_script]}"
-}
-
-_epsxe()
-{
-	# https://wiki.archlinux.org/index.php/EPSXe
-	# https://aur.archlinux.org/packages/epsxe/
-	# libncurses.so.5 => not found
-	# libtinfo.so.5 => not found
-	# libSDL_ttf-2.0.so.0 => not found
-	#
-	local urlEpsxe='http://www.epsxe.com/files/ePSXe205linux_x64.zip'
-	local pathFileEpsxe="$DirDownloads/$(basename $urlEpsxe)"
-
-	__download__ "$urlEpsxe" "$pathFileEpsxe" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-
-	_unpack "$pathFileEpsxe" || return 0
-	cd "$DirUnpack"
-	mkdir -p "${destinationFilesEpsxe[dir]}"
-	cp -R -u epsxe_x64 "${destinationFilesEpsxe[dir]}"/
-	cp -R -u docs "${destinationFilesEpsxe[dir]}"/
-	ln -sf "${destinationFilesEpsxe[dir]}"/epsxe_x64 "${destinationFilesEpsxe[link]}" 
-	
-	echo "[Desktop Entry]" > "${destinationFilesEpsxe[file_desktop]}"
-	{
-	  echo "Type=Application"
-	  echo "Terminal=false"
-	  echo "Exec='cd ${destinationFilesEpsxe[dir]}; ./epsxe_x64'"
-	  echo "Name=ePSXe"
-	  echo "Comment=Instalado via storecli github: https://github.com/Brunopvh/storecli"
-	  echo "Icon=${destinationFilesEpsxe[file_png]}"
-	  echo "Categories=Game;Emulator;"
-	} >> "${destinationFilesEpsxe[file_desktop]}"
-	
-	chmod -R +x "${destinationFilesEpsxe[dir]}"
-	chmod +x "${destinationFilesEpsxe[file_desktop]}"
-}
 
 #=============================================================#
 # Instalar todos os pacotes da categória Acessorios.
@@ -3318,23 +3106,39 @@ _Acessory_All()
 		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" = 'True' ]]; then
-		main --yes --downloadonly install etcher
-		main --yes --downloadonly install gnome-disk
-		main --yes --downloadonly install veracrypt
-		main --yes --downloadonly install woeusb
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		main --yes install etcher
-		main --yes install gnome-disk
-		main --yes install veracrypt
-		main --yes install woeusb
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_acessory[@]}"
+		else
+			main install --yes "${programs_acessory[@]}"
+		fi
 	else
-		main install etcher
-		main install gnome-disk
-		main install veracrypt
-		main install woeusb
+		main install "${programs_acessory[@]}"
 	fi
 }
+
+
+#=============================================================#
+# Instalar todos os pacotes da categória Desenvolvimento.
+#=============================================================#
+_Dev_All()
+{
+	if [[ -z "$AssumeYes" ]]; then
+		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
+	fi
+	
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_development[@]}"
+		else
+			main install --yes "${programs_development[@]}"
+		fi
+	else
+		main install "${programs_development[@]}"
+	fi
+}
+
+
 
 #=============================================================#
 # Instalar todos os pacotes da categória Sistema.
@@ -3345,31 +3149,14 @@ _System_All()
 		_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
 	fi
 	
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		main --yes --downloadonly install bluetooth
-		main --yes --downloadonly install compactadores
-		main --yes --downloadonly install gparted
-		main --yes --downloadonly install peazip
-		main --yes --downloadonly install refind
-		main --yes --downloadonly install stacer
-		main --yes --downloadonly install virtualbox
-		
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" --yes install bluetooth
-		"$scriptStorecli" --yes install compactadores
-		"$scriptStorecli" --yes install gparted
-		"$scriptStorecli" --yes install peazip
-		"$scriptStorecli" --yes install refind
-		"$scriptStorecli" --yes install stacer
-		"$scriptStorecli" --yes install virtualbox
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_system[@]}"
+		else
+			main install --yes "${programs_system[@]}"
+		fi
 	else
-		"$scriptStorecli" install bluetooth
-		"$scriptStorecli" install compactadores
-		"$scriptStorecli" install gparted
-		"$scriptStorecli" install peazip
-		"$scriptStorecli" install refind
-		"$scriptStorecli" install stacer
-		"$scriptStorecli" install virtualbox
+		main install "${programs_system[@]}"
 	fi
 }
 
@@ -3382,36 +3169,14 @@ _Internet_All()
 		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" --yes --downloadonly install megasync
-		"$scriptStorecli" --yes --downloadonly install proxychains
-		"$scriptStorecli" --yes --downloadonly install qbittorrent
-		"$scriptStorecli" --yes --downloadonly install teamviewer
-		"$scriptStorecli" --yes --downloadonly install telegram
-		"$scriptStorecli" --yes --downloadonly install tixati
-		"$scriptStorecli" --yes --downloadonly install uget
-		"$scriptStorecli" --yes --downloadonly install youtube-dl
-		"$scriptStorecli" --yes --downloadonly install youtube-dl-gui
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" --yes install megasync
-		"$scriptStorecli" --yes install proxychains
-		"$scriptStorecli" --yes install qbittorrent
-		"$scriptStorecli" --yes install teamviewer
-		"$scriptStorecli" --yes install telegram
-		"$scriptStorecli" --yes install tixati
-		"$scriptStorecli" --yes install uget
-		"$scriptStorecli" --yes install youtube-dl
-		"$scriptStorecli" --yes install youtube-dl-gui
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_internet[@]}"
+		else
+			main install --yes "${programs_internet[@]}"
+		fi
 	else
-		"$scriptStorecli" install megasync
-		"$scriptStorecli" install proxychains
-		"$scriptStorecli" install qbittorrent
-		"$scriptStorecli" install teamviewer
-		"$scriptStorecli" install telegram
-		"$scriptStorecli" install tixati
-		"$scriptStorecli" install uget
-		"$scriptStorecli" install youtube-dl
-		"$scriptStorecli" install youtube-dl-gui
+		main install "${programs_internet[@]}"
 	fi
 }
 
@@ -3424,24 +3189,14 @@ _Browser_All()
 		_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" --yes --downloadonly install chromium
-		"$scriptStorecli" --yes --downloadonly install firefox
-		"$scriptStorecli" --yes --downloadonly install google-chrome
-		"$scriptStorecli" --yes --downloadonly install opera-stable
-		"$scriptStorecli" --yes --downloadonly install torbrowser
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" --yes install chromium
-		"$scriptStorecli" --yes install firefox
-		"$scriptStorecli" --yes install google-chrome
-		"$scriptStorecli" --yes install opera-stable
-		"$scriptStorecli" --yes install torbrowser
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_browser[@]}"
+		else
+			main install --yes "${programs_browser[@]}"
+		fi
 	else
-		"$scriptStorecli" install chromium
-		"$scriptStorecli" install firefox
-		"$scriptStorecli" install google-chrome
-		"$scriptStorecli" install opera-stable
-		"$scriptStorecli" install torbrowser
+		main install "${programs_browser[@]}"
 	fi
 }
 
@@ -3454,21 +3209,14 @@ _Office_All()
 		_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" -y -d install atril
-		"$scriptStorecli" -y -d install fontes-ms
-		"$scriptStorecli" -y -d install libreoffice-appimage
-		"$scriptStorecli" -y -d install libreoffice
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" -y install atril
-		"$scriptStorecli" -y install fontes-ms
-		"$scriptStorecli" -y install libreoffice-appimage
-		"$scriptStorecli" -y install libreoffice
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_office[@]}"
+		else
+			main install --yes "${programs_office[@]}"
+		fi
 	else
-		"$scriptStorecli" install atril
-		"$scriptStorecli" install fontes-ms
-		"$scriptStorecli" install libreoffice-appimage
-		"$scriptStorecli" install libreoffice
+		main install "${programs_office[@]}"
 	fi
 }
 
@@ -3481,70 +3229,14 @@ _Midia_All()
 		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
 	fi
 
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" -y -d install codecs
-		"$scriptStorecli" -y -d install celluloid
-		"$scriptStorecli" -y -d install cinema
-		"$scriptStorecli" -y -d install gnome-mpv
-		"$scriptStorecli" -y -d install parole
-		"$scriptStorecli" -y -d install smplayer
-		"$scriptStorecli" -y -d install spotify
-		"$scriptStorecli" -y -d install totem
-		"$scriptStorecli" -y -d install vlc
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" -y install codecs
-		"$scriptStorecli" -y install celluloid
-		"$scriptStorecli" -y install cinema
-		"$scriptStorecli" -y install gnome-mpv
-		"$scriptStorecli" -y install parole
-		"$scriptStorecli" -y install smplayer
-		"$scriptStorecli" -y install spotify
-		"$scriptStorecli" -y install totem
-		"$scriptStorecli" -y install vlc
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_midia[@]}"
+		else
+			main install --yes "${programs_midia[@]}"
+		fi
 	else
-		"$scriptStorecli" install codecs
-		"$scriptStorecli" install celluloid
-		"$scriptStorecli" install cinema
-		"$scriptStorecli" install gnome-mpv
-		"$scriptStorecli" install parole
-		"$scriptStorecli" install smplayer
-		"$scriptStorecli" install spotify
-		"$scriptStorecli" install totem
-		"$scriptStorecli" install vlc
+		main install "${programs_midia[@]}"
 	fi
 }
-
-#=============================================================#
-# Instalar todos os pacotes da categória Desenvolvimento.
-#=============================================================#
-_Dev_All()
-{
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
-	fi
-	
-	if [[ "$AssumeYes" == 'True' ]] && [[ "$DownloadOnly" == 'True' ]]; then
-		"$scriptStorecli" -y -d install android-studio
-		"$scriptStorecli" -y -d install codeblocks
-		"$scriptStorecli" -y -d install pycharm
-		"$scriptStorecli" -y -d install sublime-text
-		"$scriptStorecli" -y -d install vim
-		"$scriptStorecli" -y -d install vscode
-	elif [[ "$AssumeYes" == 'True' ]]; then
-		"$scriptStorecli" -y install android-studio
-		"$scriptStorecli" -y install codeblocks
-		"$scriptStorecli" -y install pycharm
-		"$scriptStorecli" -y install sublime-text
-		"$scriptStorecli" -y install vim
-		"$scriptStorecli" -y install vscode
-	else
-		"$scriptStorecli" install android-studio
-		"$scriptStorecli" install codeblocks
-		"$scriptStorecli" install pycharm
-		"$scriptStorecli" install sublime-text
-		"$scriptStorecli" install vim
-		"$scriptStorecli" install vscode
-	fi
-}
-
 
