@@ -612,7 +612,7 @@ __pkg__()
 
 __gpg__()
 {
-	printf "%s" "[>] Verificando integridade "
+	_println "Verificando integridade "
 	if gpg "$@" 1> /dev/null 2> /dev/null; then  
 		_syellow "OK"
 	else
@@ -641,10 +641,10 @@ __shasum__()
 		return 1
 	fi
 
-	_white "Gerando hash do arquivo: $1"
+	_print "Gerando hash do arquivo: $1"
 	local hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
 	
-	echo -ne "[>] Comparando valores "
+	_println "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
 		echo -e "${CYellow}OK${CReset}"
 		return 0
@@ -658,6 +658,11 @@ __shasum__()
 
 __download__()
 {
+	if [[ -z $2 ]]; then
+		_red "Necessário informar um arquivo de destino."
+		return 1
+	fi
+
 	if [[ -f "$2" ]]; then
 		_blue "Arquivo encontrado: $2"
 		return 0
@@ -668,13 +673,14 @@ __download__()
 	
 	_yellow "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
+	_blue "Baixando ... $2"
 	_blue "Conectando ... $1"
 
 	while true; do
-		if is_executable curl; then
-			curl -C - -S -L -o "$path_file" "$url" && break
-		elif is_executable wget; then
+		if is_executable wget; then
 			wget -c "$url" -O "$path_file" && break
+		elif is_executable curl; then
+			curl -C - -S -L -o "$path_file" "$url" && break
 		else
 			return 1
 			break

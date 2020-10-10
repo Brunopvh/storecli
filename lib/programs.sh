@@ -1518,6 +1518,13 @@ _torbrowser()
 
 _clipgrab_appimage()
 {
+	# Instalar o clipgrab na versão AppImage.
+
+	if is_executable clipgrab; then
+		_show_info 'PkgInstalled' 'clipgrab'
+		return 0
+	fi
+
 	local url_clipgrab_appimage='https://download.clipgrab.org/ClipGrab-3.8.13-x86_64.AppImage'
 	local path_file="$DirDownloads/$(basename $url_clipgrab_appimage)"
 
@@ -1830,6 +1837,10 @@ _install_teamviewer_fedora()
 	
 	__download__ "$url_rpm" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+
+
+	# Instalar dependências
+	__pkg__ 'qt5-qtquickcontrols'
 	_RPM --install "$path_file" || return 1
 }
 
