@@ -319,7 +319,7 @@ _ismount()
 	# Use _ismount "$1"
 	local partition="$1"
 
-	if ! ls "$1" 1> /dev/null 2>&1; then 
+	if ! ls "$1" 1> /dev/null; then 
 		_red "(_ismount): informe uma partição do tipo /dev/sdXy"
 		return 1
 	fi
