@@ -19,10 +19,7 @@ _uninstall_etcher()
 
 _uninstall_vscode()
 {
-	case "$os_id" in
-		debian|ubuntu|linuxmint) _APT remove code;;
-		*) __rmdir__ "${destinationFilesVscode[@]}";;
-	esac
+	__rmdir__ "${destinationFilesVscode[@]}"
 }
 
 _uninstall_teamviewer()

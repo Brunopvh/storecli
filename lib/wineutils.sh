@@ -40,8 +40,7 @@ _youtube_dlgui_windows()
 	if ! is_executable winetricks; then
 		_install_script_winetricks
 	fi
-
-
+	
 	_print "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
 	_msg "Instalando: atmlib"; winetricks atmlib
@@ -217,7 +216,7 @@ _install_wine_ubuntu()
 			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key'
 			;;
 		focal|ulyana)
-			__pkg__ 'wine'
+			__pkg__ 'wine' || return 1
 			return 0 
 			;;
 		*) _red "Intale o wine manualmente usado o 'apt'" 
@@ -243,7 +242,13 @@ _install_wine_ubuntu()
 	_APT update
 	__pkg__ 'libfaudio0:i386' || return 1
 
-	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
+	requeriments_wine_debian=(
+		'wine-stable-i386' 
+		'wine-stable-amd64' 
+		'wine-stable' 
+		'winehq-stable'
+		)
+
 	for APP in "${requeriments_wine_debian[@]}"; do
 		__pkg__ "$APP" || break
 	done

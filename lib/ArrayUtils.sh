@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
 
-#=============================================================#
-# Informação com dirtórios e arquivos de alguns programas, para
+#
+# Este arquivo guarda informações como dirtórios e arquivos de alguns programas
 # para tornar a instalação e remoção dos programas mais prática.
-#   Também serve para gerenciar o destino de alguns programas no 
-# disco rígido.
-#=============================================================#
+#   Também serve para guardar o destino de alguns programas no 
+# disco rígido, essas informações são guardadas em ARRAYS para facilitar
+# a idendificação desses arquivos e diretórios.
 
 #=============================================================#
 # Acessorios
@@ -93,7 +93,6 @@ destinationFilesTixati=(
 	[file_png]="$DIR_ICON_ROOT/48x48/apps/tixati.png" 
 	[file_bin]="$DIR_BIN_ROOT/tixati"                                       
 )
-
 
 destinationFilesTeamviewer=(
 	'/opt/teamviewer'

@@ -52,7 +52,7 @@ _etcher_archlinux()
 _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
-	_white "Adicionando repositório"
+	_yellow "Adicionando repositório"
 	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -O /etc/yum.repos.d/etcher-rpm.repo
 	__pkg__ 'balena-etcher-electron'
 }
@@ -373,33 +373,11 @@ _woeusb()
 	fi
 }
 
-
-
-_android_sdktools()
-{
-	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-	local url_sdktools='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
-	local url_commandline_tools='https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip'
-	local url_emulator='https://dl.google.com/android/repository/emulator-linux-6466327'
-
-	local path_sdktools="$DirDownloads/$(basename $url_sdktools)"
-	local path_commandline_tools="$DirDownloads/$(basename $url_commandline_tools)"
-	local hash_commandline_tools='f10f9d5bca53cc27e2d210be2cbc7c0f1ee906ad9b868748d74d62e10f2c8275'
-	local hash_skdtools=''
-	local JDKloaction="$HOME/.local/bin/android-studio/jre"
-	local SDKlocation="$HOME/Android/Sdk"
-
-	# Baixar skdtools.
-	__download__ "$url_sdktools" "$path_sdktools"
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-}
-
-
 _android_studio_zip()
 {
 	# https://developer.android.com/studio
 	local url='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
-	local hash_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
+	local hash_android_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
 	local path_file="$DirDownloads/$(basename $url)"
 
 	__download__ "$url" "$path_file" || return 1
@@ -407,7 +385,7 @@ _android_studio_zip()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
-	__shasum__ "$path_file" "$hash_studio" || return 1
+	__shasum__ "$path_file" "$hash_android_studio" || return 1
 	_unpack "$path_file" || return 1
 
 	_white "Instalando android studio em ~/.local/bin"
@@ -450,27 +428,26 @@ _android_studio_debian()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
 	if [[ ! -f /etc/debian_version ]]; then
+		_red "Seu sistema não é baseado em Debian."
 		return 1
 	fi
 
 	local debianBusterRequeriments=(
-		'qemu-kvm' 
-		'libvirt-clients' 
-		'libvirt-daemon-system'
+		qemu-kvm
+		libvirt-clients 
+		libvirt-daemon-system
 		lib32z1 
-		'lib32stdc++6' 
+		lib32stdc++6 
 		lib32gcc1 
 		lib32ncurses6 
 		lib32tinfo6 
-		'libc6-i386'
+		libc6-i386
 		)
 
 	_APT update
-	_green "Instalando: openjdk-11-jdk"
 	__pkg__ 'openjdk-11-jdk'
 
 	for c in "${debianBusterRequeriments[@]}"; do
-		_msg "Instalando: $c"
 		__pkg__ "$c"
 	done
 	
@@ -497,24 +474,22 @@ _android_studio_ubuntu()
 	fi
 
 	local ubuntuBionicRequeriments=(
-		'qemu-kvm' 
-		'libvirt-bin' 
-		'ubuntu-vm-builder' 
-		'bridge-utils'
+		qemu-kvm
+		libvirt-bin 
+		ubuntu-vm-builder 
+		bridge-utils
 		lib32z1 
 		lib32ncurses5 
-		'lib32stdc++6' 
+		lib32stdc++6 
 		lib32gcc1 
 		lib32tinfo5 
-		'libc6-i386'
+		libc6-i386
 		)
 
 	_APT update
-	_msg "Instalando: openjdk-8-jdk"
 	__pkg__ 'openjdk-8-jdk'
 
 	for c in "${ubuntuBionicRequeriments[@]}"; do
-		_msg "Instalando: $c"
 		__pkg__ "$c"
 	done
 	
@@ -530,14 +505,14 @@ _android_studio_ubuntu()
 _android_studio_fedora()
 {
 	local array_libs_fedora=(
-			'zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686'
+			zlib.i686
+			ncurses-libs.i686
+			bzip2-libs.i686
 			)
 
-	_msg "Instalando: ${array_libs_fedora[@]}"
 	__pkg__ "${array_libs_fedora[@]}"
 
 	_android_studio_zip || return 1
-	#_android_sdktools
 }
 
 
@@ -551,7 +526,6 @@ _android_studio_opensuseleap()
 			'libncurses5-32bit' 
 			'libbz2-1-32bit'
 		)
-	_yellow "Instalando: ${requerimentsOpenSuse[@]}"
 	__pkg__ "${requerimentsOpenSuse[@]}"
 	_android_studio_zip
 }
@@ -715,7 +689,6 @@ _vscode_package_deb()
 	_DPKG --install "$path_file" # .deb
 }
 
-
 _vscode_tarfile()
 {
 	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
@@ -750,9 +723,9 @@ _vscode_tarfile()
 		echo "Type=Application"
 	} >> "${destinationFilesVscode[file_desktop]}"
 
-	ln -sf "${destinationFilesVscode[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
-	ln -sf "${destinationFilesVscode[file_desktop]}" ~/Desktop/ 2> /dev/null 
-	ln -sf "${destinationFilesVscode[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null	
+	cp -u "${destinationFilesVscode[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesVscode[file_desktop]}" ~/Desktop/ 2> /dev/null 
+	cp -u "${destinationFilesVscode[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null	
 }
 
 _vscode()
@@ -761,7 +734,7 @@ _vscode()
 	is_executable 'code' && _show_info 'PkgInstalled' 'code' && return 0
 
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _vscode_package_deb;;
+		debian|ubuntu|linuxmint) _vscode_tarfile;;
 		*) _vscode_tarfile;;
 	esac
 	
