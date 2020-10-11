@@ -224,8 +224,8 @@ programs_internet=(
 	uget
 	'youtube-dl'
 	'youtube-dl-gui'
-	'youtube-dl-gui-windows'
 	)
+
 
 programs_midia=(
 	celluloid
@@ -262,4 +262,14 @@ programs_gnomeshell=(
 	gnome-backgrounds
 	gnome-tweaks
 	topicons-plus
+	)
+
+
+programs_wine=(
+	wine
+	winetricks
+	epsxe-win
+	python37-windows
+	python37-windows-portable
+	youtube-dl-gui-windows
 	)

@@ -205,19 +205,17 @@ _woeusb_debian()
 	local dir_woeusb="$DirGitclone/WoeUSB"
 		
 	_APT update || return 1
-	
-	_yellow "Instalando: ${woeusbRequeriments[@]}"
 	__pkg__ "${woeusbRequeriments[@]}" || return 1
 	
 	# Instalar libwxgtk3
 	case "$os_codename" in
 		buster|bionic|tricia) __pkg__ 'libwxgtk3.0-dev' || return 1;;
-		focal) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
+		focal|ulyana) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
 		*) _show_info 'ProgramNotFound' 'WoeUSB'; return 1;;
 	esac
 	
 	_gitclone "$github_woeusb" || return 1
-	
+	_yellow "Entrando no diretório ... $dir_woeusb"
 	cd "$dir_woeusb"
 	_yellow "Executando: ./setup-development-environment.bash"; ./setup-development-environment.bash
 	_yellow "Executando: dpkg-buildpackage -uc -b -d"
@@ -330,20 +328,17 @@ _woeusb_github()
 		return 1
 	fi
 
-
 	_yellow "Executando: autoreconf --force --install"
 	if ! autoreconf --force --install 2>> "$LogErro"; then
 		_red "Falha: autoreconf --force --install"
 		return 1
 	fi
 
-
 	_yellow "Executando: ./configure" 
 	if ! ./configure 2>> "$LogErro"; then
 		_red "Falha: ./configure"
 		return 1
 	fi
-
 
 	_yellow "Executando: make" 
 	if ! make 2>> "$LogErro"; then
@@ -1599,7 +1594,7 @@ _megasync_ubuntu()
 			_msg "Instalando: $path_libraw"
 			_DPKG --install "$path_libraw" || return 1
 			;;
-		focal)
+		focal|ulyana)
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_20.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_20.04/Release.key'
 			;;
@@ -1612,8 +1607,7 @@ _megasync_ubuntu()
 	_msg "Adicionando key e repositório"
 	wget -q -O- "$mega_url_key" -o- | sudo apt-key add - || return 1
 	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list" 1> /dev/null
-	_APT update
-	_msg "Instalando: libc-ares2 libmediainfo0v5" 
+	_APT update 
 	__pkg__ 'libc-ares2' libmediainfo0v5 
 	__pkg__ megasync
 }
@@ -1806,7 +1800,6 @@ _install_teamviewer_debian()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
 
 	for i in "${array_tw_debian[@]}"; do
-		_msg "Instalando: $i"
 		__pkg__ "$i" 
 	done
 	_DPKG --install "$path_file" || _BROKE # Remover pacotes quebrados.
@@ -1895,7 +1888,6 @@ _telegram()
 	__download__ "$url_telegram" "$path_file" || return 1
 
 	# Instalar gconf2.
-	_msg "Instalando gconf2"
 	case "$os_id" in
 		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ gconf2;;
 		ubuntu|linuxmint|debian) __pkg__ gconf2;;
@@ -2146,14 +2138,14 @@ _youtube_dlgui_file_desktop_root()
 	} | sudo tee -a "$file_desktop_tubedl_gui" 1> /dev/null
 
 	_yellow "Criando atalho na Área de Trabalho"
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
 }
 
 _youtube_dlgui_compile()
 {
-	# Baixar e compilar o codigo fonte do github
+	# Baixar e compilar o codigo fonte do youtube-dl-gui no github.
 	# Instalação no sistema em /usr/local/bin/youtube-dl-gui 
 	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
@@ -2228,16 +2220,20 @@ _youtube_dlgui_pip()
 _youtube_dlgui_ubuntu()
 {
 	# https://github.com/MrS0m30n3/youtube-dl-gui.git
-	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then
-		_youtube_dlgui_pip || return 1
-	elif [[ "$os_codename" == 'eoan' ]] || [[ "$os_codename" == 'focal' ]]; then
-		__pkg__ 'python-wxgtk3.0' gettext || return 1
-		_python_twodict_github || return 1
-		_youtube_dlgui_compile || return 1
-	else
-		_show_info 'ProgramNotFound' 'youtube-dlg-gui'	
-		return 1
-	fi
+	case "$os_codename" in
+		bionic|tricia) 
+			_youtube_dlgui_pip || return 1
+			;;
+		eoan|focal|ulyana)
+			__pkg__ 'python-wxgtk3.0' gettext || return 1
+			_python_twodict_github || return 1
+			_youtube_dlgui_compile || return 1
+			;;
+		*)
+			_show_info 'ProgramNotFound' 'youtube-dl-gui'	
+			return 1
+			;;
+	esac
 
 }
 
@@ -2601,7 +2597,6 @@ _stacer_appimage()
 	fi
 }
 
-
 _stacer()
 {
 	case "$os_id" in
@@ -2613,7 +2608,6 @@ _stacer()
 		*) _stacer_appimage;;
 	esac
 }
-
 
 _virtualbox_extpack()
 {
@@ -3235,6 +3229,27 @@ _Midia_All()
 		fi
 	else
 		main install "${programs_midia[@]}"
+	fi
+}
+
+
+#=============================================================#
+# Instalar todos os pacotes da categória Wine.
+#=============================================================#
+_Wine_All()
+{
+	if [[ -z "$AssumeYes" ]]; then
+		_YESNO "Instalar todos os pacotes da categória 'Wine'" || return 1
+	fi
+
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_wine[@]}"
+		else
+			main install --yes "${programs_wine[@]}"
+		fi
+	else
+		main install "${programs_wine[@]}"
 	fi
 }
 

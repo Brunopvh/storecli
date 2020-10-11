@@ -371,6 +371,12 @@ _list_applications()
 		for APP in "${programs_gnomeshell[@]}"; do
 			printf "%s\n" "      $APP"
 		done
+
+		printf "\n"
+		printf "%s\n" "  Wine: " # Gnome Shell
+		for APP in "${programs_wine[@]}"; do
+			printf "%s\n" "      $APP"
+		done
 		printf "\n"
 
 		return 0
@@ -437,6 +443,13 @@ _list_applications()
 			GnomeShell)
 					printf "%s\n" "  Gnome Shell: "
 					for APP in "${programs_gnomeshell[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Wine)
+					printf "%s\n" "  Wine: "
+					for APP in "${programs_wine[@]}"; do
 						printf "%s\n" "      $APP"
 					done
 					printf "\n"
@@ -890,6 +903,7 @@ _pkg_manager_storecli()
 			'gnome-tweaks') _gnome_tweaks;;
 			'topicons-plus') _topicons_plus;;
 			
+			Wine) _Wine_All;;
 			wine) _install_wine;;
 			winetricks) _install_script_winetricks;;
 			epsxe-win) _epsxe_windows;;

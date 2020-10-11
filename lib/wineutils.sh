@@ -216,7 +216,7 @@ _install_wine_ubuntu()
 			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./'
 			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key'
 			;;
-		focal)
+		focal|ulyana)
 			__pkg__ 'wine'
 			return 0 
 			;;
