@@ -2653,51 +2653,86 @@ _virtualbox_fedora()
 	_virtualbox_extpack 
 }
 
-
 _virtualbox_debian()
 {
-	# find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
-		
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
 	local path_libvpx="$DirDownloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
-	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
+	local virtualbox_sources_list="/etc/apt/sources.list.d/virtualbox.list"
+	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
+	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
+	
+	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
+	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
+	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
+	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
 
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
-	
+
+	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
+	if [[ "$?" == '0' ]]; then
+		_print "Repositório virtualbox encontrado pulando"
+	else
+		_println "Adicionando repositório virtualbox ... "
+		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
+	fi
+
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	_msg "Limpando o cache do (apt)"
-	_APT clean
+	# _msg "Limpando o cache do (apt)"
+	# _APT clean
 	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
-	
-	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
-	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
-		
-	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
-	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
-		
-	echo -ne "Adicionando repositório "
-	echo "$vbox_repo" | sudo tee "$vbox_file"
 	
 	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
+	# __pkg__ libvpx6 
+	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
+	__pkg__ linux-headers-$(uname -r)
+	__pkg__ 'virtualbox-6.1' || return 1
+	_virtualbox_extpack
+}
+
+_virtualbox_ubuntu()
+{
+	local virtualbox_sources_list="/etc/apt/sources.list.d/virtualbox.list"
+	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
+	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
 	
+	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
+	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
+	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
+	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
+
+	case "$os_codename" in
+		focal|ulyana) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib";;
+		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
+		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
+	esac
+
+	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
+	if [[ "$?" == '0' ]]; then
+		_print "Repositório virtualbox encontrado pulando"
+	else
+		_println "Adicionando repositório virtualbox ... "
+		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
+	fi
+
+	# Limpar o cache antes de adicionar as chaves (recomendado).
+	# _msg "Limpando o cache do (apt)"
+	# _APT clean
+	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
+	
+	# Atualizar o cache 'apt update' apartir da função _APT.
+	_APT update 
 	# __pkg__ libvpx6 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
 	
-	if [[ "$os_codename" == 'focal' ]]; then
-		__download__ "$url_libvpx" "$path_libvpx" || return 1
-		__shasum__ "$path_libvpx" "$sum_libvpx" || return 1
-		_DPKG --install "$path_libvpx" || _BROKE
-	fi
 	
 	echo -e "$space_line"
-	__pkg__ 'virtualbox-6.0' || return 1
+	__pkg__ 'virtualbox-6.1' || return 1
 	_virtualbox_extpack
 }
 
@@ -2790,7 +2825,8 @@ _virtualbox()
 {
 	#is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
 	case "$os_id" in
-		debian|linuxmint|ubuntu) _virtualbox_debian;;
+		debian) _virtualbox_debian;;
+		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
 		arch) _virtualbox_linux_run;;	
 		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_10'
+__version__='2020_10_11'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -179,7 +179,7 @@ scriptAddRepo="$dir_local_scripts/addrepo.py"
 scritpTorBrowser="$dir_local_scripts/tor-installer.sh"
 scriptInstallStoreli="$dir_of_executable/setup.sh"
 scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
-scriptWinetricks="$dir_local_scripts/winetricks_script.sh"
+scriptWinetricksLocal="$dir_local_scripts/winetricks.sh"
 GUI="$dir_local_scripts/gui.sh"
 
 #=============================================================#
@@ -786,7 +786,7 @@ _unpack()
 		return 1
 	fi
 
-	_println "Descomprimindo: $path_file "
+	_println "$(date +%H_%M_%S) descomprimindo: $path_file "
 	
 	# Descomprimir.	
 	case "$type_file" in
@@ -799,7 +799,7 @@ _unpack()
 	esac
 
 	if [[ "$?" == '0' ]]; then
-		_syellow "OK"
+		_syellow "[OK $(date +%H_%M_%S)]"
 		return 0
 	else
 		_sred "FALHA"
