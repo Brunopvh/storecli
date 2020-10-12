@@ -486,7 +486,7 @@ _android_studio_ubuntu()
 		libc6-i386
 		)
 
-	_APT update
+	#_APT update
 	__pkg__ 'openjdk-8-jdk'
 
 	for c in "${ubuntuBionicRequeriments[@]}"; do

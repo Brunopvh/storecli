@@ -20,7 +20,7 @@ _loop_pid()
 		fi
 
 		Char="${array_chars[$num_char]}"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar [${Char}]\r"
+		echo -ne "Aguardando processo com pid [$Pid] finalizar $(date +%H_%M_%S) [${Char}]\r"
 		sleep 0.2
 		
 		num_char="$(($num_char+1))"
