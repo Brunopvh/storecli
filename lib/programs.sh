@@ -1940,9 +1940,9 @@ _tixati_tarfile()
 	sudo chmod +x "${destinationFilesTixati[file_desktop]}"
 	sudo chmod +x "${destinationFilesTixati[file_bin]}"
 
-	ln -sf "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesTixati[file_desktop]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesTixati[file_desktop]}" ~/Desktop/ 2> /dev/null
 
 	# Definir tixati como gerenciador bittorrent padrão.
 	if _YESNO "Deseja usar tixati como bittorrent padrão"; then
