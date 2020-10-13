@@ -1470,17 +1470,18 @@ esac
 _torbrowser()
 {
 	# Url do script de instalação do torbrowser.
-	local url_master_scritpTorBrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
-
-	if ! is_executable "$scritpTorBrowser"; then
-		__download__ "$url_master_scritpTorBrowser" "$scritpTorBrowser" || return 1
-		chmod +x "$scritpTorBrowser"
-	fi
+	local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+	local script_installer_torbrowser="$DirDownloads/tor.sh"
+	__download__ "$url_script_torbrowser_installer" "$script_installer_torbrowser" || return 1
+	chmod +x "$script_installer_torbrowser"
+	_print "Entrando no diretório ... $DirDownloads"; cd "$DirDownloads"
 
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		"$scritpTorBrowser" --install --downloadonly
+		_print "Executando ./tor.sh --install --downloadonly"
+		./tor.sh --install --downloadonly
 	else
-		"$scritpTorBrowser" --install
+		_print "Executando ./tor.sh --install"
+		./tor.sh --install
 	fi
 }
 
