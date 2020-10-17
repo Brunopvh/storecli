@@ -281,7 +281,13 @@ _YESNO()
 	#   se teclar "s" -----------------> retornar 0  
 	#   se teclar "n" ou nada ---------> retornar 1.
 	#
-	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
+	# $1 = Mensagem a ser exibida para o usuário, a resposta deve ser SIM ou NÃO (s/n).
+	
+	# O usuário não deve ser indagado caso a opção "-y" ou --yes esteja presente 
+	# na linha de comando. Nesse caso a função irá retornar '0' como se o usuário estivesse
+	# aceitando todas as indagações.
+	[[ "$AssumeYes" == 'True' ]] && return 0
+		
 	
 	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
 	read -t 15 -n 1 sn
@@ -833,6 +839,7 @@ _pkg_manager_storecli()
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
+			plank) _plank;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 

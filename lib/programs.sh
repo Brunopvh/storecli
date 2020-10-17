@@ -123,6 +123,23 @@ _gnome_disk()
 	__pkg__ 'gnome-disk-utility'
 }
 
+_plank()
+{
+	if [[ "$os_id" == 'fedora' ]]; then # Fedora
+		# https://diolinux.com.br/2020/02/como-utilizar-plank-com-zoom-nos-icones-no-fedora.html
+		_yellow "Plank será instalado apartir de um repositório ${CSYellow}externo${CReset} ... copr:copr.fedorainfracloud.org:gqman69:plank"
+		_yellow "Versões de outros repositórios serão removidas"
+		_YESNO "Deseja prosseguir com a instalação" || return 1
+		_DNF copr enable 'gqman69/plank'
+		is_executable plank && {
+			_yellow "Desinstalando versão anterior"
+			_DNF remove plank
+		}
+		__pkg__ 'plank-0.11.4-99.fc31.x86_64' || return 1
+	else
+		__pkg__ plank
+	fi
+}
 
 _veracrypt()
 {
@@ -3104,9 +3121,7 @@ _gnome_tweaks()
 #=============================================================#
 _Acessory_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3125,9 +3140,7 @@ _Acessory_All()
 #=============================================================#
 _Dev_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
 	
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3167,9 +3180,7 @@ _System_All()
 #=============================================================#
 _Internet_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3187,9 +3198,9 @@ _Internet_All()
 #=============================================================#
 _Browser_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
-	fi
+	
+	_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
+
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3207,9 +3218,7 @@ _Browser_All()
 #=============================================================#
 _Office_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3227,9 +3236,9 @@ _Office_All()
 #=============================================================#
 _Midia_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
-	fi
+	
+	_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
+	
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
