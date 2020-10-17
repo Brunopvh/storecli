@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-
-
 _loop_pid()
 {
 	# Esta função serve para executar um loop enquanto um determinado processo
@@ -20,13 +18,13 @@ _loop_pid()
 		fi
 
 		Char="${array_chars[$num_char]}"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar $(date +%H_%M_%S) [${Char}]\r"
+		echo -ne "Aguardando processo com pid [$Pid] finalizar $(date +%H:%M:%S) [${Char}]\r"
 		sleep 0.2
 		
 		num_char="$(($num_char+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} $(date +%H:%M:%S) [${Char}]"	
 }
 
 

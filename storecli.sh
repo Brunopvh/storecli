@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_12'
+__version__='2020_10_17'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -176,7 +176,7 @@ export dir_local_python="$dir_of_executable/python"
 # Definir os scripts locais.
 scriptConfigPath="$dir_local_scripts/conf-path.sh"
 scriptAddRepo="$dir_local_scripts/addrepo.py"
-scritpTorBrowser="$dir_local_scripts/tor-installer.sh"
+scriptTorBrowser="$dir_local_scripts/tor.sh"
 scriptInstallStoreli="$dir_of_executable/setup.sh"
 scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
 scriptWinetricksLocal="$dir_local_scripts/winetricks.sh"
@@ -892,6 +892,7 @@ _pkg_manager_storecli()
 
 			Sistema) _System_All;;
 			bluetooth) _bluetooth;;
+			bspwm) _bspwm;;
 			compactadores) _compactadores;;
 			gparted) _gparted;;
 			peazip) _peazip;;
@@ -959,7 +960,7 @@ _update_storecli()
 	_yellow "Versão local ($__version__)" 
 	_yellow "Versão online ($OnlineVersion)"
 	if [[ "$OnlineVersion" == "$__version__" ]]; then
-		_yellow "Scritp storecli está atualizado"
+		_yellow "Script storecli está atualizado"
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi

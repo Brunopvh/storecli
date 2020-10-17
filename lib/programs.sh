@@ -35,7 +35,7 @@ _etcher_archlinux()
 	url_snapshot='https://aur.archlinux.org/cgit/aur.git/snapshot/balena-etcher.tar.gz'
 	path_file="$DirDownloads/etcher_archlinux.tar.gz"
 	
-	___download__ "$url_snapshot" "$path_file" || return 1
+	__download__ "$url_snapshot" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	_unpack "$path_file" || return 1
 	
@@ -1486,26 +1486,19 @@ esac
 
 _torbrowser()
 {
-	# Url do script de instalação do torbrowser.
-	local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
-	local script_installer_torbrowser="$DirDownloads/tor.sh"
-	__download__ "$url_script_torbrowser_installer" "$script_installer_torbrowser" || return 1
-	chmod +x "$script_installer_torbrowser"
-	_print "Entrando no diretório ... $DirDownloads"; cd "$DirDownloads"
-
+	# local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		_print "Executando ./tor.sh --install --downloadonly"
-		./tor.sh --install --downloadonly
+		_print "Executando $scriptTorBrowser --install --downloadonly"
+		"$scriptTorBrowser" --install --downloadonly
 	else
-		_print "Executando ./tor.sh --install"
-		./tor.sh --install
+		_print "Executando $scriptTorBrowser --install"
+		"$scriptTorBrowser" --install
 	fi
 }
 
 _clipgrab_appimage()
 {
 	# Instalar o clipgrab na versão AppImage.
-
 	if is_executable clipgrab; then
 		_show_info 'PkgInstalled' 'clipgrab'
 		return 0
@@ -2360,6 +2353,42 @@ _bluetooth()
 	done
 }
 
+_bspwm_config()
+{
+	# Esta função deve ser executada depois de instalar o bspwm e suas dependências.
+	# https://github.com/windelicato/dotfiles/wiki/bspwm-for-dummies
+	# https://ricebr.github.io/Not-A-Blog//instalando-e-configurando-bspwm/
+	touch ~/.xinitrc
+
+	_print "Criando diretórios ... ~/.config/{bspwm,sxhkd}"
+	mkdir -p ~/.config/{bspwm,sxhkd}
+	cp -vr /usr/share/doc/bspwm/examples/bspwmrc ~/.config/bspwm
+	cp -vr /usr/share/doc/bspwm/examples/sxhkdrc ~/.config/sxhkd
+
+	grep 'xsetroot -cursor_name left_ptr &' ~/.config/bspwm/bspwmrc || {
+		_print "Configurando ... ~/.config/bspwm/bspwmrc"
+		echo 'xsetroot -cursor_name left_ptr &' >> ~/.config/bspwm/bspwmrc
+	} 
+
+	grep 'exec bspwm' ~/.xinitrc || {
+		_print "Configurando ... ~/.xinitrc"
+		echo 'exec bspwm' >> ~/.xinitrc
+	}
+
+	chmod +x ~/.config/bspwm/bspwmrc
+}
+
+
+_bspwm()
+{
+	
+	case "$os_id" in
+		fedora) __pkg__ bspwm sxhkd xsetroot st;;
+		*) _show_info "ProgramNotFound"; return 1;;
+	esac
+
+	_bspwm_config
+}
 
 _compactadores()
 {
@@ -2747,9 +2776,7 @@ _virtualbox_ubuntu()
 	# __pkg__ libvpx6 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
-	
-	
-	echo -e "$space_line"
+	print_line
 	__pkg__ 'virtualbox-6.1' || return 1
 	_virtualbox_extpack
 }
@@ -3093,7 +3120,7 @@ _topicons_plus_github()
 	
 	# make install
 	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
-	echo -e "$space_line"
+	print_line
 
 	if _YESNO "Deseja abrir a jenela de configuração para topicons-plus"; then
 		gnome-extensions prefs TopIcons@phocean.net
@@ -3160,9 +3187,7 @@ _Dev_All()
 #=============================================================#
 _System_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
 	
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3257,9 +3282,7 @@ _Midia_All()
 #=============================================================#
 _Wine_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Wine'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Wine'" || return 1
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
