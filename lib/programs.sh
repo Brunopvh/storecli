@@ -1220,7 +1220,11 @@ _libreoffice_ptbr(){
 	local lang=$(printenv | grep -m 1 '^LANG=' | sed 's/.*=//g')
 	
 	# Se for "pt_BR.UTF-8" instalar suporte para português do Brasil.
-	[[ "$lang" != 'pt_BR.UTF-8' ]] && return 0
+	case "$lang" in
+		pt_BR.UTF-8) ;;
+		pt_BR.utf8) ;;
+		*) return 0;;
+	esac
 
 	case "$os_id" in
 		debian) __pkg__ 'libreoffice-help-pt-br' 'libreoffice-l10n-pt-br';;
