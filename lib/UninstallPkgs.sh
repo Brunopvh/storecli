@@ -41,6 +41,7 @@ _uninstall_packages()
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
 			'android-studio') __rmdir__ "${destinationFilesAndroidStudio[@]}";;
+			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
 			'sublime-text') __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;

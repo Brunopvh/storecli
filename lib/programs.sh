@@ -603,6 +603,58 @@ _codeblocks()
 	esac
 }
 
+_idea_ic()
+{
+	is_executable 'idea' && _show_info 'PkgInstalled' 'ideaIC' && return 0
+	local idea_url='https://download-cf.jetbrains.com/idea/ideaIC-2020.2.1.tar.gz'
+	local idea_sha256='a107f09ae789acc1324fdf8d22322ea4e4654656c742e4dee8a184e265f1b014'
+	local path_file="$DirDownloads/$(basename $idea_url)"
+
+	__download__ "$idea_url" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	__shasum__ "$path_file" "$idea_sha256" || return 1
+	_unpack "$path_file" || return 1
+	cd "$DirUnpack" 
+	mv $(ls -d idea-*) idea-IC
+	_println "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
+	mv idea-IC "${destinationFilesIdeaic[dir]}" || return 1
+	_syellow 'OK'
+	_print "Entrando no diretório ... ${destinationFilesIdeaic[dir]}"
+	cd "${destinationFilesIdeaic[dir]}"
+	cp -v ./bin/idea.png "${destinationFilesIdeaic[file_png]}"
+
+	_print "Criando arquivo '.desktop'"
+	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
+	{
+		echo -e "Name=IntelliJ IDEA Ultimate Edition"
+		echo -e "Version=1.0"
+		echo -e "Comment=java"
+		echo -e "Icon=${destinationFilesIdeaic[file_png]}"
+		echo -e "Exec=${destinationFilesIdeaic[dir]}/bin/idea.sh %f"
+		echo -e "Terminal=false"
+		echo -e "Categories=Development;IDE"
+		echo -e "Type=Application"
+	} >> "${destinationFilesIdeaic[file_desktop]}"
+
+	_print "Criando atalho para execução"
+	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[file_script]}"
+	echo -e "cd ${destinationFilesIdeaic[file_desktop]}/bin" >> "${destinationFilesIdeaic[file_script]}"
+	echo -e "./idea.sh \$\@" >> "${destinationFilesIdeaic[file_script]}"
+	chmod +x "${destinationFilesIdeaic[file_script]}"
+
+	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/Desktop/ 2> /dev/null 
+
+	if is_executable idea; then
+		_show_info 'SuccessInstalation' 'ideaic'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'ideaic'
+		return 1
+	fi
+}
+
 
 _pycharm()
 {
@@ -1929,7 +1981,7 @@ _tixati_tarfile()
 	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
 		_syellow "OK"
 	else
-		_sred "(_tixati): Falha"
+		_sred "Falha"
 		return 1
 	fi
 
@@ -1946,14 +1998,15 @@ _tixati_tarfile()
 	_unpack "$TarFile" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d tixati*) tixati-amd64 
+	sudo chown -R root:root tixati-amd64
 	cd "$DirUnpack/tixati-amd64"
 
 	sudo mv tixati.desktop "${destinationFilesTixati[file_desktop]}" # .desktop
 	sudo mv tixati.png "${destinationFilesTixati[file_png]}"         # PNG.
 	sudo mv tixati "${destinationFilesTixati[file_bin]}"             # bin.
 	
-	sudo chmod +x "${destinationFilesTixati[file_desktop]}"
-	sudo chmod +x "${destinationFilesTixati[file_bin]}"
+	sudo chmod a+x "${destinationFilesTixati[file_desktop]}"
+	sudo chmod a+x "${destinationFilesTixati[file_bin]}"
 
 	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null

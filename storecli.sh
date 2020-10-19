@@ -182,6 +182,8 @@ scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
 scriptWinetricksLocal="$dir_local_scripts/winetricks.sh"
 GUI="$dir_local_scripts/gui.sh"
 
+echo -e "... $(date +%H:%M:%S) $app_name V$__version__ ..."
+
 #=============================================================#
 # Diretórios do usuário
 #=============================================================#
@@ -262,8 +264,8 @@ mkdir -p "$DirDownloads"
 # inicia ele irá procurar por este arquivo é também irá verificar
 # se o conteudo do arquivo tem uma linha com as seguintes informações: requeriments OK 
 export configFILE="$DIR_CONFIG_USER/requeriments.conf"
-export LogFile="$HOME/.cache/storecliLOG.log"
-export LogErro="$HOME/.cache/storecliERROLog.log"
+export LogFile="$HOME/.cache/storecli/storecli.log"
+export LogErro="$HOME/.cache/storecli/storecli.err"
 
 touch "$configFILE"
 touch "$LogFile"
@@ -649,7 +651,7 @@ __shasum__()
 	# Esta função compara a hash de um arquivo local no disco com
 	# uma hash informada no parametro "$2" (hash original). 
 	#   Ou seja "$1" é o arquivo local e "$2" é uma hash
-
+	local hash_file=''
 	if [[ ! -f "$1" ]]; then
 		_red "(__shasum__) arquivo inválido: $1"
 		return 1
@@ -660,17 +662,19 @@ __shasum__()
 		return 1
 	fi
 
-	_print "Gerando hash do arquivo: $1"
-	local hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
-	
+	# Calucular o tamanho do arquivo
+	len_file=$(du -hs $1 | awk '{print $1}')
+
+	_print "Gerando hash do arquivo ... $1 $len_file "
+	hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
 	_println "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
-		echo -e "${CYellow}OK${CReset}"
+		_syellow 'OK'
 		return 0
 	else
 		_sred 'FALHA'
+		_red "(__shasum__): removendo arquivo inseguro ... $1"
 		rm -rf "$1"
-		_red "(__shasum__) o arquivo inseguro foi removido: $1"
 		return 1
 	fi
 }
@@ -792,7 +796,9 @@ _unpack()
 		return 1
 	fi
 
-	_println "$(date +%H_%M_%S) descomprimindo: $path_file "
+	# Calcular o tamanho do arquivo
+	local len_file=$(du -hs $path_file | awk '{print $1}')
+	_println "Descomprimindo $len_file ... $path_file ... $(date +%H:%M:%S) "
 	
 	# Descomprimir.	
 	case "$type_file" in
@@ -805,7 +811,7 @@ _unpack()
 	esac
 
 	if [[ "$?" == '0' ]]; then
-		_syellow "[OK $(date +%H_%M_%S)]"
+		_syellow "OK"
 		return 0
 	else
 		_sred "FALHA"
@@ -847,6 +853,7 @@ _pkg_manager_storecli()
 			'android-studio') _android_studio;;
 			codeblocks) _codeblocks;;
 			java) _java;;
+			idea) _idea_ic;;
 			pycharm) _pycharm;;
 			sublime-text) _sublime_text;;
 			vim) _vim;;

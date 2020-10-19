@@ -30,6 +30,14 @@ destinationFilesAndroidStudio=(
 	[dir]="$DIR_BIN_USER/android-studio"
 	)
 
+declare -A destinationFilesIdeaic
+destinationFilesIdeaic=(
+	[file_desktop]="$DIR_DESKTOP_USER/jetbrains-idea.desktop"
+	[file_png]="$DIR_ICON_USER/idea.png"
+	[file_script]="$DIR_BIN_USER/idea"
+	[dir]="$DIR_BIN_USER/idea-IC"
+	)
+
 declare -A destinationFilesPycharm
 destinationFilesPycharm=(
 	[file_desktop]="$DIR_DESKTOP_USER/pycharm.desktop"
