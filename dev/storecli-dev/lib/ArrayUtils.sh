@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
 #
 
-#=============================================================#
-# Informação com dirtórios e arquivos de alguns programas, para
+#
+# Este arquivo guarda informações como dirtórios e arquivos de alguns programas
 # para tornar a instalação e remoção dos programas mais prática.
-#   Também serve para gerenciar o destino de alguns programas no 
-# disco rígido.
-#=============================================================#
+#   Também serve para guardar o destino de alguns programas no 
+# disco rígido, essas informações são guardadas em ARRAYS para facilitar
+# a idendificação desses arquivos e diretórios.
 
 #=============================================================#
 # Acessorios
@@ -28,6 +28,14 @@ destinationFilesAndroidStudio=(
 	[file_png]="$DIR_ICON_USER/studio.png"
 	[link]="$DIR_BIN_USER/studio"
 	[dir]="$DIR_BIN_USER/android-studio"
+	)
+
+declare -A destinationFilesIdeaic
+destinationFilesIdeaic=(
+	[file_desktop]="$DIR_DESKTOP_USER/jetbrains-idea.desktop"
+	[file_png]="$DIR_ICON_USER/idea.png"
+	[file_script]="$DIR_BIN_USER/idea"
+	[dir]="$DIR_BIN_USER/idea-IC"
 	)
 
 declare -A destinationFilesPycharm
@@ -93,7 +101,6 @@ destinationFilesTixati=(
 	[file_png]="$DIR_ICON_ROOT/48x48/apps/tixati.png" 
 	[file_bin]="$DIR_BIN_ROOT/tixati"                                       
 )
-
 
 destinationFilesTeamviewer=(
 	'/opt/teamviewer'
@@ -206,6 +213,7 @@ programs_office=(
 
 programs_browser=(
 	chromium
+	edge
 	firefox
 	google-chrome
 	opera-stable
@@ -224,8 +232,8 @@ programs_internet=(
 	uget
 	'youtube-dl'
 	'youtube-dl-gui'
-	'youtube-dl-gui-windows'
 	)
+
 
 programs_midia=(
 	celluloid
@@ -262,4 +270,14 @@ programs_gnomeshell=(
 	gnome-backgrounds
 	gnome-tweaks
 	topicons-plus
+	)
+
+
+programs_wine=(
+	wine
+	winetricks
+	epsxe-win
+	python37-windows
+	python37-windows-portable
+	youtube-dl-gui-windows
 	)

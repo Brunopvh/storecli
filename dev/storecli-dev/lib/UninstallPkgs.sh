@@ -19,10 +19,7 @@ _uninstall_etcher()
 
 _uninstall_vscode()
 {
-	case "$os_id" in
-		debian|ubuntu|linuxmint) _APT remove code;;
-		*) __rmdir__ "${destinationFilesVscode[@]}";;
-	esac
+	__rmdir__ "${destinationFilesVscode[@]}"
 }
 
 _uninstall_teamviewer()
@@ -44,13 +41,14 @@ _uninstall_packages()
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
 			'android-studio') __rmdir__ "${destinationFilesAndroidStudio[@]}";;
+			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
 			'sublime-text') __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
 
-			torbrowser) "$scritpTorBrowser" --remove;;	
+			torbrowser) "$scriptTorBrowser" --remove;;	
 
 			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
 			tixati) __rmdir__ "${destinationFilesTixati[@]}";;

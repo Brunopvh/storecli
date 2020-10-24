@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_09'
+__version__='2020_10_23'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -101,14 +101,14 @@ _println()
 {
 	# Imprimir mensagens com printf sem quebrar linhas.
 	[[ "$silent" == 'True' ]] && return 0
-	printf "[>] $@"
+	echo -ne "[>] $@"
 }
 
 _print()
 {
 	# Imprimir texto com formatação e quebra de linha.
 	[[ "$silent" == 'True' ]] && return 0
-	printf '%s\n' "[>] $@"
+	echo -e "[>] $@"
 }
 
 if is_executable tput; then
@@ -176,10 +176,10 @@ export dir_local_python="$dir_of_executable/python"
 # Definir os scripts locais.
 scriptConfigPath="$dir_local_scripts/conf-path.sh"
 scriptAddRepo="$dir_local_scripts/addrepo.py"
-scritpTorBrowser="$dir_local_scripts/tor-installer.sh"
+scriptTorBrowser="$dir_local_scripts/tor.sh"
 scriptInstallStoreli="$dir_of_executable/setup.sh"
 scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
-scriptWinetricks="$dir_local_scripts/winetricks_script.sh"
+scriptWinetricksLocal="$dir_local_scripts/winetricks.sh"
 GUI="$dir_local_scripts/gui.sh"
 
 #=============================================================#
@@ -262,8 +262,8 @@ mkdir -p "$DirDownloads"
 # inicia ele irá procurar por este arquivo é também irá verificar
 # se o conteudo do arquivo tem uma linha com as seguintes informações: requeriments OK 
 export configFILE="$DIR_CONFIG_USER/requeriments.conf"
-export LogFile="$HOME/.cache/storecliLOG.log"
-export LogErro="$HOME/.cache/storecliERROLog.log"
+export LogFile="$HOME/.cache/storecli/storecli.log"
+export LogErro="$HOME/.cache/storecli/storecli.err"
 
 touch "$configFILE"
 touch "$LogFile"
@@ -281,7 +281,13 @@ _YESNO()
 	#   se teclar "s" -----------------> retornar 0  
 	#   se teclar "n" ou nada ---------> retornar 1.
 	#
-	# $1 = Mensagem a ser exibida para o usuário reponder SIM ou NÃO (s/n).
+	# $1 = Mensagem a ser exibida para o usuário, a resposta deve ser SIM ou NÃO (s/n).
+	
+	# O usuário não deve ser indagado caso a opção "-y" ou --yes esteja presente 
+	# na linha de comando. Nesse caso a função irá retornar '0' como se o usuário estivesse
+	# aceitando todas as indagações.
+	[[ "$AssumeYes" == 'True' ]] && return 0
+		
 	
 	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
 	read -t 15 -n 1 sn
@@ -371,6 +377,12 @@ _list_applications()
 		for APP in "${programs_gnomeshell[@]}"; do
 			printf "%s\n" "      $APP"
 		done
+
+		printf "\n"
+		printf "%s\n" "  Wine: " # Gnome Shell
+		for APP in "${programs_wine[@]}"; do
+			printf "%s\n" "      $APP"
+		done
 		printf "\n"
 
 		return 0
@@ -441,6 +453,13 @@ _list_applications()
 					done
 					printf "\n"
 					;;
+			Wine)
+					printf "%s\n" "  Wine: "
+					for APP in "${programs_wine[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
 			*)
 				printf "\n"
 				_red "(_list_applications) categoria inválida: $arg"
@@ -507,7 +526,7 @@ _ping()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	printf "[>] Autênticação necessária para executar: sudo ${@}\n"
+	_print "${CYellow}A${CReset}utênticação necessária para executar: sudo $@"
 	if sudo "$@"; then
 		return 0
 	else
@@ -630,7 +649,7 @@ __shasum__()
 	# Esta função compara a hash de um arquivo local no disco com
 	# uma hash informada no parametro "$2" (hash original). 
 	#   Ou seja "$1" é o arquivo local e "$2" é uma hash
-
+	local hash_file=''
 	if [[ ! -f "$1" ]]; then
 		_red "(__shasum__) arquivo inválido: $1"
 		return 1
@@ -641,17 +660,19 @@ __shasum__()
 		return 1
 	fi
 
-	_print "Gerando hash do arquivo: $1"
-	local hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
-	
+	# Calucular o tamanho do arquivo
+	len_file=$(du -hs $1 | awk '{print $1}')
+
+	_print "Gerando hash do arquivo ... $1 $len_file "
+	hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
 	_println "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
-		echo -e "${CYellow}OK${CReset}"
+		_syellow 'OK'
 		return 0
 	else
 		_sred 'FALHA'
+		_red "(__shasum__): removendo arquivo inseguro ... $1"
 		rm -rf "$1"
-		_red "(__shasum__) o arquivo inseguro foi removido: $1"
 		return 1
 	fi
 }
@@ -773,7 +794,9 @@ _unpack()
 		return 1
 	fi
 
-	_println "Descomprimindo: $path_file "
+	# Calcular o tamanho do arquivo
+	local len_file=$(du -hs $path_file | awk '{print $1}')
+	_println "Descomprimindo $len_file ... $path_file ... $(date +%H:%M:%S) "
 	
 	# Descomprimir.	
 	case "$type_file" in
@@ -820,6 +843,7 @@ _pkg_manager_storecli()
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
+			plank) _plank;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 
@@ -827,6 +851,7 @@ _pkg_manager_storecli()
 			'android-studio') _android_studio;;
 			codeblocks) _codeblocks;;
 			java) _java;;
+			idea) _idea_ic;;
 			pycharm) _pycharm;;
 			sublime-text) _sublime_text;;
 			vim) _vim;;
@@ -840,6 +865,7 @@ _pkg_manager_storecli()
 
 			Navegadores) _Browser_All;;
 			chromium) _chromium;;
+			edge) _edge;;
 			firefox) _firefox;;
 			'google-chrome') _google_chrome;;
 			'opera-stable') _opera_stable;;
@@ -872,6 +898,7 @@ _pkg_manager_storecli()
 
 			Sistema) _System_All;;
 			bluetooth) _bluetooth;;
+			bspwm) _bspwm;;
 			compactadores) _compactadores;;
 			gparted) _gparted;;
 			peazip) _peazip;;
@@ -890,6 +917,7 @@ _pkg_manager_storecli()
 			'gnome-tweaks') _gnome_tweaks;;
 			'topicons-plus') _topicons_plus;;
 			
+			Wine) _Wine_All;;
 			wine) _install_wine;;
 			winetricks) _install_script_winetricks;;
 			epsxe-win) _epsxe_windows;;
@@ -938,7 +966,7 @@ _update_storecli()
 	_yellow "Versão local ($__version__)" 
 	_yellow "Versão online ($OnlineVersion)"
 	if [[ "$OnlineVersion" == "$__version__" ]]; then
-		_yellow "Scritp storecli está atualizado"
+		_yellow "Script storecli está atualizado"
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi
@@ -957,6 +985,7 @@ _update_storecli()
 
 main()
 {	
+	echo -e "... $(date +%H:%M:%S) $app_name V$__version__ ..."
 	for ARG in "$@"; do
 		case "$ARG" in
 			-y|--yes) export AssumeYes='True';;

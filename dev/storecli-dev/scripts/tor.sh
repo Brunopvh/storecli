@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-06-21'
+VERSION='2020-10-12'
 #
 #-----------------------| INFO |-------------------------------#
 # Este script baixa e instala a ultima versão do no em qualquer
@@ -73,11 +73,9 @@ exit 0
 
 [[ -z $1 ]] && usage
 
-space_line='-----------------------------------------------'
-
 #=============================================================#
 # Verifiacar se um executável existe
-_WHICH()
+is_executable()
 {
 	# $1 = executável a verificar.
 	if [[ -x $(which "$1" 2> /dev/null) ]]; then
@@ -85,6 +83,19 @@ _WHICH()
 	else
 		return 1
 	fi
+}
+
+if is_executable tput; then
+	colum=$(tput cols)
+else
+	colum='45'
+fi
+
+space_line()
+{
+	for c in $(seq "$colum"); do
+		printf '-'
+	done
 }
 
 #=============================================================#
@@ -97,7 +108,7 @@ if [[ $(id -u) == '0' ]]; then
 fi
 
 # Necessário ter a ferramenta Curl.
-if ! _WHICH 'curl'; then
+if ! is_executable 'curl'; then
 	_red "Instale a ferramenta: curl"
 	exit 1
 fi
@@ -106,7 +117,8 @@ fi
 # Arquivos e diretórios
 #=============================================================#
 dir_dow="$HOME/.cache/downloads"
-dir_temp="/tmp/space_tor_$USER"
+#dir_temp="/tmp/space_tor_$USER"
+dir_temp=$(mktemp --directory)
 dir_unpack="$dir_temp/unpack"
 
 mkdir -p "$HOME/.local/bin"
@@ -202,11 +214,11 @@ ShowLogo()
 {
 	local GithubScriptTor='https://github.com/Brunopvh/torbrowser'
 	
-	_msg "$space_line"
+	echo -e "$(space_line)"
 	_msg "$(basename $0) V${VERSION}"
 	_msg "${Yellow}A${Reset}utor: Bruno Chaves"
 	_msg "${Yellow}G${Reset}ihub: $GithubScriptTor"
-	_msg "$space_line"
+	echo -e "$(space_line)"
 }
 
 ShowLogo
@@ -340,7 +352,7 @@ _gpg_check()
 	local path_keyring="$dir_temp/tor.keyring"
 
 	# Verificar se gpg está instalado no sistema.
-	if ! _WHICH 'gpg'; then
+	if ! is_executable 'gpg'; then
 		_red "Instale o pacote [gpg] para verificar assinaturas"
 		return 1
 	fi 
@@ -391,7 +403,7 @@ _install_tor()
 		return 0
 	fi
 
-	if _WHICH 'torbrowser'; then
+	if is_executable 'torbrowser'; then
 		_msg "TorBrowser já instalado use ${Yellow}$(readlink -f $0) --remove${Reset} para desinstalar"
 		return 0
 	fi
@@ -427,17 +439,17 @@ _install_tor()
 	path_zsh
 
 	# Ler as configurações do bash em ~/.bashrc
-	if _WHICH bash; then 
+	if is_executable bash; then 
 		bash -c ". $HOME/.bashrc" 
 	fi
 
 	# Ler as configurações do zsh em ~/.zshrc
-	if _WHICH zsh; then 
+	if is_executable zsh; then 
 		zsh -c ". ~/.zshrc" 
 	fi
 
 
-	if _WHICH 'torbrowser'; then
+	if is_executable 'torbrowser'; then
 		_msg "TorBrowser instalado com sucesso"
 		torbrowser # Abrir o navegador.
 	else

@@ -3,7 +3,7 @@
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
 #
-__version__='2020-09-09'
+__version__='2020-10-12'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip

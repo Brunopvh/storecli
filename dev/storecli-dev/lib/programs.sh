@@ -35,7 +35,7 @@ _etcher_archlinux()
 	url_snapshot='https://aur.archlinux.org/cgit/aur.git/snapshot/balena-etcher.tar.gz'
 	path_file="$DirDownloads/etcher_archlinux.tar.gz"
 	
-	___download__ "$url_snapshot" "$path_file" || return 1
+	__download__ "$url_snapshot" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	_unpack "$path_file" || return 1
 	
@@ -52,7 +52,7 @@ _etcher_archlinux()
 _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
-	_white "Adicionando repositório"
+	_yellow "Adicionando repositório"
 	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -O /etc/yum.repos.d/etcher-rpm.repo
 	__pkg__ 'balena-etcher-electron'
 }
@@ -123,6 +123,23 @@ _gnome_disk()
 	__pkg__ 'gnome-disk-utility'
 }
 
+_plank()
+{
+	if [[ "$os_id" == 'fedora' ]]; then # Fedora
+		# https://diolinux.com.br/2020/02/como-utilizar-plank-com-zoom-nos-icones-no-fedora.html
+		_yellow "Plank será instalado apartir de um repositório ${CSYellow}externo${CReset} ... copr:copr.fedorainfracloud.org:gqman69:plank"
+		_yellow "Versões de outros repositórios serão removidas"
+		_YESNO "Deseja prosseguir com a instalação" || return 1
+		_DNF copr enable 'gqman69/plank'
+		is_executable plank && {
+			_yellow "Desinstalando versão anterior"
+			_DNF remove plank
+		}
+		__pkg__ 'plank-0.11.4-99.fc31.x86_64' || return 1
+	else
+		__pkg__ plank
+	fi
+}
 
 _veracrypt()
 {
@@ -205,19 +222,17 @@ _woeusb_debian()
 	local dir_woeusb="$DirGitclone/WoeUSB"
 		
 	_APT update || return 1
-	
-	_yellow "Instalando: ${woeusbRequeriments[@]}"
 	__pkg__ "${woeusbRequeriments[@]}" || return 1
 	
 	# Instalar libwxgtk3
 	case "$os_codename" in
 		buster|bionic|tricia) __pkg__ 'libwxgtk3.0-dev' || return 1;;
-		focal) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
+		focal|ulyana) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
 		*) _show_info 'ProgramNotFound' 'WoeUSB'; return 1;;
 	esac
 	
 	_gitclone "$github_woeusb" || return 1
-	
+	_yellow "Entrando no diretório ... $dir_woeusb"
 	cd "$dir_woeusb"
 	_yellow "Executando: ./setup-development-environment.bash"; ./setup-development-environment.bash
 	_yellow "Executando: dpkg-buildpackage -uc -b -d"
@@ -330,20 +345,17 @@ _woeusb_github()
 		return 1
 	fi
 
-
 	_yellow "Executando: autoreconf --force --install"
 	if ! autoreconf --force --install 2>> "$LogErro"; then
 		_red "Falha: autoreconf --force --install"
 		return 1
 	fi
 
-
 	_yellow "Executando: ./configure" 
 	if ! ./configure 2>> "$LogErro"; then
 		_red "Falha: ./configure"
 		return 1
 	fi
-
 
 	_yellow "Executando: make" 
 	if ! make 2>> "$LogErro"; then
@@ -378,33 +390,11 @@ _woeusb()
 	fi
 }
 
-
-
-_android_sdktools()
-{
-	# https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip
-	local url_sdktools='https://dl.google.com/android/repository/sdk-tools-linux-4333796.zip'
-	local url_commandline_tools='https://dl.google.com/android/repository/commandlinetools-linux-6200805_latest.zip'
-	local url_emulator='https://dl.google.com/android/repository/emulator-linux-6466327'
-
-	local path_sdktools="$DirDownloads/$(basename $url_sdktools)"
-	local path_commandline_tools="$DirDownloads/$(basename $url_commandline_tools)"
-	local hash_commandline_tools='f10f9d5bca53cc27e2d210be2cbc7c0f1ee906ad9b868748d74d62e10f2c8275'
-	local hash_skdtools=''
-	local JDKloaction="$HOME/.local/bin/android-studio/jre"
-	local SDKlocation="$HOME/Android/Sdk"
-
-	# Baixar skdtools.
-	__download__ "$url_sdktools" "$path_sdktools"
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-}
-
-
 _android_studio_zip()
 {
 	# https://developer.android.com/studio
 	local url='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
-	local hash_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
+	local hash_android_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
 	local path_file="$DirDownloads/$(basename $url)"
 
 	__download__ "$url" "$path_file" || return 1
@@ -412,7 +402,7 @@ _android_studio_zip()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
-	__shasum__ "$path_file" "$hash_studio" || return 1
+	__shasum__ "$path_file" "$hash_android_studio" || return 1
 	_unpack "$path_file" || return 1
 
 	_white "Instalando android studio em ~/.local/bin"
@@ -455,27 +445,26 @@ _android_studio_debian()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
 	if [[ ! -f /etc/debian_version ]]; then
+		_red "Seu sistema não é baseado em Debian."
 		return 1
 	fi
 
 	local debianBusterRequeriments=(
-		'qemu-kvm' 
-		'libvirt-clients' 
-		'libvirt-daemon-system'
+		qemu-kvm
+		libvirt-clients 
+		libvirt-daemon-system
 		lib32z1 
-		'lib32stdc++6' 
+		lib32stdc++6 
 		lib32gcc1 
 		lib32ncurses6 
 		lib32tinfo6 
-		'libc6-i386'
+		libc6-i386
 		)
 
 	_APT update
-	_green "Instalando: openjdk-11-jdk"
 	__pkg__ 'openjdk-11-jdk'
 
 	for c in "${debianBusterRequeriments[@]}"; do
-		_msg "Instalando: $c"
 		__pkg__ "$c"
 	done
 	
@@ -502,24 +491,22 @@ _android_studio_ubuntu()
 	fi
 
 	local ubuntuBionicRequeriments=(
-		'qemu-kvm' 
-		'libvirt-bin' 
-		'ubuntu-vm-builder' 
-		'bridge-utils'
+		qemu-kvm
+		libvirt-bin 
+		ubuntu-vm-builder 
+		bridge-utils
 		lib32z1 
 		lib32ncurses5 
-		'lib32stdc++6' 
+		lib32stdc++6 
 		lib32gcc1 
 		lib32tinfo5 
-		'libc6-i386'
+		libc6-i386
 		)
 
-	_APT update
-	_msg "Instalando: openjdk-8-jdk"
+	#_APT update
 	__pkg__ 'openjdk-8-jdk'
 
 	for c in "${ubuntuBionicRequeriments[@]}"; do
-		_msg "Instalando: $c"
 		__pkg__ "$c"
 	done
 	
@@ -535,14 +522,14 @@ _android_studio_ubuntu()
 _android_studio_fedora()
 {
 	local array_libs_fedora=(
-			'zlib.i686' 'ncurses-libs.i686' 'bzip2-libs.i686'
+			zlib.i686
+			ncurses-libs.i686
+			bzip2-libs.i686
 			)
 
-	_msg "Instalando: ${array_libs_fedora[@]}"
 	__pkg__ "${array_libs_fedora[@]}"
 
 	_android_studio_zip || return 1
-	#_android_sdktools
 }
 
 
@@ -556,7 +543,6 @@ _android_studio_opensuseleap()
 			'libncurses5-32bit' 
 			'libbz2-1-32bit'
 		)
-	_yellow "Instalando: ${requerimentsOpenSuse[@]}"
 	__pkg__ "${requerimentsOpenSuse[@]}"
 	_android_studio_zip
 }
@@ -615,6 +601,58 @@ _codeblocks()
 		archlinux) _codeblocks_archlinux;;
 		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
 	esac
+}
+
+_idea_ic()
+{
+	is_executable 'idea' && _show_info 'PkgInstalled' 'ideaIC' && return 0
+	local idea_url='https://download-cf.jetbrains.com/idea/ideaIC-2020.2.1.tar.gz'
+	local idea_sha256='a107f09ae789acc1324fdf8d22322ea4e4654656c742e4dee8a184e265f1b014'
+	local path_file="$DirDownloads/$(basename $idea_url)"
+
+	__download__ "$idea_url" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	__shasum__ "$path_file" "$idea_sha256" || return 1
+	_unpack "$path_file" || return 1
+	cd "$DirUnpack" 
+	mv $(ls -d idea-*) idea-IC
+	_println "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
+	mv idea-IC "${destinationFilesIdeaic[dir]}" || return 1
+	_syellow 'OK'
+	_print "Entrando no diretório ... ${destinationFilesIdeaic[dir]}"
+	cd "${destinationFilesIdeaic[dir]}"
+	cp -v ./bin/idea.png "${destinationFilesIdeaic[file_png]}"
+
+	_print "Criando arquivo '.desktop'"
+	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
+	{
+		echo -e "Name=IntelliJ IDEA Ultimate Edition"
+		echo -e "Version=1.0"
+		echo -e "Comment=java"
+		echo -e "Icon=${destinationFilesIdeaic[file_png]}"
+		echo -e "Exec=${destinationFilesIdeaic[dir]}/bin/idea.sh %f"
+		echo -e "Terminal=false"
+		echo -e "Categories=Development;IDE"
+		echo -e "Type=Application"
+	} >> "${destinationFilesIdeaic[file_desktop]}"
+
+	_print "Criando atalho para execução"
+	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[file_script]}"
+	echo -e "cd ${destinationFilesIdeaic[file_desktop]}/bin" >> "${destinationFilesIdeaic[file_script]}"
+	echo -e "./idea.sh \$\@" >> "${destinationFilesIdeaic[file_script]}"
+	chmod +x "${destinationFilesIdeaic[file_script]}"
+
+	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/Desktop/ 2> /dev/null 
+
+	if is_executable idea; then
+		_show_info 'SuccessInstalation' 'ideaic'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'ideaic'
+		return 1
+	fi
 }
 
 
@@ -720,7 +758,6 @@ _vscode_package_deb()
 	_DPKG --install "$path_file" # .deb
 }
 
-
 _vscode_tarfile()
 {
 	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
@@ -755,9 +792,9 @@ _vscode_tarfile()
 		echo "Type=Application"
 	} >> "${destinationFilesVscode[file_desktop]}"
 
-	ln -sf "${destinationFilesVscode[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
-	ln -sf "${destinationFilesVscode[file_desktop]}" ~/Desktop/ 2> /dev/null 
-	ln -sf "${destinationFilesVscode[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null	
+	cp -u "${destinationFilesVscode[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesVscode[file_desktop]}" ~/Desktop/ 2> /dev/null 
+	cp -u "${destinationFilesVscode[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null	
 }
 
 _vscode()
@@ -766,7 +803,7 @@ _vscode()
 	is_executable 'code' && _show_info 'PkgInstalled' 'code' && return 0
 
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _vscode_package_deb;;
+		debian|ubuntu|linuxmint) _vscode_tarfile;;
 		*) _vscode_tarfile;;
 	esac
 	
@@ -1235,7 +1272,11 @@ _libreoffice_ptbr(){
 	local lang=$(printenv | grep -m 1 '^LANG=' | sed 's/.*=//g')
 	
 	# Se for "pt_BR.UTF-8" instalar suporte para português do Brasil.
-	[[ "$lang" != 'pt_BR.UTF-8' ]] && return 0
+	case "$lang" in
+		pt_BR.UTF-8) ;;
+		pt_BR.utf8) ;;
+		*) return 0;;
+	esac
 
 	case "$os_id" in
 		debian) __pkg__ 'libreoffice-help-pt-br' 'libreoffice-l10n-pt-br';;
@@ -1293,6 +1334,30 @@ _chromium()
 	_chromium_lang # Instalar pacote de idioma ptbr.
 }
 
+
+_edge()
+{
+	# https://www.microsoftedgeinsider.com/pt-br/download/
+	if [[ "$os_id" == 'fedora' ]]; then
+		_RPM --import https://packages.microsoft.com/keys/microsoft.asc || return 1
+		_DNF config-manager --add-repo https://packages.microsoft.com/yumrepos/edge || return 1
+		__sudo__ mv /etc/yum.repos.d/packages.microsoft.com_yumrepos_edge.repo /etc/yum.repos.d/microsoft-edge-dev.repo
+		__pkg__ microsoft-edge-dev
+	elif [[ -f /etc/debian_version ]]; then
+		_println "Adicionando key ... https://packages.microsoft.com/keys/microsoft.asc "
+		curl -sSLf https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+		_println "Adicionando repositório ... "
+		echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge-dev.list
+		_APT update || return 1
+		__pkg__ microsoft-edge-dev
+	else
+		_show_info 'ProgramNotFound' 'edge' 
+		return 1
+	fi
+	
+}
+
+
 _firefox_lang()
 {
 	# Verificar se o idioma da sessão e pt_br e em seguida instalar o
@@ -1324,14 +1389,15 @@ _firefox()
 _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
-	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
-	wget -q 'https://dl.google.com/linux/linux_signing_key.pub' -O- | sudo apt-key add -
-
+	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'
+	local google_chrome_path_key="$DirTemp/linux_signing_key.pub"	
+	# Baixar e adicionar o arquiovo '.pub'
+	__download__ 'https://dl.google.com/linux/linux_signing_key.pub' "$google_chrome_path_key" || return 1
+	_println "Adicionando key ... $google_chrome_path_key "
+	sudo apt-key add "$google_chrome_path_key" || return 1
 	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
-	_white "Adicionando repositório"
+	_println "Adicionando repositório ... "
 	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
-
 	# sudo apt install libu2f-udev
 	_APT update
 	__pkg__ 'google-chrome-stable' 
@@ -1342,8 +1408,8 @@ _google_chrome_fedora()
 {
 	# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
 	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-	sudo dnf install fedora-workstation-repositories
-	sudo dnf config-manager --set-enabled google-chrome
+	_DNF install fedora-workstation-repositories
+	_DNF config-manager --set-enabled google-chrome
 	__pkg__ 'google-chrome-stable'
 }
 
@@ -1361,7 +1427,6 @@ _google_chrome_opensuse()
 
 _google_chrome_tumbleweed()
 {
-	
 	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
@@ -1501,25 +1566,19 @@ esac
 
 _torbrowser()
 {
-	# Url do script de instalação do torbrowser.
-	local url_master_scritpTorBrowser='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
-
-	if ! is_executable "$scritpTorBrowser"; then
-		__download__ "$url_master_scritpTorBrowser" "$scritpTorBrowser" || return 1
-		chmod +x "$scritpTorBrowser"
-	fi
-
+	# local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		"$scritpTorBrowser" --install --downloadonly
+		_print "Executando $scriptTorBrowser --install --downloadonly"
+		"$scriptTorBrowser" --install --downloadonly
 	else
-		"$scritpTorBrowser" --install
+		_print "Executando $scriptTorBrowser --install"
+		"$scriptTorBrowser" --install
 	fi
 }
 
 _clipgrab_appimage()
 {
 	# Instalar o clipgrab na versão AppImage.
-
 	if is_executable clipgrab; then
 		_show_info 'PkgInstalled' 'clipgrab'
 		return 0
@@ -1599,7 +1658,7 @@ _megasync_ubuntu()
 			_msg "Instalando: $path_libraw"
 			_DPKG --install "$path_libraw" || return 1
 			;;
-		focal)
+		focal|ulyana)
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_20.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_20.04/Release.key'
 			;;
@@ -1612,8 +1671,7 @@ _megasync_ubuntu()
 	_msg "Adicionando key e repositório"
 	wget -q -O- "$mega_url_key" -o- | sudo apt-key add - || return 1
 	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list" 1> /dev/null
-	_APT update
-	_msg "Instalando: libc-ares2 libmediainfo0v5" 
+	_APT update 
 	__pkg__ 'libc-ares2' libmediainfo0v5 
 	__pkg__ megasync
 }
@@ -1806,7 +1864,6 @@ _install_teamviewer_debian()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
 
 	for i in "${array_tw_debian[@]}"; do
-		_msg "Instalando: $i"
 		__pkg__ "$i" 
 	done
 	_DPKG --install "$path_file" || _BROKE # Remover pacotes quebrados.
@@ -1895,7 +1952,6 @@ _telegram()
 	__download__ "$url_telegram" "$path_file" || return 1
 
 	# Instalar gconf2.
-	_msg "Instalando gconf2"
 	case "$os_id" in
 		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ gconf2;;
 		ubuntu|linuxmint|debian) __pkg__ gconf2;;
@@ -1945,12 +2001,11 @@ _tixati_tarfile()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	printf "%s" "[>] Importando key tixati "
+	_println "Importando key tixati "
 	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
-		echo -e "${CYellow}OK${CReset}"
+		_syellow "OK"
 	else
-		echo ' '
-		_red "Falha: gpg --import"
+		_sred "Falha"
 		return 1
 	fi
 
@@ -1958,7 +2013,6 @@ _tixati_tarfile()
 	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
-	_msg "Instalando gconf2"
 	case "$os_id" in
 		'opensuse-tumbleweed'|'opensuse-leap') __pkg__ gconf2;;
 		ubuntu|linuxmint|debian) __pkg__ gconf2;;
@@ -1968,18 +2022,19 @@ _tixati_tarfile()
 	_unpack "$TarFile" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d tixati*) tixati-amd64 
+	sudo chown -R root:root tixati-amd64
 	cd "$DirUnpack/tixati-amd64"
 
 	sudo mv tixati.desktop "${destinationFilesTixati[file_desktop]}" # .desktop
 	sudo mv tixati.png "${destinationFilesTixati[file_png]}"         # PNG.
 	sudo mv tixati "${destinationFilesTixati[file_bin]}"             # bin.
 	
-	sudo chmod +x "${destinationFilesTixati[file_desktop]}"
-	sudo chmod +x "${destinationFilesTixati[file_bin]}"
+	sudo chmod a+x "${destinationFilesTixati[file_desktop]}"
+	sudo chmod a+x "${destinationFilesTixati[file_bin]}"
 
-	ln -sf "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesTixati[file_desktop]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesTixati[file_desktop]}" ~/Desktop/ 2> /dev/null
 
 	# Definir tixati como gerenciador bittorrent padrão.
 	if _YESNO "Deseja usar tixati como bittorrent padrão"; then
@@ -2148,14 +2203,14 @@ _youtube_dlgui_file_desktop_root()
 	} | sudo tee -a "$file_desktop_tubedl_gui" 1> /dev/null
 
 	_yellow "Criando atalho na Área de Trabalho"
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
 }
 
 _youtube_dlgui_compile()
 {
-	# Baixar e compilar o codigo fonte do github
+	# Baixar e compilar o codigo fonte do youtube-dl-gui no github.
 	# Instalação no sistema em /usr/local/bin/youtube-dl-gui 
 	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
@@ -2230,16 +2285,20 @@ _youtube_dlgui_pip()
 _youtube_dlgui_ubuntu()
 {
 	# https://github.com/MrS0m30n3/youtube-dl-gui.git
-	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then
-		_youtube_dlgui_pip || return 1
-	elif [[ "$os_codename" == 'eoan' ]] || [[ "$os_codename" == 'focal' ]]; then
-		__pkg__ 'python-wxgtk3.0' gettext || return 1
-		_python_twodict_github || return 1
-		_youtube_dlgui_compile || return 1
-	else
-		_show_info 'ProgramNotFound' 'youtube-dlg-gui'	
-		return 1
-	fi
+	case "$os_codename" in
+		bionic|tricia) 
+			_youtube_dlgui_pip || return 1
+			;;
+		eoan|focal|ulyana)
+			__pkg__ 'python-wxgtk3.0' gettext || return 1
+			_python_twodict_github || return 1
+			_youtube_dlgui_compile || return 1
+			;;
+		*)
+			_show_info 'ProgramNotFound' 'youtube-dl-gui'	
+			return 1
+			;;
+	esac
 
 }
 
@@ -2375,6 +2434,42 @@ _bluetooth()
 	done
 }
 
+_bspwm_config()
+{
+	# Esta função deve ser executada depois de instalar o bspwm e suas dependências.
+	# https://github.com/windelicato/dotfiles/wiki/bspwm-for-dummies
+	# https://ricebr.github.io/Not-A-Blog//instalando-e-configurando-bspwm/
+	touch ~/.xinitrc
+
+	_print "Criando diretórios ... ~/.config/{bspwm,sxhkd}"
+	mkdir -p ~/.config/{bspwm,sxhkd}
+	cp -vr /usr/share/doc/bspwm/examples/bspwmrc ~/.config/bspwm
+	cp -vr /usr/share/doc/bspwm/examples/sxhkdrc ~/.config/sxhkd
+
+	grep 'xsetroot -cursor_name left_ptr &' ~/.config/bspwm/bspwmrc || {
+		_print "Configurando ... ~/.config/bspwm/bspwmrc"
+		echo 'xsetroot -cursor_name left_ptr &' >> ~/.config/bspwm/bspwmrc
+	} 
+
+	grep 'exec bspwm' ~/.xinitrc || {
+		_print "Configurando ... ~/.xinitrc"
+		echo 'exec bspwm' >> ~/.xinitrc
+	}
+
+	chmod +x ~/.config/bspwm/bspwmrc
+}
+
+
+_bspwm()
+{
+	
+	case "$os_id" in
+		fedora) __pkg__ bspwm sxhkd xsetroot st;;
+		*) _show_info "ProgramNotFound"; return 1;;
+	esac
+
+	_bspwm_config
+}
 
 _compactadores()
 {
@@ -2603,7 +2698,6 @@ _stacer_appimage()
 	fi
 }
 
-
 _stacer()
 {
 	case "$os_id" in
@@ -2615,7 +2709,6 @@ _stacer()
 		*) _stacer_appimage;;
 	esac
 }
-
 
 _virtualbox_extpack()
 {
@@ -2688,51 +2781,84 @@ _virtualbox_fedora()
 	_virtualbox_extpack 
 }
 
-
 _virtualbox_debian()
 {
-	# find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian buster contrib$" 2> /dev/null
-		
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
 	local path_libvpx="$DirDownloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
-	local vbox_file="/etc/apt/sources.list.d/virtualbox.list"
+	local virtualbox_sources_list="/etc/apt/sources.list.d/virtualbox.list"
+	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
+	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
+	
+	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
+	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
+	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
+	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
 
 	case "$os_codename" in
 		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
 		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
-	
+
+	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
+	if [[ "$?" == '0' ]]; then
+		_print "Repositório virtualbox encontrado pulando"
+	else
+		_println "Adicionando repositório virtualbox ... "
+		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
+	fi
+
 	# Limpar o cache antes de adicionar as chaves (recomendado).
-	_msg "Limpando o cache do (apt)"
-	_APT clean
+	# _msg "Limpando o cache do (apt)"
+	# _APT clean
 	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
-	
-	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox_2016.asc "
-	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox_2016.asc | apt-key add -' || return 1
-		
-	echo -ne "Adicionando key: https://www.virtualbox.org/download/oracle_vbox.asc "
-	sudo sh -c 'wget -q -O- https://www.virtualbox.org/download/oracle_vbox.asc | apt-key add -' || return 1
-		
-	echo -ne "Adicionando repositório "
-	echo "$vbox_repo" | sudo tee "$vbox_file"
 	
 	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
-	
 	# __pkg__ libvpx6 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
+	__pkg__ 'virtualbox-6.1' || return 1
+	_virtualbox_extpack
+}
+
+_virtualbox_ubuntu()
+{
+	local virtualbox_sources_list="/etc/apt/sources.list.d/virtualbox.list"
+	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
+	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
 	
-	if [[ "$os_codename" == 'focal' ]]; then
-		__download__ "$url_libvpx" "$path_libvpx" || return 1
-		__shasum__ "$path_libvpx" "$sum_libvpx" || return 1
-		_DPKG --install "$path_libvpx" || _BROKE
+	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
+	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
+	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
+	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
+
+	case "$os_codename" in
+		focal|ulyana) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib";;
+		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
+		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
+	esac
+
+	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
+	if [[ "$?" == '0' ]]; then
+		_print "Repositório virtualbox encontrado pulando"
+	else
+		_println "Adicionando repositório virtualbox ... "
+		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
 	fi
+
+	# Limpar o cache antes de adicionar as chaves (recomendado).
+	# _msg "Limpando o cache do (apt)"
+	# _APT clean
+	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
-	echo -e "$space_line"
-	__pkg__ 'virtualbox-6.0' || return 1
+	# Atualizar o cache 'apt update' apartir da função _APT.
+	_APT update 
+	# __pkg__ libvpx6 
+	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
+	__pkg__ linux-headers-$(uname -r)
+	print_line
+	__pkg__ 'virtualbox-6.1' || return 1
 	_virtualbox_extpack
 }
 
@@ -2825,7 +2951,8 @@ _virtualbox()
 {
 	#is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
 	case "$os_id" in
-		debian|linuxmint|ubuntu) _virtualbox_debian;;
+		debian) _virtualbox_debian;;
+		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
 		arch) _virtualbox_linux_run;;	
 		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	
@@ -3074,7 +3201,7 @@ _topicons_plus_github()
 	
 	# make install
 	sudo make install INSTALL_PATH=/usr/share/gnome-shell/extensions
-	echo -e "$space_line"
+	print_line
 
 	if _YESNO "Deseja abrir a jenela de configuração para topicons-plus"; then
 		gnome-extensions prefs TopIcons@phocean.net
@@ -3102,9 +3229,7 @@ _gnome_tweaks()
 #=============================================================#
 _Acessory_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Acessórios'" || return 1
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3123,9 +3248,7 @@ _Acessory_All()
 #=============================================================#
 _Dev_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Desenvolvimento'" || return 1
 	
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3145,9 +3268,7 @@ _Dev_All()
 #=============================================================#
 _System_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Sistema'" || return 1 
 	
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3165,9 +3286,7 @@ _System_All()
 #=============================================================#
 _Internet_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Internet'" || return 1
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3185,9 +3304,9 @@ _Internet_All()
 #=============================================================#
 _Browser_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
-	fi
+	
+	_YESNO "Instalar todos os pacotes da categória 'Navegadores'" || return 1
+
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3205,9 +3324,7 @@ _Browser_All()
 #=============================================================#
 _Office_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
-	fi
+	_YESNO "Instalar todos os pacotes da categória 'Escritório'" || return 0
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3225,9 +3342,9 @@ _Office_All()
 #=============================================================#
 _Midia_All()
 {
-	if [[ -z "$AssumeYes" ]]; then
-		_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
-	fi
+	
+	_YESNO "Instalar todos os pacotes da categória 'Midia'" || return 1
+	
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3237,6 +3354,25 @@ _Midia_All()
 		fi
 	else
 		main install "${programs_midia[@]}"
+	fi
+}
+
+
+#=============================================================#
+# Instalar todos os pacotes da categória Wine.
+#=============================================================#
+_Wine_All()
+{
+	_YESNO "Instalar todos os pacotes da categória 'Wine'" || return 1
+
+	if [[ "$AssumeYes" == 'True' ]]; then
+		if [[ "$DownloadOnly" == 'True' ]]; then
+			main install --yes --downloadonly "${programs_wine[@]}"
+		else
+			main install --yes "${programs_wine[@]}"
+		fi
+	else
+		main install "${programs_wine[@]}"
 	fi
 }
 

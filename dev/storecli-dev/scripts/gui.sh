@@ -6,36 +6,89 @@
 # storecli
 #
 #
-VERSION_GUI='2020-07-08'
+VERSION_GUI='2020-10-11'
 #
 
+export script_gui=$(readlink -f "$0")
+export readonly dir_gui=$(dirname "$script_gui") # path deste arquivo no disco.
+export dir_libs=$(cd "$dir_gui" && cd ../lib/ && pwd)
 
-# Diretórios
-export readonly DirGui=$(dirname $(readlink -f "$0")) # path deste arquivo no disco.
+source "$dir_libs"/colors.sh
 
-# Urls
-github='https://github.com'  
-raw='https://raw.github.com'
+is_executable()
+{
+	# Função para verificar se um executável existe no PATH do sistema.
+	if [[ -x $(which "$1" 2> /dev/null) ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+if is_executable tput; then
+	columns=$(tput cols)
+else
+	columns='45'
+fi
+
+#=============================================================#
+# Imprimir textos com formatação e cores.
+#=============================================================#
+
+print_line(){
+	# Função para imprimir um caractere que preencha todo espaço horizontal do terminal.
+	local L='-' # Caractere que será impresso ocupando todas as colunas do terminal.
+	num='1'
+	while [[ "$num" != "$columns" ]]; do
+		L="${L}-"
+		num="$(($num+1))"
+	done
+	[[ "$silent" == 'True' ]] && return 0
+	printf '%s\n' "$L"
+}
 
 _msg()
 {
-	echo -e "[>] $@"
+	print_line
+	echo -e " $@"
+	print_line
+}
+
+_println()
+{
+	# Imprimir mensagens com printf sem quebrar linhas.
+	printf "[>] $@"
+}
+
+_print()
+{
+	# Imprimir texto com formatação e quebra de linha.
+	printf '%s\n' "[>] $@"
 }
 
 _red()
 {
-	echo -e "\033[0;31m[!]\033[m $@"
+	echo -e "[${CRed}!${CReset}] $@"
 }
 
 _green()
 {
-	echo -e "\033[0;32m[*]\033[m $@"
+	echo -e "[${CGreen}+${CReset}] $@"
 }
 
 _yellow()
 {
-	echo -e "\033[0;33m[+]\033[m $@"
+	echo -e "[${CYellow}+${CReset}] $@"
 }
+
+_blue()
+{
+	echo -e "[${CBlue}+${CReset}] $@"
+}
+
+# Urls
+github='https://github.com'  
+raw='https://raw.github.com'
 
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
@@ -55,46 +108,37 @@ if [[ ! -x $(which curl 2> /dev/null) ]]; then
 	exit 1
 fi
 
-if [[ -x $(which tput 2> /dev/null) ]]; then
-	columns=$(tput cols)
-else
-	columns='40'
-fi
-
-print_line(){
-	local L='='
-	num='1'
-	while [[ "$num" != "$columns" ]]; do
-		L="${L}="
-		num="$(($num+1))"
-	done
-	# echo -ne "$L"
-	printf '%s\n' "$L"
-}
-
 # Verificar conexão com a internet.
 _ping()
 {
-	echo -ne "[>] Aguardando conexão "
+	_println "Aguardando conexão ... "
 
 	if ping -c 2 8.8.8.8 1> /dev/null; then
-		echo "[Conectado]"
+		echo "Conectado"
 		return 0
 	else
-		echo ' '
-		_red "Falha - AVISO: você está OFF-LINE"
+		_red "Falha"
+		_red "AVISO: você está OFF-LINE"
 		read -p "Pressione enter: " enter
 		return 1
 	fi
 }
 
 # Instalar o script storecli se ele não estiver disponível.
-if [[ ! -x $(which storecli 2> /dev/null) ]]; then
+if [[ ! -x '/usr/local/bin/storecli' ]]; then
 	_yellow "Instalando script storecli"
 	if ! sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"; then
-		_red "Falha ao tentar instalar storecli"
+		_red "Falha ao tentar instalar o script storecli"
 		exit 1
 	fi
+fi
+
+if is_executable "$HOME/.local/bin/storecli"; then
+	script_storecli="$HOME/.local/bin/storecli"
+elif is_executable '/usr/local/bin/storecli'; then
+	script_storecli='/usr/local/bin/storecli'
+else
+	return 1
 fi
 
 _zenity_dialog_list()
@@ -247,10 +291,11 @@ list_menu_tools=(
 #=============================================================#
 # Função para instalação dos pacotes com o script 'storecli'.
 #=============================================================#
-storecli_args()
+storecli_install_package()
 {
 	# Argumentos usados para instalação.
-	storecli install -y "$@"
+	_print "Executando ... $script_storecli install -y $@"
+	"$script_storecli" install -y "$@"
 }
 
 #=============================================================#
@@ -271,10 +316,10 @@ menu_acessory(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			etcher) storecli_args etcher;;
-			'gnome-disk') storecli_args gnome-disk;;
-			veracrypt) storecli_args veracrypt;;
-			woeusb) storecli_args woeusb;;
+			etcher) storecli_install_package etcher;;
+			'gnome-disk') storecli_install_package gnome-disk;;
+			veracrypt) storecli_install_package veracrypt;;
+			woeusb) storecli_install_package woeusb;;
 		esac
 		echo -e "Menu Acessórios"
 	done
@@ -295,12 +340,12 @@ menu_dev(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			'android-studio') storecli_args android-studio;;
-			codeblocks) storecli_args codeblocks;;
-			pycharm) storecli_args pycharm;;
-			sublime-text) storecli_args sublime-text;;
-			vim) storecli_args vim;;
-			vscode) storecli_args vscode;;
+			'android-studio') storecli_install_package android-studio;;
+			codeblocks) storecli_install_package codeblocks;;
+			pycharm) storecli_install_package pycharm;;
+			sublime-text) storecli_install_package sublime-text;;
+			vim) storecli_install_package vim;;
+			vscode) storecli_install_package vscode;;
 		esac
 		echo -e "Menu Desenvolvimento"
 	done
@@ -321,10 +366,10 @@ menu_office(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			atril) storecli_args atril;;
-			fontes-ms) storecli_args fontes-ms;;
-			libreoffice) storecli_args libreoffice;;
-			'libreoffice-appimage') storecli_args libreoffice-appimage;;
+			atril) storecli_install_package atril;;
+			fontes-ms) storecli_install_package fontes-ms;;
+			libreoffice) storecli_install_package libreoffice;;
+			'libreoffice-appimage') storecli_install_package libreoffice-appimage;;
 		esac
 		echo -e "Menu Escritório"
 	done
@@ -346,11 +391,11 @@ menu_navegadores(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			chromium) storecli_args chromium;;
-			firefox) storecli_args firefox;;
-			google-chrome) storecli_args google-chrome;;
-			'opera-stable') storecli_args opera-stable;;
-			torbrowser) storecli_args torbrowser;;
+			chromium) storecli_install_package chromium;;
+			firefox) storecli_install_package firefox;;
+			google-chrome) storecli_install_package google-chrome;;
+			'opera-stable') storecli_install_package opera-stable;;
+			torbrowser) storecli_install_package torbrowser;;
 		esac
 		echo -e "Menu Navegadores"
 	done
@@ -371,16 +416,16 @@ menu_internet(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			megasync) storecli_args megasync;;
-			proxychains) storecli_args proxychains;;
-			qbittorrent) storecli_args qbittorrent;;
-			skype) storecli_args skype;;
-			teamviewer) storecli_args teamviewer;;
-			telegram) storecli_args telegram;;
-			tixati) storecli_args tixati;;
-			uget) storecli_args uget;;
-			youtube-dl) storecli_args youtube-dl;;
-			youtube-dl-gui) storecli_args youtube-dl-gui;;
+			megasync) storecli_install_package megasync;;
+			proxychains) storecli_install_package proxychains;;
+			qbittorrent) storecli_install_package qbittorrent;;
+			skype) storecli_install_package skype;;
+			teamviewer) storecli_install_package teamviewer;;
+			telegram) storecli_install_package telegram;;
+			tixati) storecli_install_package tixati;;
+			uget) storecli_install_package uget;;
+			youtube-dl) storecli_install_package youtube-dl;;
+			youtube-dl-gui) storecli_install_package youtube-dl-gui;;
 		esac
 		echo -e "Menu Internet"
 	done
@@ -402,13 +447,13 @@ menu_midia(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			celluloid) storecli_args celluloid;;
-			codecs) storecli_args codecs;;
-			spotify) storecli_args spotify;;
-			gnome-mpv) storecli_args gnome-mpv;;
-			parole) storecli_args parole;;
-			smplayer) storecli_args smplayer;;
-			vlc) storecli_args vlc;;
+			celluloid) storecli_install_package celluloid;;
+			codecs) storecli_install_package codecs;;
+			spotify) storecli_install_package spotify;;
+			gnome-mpv) storecli_install_package gnome-mpv;;
+			parole) storecli_install_package parole;;
+			smplayer) storecli_install_package smplayer;;
+			vlc) storecli_install_package vlc;;
 		esac
 		echo -e "Menu Midia"
 	done
@@ -430,17 +475,17 @@ menu_system(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			bluetooth) storecli_args bluetooth;;
-			compactadores) storecli_args compactadores;;
-			firmware-atheros) storecli_args firmware-atheros;;
-			firmware-linux-nonfree) storecli_args firmware-linux-nonfree;;
-			firmware-ralink) storecli_args firmware-ralink;;
-			firmware-realtek) storecli_args firmware-realtek;;
-			gparted) storecli_args gparted;;
-			peazip) storecli_args peazip;;
-			refind) storecli_args refind;;
-			stacer) storecli_args stacer;;
-			virtualbox) storecli_args virtualbox;;
+			bluetooth) storecli_install_package bluetooth;;
+			compactadores) storecli_install_package compactadores;;
+			firmware-atheros) storecli_install_package firmware-atheros;;
+			firmware-linux-nonfree) storecli_install_package firmware-linux-nonfree;;
+			firmware-ralink) storecli_install_package firmware-ralink;;
+			firmware-realtek) storecli_install_package firmware-realtek;;
+			gparted) storecli_install_package gparted;;
+			peazip) storecli_install_package peazip;;
+			refind) storecli_install_package refind;;
+			stacer) storecli_install_package stacer;;
+			virtualbox) storecli_install_package virtualbox;;
 		esac
 		echo -e "Menu Sistema"
 	done
@@ -462,9 +507,9 @@ menu_preferences(){
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			papirus) storecli_args papirus;;
-			ohmybash) storecli_args ohmybash;;
-			ohmyzsh) storecli_args ohmyzsh;;
+			papirus) storecli_install_package papirus;;
+			ohmybash) storecli_install_package ohmybash;;
+			ohmyzsh) storecli_install_package ohmyzsh;;
 		esac
 		echo -e "Menu Preferências"
 	done
@@ -512,9 +557,9 @@ menu_tools()
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			Atualizar_este_script) "$Script_Storecli" --upgrade;;
-			Remover_pacotes_quebrados) "$Script_Storecli" --broke;;
-			Instalar_dependencias) "$Script_Storecli" --configure;;
+			Atualizar_este_script) "$script_storecli" -u;;
+			Remover_pacotes_quebrados) "$script_storecli" --broke;;
+			Instalar_dependencias) "$script_storecli" --configure;;
 		esac
 		echo -e "Menu Ferramentas"
 	done

@@ -4,62 +4,6 @@
 path_python3_portable="$HOME/.wine/drive_c/python37/python.exe"
 
 
-_youtube_dlgui_windows()
-{
-	# https://mrs0m30n3.github.io/youtube-dl-gui/
-	# https://github.com/MrS0m30n3/youtube-dl-gui
-	# https://wxpython.org/pages/downloads/
-	# https://pypi.org/project/twodict/
-	# https://www.python.org/downloads/release/python-278/
-	#
-	local url_youtube_DLGUI_win='https://github.com/MrS0m30n3/youtube-dl-gui/releases/download/0.4/youtube-dl-gui-0.4-win-setup.zip'
-	local url_youtube_DL='https://yt-dl.org/downloads/2020.07.28/youtube-dl.exe'
-	local url_visualC='https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe'
-	local url_wxpython_win32='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe/download'
-	local url_gnu_gettext='https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.20.2-v1.16/gettext0.20.2-iconv1.16-static-32.exe'
-	local url_python27='https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi'
-
-	local path_file_ytDL="$DirDownloads/youtube-dl.exe"
-	local path_file_ytDLGUI="$DirDownloads/youtube-dl-gui-0.4-win-setup.zip"
-	local path_file_visualC="$DirDownloads/$(basename $url_visualC)"
-	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
-	local path_file_GNU_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
-	local path_file_python27="$DirDownloads/$(basename $url_python27)"
-	
-	__download__ "$url_youtube_DLGUI_win" "$path_file_ytDLGUI" || return 1
-	__download__ "$url_visualC" "$path_file_visualC" || return 1 
-	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
-	__download__ "$url_gnu_gettext" "$path_file_GNU_gettext" || return 1
-	
-	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
-		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
-		_install_wine || return 1	
-	fi
-
-	if ! is_executable winetricks; then
-		_install_script_winetricks
-	fi
-
-
-	_print "Entrando no diretório ... $DirDownloads"
-	cd "$DirDownloads"
-	_msg "Instalando: atmlib"; winetricks atmlib
-	_msg "Instalando: dotnet45"; winetricks dotnet45
-	_msg "Instalando: GNU gettext"; wine "$path_file_GNU_gettext"
-	_msg "Instalando: python2.7"; winetricks python27
-	_msg "Instalando: wxpython3.0"; wine "$path_file_wxpython"
-	_msg "Instalando: visual C"; wine "$path_file_visualC"
-	_python37_windows32_portable # Instalar o python37 portable para para executar o get-pip.py
-	_get_pip_windows # Instalar o pip.exe
-
-	_unpack "$path_file_ytDLGUI" || return 1
-	cd "$DirUnpack"
-	_msg "Executando: wine pip.exe install twodict"; wine pip.exe install twodict
-	_msg "Instalando: youtubedlg-0.4.exe"; wine youtubedlg-0.4.exe
-	rm -rf "$DirUnpack"
-}
-
 _python37_windows32()
 {
 	# Instalar o executável do python3
@@ -78,7 +22,7 @@ _python37_windows32()
 	__download__ "$url_python37_windows32" "$path_file_python37" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_msg "Executando: winetricks atmlib cmd"
-	winetricks atmlib cmd
+	"$scriptWinetricksLocal" atmlib cmd
 	_msg "Instalando: python37" 
 	wine "$path_file_python37"
 }
@@ -101,7 +45,7 @@ _python37_windows32_portable()
 	__download__ "$url_python37_portable" "$path_file_python37_portable" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_print "(_python37_windows32_portable) - executando: winetricks atmlib dotnet45 cmd"
-	winetricks atmlib dotnet45 cmd
+	"$scriptWinetricksLocal" atmlib dotnet45 cmd
 
 	_unpack "$path_file_python37_portable" || return 1
 	mkdir -p "$HOME"/.wine/drive_c/python37
@@ -110,7 +54,6 @@ _python37_windows32_portable()
 	cp -n * "$HOME"/.wine/drive_c/python37/
 	_print "(_python37_windows32_portable) - executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
 	wine "$HOME"/.wine/drive_c/python37/python.exe -V
-	_get_pip_windows
 }
 
 _get_pip_windows()
@@ -133,6 +76,69 @@ _get_pip_windows()
 	wine "$path_python3_portable" "$path_file_getpip"
 }
 
+_install_wxpython_win32()
+{
+	# https://wxpython.org/pages/downloads/
+	local url_wxpython_win32='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe/download'
+	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
+	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
+	_msg "Instalando ... $path_file_wxpython"
+	wine "$path_file_wxpython"
+	return 0
+}
+
+_youtube_dlgui_windows()
+{
+	# https://mrs0m30n3.github.io/youtube-dl-gui/
+	# https://github.com/MrS0m30n3/youtube-dl-gui
+	# https://pypi.org/project/twodict/
+	# https://www.python.org/downloads/release/python-278/
+
+	local url_youtube_dlgui_win='https://github.com/MrS0m30n3/youtube-dl-gui/releases/download/0.4/youtube-dl-gui-0.4-win-setup.zip'
+	local url_youtube_dl='https://yt-dl.org/downloads/2020.07.28/youtube-dl.exe'
+	local url_visual_c='https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe'
+	local url_gnu_gettext='https://github.com/mlocati/gettext-iconv-windows/releases/download/v0.20.2-v1.16/gettext0.20.2-iconv1.16-static-32.exe'
+	local url_python27='https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi'
+	local path_file_youtube_dl="$DirDownloads/youtube-dl.exe"
+	local path_file_youtube_dlgui="$DirDownloads/youtube-dl-gui-0.4-win-setup.zip"
+	local path_file_visual_c="$DirDownloads/$(basename $url_visual_c)"
+	local path_file_gnu_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
+	local path_file_python27="$DirDownloads/$(basename $url_python27)"
+	
+	__download__ "$url_youtube_dlgui_win" "$path_file_youtube_dlgui" || return 1
+	__download__ "$url_visual_c" "$path_file_visual_c" || return 1 
+	__download__ "$url_gnu_gettext" "$path_file_gnu_gettext" || return 1
+	
+	if ! is_executable wine; then
+		_red "Necessário ter o wine instalado para prosseguir"
+		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
+		_install_wine || return 1	
+	fi
+
+	if ! is_executable winetricks; then
+		_install_script_winetricks
+	fi
+	
+	_print "Entrando no diretório ... $DirDownloads"
+	cd "$DirDownloads"
+	_msg "Instalando ... atmlib"; winetricks atmlib
+	_msg "Instalando: dotnet45"; winetricks dotnet45
+	_msg "Instalando: visual C"; wine "$path_file_visual_c"
+	_msg "Instalando: GNU gettext"
+	wine "$path_file_gnu_gettext"
+	_msg "Instalando: python2.7"
+	winetricks python27
+	_python37_windows32_portable
+	_get_pip_windows  
+	_install_wxpython_win32
+	
+	_unpack "$path_file_youtube_dlgui" || return 1
+	cd "$DirUnpack"
+	_msg "Executando: wine pip.exe install twodict"
+	wine pip.exe install twodict
+	_msg "Instalando: youtubedlg-0.4.exe" 
+	wine youtubedlg-0.4.exe
+}
 
 _epsxe_windows()
 {
@@ -216,8 +222,8 @@ _install_wine_ubuntu()
 			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./'
 			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key'
 			;;
-		focal)
-			__pkg__ 'wine'
+		focal|ulyana)
+			__pkg__ 'wine' || return 1
 			return 0 
 			;;
 		*) _red "Intale o wine manualmente usado o 'apt'" 
@@ -243,7 +249,13 @@ _install_wine_ubuntu()
 	_APT update
 	__pkg__ 'libfaudio0:i386' || return 1
 
-	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
+	requeriments_wine_debian=(
+		'wine-stable-i386' 
+		'wine-stable-amd64' 
+		'wine-stable' 
+		'winehq-stable'
+		)
+
 	for APP in "${requeriments_wine_debian[@]}"; do
 		__pkg__ "$APP" || break
 	done
@@ -254,7 +266,6 @@ _install_wine_debian()
 	# Instalação do wine no Debian buster.
 	_yellow "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
-	# Limpar arquivos temporarios.
 	_clear_temp_dirs
 
 	case "$os_codename" in
@@ -309,7 +320,6 @@ _install_wine_archlinux()
 	# Adicionar suporte ao repositório multilib no archlinux.
 	sudo ./addrepo.py --repo arch
 	_PACMAN -Sy
-	# Instalar o wine.
 	__pkg__ wine 'wine-mono' 'wine-gecko'
 }
 
