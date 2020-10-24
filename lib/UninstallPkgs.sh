@@ -32,6 +32,19 @@ _uninstall_teamviewer()
 
 }
 
+_uninstall_edge()
+{
+	if [[ -f /etc/debian_version ]]; then
+		_APT remove microsoft-edge-dev
+	elif [[ -f /etc/fedora-release ]]; then
+		_DNF remove microsoft-edge-dev
+	else
+		_sred "Seu sistema não tem suporte para executar esta ação."
+		sleep 0.5
+		return 1
+	fi
+}
+
 _uninstall_packages()
 {
 	[[ -z $1 ]] && usage && return 1
@@ -47,7 +60,7 @@ _uninstall_packages()
 			vscode) _uninstall_vscode;;
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
-
+			edge) _uninstall_edge;;
 			torbrowser) "$scriptTorBrowser" --remove;;	
 
 			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
