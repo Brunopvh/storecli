@@ -45,6 +45,17 @@ _uninstall_edge()
 	fi
 }
 
+_uninstall_stacer()
+{
+	if [[ -f /etc/debian_version ]]; then
+		_APT remove stacer
+	elif [[ -f /etc/fedora-release ]]; then
+		_DNF remove stacer
+	else
+		__rmdir__ "${destinationFilesStacer[@]}"
+	fi
+}
+
 _uninstall_packages()
 {
 	[[ -z $1 ]] && usage && return 1
@@ -53,10 +64,10 @@ _uninstall_packages()
 			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
-			'android-studio') __rmdir__ "${destinationFilesAndroidStudio[@]}";;
+			android-studio) __rmdir__ "${destinationFilesAndroidStudio[@]}";;
 			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
-			'sublime-text') __rmdir__ "${destinationFilesSublime[@]}";;
+			sublime-text) __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
@@ -70,7 +81,7 @@ _uninstall_packages()
 	
 			peazip) __rmdir__ "${destinationFilesPeazip[@]}";;
 			refind) __rmdir__ "${destinationFilesRefind[@]}";;
-			stacer) __rmdir__ "${destinationFilesStacer[@]}";;
+			stacer) _uninstall_stacer;;
 
 			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;

@@ -54,6 +54,7 @@ _GDEBI()
 		sleep 0.2
 	done
 
+	_print "Executando ... sudo gdebi $@"
 	if sudo gdebi "$@"; then
 		return 0
 	else
@@ -89,6 +90,7 @@ _DPKG()
 		sleep 0.2
 	done
 
+	_print "Executando ... sudo dpkg $@"
 	if sudo dpkg "$@"; then
 		return 0
 	else
@@ -136,6 +138,7 @@ _APT()
 	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
 	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
 
+	_print "Executando ... sudo apt $@"
 	if sudo apt "$@"; then
 		return 0
 	else
@@ -189,6 +192,7 @@ _RPM()
 
 _DNF()
 {
+	_print "Executando ... sudo dnf $@"
 	if sudo dnf "$@"; then
 		return 0
 	else
@@ -208,6 +212,7 @@ _ZYPPER()
 		pidZypperInstall=$(ps aux | grep 'root.*zypper' | egrep -m 1 '(install)' | awk '{print $2}')
 	done
 
+	_print "Executando ... sudo zypper $@"
 	if sudo zypper "$@"; then
 		return 0
 	else
@@ -225,6 +230,7 @@ _PACMAN()
 		sleep 0.2
 	done
 
+	_print "Executando ... sudo pacman $@"
 	if sudo pacman "$@"; then
 		return 0
 	else
@@ -239,6 +245,7 @@ _PKG()
 	Pid_Pkg_Install=$(ps aux | grep 'root.*pkg' | egrep -m 1 '(install|update)' | awk '{print $2}')
 	[[ ! -z $Pid_Pkg_Install ]] && _loop_pid "$Pid_Pkg_Install"
 
+	_print "Executando ... sudo pkg $@"
 	if sudo pkg "$@"; then
 		return 0
 	else

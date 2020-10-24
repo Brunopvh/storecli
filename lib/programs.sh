@@ -2311,7 +2311,7 @@ _youtube_dlgui_fedora()
 	#
 	# Apartir da versão 32 do Fedora o pacote python2-wxpython3 não está mais
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
-	# Fedora 31 e instalar usando o comando "rpm --install".
+	# Fedora 31 e instalar usando o comando "rpm --install" ou "dnf install".
 	#
 	local f_packages='https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/31/Everything/x86_64/os/Packages/p'
 	local wxpython_rpm='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
@@ -2322,8 +2322,8 @@ _youtube_dlgui_fedora()
 	if [[ "$os_version" == '32' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
 		__download__ "$url" "$path_file" || return 1 
-		_yellow "Instalando: $path_file"; _RPM --install "$path_file" 
-
+		#_RPM --install "$path_file" 
+		_DNF install "$path_file"
 	else
 		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
 		return 1
@@ -2702,6 +2702,7 @@ _stacer()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _stacer_debian;;
+		fedora) _stacer_fedora;;
 		arch) 
 			__pkg__ 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
 			_stacer_appimage

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_23'
+__version__='2020_10_24'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -429,7 +429,7 @@ _ping()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	_print "${CYellow}A${CReset}utênticação necessária para executar: sudo $@"
+	_print "${CYellow}E${CReset}xecutando ... sudo $@"
 	if sudo "$@"; then
 		return 0
 	else
@@ -482,7 +482,7 @@ __pkg__()
 	# Somente baixar os pacotes caso receber '-d' ou '--downloadonly'
 	# na linha de comando.
 	#=============================================================#
-	_msg "Instalando ... $@"
+	#_msg "Instalando ... $@"
 
 	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
 		# Somente baixar os pacotes e assumir yes para indagações.
@@ -504,7 +504,11 @@ __pkg__()
 	
 	elif [[ "$DownloadOnly" == 'True' ]]; then
 		# Somente baixar os pacotes.
-		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
+		if [[ $(uname -s) == 'FreeBSD' ]]; then 
+			_PKG install "$@"
+			return 
+		fi
+		
 		case "$os_id" in
 			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
 			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
@@ -535,7 +539,7 @@ __pkg__()
 __gpg__()
 {
 	_println "Verificando integridade "
-	if gpg "$@" 1> /dev/null 2> /dev/null; then  
+	if gpg "$@" 1> "$OutputDevice" 2>&1; then  
 		_syellow "OK"
 	else
 		_sred "FALHA"
@@ -601,10 +605,10 @@ __download__()
 	_blue "Conectando ... $1"
 
 	while true; do
-		if is_executable wget; then
-			wget -c "$url" -O "$path_file" && break
-		elif is_executable curl; then
+		if is_executable curl; then
 			curl -C - -S -L -o "$path_file" "$url" && break
+		elif is_executable wget; then
+			wget -c "$url" -O "$path_file" && break
 		else
 			return 1
 			break
@@ -614,6 +618,7 @@ __download__()
 		if _YESNO "Deseja tentar baixar novamente"; then
 			continue
 		else
+			[[ -f "$path_file" ]] && __rmdir__ "$path_file"
 			return 1
 			break
 		fi
@@ -729,7 +734,7 @@ _pkg_manager_storecli()
 	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
 	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
 	if [[ -z $1 ]]; then
-		usage
+		_list_applications
 		return 1
 	fi
 
@@ -925,10 +930,11 @@ main()
 	# caso ainda não estiver instalado em /usr/local/bin/storecli.
 	if [[ ! -x '/usr/local/bin/storecli' ]]; then
 		# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		local url_setup_sh='https://raw.github.com/Brunopvh/storecli/master/setup.sh'
 		_yellow "Instalando script storecli em ... /usr/local/bin/storecli"
-		__download__ 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' "$DirTemp/setup.sh" 1> "$OutputDevice" 2>&1 || return 1
+		__download__ "$url_setup_sh" "$DirTemp/setup.sh" 1> "$OutputDevice" 2>&1 || return 1
 		chmod +x "$DirTemp/setup.sh"
-		sudo "$DirTemp/setup.sh" && {
+		sudo "$DirTemp/setup.sh" || {
 			_red "Falha ao tentar instalar o script storecli em ... /usr/local/bin/storecli"
 		}
 	fi
@@ -941,8 +947,8 @@ main()
 			-c|--configure) _run_configuration_dep;;
 			-l) shift; _list_applications "$@"; return 0; break;;
 			-u|--self-update) "$scriptInstallStoreli"; break;;
-			install) shift; _pkg_manager_storecli "$@"; return "$?"; break;;
-			remove)  shift; _uninstall_packages "$@" || return 1 && break;;
+			install) shift; _pkg_manager_storecli "$@" || STATUS_OUTPUT=1; break;;
+			remove)  shift; _uninstall_packages "$@" || STATUS_OUTPUT=1; break;;
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
@@ -950,22 +956,21 @@ main()
 		esac
 		shift
 	done
-	return "$?"
+	return "$STATUS_OUTPUT"
 }
 
 if [[ -z $1 ]]; then
-	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com
-	# o zenity.
+	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com o zenity.
 	main_menu # Executar janela/menu gráfico com zenity.
 else
 	# Executar a função main passando todos os argumentos recebidos na linha de comando.
-	main "${@}" && STATUS_OUTPUT='0'
+	main "${@}" && STATUS_OUTPUT=0
 
 	# Remover diretórios e subdiretórios temporários ao encerrar o programa.
 	silent='True' # habilitar o silente para não echoar mensagens de remoção dos arquivos.
 	__rmdir__ "$TemporaryDirectory"
 
-	if [[ "$STATUS_OUTPUT" == '0' ]]; then
+	if [[ "$STATUS_OUTPUT" == 0 ]]; then
 		exit 0
 	else
 		exit 1
