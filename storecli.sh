@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_18'
+__version__='2020_10_23'
 __author__='Bruno Chaves'
 #
 #=============================================================#
@@ -101,14 +101,14 @@ _println()
 {
 	# Imprimir mensagens com printf sem quebrar linhas.
 	[[ "$silent" == 'True' ]] && return 0
-	printf "[>] $@"
+	echo -ne "[>] $@"
 }
 
 _print()
 {
 	# Imprimir texto com formatação e quebra de linha.
 	[[ "$silent" == 'True' ]] && return 0
-	printf '%s\n' "[>] $@"
+	echo -e "[>] $@"
 }
 
 if is_executable tput; then
@@ -181,8 +181,6 @@ scriptInstallStoreli="$dir_of_executable/setup.sh"
 scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
 scriptWinetricksLocal="$dir_local_scripts/winetricks.sh"
 GUI="$dir_local_scripts/gui.sh"
-
-echo -e "... $(date +%H:%M:%S) $app_name V$__version__ ..."
 
 #=============================================================#
 # Diretórios do usuário
@@ -528,7 +526,7 @@ _ping()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	printf "[>] Autênticação necessária para executar: sudo ${@}\n"
+	_print "${CYellow}A${CReset}utênticação necessária para executar: sudo $@"
 	if sudo "$@"; then
 		return 0
 	else
@@ -867,6 +865,7 @@ _pkg_manager_storecli()
 
 			Navegadores) _Browser_All;;
 			chromium) _chromium;;
+			edge) _edge;;
 			firefox) _firefox;;
 			'google-chrome') _google_chrome;;
 			'opera-stable') _opera_stable;;
@@ -986,6 +985,7 @@ _update_storecli()
 
 main()
 {	
+	echo -e "... $(date +%H:%M:%S) $app_name V$__version__ ..."
 	for ARG in "$@"; do
 		case "$ARG" in
 			-y|--yes) export AssumeYes='True';;

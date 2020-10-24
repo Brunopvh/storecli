@@ -213,6 +213,7 @@ programs_office=(
 
 programs_browser=(
 	chromium
+	edge
 	firefox
 	google-chrome
 	opera-stable

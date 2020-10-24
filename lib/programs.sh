@@ -1334,6 +1334,29 @@ _chromium()
 	_chromium_lang # Instalar pacote de idioma ptbr.
 }
 
+
+_edge()
+{
+	# https://www.microsoftedgeinsider.com/pt-br/download/
+	if [[ "$os_id" == 'fedora' ]]; then
+		_RPM --import https://packages.microsoft.com/keys/microsoft.asc || return 1
+		_DNF config-manager --add-repo https://packages.microsoft.com/yumrepos/edge || return 1
+		__sudo__ mv /etc/yum.repos.d/packages.microsoft.com_yumrepos_edge.repo /etc/yum.repos.d/microsoft-edge-dev.repo
+		__pkg__ microsoft-edge-dev
+	elif [[ -f /etc/debian_version ]]; then
+		_println "Adicionando key ... https://packages.microsoft.com/keys/microsoft.asc "
+		curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+		echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge-dev.list
+		_APT update || return 1
+		__pkg__ microsoft-edge-dev
+	else
+		_show_info 'ProgramNotFound' 'edge' 
+		return 1
+	fi
+	
+}
+
+
 _firefox_lang()
 {
 	# Verificar se o idioma da sessão e pt_br e em seguida instalar o
@@ -1366,7 +1389,7 @@ _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
 	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
-	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
+	_println "Adicionando key ... https://dl.google.com/linux/linux_signing_key.pub "
 	wget -q 'https://dl.google.com/linux/linux_signing_key.pub' -O- | sudo apt-key add -
 
 	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null

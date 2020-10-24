@@ -178,6 +178,7 @@ _BROKE()
 
 _RPM()
 {
+	_print "Executando ... sudo rpm $@"
 	if sudo rpm "$@"; then
 		return 0
 	else
