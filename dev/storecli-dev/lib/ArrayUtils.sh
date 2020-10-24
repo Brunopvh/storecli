@@ -194,10 +194,11 @@ programs_acessory=(
 	)
 
 programs_development=(
-	'android-studio'
+	android-studio
 	codeblocks
+	idea
 	pycharm
-	'sublime-text'
+	sublime-text
 	vim
 	vscode
 	python37-windows

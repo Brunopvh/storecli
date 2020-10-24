@@ -5,7 +5,7 @@
 
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(
-'wget' 'curl' 'gawk' 'unzip' 'python3' 'git' 
+	wget curl gawk unzip python3 git zenity 
 )
 
 # Utilitários de linha de comando para sistemas baseados em debian.
@@ -54,22 +54,21 @@ requeriments_python3_freebsd=(
 # Módulos python3
 _config_python3()
 {
-	_msg "Instalando os seguintes módulos python3: wget wheel tqdm"
-
+	
 	if is_executable 'pip3'; then
-		_yellow "Executando: pip3 install wget wheel --user"
-		pip3 install wheel wget tqdm --user || return 1 
+		_yellow "Executando: pip3 install wheel wget --user"
+		pip3 install wheel wget --user || return 1 
 		return 0
 	fi
 
 	if is_executable 'pip'; then
-		_yellow "Executando: pip install wget wheel --user"
-		pip install wheel wget tqdm --user || return 1 
+		_yellow "Executando: pip install wheel wget --user"
+		pip install wheel wget --user || return 1 
 		return 0
 	fi
 
 	if is_executable 'pip2'; then
-		_yellow "Executando: pip2 install wget --user"
+		_yellow "Executando: pip2 install wheel --user"
 		pip2 install wheel --user || return 1 
 	fi
 	

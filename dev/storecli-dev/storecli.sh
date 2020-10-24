@@ -25,6 +25,8 @@ __author__='Bruno Chaves'
 # Verificar requesitos minimos do sistema.
 #=============================================================#
 
+clear
+
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
 
@@ -39,139 +41,40 @@ is_executable()
 }
 
 #=============================================================#
-# Imprimir textos com formatação e cores.
+# Configuração de diretórios usados por este programa para ler
+# libs e executar scripts.
 #=============================================================#
-_red()
-{
-	# Não imprimir nada se a opção -s|--silent estiver na linha de comando.
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "[${CRed}!${CReset}] $@"
-}
-
-_green()
-{
-	# Não imprimir nada se a opção -s|--silent estiver na linha de comando.
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "[${CGreen}+${CReset}] $@"
-}
-
-_yellow()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "[${CYellow}+${CReset}] $@"
-}
-
-_blue()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "[${CBlue}+${CReset}] $@"
-}
-
-_white()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "[${CWhite}+${CReset}] $@"
-}
-
-_sred()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "${CSRed}$@${CReset}"
-}
-
-_sgreen()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "${CSGreen}$@${CReset}"
-}
-
-_syellow()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "${CSYellow}$@${CReset}"
-}
-
-_sblue()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "${CSBlue}$@${CReset}"
-}
-
-_println()
-{
-	# Imprimir mensagens com printf sem quebrar linhas.
-	[[ "$silent" == 'True' ]] && return 0
-	echo -ne "[>] $@"
-}
-
-_print()
-{
-	# Imprimir texto com formatação e quebra de linha.
-	[[ "$silent" == 'True' ]] && return 0
-	echo -e "[>] $@"
-}
-
-if is_executable tput; then
-	columns=$(tput cols)
-else
-	columns='45'
-fi
-
-print_line(){
-	# Função para imprimir um caractere que preencha todo espaço horizontal do terminal.
-
-	local L='-' # Caractere que será impresso ocupando todas as colunas do terminal.
-	num='1'
-	while [[ "$num" != "$columns" ]]; do
-		L="${L}-"
-		num="$(($num+1))"
-	done
-	[[ "$silent" == 'True' ]] && return 0
-	printf '%s\n' "$L"
-}
-
-_msg()
-{
-	[[ "$silent" == 'True' ]] && return 0
-	print_line
-	echo -e " $@"
-	print_line
-}
-
+export app_name='storecli'
+export __script__=$(readlink -f "$0") # Este arquivo.
+export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
+export path_libs="$dir_of_executable/lib"
+export dir_local_scripts="$dir_of_executable/scripts"
+export dir_local_python="$dir_of_executable/python"
 
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
-	_red "Execute este programa apenas em sistemas Linux."
+	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
 	exit 1
 fi
 
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
-	_red "Usuário não pode ser o [root] execute novamente sem o [sudo]"
+	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
 	exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
 if [[ ! -x $(which sudo 2> /dev/null) ]]; then
-	_red "Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir"
+	printf "\033[0;31m Instale o pacote 'sudo' e adicione [$USER] no arquivo 'sudoers' para prosseguir.\033[m\n"
 	exit 1
 fi
 
 # Verificar se a arquitetura do Sistema e 64 bits
 if ! uname -m | grep '64' 1> /dev/null; then
-	_red "Seu sistema não e 64 bits. Saindo"
+	printf "\033[0;31m Seu sistema não é 64 bits saindo.\033[m\n"
 	exit 1
 fi
 
-#=============================================================#
-# Configuração de diretórios para libs, scripts e programas
-#=============================================================#
-export app_name='storecli'
-export __script__=$(readlink -f "$0") # Este arquivo.
-export dir_of_executable=$(dirname "$__script__")
-export path_libs="$dir_of_executable/lib"
-export dir_local_scripts="$dir_of_executable/scripts"
-export dir_local_python="$dir_of_executable/python"
 
 # Definir os scripts locais.
 scriptConfigPath="$dir_local_scripts/conf-path.sh"
@@ -206,32 +109,32 @@ DIR_THEME_ROOT='/usr/share/themes/'
 DIR_DESKTOP_ROOT='/usr/share/applications'
 
 if [[ ! -d "$DIR_BIN_ROOT" ]]; then
-	_print "Criando o diretório: $DIR_BIN_ROOT"
+	echo -e "Criando o diretório: $DIR_BIN_ROOT"
 	sudo mkdir "$DIR_BIN_ROOT"
 fi
 
 
 if [[ ! -d "$DIR_ICON_ROOT" ]]; then
-	_print "Criando o diretório: $DIR_ICON_ROOT"
+	echo -e "Criando o diretório: $DIR_ICON_ROOT"
 	sudo mkdir "$DIR_ICON_ROOT"
 fi
 
 
 if [[ ! -d "$DIR_THEME_ROOT" ]]; then
-	_print "Criando o diretório: $DIR_THEME_ROOT"
+	echo -e "Criando o diretório: $DIR_THEME_ROOT"
 	sudo mkdir "$DIR_THEME_ROOT"
 fi
 
 
 if [[ ! -d "$DIR_DESKTOP_ROOT" ]]; then
-	_print "Criando o diretório: $DIR_DESKTOP_ROOT"
+	echo -e "Criando o diretório: $DIR_DESKTOP_ROOT"
 	sudo mkdir "$DIR_DESKTOP_ROOT"
 fi
 
 #=============================================================#
 # Importar Libs
 #=============================================================#
-source "$path_libs/colors.sh"
+source "$path_libs/print_text.sh"
 source "$path_libs/ArrayUtils.sh"
 source "$path_libs/requeriments.sh"
 source "$path_libs/platform.sh"
@@ -239,6 +142,7 @@ source "$path_libs/pkg_manager.sh"
 source "$path_libs/UninstallPkgs.sh"
 source "$path_libs/programs.sh"
 source "$path_libs/wineutils.sh"
+source "$path_libs/gui.sh"
 
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
@@ -264,6 +168,7 @@ mkdir -p "$DirDownloads"
 export configFILE="$DIR_CONFIG_USER/requeriments.conf"
 export LogFile="$HOME/.cache/storecli/storecli.log"
 export LogErro="$HOME/.cache/storecli/storecli.err"
+export OutputDevice="$HOME/.cache/storecli/storecli-output.log"
 
 touch "$configFILE"
 touch "$LogFile"
@@ -823,13 +728,14 @@ _unpack()
 _pkg_manager_storecli()
 {
 	# Instalação dos programas, esta função recebe como parâmetro os pacotes a serem instalados
-	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro.
-	# Enquanto outros são instalados seguindo um processo de download, descompressão e configuração.
+	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
+	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
 	if [[ -z $1 ]]; then
 		usage
 		return 1
 	fi
 
+	echo -e ".... $(date +%H:%M:%S) $app_name V$__version__ ...."
 	_clear_temp_dirs
 
 	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
@@ -985,7 +891,6 @@ _update_storecli()
 
 main()
 {	
-	echo -e "... $(date +%H:%M:%S) $app_name V$__version__ ..."
 	for ARG in "$@"; do
 		case "$ARG" in
 			-y|--yes) export AssumeYes='True';;
@@ -1017,6 +922,18 @@ main()
 			_run_configuration_dep || return 1
 		}
 	fi
+	
+	# Instalar este programa no diretório do root para todos os usuários
+	# caso ainda não estiver instalado em /usr/local/bin/storecli.
+	if [[ ! -x '/usr/local/bin/storecli' ]]; then
+		# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		_yellow "Instalando script storecli em ... /usr/local/bin/storecli"
+		__download__ 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' "$DirTemp/setup.sh" 1> "$OutputDevice" 2>&1 || return 1
+		chmod +x "$DirTemp/setup.sh"
+		sudo "$DirTemp/setup.sh" && {
+			_red "Falha ao tentar instalar o script storecli em ... /usr/local/bin/storecli"
+		}
+	fi
 
 	_update_storecli
 
@@ -1039,23 +956,21 @@ main()
 }
 
 if [[ -z $1 ]]; then
-	if ! is_executable zenity; then
-		_yellow "Necessário instalar zenity"
-		__pkg__ zenity
-	fi 
-	"$GUI"
+	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com
+	# o zenity.
+	main_menu # Executar janela/menu gráfico com zenity.
 else
 	# Executar a função main passando todos os argumentos recebidos na linha de comando.
-	main "${@}" || STATUS_OUTPUT='1'
+	main "${@}" && STATUS_OUTPUT='0'
 
-	# Remover diretórios e subdiretórios temporários.
-	silent='True'
+	# Remover diretórios e subdiretórios temporários ao encerrar o programa.
+	silent='True' # habilitar o silente para não echoar mensagens de remoção dos arquivos.
 	__rmdir__ "$TemporaryDirectory"
 
-	if [[ "$STATUS_OUTPUT" == '1' ]]; then
-		exit 1
-	else
+	if [[ "$STATUS_OUTPUT" == '0' ]]; then
 		exit 0
+	else
+		exit 1
 	fi
 fi
 
