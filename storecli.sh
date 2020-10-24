@@ -25,8 +25,6 @@ __author__='Bruno Chaves'
 # Verificar requesitos minimos do sistema.
 #=============================================================#
 
-clear
-
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
 

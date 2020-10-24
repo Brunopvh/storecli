@@ -224,12 +224,13 @@ check_requeriments_sys()
 	local requeriments=(
 		'sudo'
 		'wget'
+		'curl'
 		)
 
 	for i in "${requeriments[@]}"; do
 		if ! is_executable "$i"; then
 			_space_text "${CRed}[Falha]${CReset}" "$i"
-			_red "Execute o comando a seguir para instalar todas as dependências: ${CRed}$scriptStorecli --configure${CReset}"
+			_red "Execute o comando a seguir para instalar todas as dependências: ${CRed}$__script__ --configure${CReset}"
 			return 1
 			break
 		fi
