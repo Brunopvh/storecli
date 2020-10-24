@@ -1345,7 +1345,8 @@ _edge()
 		__pkg__ microsoft-edge-dev
 	elif [[ -f /etc/debian_version ]]; then
 		_println "Adicionando key ... https://packages.microsoft.com/keys/microsoft.asc "
-		curl https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+		curl -sSLf https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
+		_println "Adicionando repositório ... "
 		echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge-dev.list
 		_APT update || return 1
 		__pkg__ microsoft-edge-dev
@@ -1388,14 +1389,15 @@ _firefox()
 _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'	
-	_println "Adicionando key ... https://dl.google.com/linux/linux_signing_key.pub "
-	wget -q 'https://dl.google.com/linux/linux_signing_key.pub' -O- | sudo apt-key add -
-
+	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'
+	local google_chrome_path_key="$DirTemp/linux_signing_key.pub"	
+	# Baixar e adicionar o arquiovo '.pub'
+	__download__ 'https://dl.google.com/linux/linux_signing_key.pub' "$google_chrome_path_key" || return 1
+	_println "Adicionando key ... $google_chrome_path_key "
+	sudo apt-key add "$google_chrome_path_key" || return 1
 	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
-	_white "Adicionando repositório"
+	_println "Adicionando repositório ... "
 	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
-
 	# sudo apt install libu2f-udev
 	_APT update
 	__pkg__ 'google-chrome-stable' 
@@ -1406,8 +1408,8 @@ _google_chrome_fedora()
 {
 	# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
 	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-	sudo dnf install fedora-workstation-repositories
-	sudo dnf config-manager --set-enabled google-chrome
+	_DNF install fedora-workstation-repositories
+	_DNF config-manager --set-enabled google-chrome
 	__pkg__ 'google-chrome-stable'
 }
 
@@ -1425,7 +1427,6 @@ _google_chrome_opensuse()
 
 _google_chrome_tumbleweed()
 {
-	
 	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
