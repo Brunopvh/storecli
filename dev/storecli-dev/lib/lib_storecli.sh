@@ -461,7 +461,7 @@ _gitclone()
 		__pkg__ git || return 1
 	fi
 
-	_green "Entrando no diretório ...$DirGitclone" 
+	_green "Entrando no diretório ... $DirGitclone" 
 	cd "$DirGitclone"
 	dir_repo=$(basename "$1" | sed 's/.git//g')
 	if [[ -d "$DirGitclone/$dir_repo" ]]; then

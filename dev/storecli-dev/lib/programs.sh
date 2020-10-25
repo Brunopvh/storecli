@@ -211,176 +211,49 @@ _veracrypt()
 	fi
 }
 
-
-# Debian/Ubuntu/Mint
-_woeusb_debian()
+_woeusb_cli_linux()
 {
-	# Instalar dependências, baixar o programa e compilar o código fonte.
-	# libwxgtk3.0-gtk3-dev
-	local woeusbRequeriments=('devscripts' 'equivs'  'grub-pc-bin' 'p7zip-full')
-	local github_woeusb="https://github.com/slacka/WoeUSB.git"
-	local dir_woeusb="$DirGitclone/WoeUSB"
-		
-	_APT update || return 1
-	__pkg__ "${woeusbRequeriments[@]}" || return 1
-	
-	# Instalar libwxgtk3
-	case "$os_codename" in
-		buster|bionic|tricia) __pkg__ 'libwxgtk3.0-dev' || return 1;;
-		focal|ulyana) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
-		*) _show_info 'ProgramNotFound' 'WoeUSB'; return 1;;
-	esac
-	
-	_gitclone "$github_woeusb" || return 1
-	_yellow "Entrando no diretório ... $dir_woeusb"
-	cd "$dir_woeusb"
-	_yellow "Executando: ./setup-development-environment.bash"; ./setup-development-environment.bash
-	_yellow "Executando: dpkg-buildpackage -uc -b -d"
-	
-	sudo dpkg-buildpackage -uc -b -d || {
-		_red "Falha: dpkg-buildpackage -uc -b -d"
-		return 1 
-	}
+	local URL_SCRIPT_WOEUSB='https://github.com/WoeUSB/WoeUSB/raw/master/sbin/woeusb'
+	local WOEUSB_TEMP_FILE="$DirTemp"/woeusb.tmp
 
-	_msg "OK"
-
-	# Instalação do pacote .deb
-	# O pacote .deb será gerado um diretório atrás do diretório de compilação, ou seja cd ..
-	cd "$DirGitclone"
-	sudo mv woeusb_*amd64.deb woeusb_amd64.deb
-	if [[ ! -f woeusb_amd64.deb ]]; then
-		_red "(_woeusb) arquivo '.deb' não encontrado"
-		return 1
+	_print "Baixando ... $WOEUSB_TEMP_FILE"
+	_println "Conectando ... $URL_SCRIPT_WOEUSB "
+	if is_executable curl; then
+		if curl -sSL "$URL_SCRIPT_WOEUSB" -o "$WOEUSB_TEMP_FILE"; then
+			_syellow "[curl] OK"
+		else
+			_sred "FALHA"
+			return 1
+		fi
+	elif is_executable wget; then
+		if wget -q "$URL_SCRIPT_WOEUSB" -O "$WOEUSB_TEMP_FILE"; then
+			_syellow "[wget] OK"
+		else
+			_sred "FALHA"
+			return 1
+		fi
 	fi
-
-	if _DPKG --install "$DirGitclone/woeusb_amd64.deb"; then
-		_green 'WoeUSB foi instalado com sucesso'	
-	else
-		_BROKE # Remover pacotes quebrados.
-		_red '(WoeUSB) falha'
-		return 1
-	fi
-
-	#===============================================================#
-	#======================== salvar o arquivo .deb ? ==============#
-	if _YESNO "Deseja salvar o arquivo woeusb_amd64.deb"; then
-		mkdir -p "$HOME/Downloads"
-		cp -vu "$DirGitclone/WoeUSB_amd64.deb" "$HOME"/Downloads/woeusb_amd64.deb
-		_msg "Arquivo salvo em: $HOME/Downloads/woeusb_amd64.deb"
-	fi
+	__sudo__ mv "$WOEUSB_TEMP_FILE" '/usr/local/bin/woeusb'
+	__sudo__ chmod +x '/usr/local/bin/woeusb'
 }
 
-
-_woeusb_archlinux()
+_woeusb_ng()
 {
-	# Clonar o repositório e compilar o pacote
-	# Requerimentos para archlinux wx-config|wxGTK-devel dh-autoreconf devscripts
+	# https://github.com/WoeUSB/WoeUSB-ng
+	requeriments_woeusb_ng_debian=(git p7zip-full python3-pip python3-wxgtk4.0)
 
-	local github_woeusb="https://github.com/slacka/WoeUSB.git"
-	local dir_woeusb="$DirGitclone/WoeUSB"
+	if [[ -f /etc/debian_version ]]; then
+		__pkg__ "${requeriments_woeusb_ng_debian[@]}"
+		__sudo__ pip3 install WoeUSB-ng
+	fi
 
-	# Habilitar repositório [multilib] em /etc/pacman.conf
-	__sudo__ "$SCRIPT_ADD_REPO" --repo arch || {
-		_red "Falha: $SCRIPT_ADD_REPO --repo arch"
-		return 1
-	}	
-
-	# Instalar requerimentos antes de compilar
-	__pkg__ 'wxgtk3' 'lib32-wxgtk2'
-			
-	_gitclone "$github_woeusb" || return 1
-	chmod -R +x "$dir_woeusb" 
-
-	cd "$dir_woeusb"
-	_yellow "Executando: ./setup-development-environment.bash"
-	./setup-development-environment.bash 2>> "$LogErro" || {
-		_red "Falha: ./setup-development-environment"
-		return 1
-	}
-
-
-	_yellow "Executando: autoreconf --force --install"
-	autoreconf --force --install 2>> "$LogErro" || {
-		_red "Falha: autoreconf --force --install"
-		return 1
-	}
-
-	_yellow "Executando: ./configure" 
-	./configure 2>> "$LogErro" || {
-		_red "Falha: ./configure"
-		return 1
-	}
-
-	_yellow "Executando: make" 
-	make 2>> "$LogErro" || {
-		_red "Falha: make"
-		return 1
-	}
-
-	sudo make install || {
-		_red "Falha: sudo make install"
-		return 1
-	}
 }
 
-
-_woeusb_github()
-{
-	# Clonar o repositório e compilar o pacote
-	# Requerimentos para compilar o pacote:
-	# wx-config|wxGTK-devel dh-autoreconf devscripts
-
-	local github_woeusb="https://github.com/slacka/WoeUSB.git"
-	local dir_woeusb="$DirGitclone/WoeUSB"
-
-	_gitclone "$github_woeusb" || return 1
-	chmod -R +x "$dir_woeusb"
-
-	_yellow "Instale wx-config no seu sistema"
-	cd "$dir_woeusb"
-
-	_yellow "Executando: ./setup-development-environment.bash"
-	if ! ./setup-development-environment.bash 2>> "$LogErro"; then
-		_red "Falha: ./setup-development-environment"
-		return 1
-	fi
-
-	_yellow "Executando: autoreconf --force --install"
-	if ! autoreconf --force --install 2>> "$LogErro"; then
-		_red "Falha: autoreconf --force --install"
-		return 1
-	fi
-
-	_yellow "Executando: ./configure" 
-	if ! ./configure 2>> "$LogErro"; then
-		_red "Falha: ./configure"
-		return 1
-	fi
-
-	_yellow "Executando: make" 
-	if ! make 2>> "$LogErro"; then
-		_red "Falha: make"
-		return 1
-	fi
-
-
-	_yellow "Executando: make install"
-	if ! sudo make install; then
-		_red "Falha: sudo make install"
-		return 1
-	fi
-}
-	
 _woeusb()
 {
-	case "$os_id" in
-		debian|ubuntu|linuxmint) _woeusb_debian;;
-		fedora) __pkg__ 'WoeUSB.x86_64';;
-		arch) _woeusb_archlinux;;
-		'opensuse-leap') __pkg__ WoeUSB;;
-		*) _woeusb_github;;
-	esac
-		
+	_woeusb_cli_linux
+	_woeusb_ng
+
 	if is_executable 'woeusb'; then
 		_show_info 'SuccessInstalation' 'woeusb'
 		return 0

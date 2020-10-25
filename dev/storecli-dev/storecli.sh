@@ -292,6 +292,16 @@ main()
 		esac
 	done
 
+	# Se a string 'requeriments OK' não estiver no arquivo de configuração significa 
+	# que a função de configuração de configuração do sistema ainda não foi executada 
+	# no sistema atual, ou seja, se o GREP abaixo retornar status diferente de '0' a 
+	# função de configuração será invocada.
+	if [[ "$IgnoreCli" != 'True' ]]; then
+		if ! grep -q 'requeriments OK' "$configFILE"; then
+			_install_requeriments || return 1
+		fi
+	fi
+	
 	# Verificar se todos os utilitários de linha de comando estão instalados 
 	# esta operação será IGNORADA caso a opção '--ignore-cli' ou '-I' estiver 
 	# na linha de comando.
@@ -299,20 +309,10 @@ main()
 	#   storecli --ignore-cli install <pacote>
 	#   storecli -I install <pacote>
 	
-	if [[ "$IgnoreCli" != 'True' ]]; then
-		check_requeriments_sys 
+	if [[ "$IgnoreCli" != 'True' ]] && [[ "$1" != '--configure' ]] && [[ "$1" != '-c' ]]; then
+		check_requeriments_cli || return 1
 	fi
 
-	# Se a string 'requeriments OK' não estiver no arquivo de configuração
-	# significa que a função de configuração (_run_configuration_dep) ainda não foi
-	# executada no sistema atual, ou seja, se o GREP abaixo retornar status
-	# diferente de '0' a função _run_configuration_dep será invocada.
-	if [[ "$IgnoreCli" != 'True' ]]; then
-		grep -q 'requeriments OK' "$configFILE" || {
-			_run_configuration_dep || return 1
-		}
-	fi
-	
 	# Instalar este programa no diretório do root para todos os usuários
 	# caso ainda não estiver instalado em /usr/local/bin/storecli.
 	[[ "$IgnoreCli" != 'True' ]] && {
@@ -333,7 +333,7 @@ main()
 	while [[ $1 ]]; do
 		case "$1" in
 			-b|--broke) _BROKE;;
-			-c|--configure) _run_configuration_dep;;
+			-c|--configure) _install_requeriments;;
 			-l) shift; _list_applications "$@"; return 0; break;;
 			-u|--self-update) "$SCRIPT_STORECLI_INSTALLER"; break;;
 			install) shift; _pkg_manager_storecli "$@" || STATUS_OUTPUT=1; break;;
