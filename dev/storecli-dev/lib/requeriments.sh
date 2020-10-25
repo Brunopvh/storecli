@@ -10,7 +10,7 @@ requeriments_cli_linux=(
 
 # Utilitários de linha de comando para sistemas baseados em debian.
 requeriments_cli_debian=(
-'aptitude' 'gdebi' 'dirmngr' 'apt-transport-https' 'gnupg' 'gpgv2' 'gpgv' 'xz-utils'
+	aptitude gdebi dirmngr apt-transport-https gnupg gpgv2 gpgv xz-utils
 )
 
 #=============================================================#
@@ -38,7 +38,7 @@ requeriments_python3_debian=(
 
 # Python3 Fedora
 requeriments_python3_fedora=(
-'python3' 'python3-pip' 'python3-setuptools'
+	python3 python3-pip python3-setuptools
 )
 
 # Python3 Opensuse Leap
@@ -121,7 +121,7 @@ _config_requeriments_opensuseleap()
 # Debian
 _config_requeriments_debian()
 {
-	_APT update
+	_APT update || return 1
 	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 	__pkg__ "${requeriments_cli_debian[@]}" || return 1
 	__pkg__ "${requeriments_python3_debian[@]}" || return 1
@@ -181,7 +181,6 @@ _install_requeriments_all_system()
 	fi
 
 	_config_python3 || return 1
-
 	return 0
 }
 
@@ -195,6 +194,7 @@ _run_configuration_dep()
 	# verificar as dependências ao iniciar.
 
 	export AssumeYes='True'
+	_ping || return 1
 	
 	while ! _install_requeriments_all_system; do
 		if _YESNO "Deseja repetir"; then # Usar a função _YESNO - que irá retornar 1 ou 0.
@@ -224,12 +224,13 @@ check_requeriments_sys()
 	local requeriments=(
 		'sudo'
 		'wget'
+		'curl'
 		)
 
 	for i in "${requeriments[@]}"; do
 		if ! is_executable "$i"; then
-			_space_text "${CRed}[Falha]${CReset}" "$i"
-			_red "Execute o comando a seguir para instalar todas as dependências: ${CRed}$scriptStorecli --configure${CReset}"
+			_red "(check_requeriments_sys): programa não encontrado ... $i"
+			_red "Execute o comando a seguir para instalar todas as dependências: ${CRed}$__script__ --configure${CReset}"
 			return 1
 			break
 		fi

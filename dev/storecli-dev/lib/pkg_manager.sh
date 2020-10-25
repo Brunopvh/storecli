@@ -54,6 +54,7 @@ _GDEBI()
 		sleep 0.2
 	done
 
+	_print "Executando ... sudo gdebi $@"
 	if sudo gdebi "$@"; then
 		return 0
 	else
@@ -89,6 +90,7 @@ _DPKG()
 		sleep 0.2
 	done
 
+	_print "Executando ... sudo dpkg $@"
 	if sudo dpkg "$@"; then
 		return 0
 	else
@@ -136,6 +138,7 @@ _APT()
 	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
 	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
 
+	_print "Executando ... sudo apt $@"
 	if sudo apt "$@"; then
 		return 0
 	else
@@ -189,6 +192,7 @@ _RPM()
 
 _DNF()
 {
+	_print "Executando ... sudo dnf $@"
 	if sudo dnf "$@"; then
 		return 0
 	else
@@ -208,6 +212,7 @@ _ZYPPER()
 		pidZypperInstall=$(ps aux | grep 'root.*zypper' | egrep -m 1 '(install)' | awk '{print $2}')
 	done
 
+	_print "Executando ... sudo zypper $@"
 	if sudo zypper "$@"; then
 		return 0
 	else
@@ -225,6 +230,7 @@ _PACMAN()
 		sleep 0.2
 	done
 
+	_print "Executando ... sudo pacman $@"
 	if sudo pacman "$@"; then
 		return 0
 	else
@@ -239,6 +245,7 @@ _PKG()
 	Pid_Pkg_Install=$(ps aux | grep 'root.*pkg' | egrep -m 1 '(install|update)' | awk '{print $2}')
 	[[ ! -z $Pid_Pkg_Install ]] && _loop_pid "$Pid_Pkg_Install"
 
+	_print "Executando ... sudo pkg $@"
 	if sudo pkg "$@"; then
 		return 0
 	else
@@ -254,5 +261,67 @@ _FLATPAK()
 	else
 		_red "Falha: flatpak $@"
 		return 1
+	fi
+}
+
+__pkg__()
+{
+	# Função para instalar os pacotes via linha de comando de acordo 
+	# o gerenciador de pacotes de cada sistema.
+
+	#=============================================================#
+	# Somente baixar os pacotes caso receber '-d' ou '--downloadonly'
+	# na linha de comando.
+	#=============================================================#
+	
+	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
+		# Somente baixar os pacotes e assumir yes para indagações.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then 
+			_PKG install -y "$@" || return 1
+		elif [[ -f /etc/debian_version ]] && [[ -x $(which apt 2> /dev/null) ]]; then
+			_APT install --download-only --yes "$@" || return 1
+		elif [[ -f /etc/fedora-release ]] && [[ -x $(which dnf 2> /dev/null) ]]; then
+			_DNF install --downloadonly -y "$@" || return 1
+		elif [[ "$os_id" == 'opensuse-leap' ]] || [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
+			_ZYPPER download "$@" || return 1
+		elif [[ "$os_id" == 'arch' ]]; then
+			_PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1
+		else
+			_red "(__pkg__) Erro: $@"
+			return 1
+		fi
+		return "$?"
+	
+	elif [[ "$DownloadOnly" == 'True' ]]; then
+		# Somente baixar os pacotes.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then 
+			_PKG install "$@"
+			return 
+		fi
+		
+		case "$os_id" in
+			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
+			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
+			fedora) _DNF install --downloadonly "$@" || return 1;;
+			arch) _PACMAN -S --needed --downloadonly "$@" || return 1;;
+		esac
+	elif [[ "$AssumeYes" == 'True' ]]; then 
+		# Assumir yes para indagações durante a instalação, equivalênte ao comando
+		# apt install -y / aptitude install -y em sistemas debian.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
+		case "$os_id" in
+			debian|ubuntu|linuxmint) _APT install --yes "$@" || return 1;;
+			opensuse-leap|opensuse-tumbleweed) _ZYPPER install -y "$@" || return 1;;
+			fedora) _DNF install -y "$@" || return 1;;
+			arch) _PACMAN -S --noconfirm --needed "$@" || return 1;;
+		esac
+	else
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
+		case "$os_id" in
+			debian|ubuntu|linuxmint) _APT install "$@" || return 1;;
+			opensuse-leap|opensuse-tumbleweed) _ZYPPER install "$@" || return 1;;
+			fedora) _DNF install "$@" || return 1;;
+			arch) _PACMAN -S --needed "$@" || return 1;;
+		esac
 	fi
 }

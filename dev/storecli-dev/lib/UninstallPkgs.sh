@@ -32,6 +32,30 @@ _uninstall_teamviewer()
 
 }
 
+_uninstall_edge()
+{
+	if [[ -f /etc/debian_version ]]; then
+		_APT remove microsoft-edge-dev
+	elif [[ -f /etc/fedora-release ]]; then
+		_DNF remove microsoft-edge-dev
+	else
+		_sred "Seu sistema não tem suporte para executar esta ação."
+		sleep 0.5
+		return 1
+	fi
+}
+
+_uninstall_stacer()
+{
+	if [[ -f /etc/debian_version ]]; then
+		_APT remove stacer
+	elif [[ -f /etc/fedora-release ]]; then
+		_DNF remove stacer
+	else
+		__rmdir__ "${destinationFilesStacer[@]}"
+	fi
+}
+
 _uninstall_packages()
 {
 	[[ -z $1 ]] && usage && return 1
@@ -40,15 +64,15 @@ _uninstall_packages()
 			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
-			'android-studio') __rmdir__ "${destinationFilesAndroidStudio[@]}";;
+			android-studio) __rmdir__ "${destinationFilesAndroidStudio[@]}";;
 			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
-			'sublime-text') __rmdir__ "${destinationFilesSublime[@]}";;
+			sublime-text) __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
-
-			torbrowser) "$scriptTorBrowser" --remove;;	
+			edge) _uninstall_edge;;
+			torbrowser) "$SCRIPT_TORBROWSER_INSTALLER" --remove;;	
 
 			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
 			tixati) __rmdir__ "${destinationFilesTixati[@]}";;
@@ -57,7 +81,7 @@ _uninstall_packages()
 	
 			peazip) __rmdir__ "${destinationFilesPeazip[@]}";;
 			refind) __rmdir__ "${destinationFilesRefind[@]}";;
-			stacer) __rmdir__ "${destinationFilesStacer[@]}";;
+			stacer) _uninstall_stacer;;
 
 			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;

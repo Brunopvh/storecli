@@ -180,7 +180,7 @@ _veracrypt()
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	printf "%s" "[>] Importando key: "
+	_println "Importando key $vc_url_asc ... "
 	if wget -q "$vc_url_asc" -O- | gpg --import 1> /dev/null 2>&1; then
 		_syellow "OK"
 	else
@@ -280,8 +280,8 @@ _woeusb_archlinux()
 	local dir_woeusb="$DirGitclone/WoeUSB"
 
 	# Habilitar repositório [multilib] em /etc/pacman.conf
-	__sudo__ "$scriptAddRepo" --repo arch || {
-		_red "Falha: $scriptAddRepo --repo arch"
+	__sudo__ "$SCRIPT_ADD_REPO" --repo arch || {
+		_red "Falha: $SCRIPT_ADD_REPO --repo arch"
 		return 1
 	}	
 
@@ -822,7 +822,7 @@ _codecs_tumbleweed()
 	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
 	
 	# Adicionar repostórios
-	"$scriptAddRepo" --repo tumbleweed
+	"$SCRIPT_ADD_REPO" --repo tumbleweed
 
 	# Instalar os codecs
 	local array_tumbleweed_codecs=(
@@ -917,7 +917,7 @@ _codecs_debian()
 _codecs_fedora()
 {
 	# Add repo fusion non free
-	sudo "$scriptAddRepo" --repo fedora
+	sudo "$SCRIPT_ADD_REPO" --repo fedora
 
 	local array_gstreamer_fedora=(
 		gstreamer-plugins-espeak 
@@ -1166,7 +1166,7 @@ _totem(){
 
 _vlc_fedora()
 {
-	sudo "$scriptAddRepo" --repo fedora # Adicionar repositórios fusion non free
+	sudo "$SCRIPT_ADD_REPO" --repo fedora # Adicionar repositórios fusion non free
 	__pkg__ vlc 'python-vlc'
 }
 
@@ -1568,11 +1568,11 @@ _torbrowser()
 {
 	# local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		_print "Executando $scriptTorBrowser --install --downloadonly"
-		"$scriptTorBrowser" --install --downloadonly
+		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install --downloadonly"
+		"$SCRIPT_TORBROWSER_INSTALLER" --install --downloadonly
 	else
-		_print "Executando $scriptTorBrowser --install"
-		"$scriptTorBrowser" --install
+		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install"
+		"$SCRIPT_TORBROWSER_INSTALLER" --install
 	fi
 }
 
@@ -1986,14 +1986,15 @@ _tixati_tarfile()
 	# Já instalado.
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	_yellow "Obtendo url de download tixati aguarde..."
-	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
-	local tixati_html=$(wget -q -O- "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
+	# Salvar o html da pagina de download no arquivo html temporário padrão. 
+	# Ver a variável "HtmlTemporaryFile".
+	get_html 'https://www.tixati.com/download/linux.html' || return 1
+	local tixati_html=$(grep -m 1 'tixati.*64.*tar.gz' "$HtmlTemporaryFile")
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
 	local signatureFile="${TarFile}.asc"
-	
+
 	[[ -f "$path_file_asc" ]] && rm "$path_file_asc"
 	__download__ "$url_tarfile" "$TarFile" || return 1
 	__download__ "$url_signature_file" "$signatureFile" || return 1
@@ -2001,15 +2002,10 @@ _tixati_tarfile()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	_println "Importando key tixati "
-	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
-		_syellow "OK"
-	else
-		_sred "Falha"
-		return 1
-	fi
+	# Importar key com a função gpg_import
+	gpg_import https://www.tixati.com/tixati.key || return 1
 
-	# Gpg
+	# verificar integridade com a fução __gpg__
 	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
@@ -2311,7 +2307,7 @@ _youtube_dlgui_fedora()
 	#
 	# Apartir da versão 32 do Fedora o pacote python2-wxpython3 não está mais
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
-	# Fedora 31 e instalar usando o comando "rpm --install".
+	# Fedora 31 e instalar usando o comando "rpm --install" ou "dnf install".
 	#
 	local f_packages='https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/31/Everything/x86_64/os/Packages/p'
 	local wxpython_rpm='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
@@ -2322,8 +2318,8 @@ _youtube_dlgui_fedora()
 	if [[ "$os_version" == '32' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
 		__download__ "$url" "$path_file" || return 1 
-		_yellow "Instalando: $path_file"; _RPM --install "$path_file" 
-
+		#_RPM --install "$path_file" 
+		_DNF install "$path_file"
 	else
 		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
 		return 1
@@ -2505,7 +2501,7 @@ _compactadores()
 _firmware()
 {
 	if [[ "$os_id" != 'debian' ]]; then
-		_yellow "Este pacote está disponível apenas para sistemas Debian"
+		_red "Este pacote está disponível apenas para sistemas Debian"
 		return 1
 	fi
 
@@ -2702,6 +2698,7 @@ _stacer()
 {
 	case "$os_id" in
 		debian|ubuntu|linuxmint) _stacer_debian;;
+		fedora) _stacer_fedora;;
 		arch) 
 			__pkg__ 'qt5-charts' 'hicolor-icon-theme' 'qt5-declarative' 'qt5-declarative' 'qt5-tools'
 			_stacer_appimage
@@ -2976,8 +2973,8 @@ _ohmybash()
 	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
 	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
 	
-	if is_executable "$scriptOhmybashInstaller"; then
-		"$scriptOhmybashInstaller"
+	if is_executable "$SCRIPT_OHMYBASH_INSTALLER"; then
+		"$SCRIPT_OHMYBASH_INSTALLER"
 	else 
 		sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
 	fi
