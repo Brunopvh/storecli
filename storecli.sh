@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_24'
+__version__='2020_10_30'
 __author__='Bruno Chaves'
+__app_name__='storecli'
 #
 #=============================================================#
 # INFO
@@ -21,34 +22,10 @@ __author__='Bruno Chaves'
 #=============================================================#
 # https://github.com/Brunopvh/storecli
 
-#=============================================================#
-# Verificar requesitos minimos do sistema.
-#=============================================================#
-
-# Controle do status de saida ao longo do script.
-export STATUS_OUTPUT='0'
-
-is_executable()
-{
-	# Função para verificar se um executável existe no PATH do sistema.
-	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
 
 #=============================================================#
-# Configuração de diretórios usados por este programa para ler
-# libs e executar scripts.
+# Verificar requisitos minimos do sistema.
 #=============================================================#
-export app_name='storecli'
-export __script__=$(readlink -f "$0") # Este arquivo.
-export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
-export path_libs="$dir_of_executable/lib"
-export dir_local_scripts="$dir_of_executable/scripts"
-export dir_local_python="$dir_of_executable/python"
-
 # Válidar se o Kernel e Linux.
 if [[ $(uname -s) != 'Linux' ]]; then
 	printf "\033[0;31m Execute este programa apenas em sistemas Linux.\033[m\n"
@@ -73,16 +50,6 @@ if ! uname -m | grep '64' 1> /dev/null; then
 	exit 1
 fi
 
-
-# Definir os scripts locais.
-scriptConfigPath="$dir_local_scripts/conf-path.sh"
-scriptAddRepo="$dir_local_scripts/addrepo.py"
-scriptTorBrowser="$dir_local_scripts/tor.sh"
-scriptInstallStoreli="$dir_of_executable/setup.sh"
-scriptOhmybashInstaller="$dir_local_scripts/ohmybash.run"
-scriptWinetricksLocal="$dir_local_scripts/winetricks.sh"
-GUI="$dir_local_scripts/gui.sh"
-
 #=============================================================#
 # Diretórios do usuário
 #=============================================================#
@@ -90,13 +57,46 @@ DIR_BIN_USER="$HOME/.local/bin"
 DIR_ICON_USER="$HOME/.local/share/icons"
 DIR_THEMES_USER="$HOME/.themes"
 DIR_DESKTOP_USER="$HOME/.local/share/applications"
-DIR_CONFIG_USER="$HOME/.config/$app_name"
+DIR_CONFIG_USER="$HOME/.config/$__app_name__"
 
 mkdir -p "$DIR_BIN_USER"
 mkdir -p "$DIR_ICON_USER"
 mkdir -p "$DIR_THEMES_USER"
 mkdir -p "$DIR_DESKTOP_USER"
 mkdir -p "$DIR_CONFIG_USER"
+
+#=============================================================#
+# Criar diretórios para arquivos temporários para descompressão dos
+# arquivos baixados, e clone(s) de repositórios do github. 
+#=============================================================#
+export TemporaryDirectory=$(mktemp --directory)
+export DirTemp="$TemporaryDirectory/temp"
+export DirGitclone="$TemporaryDirectory/gitclone"
+export DirUnpack="$TemporaryDirectory/unpack"
+export DirDownloads="$HOME/.cache/$__app_name__/downloads"
+export HtmlTemporaryFile="$DirTemp"/html-temp.txt
+
+mkdir -p "$TemporaryDirectory"
+mkdir -p "$DirTemp"
+mkdir -p "$DirGitclone"
+mkdir -p "$DirUnpack"
+mkdir -p "$DirDownloads"
+
+#=============================================================#
+# Arquivos de configuração e Log.
+#=============================================================#
+# O arquivo de configuração e gravado apenas quando a instalação
+# dos requirimentos são instaladas no sistema. Quando o programa 
+# inicia ele irá procurar por este arquivo é também irá verificar
+# se o conteudo do arquivo tem uma linha com as seguintes informações: requeriments OK 
+export configFILE="$DIR_CONFIG_USER/requeriments.conf"
+export LogFile="$HOME/.cache/storecli/storecli.log"
+export LogErro="$HOME/.cache/storecli/storecli.err"
+export OutputDevice="$HOME/.cache/storecli/storecli-output.log"
+
+touch "$configFILE"
+touch "$LogFile"
+touch "$LogErro"
 
 #=============================================================#
 # Diretórios do root
@@ -129,249 +129,52 @@ if [[ ! -d "$DIR_DESKTOP_ROOT" ]]; then
 	sudo mkdir "$DIR_DESKTOP_ROOT"
 fi
 
+# Controle do status de saida ao longo do script.
+export STATUS_OUTPUT='0'
+
+is_executable()
+{
+	# Função para verificar se um executável existe no PATH do sistema.
+	if [[ -x $(which "$1" 2> /dev/null) ]]; then
+		return 0
+	else
+		return 1
+	fi
+}
+
+#=============================================================#
+# Configuração de diretórios usados por este programa para ler
+# libs e executar scripts.
+#=============================================================#
+export __script__=$(readlink -f "$0") # Este arquivo.
+export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
+export path_libs="$dir_of_executable/lib"
+export dir_local_scripts="$dir_of_executable/scripts"
+export dir_local_python="$dir_of_executable/python"
+
 #=============================================================#
 # Importar Libs
 #=============================================================#
 source "$path_libs/print_text.sh"
 source "$path_libs/ArrayUtils.sh"
+source "$path_libs/lib_storecli.sh"
 source "$path_libs/requeriments.sh"
-source "$path_libs/platform.sh"
 source "$path_libs/pkg_manager.sh"
 source "$path_libs/UninstallPkgs.sh"
 source "$path_libs/programs.sh"
 source "$path_libs/wineutils.sh"
 source "$path_libs/gui.sh"
 
-# Criar diretórios para arquivos temporários para descompressão dos
-# arquivos baixados, e clone(s) de repositórios do github. 
-export TemporaryDirectory=$(mktemp --directory)
-export DirTemp="$TemporaryDirectory/temp"
-export DirGitclone="$TemporaryDirectory/gitclone"
-export DirUnpack="$TemporaryDirectory/unpack"
-export DirDownloads="$HOME/.cache/$app_name/downloads"
-
-mkdir -p "$TemporaryDirectory"
-mkdir -p "$DirTemp"
-mkdir -p "$DirGitclone"
-mkdir -p "$DirUnpack"
-mkdir -p "$DirDownloads"
-
-#=============================================================#
-# Arquivos de configuração e Log.
-#=============================================================#
-# O arquivo de configuração e gravado apenas quando a instalação
-# dos requirimentos são instaladas no sistema. Quando o programa 
-# inicia ele irá procurar por este arquivo é também irá verificar
-# se o conteudo do arquivo tem uma linha com as seguintes informações: requeriments OK 
-export configFILE="$DIR_CONFIG_USER/requeriments.conf"
-export LogFile="$HOME/.cache/storecli/storecli.log"
-export LogErro="$HOME/.cache/storecli/storecli.err"
-export OutputDevice="$HOME/.cache/storecli/storecli-output.log"
-
-touch "$configFILE"
-touch "$LogFile"
-touch "$LogErro"
+# Definir os scripts locais.
+SCRIPT_CONFIG_PATH="$dir_local_scripts/conf-path.sh"
+SCRIPT_ADD_REPO="$dir_local_scripts/addrepo.py"
+SCRIPT_TORBROWSER_INSTALLER="$dir_local_scripts/tor.sh"
+SCRIPT_STORECLI_INSTALLER="$dir_of_executable/setup.sh"
+SCRIPT_OHMYBASH_INSTALLER="$dir_local_scripts/ohmybash.run"
+SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"
 
 # Sempre verificar a configuração do PATH do usuário ao iniciar.
-"$scriptConfigPath"
-
-_YESNO()
-{
-	# Será necessário indagar o usuário repetidas vezes durante a execução
-	# do programa, em que a resposta deve ser do tipo SIM ou NÃO (s/n)
-	# esta função é para automatizar esta indagação.
-	#
-	#   se teclar "s" -----------------> retornar 0  
-	#   se teclar "n" ou nada ---------> retornar 1.
-	#
-	# $1 = Mensagem a ser exibida para o usuário, a resposta deve ser SIM ou NÃO (s/n).
-	
-	# O usuário não deve ser indagado caso a opção "-y" ou --yes esteja presente 
-	# na linha de comando. Nesse caso a função irá retornar '0' como se o usuário estivesse
-	# aceitando todas as indagações.
-	[[ "$AssumeYes" == 'True' ]] && return 0
-		
-	
-	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
-	read -t 15 -n 1 sn
-	echo ' '
-
-	if [[ "${sn,,}" == 's' ]]; then
-		return 0
-	else
-		_green "${CYellow}A${CReset}bortando"
-		return 1
-	fi
-}
-
-_show_info()
-{
-	# Função para exibir mensagens padrão, como erro generico durante a instalação de um 
-	# programa ou um mensagem generica de sucesso.
-	[[ "$silent" == 'True' ]] && return 0
-	case "$1" in
-		AddFileDestktop) _green "Criando arquivo (.desktop)";;
-		DownloadOnly) _green "Feito somente download";;
-		PkgInstalled) _green "($2) está instalado";;
-		SuccessInstalation) _green "($2) instalado com sucesso";;
-		InstalationFailed) _red "Falha ao tentar instalar ($2)";;
-		ProgramNotFound) _red "Programa indisponível para o seu sistema: $2";;
-	esac
-}
-
-_list_applications()
-{
-	# Função para listar os programas disponíveis para instalação no sistema
-	# também lista programas de uma categoria especifica, bastando informar essa
-	# categoria como argumento.
-	# EXEMPLO:
-	#   storecli -l Acessorios  -> Lista somente a categoria acessorios
-
-	if [[ -z $1 ]]; then
-		printf "%s\n" "  Acessorios: " # Acessorios
-		for APP in "${programs_acessory[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Desenvolvimento: " # Desenvolvimento
-		for APP in "${programs_development[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Escritorio: " # Escritório
-		for APP in "${programs_office[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Navegadores: " # Navegadores
-		for APP in "${programs_browser[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Internet: " # Internt
-		for APP in "${programs_internet[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Midia: " # Midia
-		for APP in "${programs_midia[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Sistema: " # Sistema
-		for APP in "${programs_system[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Preferencias: " # Preferências
-		for APP in "${programs_preferences[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Gnome Shell: " # Gnome Shell
-		for APP in "${programs_gnomeshell[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Wine: " # Gnome Shell
-		for APP in "${programs_wine[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-		printf "\n"
-
-		return 0
-	fi
-
-	for arg in "${@}"; do
-		case "$arg" in
-			Acessorios)
-					printf "%s\n" "  Acessorios: "
-					for APP in "${programs_acessory[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Desenvolvimento)
-					printf "%s\n" "  Desenvolvimento: "
-					for APP in "${programs_development[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Escritorio)
-					printf "%s\n" "  Escritorio: "
-					for APP in "${programs_office[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Navegadores)
-					printf "%s\n" "  Navegadores: "
-					for APP in "${programs_browser[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Internet)
-					printf "%s\n" "  Internet: "
-					for APP in "${programs_internet[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Midia)
-					printf "%s\n" "  Midia: "
-					for APP in "${programs_midia[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Sistema)
-					printf "%s\n" "  Sistema: "
-					for APP in "${programs_system[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Preferencias)
-					printf "%s\n" "  Preferencias: "
-					for APP in "${programs_preferences[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			GnomeShell)
-					printf "%s\n" "  Gnome Shell: "
-					for APP in "${programs_gnomeshell[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Wine)
-					printf "%s\n" "  Wine: "
-					for APP in "${programs_wine[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			*)
-				printf "\n"
-				_red "(_list_applications) categoria inválida: $arg"
-				printf "\n"
-					;;
-		esac
-		shift
-	done	
-}
+"$SCRIPT_CONFIG_PATH"
 
 usage()
 {
@@ -413,10 +216,10 @@ EOF
 
 _ping()
 {
-	_println "Aguardando conexão: "
+	_println "Aguardando conexão ... "
 
-	if [[ $(ping -c 1 8.8.8.8) ]]; then
-		_print "Conectado"
+	if ping -c 1 8.8.8.8 1> /dev/null 2>&1; then
+		echo "Conectado"
 		return 0
 	else
 		_sred 'FALHA'
@@ -426,425 +229,9 @@ _ping()
 	fi
 }
 
-__sudo__()
-{
-	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	_print "${CYellow}E${CReset}xecutando ... sudo $@"
-	if sudo "$@"; then
-		return 0
-	else
-		_red "Falha: sudo $@"
-		return 1
-	fi
-}
-
-__rmdir__()
-{
-	# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
-	# que o usuário não tem permissão de escrita, para isso será usado o "sudo".
-	#
-	# Use:
-	#     __rmdir__ <diretório> ou
-	#     __rmdir__ <arquivo>
-	[[ -z $1 ]] && return 1
-
-	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
-	# o comando de remoção será com 'sudo'.
-	dir_content_file=$(dirname "$1")
-	cd "$dir_content_file"
-	_print "Entrando no diretório ... $(pwd)"
-	
-	while [[ $1 ]]; do
-		if ls "$1" 1> /dev/null 2>&1; then
-			_yellow "Removendo ... $1"; sleep 0.04
-			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
-		else
-			_red "Não encontrado ... $1"
-		fi
-		shift
-	done
-}
-
-_clear_temp_dirs()
-{
-	# Limpar diretórios temporários.
-	cd "$DirTemp" && __rmdir__ $(ls)
-	cd "$DirUnpack" && __rmdir__ $(ls)
-	cd "$DirGitclone" && __rmdir__ $(ls)
-}
-
-__pkg__()
-{
-	# Função para instalar os pacotes via linha de comando de acordo 
-	# o gerenciador de pacotes de cada sistema.
-
-	#=============================================================#
-	# Somente baixar os pacotes caso receber '-d' ou '--downloadonly'
-	# na linha de comando.
-	#=============================================================#
-	#_msg "Instalando ... $@"
-
-	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
-		# Somente baixar os pacotes e assumir yes para indagações.
-		if [[ $(uname -s) == 'FreeBSD' ]]; then 
-			_PKG install -y "$@" || return 1
-		elif [[ -f /etc/debian_version ]] && [[ -x $(which apt 2> /dev/null) ]]; then
-			_APT install --download-only --yes "$@" || return 1
-		elif [[ -f /etc/fedora-release ]] && [[ -x $(which dnf 2> /dev/null) ]]; then
-			_DNF install --downloadonly -y "$@" || return 1
-		elif [[ "$os_id" == 'opensuse-leap' ]] || [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
-			_ZYPPER download "$@" || return 1
-		elif [[ "$os_id" == 'arch' ]]; then
-			_PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1
-		else
-			_red "(__pkg__) Erro: $@"
-			return 1
-		fi
-		return "$?"
-	
-	elif [[ "$DownloadOnly" == 'True' ]]; then
-		# Somente baixar os pacotes.
-		if [[ $(uname -s) == 'FreeBSD' ]]; then 
-			_PKG install "$@"
-			return 
-		fi
-		
-		case "$os_id" in
-			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
-			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
-			fedora) _DNF install --downloadonly "$@" || return 1;;
-			arch) _PACMAN -S --needed --downloadonly "$@" || return 1;;
-		esac
-	elif [[ "$AssumeYes" == 'True' ]]; then 
-		# Assumir yes para indagações durante a instalação, equivalênte ao comando
-		# apt install -y / aptitude install -y em sistemas debian.
-		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
-		case "$os_id" in
-			debian|ubuntu|linuxmint) _APT install --yes "$@" || return 1;;
-			opensuse-leap|opensuse-tumbleweed) _ZYPPER install -y "$@" || return 1;;
-			fedora) _DNF install -y "$@" || return 1;;
-			arch) _PACMAN -S --noconfirm --needed "$@" || return 1;;
-		esac
-	else
-		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
-		case "$os_id" in
-			debian|ubuntu|linuxmint) _APT install "$@" || return 1;;
-			opensuse-leap|opensuse-tumbleweed) _ZYPPER install "$@" || return 1;;
-			fedora) _DNF install "$@" || return 1;;
-			arch) _PACMAN -S --needed "$@" || return 1;;
-		esac
-	fi
-}
-
-__gpg__()
-{
-	_println "Verificando integridade "
-	if gpg "$@" 1> "$OutputDevice" 2>&1; then  
-		_syellow "OK"
-	else
-		_sred "FALHA"
-		for X in "${@}"; do
-			[[ -f "$X" ]] && __rmdir__ "$X"
-		done
-		return 1
-	fi
-	return 0
-}
-
-__shasum__()
-{
-	# Esta função compara a hash de um arquivo local no disco com
-	# uma hash informada no parametro "$2" (hash original). 
-	#   Ou seja "$1" é o arquivo local e "$2" é uma hash
-	local hash_file=''
-	if [[ ! -f "$1" ]]; then
-		_red "(__shasum__) arquivo inválido: $1"
-		return 1
-	fi
-
-	if [[ -z "$2" ]]; then
-		_red "(__shasum__) use: __shasum__ <arquivo> <hash>"
-		return 1
-	fi
-
-	# Calucular o tamanho do arquivo
-	len_file=$(du -hs $1 | awk '{print $1}')
-
-	_print "Gerando hash do arquivo ... $1 $len_file "
-	hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
-	_println "Comparando valores "
-	if [[ "$hash_file" == "$2" ]]; then
-		_syellow 'OK'
-		return 0
-	else
-		_sred 'FALHA'
-		_red "(__shasum__): removendo arquivo inseguro ... $1"
-		rm -rf "$1"
-		return 1
-	fi
-}
-
-__download__()
-{
-	if [[ -z $2 ]]; then
-		_red "Necessário informar um arquivo de destino."
-		return 1
-	fi
-
-	if [[ -f "$2" ]]; then
-		_blue "Arquivo encontrado: $2"
-		return 0
-	fi
-
-	url="$1"
-	path_file="$2"
-	
-	_yellow "Entrando no diretório ... $DirDownloads"
-	cd "$DirDownloads"
-	_blue "Baixando ... $2"
-	_blue "Conectando ... $1"
-
-	while true; do
-		if is_executable curl; then
-			curl -C - -S -L -o "$path_file" "$url" && break
-		elif is_executable wget; then
-			wget -c "$url" -O "$path_file" && break
-		else
-			return 1
-			break
-		fi
-
-		_red "Falha no download"
-		if _YESNO "Deseja tentar baixar novamente"; then
-			continue
-		else
-			[[ -f "$path_file" ]] && __rmdir__ "$path_file"
-			return 1
-			break
-		fi
-	done
-	[[ "$?" != '0' ]] && return 1
-	return 0
-}
-
-_gitclone()
-{
-	if [[ -z $1 ]]; then
-		_red "(_gitclone) use: _gitclone <repo.git>"
-		return 1
-	fi
-
-	if ! is_executable git; then
-		_yellow "Necessário instalar o pacote 'git"
-		__pkg__ git || return 1
-	fi
-
-	_green "Entrando no diretório ...$DirGitclone" 
-	cd "$DirGitclone"
-	dir_repo=$(basename "$1" | sed 's/.git//g')
-	if [[ -d "$DirGitclone/$dir_repo" ]]; then
-		_yellow "Encontrado: $DirGitclone/$dir_repo"
-		if _YESNO "Deseja remover o diretório clonado anteriormente"; then
-			__rmdir__ "$dir_repo"
-		else
-			return 0
-		fi
-	fi
-
-	_blue "Clonando ... $1"
-	if ! git clone "$1"; then
-		_red "(_gitclone): falha"
-		return 1
-	fi
-	return 0
-}
-
-_unpack()
-{
-	# Obrigatório informar um arquivo no argumento $1.
-	if [[ ! -f "$1" ]]; then
-		_red "(_unpack) nenhum arquivo informado como argumento"
-		return 1
-	fi
-
-	# Destino para descompressão.
-	if [[ -d "$2" ]]; then 
-		DirUnpack="$2"
-	elif [[ -z "$DirUnpack" ]]; then
-		_red "(_unpack): o diretório de descompressão e 'nulo'."
-		return 1
-	fi
-
-	if [[ ! -d "$DirUnpack" ]]; then
-		_yellow "(_unpack): criando o diretório ... $DirUnpack"
-		mkdir -p "$DirUnpack"
-	fi
-	
-	_yellow "Entrando no diretório ... $DirUnpack"
-	cd "$DirUnpack"
-	__rmdir__ $(ls)
-	path_file="$1"
-
-	# Detectar a extensão do arquivo.
-	if [[ "${path_file: -6}" == 'tar.gz' ]]; then    # tar.gz - 6 ultimos caracteres.
-		type_file='tar.gz'
-	elif [[ "${path_file: -7}" == 'tar.bz2' ]]; then # tar.bz2 - 7 ultimos carcteres.
-		type_file='tar.bz2'
-	elif [[ "${path_file: -6}" == 'tar.xz' ]]; then  # tar.xz
-		type_file='tar.xz'
-	elif [[ "${path_file: -4}" == '.zip' ]]; then    # .zip
-		type_file='zip'
-	elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
-		type_file='deb'
-	else
-		_red "(_unpack) arquivo não suportado: $path_file"
-		__rmdir__ "$path_file"
-		return 1
-	fi
-
-	# Calcular o tamanho do arquivo
-	local len_file=$(du -hs $path_file | awk '{print $1}')
-	_println "Descomprimindo $len_file ... $path_file ... $(date +%H:%M:%S) "
-	
-	# Descomprimir.	
-	case "$type_file" in
-		'tar.gz') tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		'tar.bz2') tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		'tar.xz') tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		zip) unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1;;
-		deb) ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1;;
-		*) return 1;;
-	esac
-
-	if [[ "$?" == '0' ]]; then
-		_syellow "OK"
-		return 0
-	else
-		_sred "FALHA"
-		_red "(_unpack) erro: $path_file"
-		__rmdir__ "$path_file"
-		return 1
-	fi
-}
-
-
-_pkg_manager_storecli()
-{
-	# Instalação dos programas, esta função recebe como parâmetro os pacotes a serem instalados
-	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
-	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
-	if [[ -z $1 ]]; then
-		_list_applications
-		return 1
-	fi
-
-	echo -e ".... $(date +%H:%M:%S) $app_name V$__version__ ...."
-	_clear_temp_dirs
-
-	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
-	case "$os_codename" in
-		tina|tricia) export os_codename='bionic';;
-	esac
-
-	while [[ $1 ]]; do
-		[[ -z $1 ]] && return 0 
-		case "$1" in 
-			Acessorios) _Acessory_All;;
-			etcher) _etcher;;
-			gnome-disk) _gnome_disk;;
-			plank) _plank;;
-			veracrypt) _veracrypt;;
-			woeusb) _woeusb;;
-
-			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
-			'android-studio') _android_studio;;
-			codeblocks) _codeblocks;;
-			java) _java;;
-			idea) _idea_ic;;
-			pycharm) _pycharm;;
-			sublime-text) _sublime_text;;
-			vim) _vim;;
-			vscode) _vscode;;
-
-			Escritorio) _Office_All;;
-			atril) _atril;;
-			'fontes-ms') _fontes_microsoft;;
-			libreoffice) _libreoffice;;
-			libreoffice-appimage) _libreoffice_appimage;;
-
-			Navegadores) _Browser_All;;
-			chromium) _chromium;;
-			edge) _edge;;
-			firefox) _firefox;;
-			'google-chrome') _google_chrome;;
-			'opera-stable') _opera_stable;;
-			torbrowser) _torbrowser;;
-
-			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
-			clipgrab) _clipgrab_appimage;;
-			megasync) _megasync;;
-			proxychains) _proxychains;;
-			qbittorrent) _qbittorrent;;
-			skype) _skype;;
-			teamviewer) _teamviewer;;
-			telegram) _telegram;;
-			tixati) _tixati;;
-			uget) _uget;;
-			youtube-dl) _youtube_dl;;
-			youtube-dl-gui) _youtube_dlgui;;
-		
-			Midia) _Midia_All;;
-			blender) _blender;;
-			celluloid) _celluloid;;
-			cinema) _cinema;;
-			codecs) _codecs;;
-			'gnome-mpv') _gnome_mpv;;
-			smplayer) _smplayer;;
-			spotify) _spotify;;
-			parole) _parole;;
-			totem) _totem;;
-			vlc) _vlc;;
-
-			Sistema) _System_All;;
-			bluetooth) _bluetooth;;
-			bspwm) _bspwm;;
-			compactadores) _compactadores;;
-			gparted) _gparted;;
-			peazip) _peazip;;
-			refind) _refind;;
-			stacer) _stacer;;
-			virtualbox) _virtualbox;;
-
-			ohmybash) _ohmybash;;			
-			ohmyzsh) _ohmyzsh;;
-			papirus) _papirus;;
-			sierra) _sierra;;
-		
-			'dash-to-dock') _dashtodock;;
-			'drive-menu') _drive_menu;;
-			'gnome-backgrounds') _gnome_backgrounds;;
-			'gnome-tweaks') _gnome_tweaks;;
-			'topicons-plus') _topicons_plus;;
-			
-			Wine) _Wine_All;;
-			wine) _install_wine;;
-			winetricks) _install_script_winetricks;;
-			epsxe-win) _epsxe_windows;;
-			python37-windows-portable) _python37_windows32_portable;;
-			python37-windows) _python37_windows32;;
-			youtube-dl-gui-windows) _youtube_dlgui_windows;;
-			install) ;;
-			-y|--yes) ;;
-			-d|--downloadonly) ;;
-			*) _red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
-		esac
-		shift
-	done
-	return "$?"
-}
-
 _update_storecli()
 {
+	[[ "$IgnoreCli" == 'True' ]] && return 0
 	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	local FileConfigUpdate="$DIR_CONFIG_USER/update.conf"; touch "$FileConfigUpdate"
 	local tempFileUpdate="$DirTemp/storecli.update"                    	
@@ -882,7 +269,7 @@ _update_storecli()
 	
 	_yellow "Atualizando para versão ... $OnlineVersion"
 	
-	if ! "$scriptInstallStoreli"; then
+	if ! "$SCRIPT_STORECLI_INSTALLER"; then
 		_red "(_update_storecli) falha"
 		return 1
 	fi
@@ -905,38 +292,24 @@ main()
 		esac
 	done
 
+	# Se a string 'requeriments OK' não estiver no arquivo de configuração significa 
+	# que a função de configuração do sistema ainda não foi executada no sistema atual, 
+	# ou seja, se o GREP abaixo retornar status diferente de '0' a 
+	# função de configuração será invocada.
+	if [[ "$IgnoreCli" != 'True' ]]; then
+		if ! grep -q 'requeriments OK' "$configFILE"; then
+			_install_requeriments || return 1
+		fi
+	fi
+	
 	# Verificar se todos os utilitários de linha de comando estão instalados 
 	# esta operação será IGNORADA caso a opção '--ignore-cli' ou '-I' estiver 
 	# na linha de comando.
 	# Exemplos:  
 	#   storecli --ignore-cli install <pacote>
 	#   storecli -I install <pacote>
-	
-	if [[ "$IgnoreCli" != 'True' ]]; then
-		check_requeriments_sys 
-	fi
-
-	# Se a string 'requeriments OK' não estiver no arquivo de configuração
-	# significa que a função de configuração (_run_configuration_dep) ainda não foi
-	# executada no sistema atual, ou seja, se o GREP abaixo retornar status
-	# diferente de '0' a função _run_configuration_dep será invocada.
-	if [[ "$IgnoreCli" != 'True' ]]; then
-		grep -q 'requeriments OK' "$configFILE" || {
-			_run_configuration_dep || return 1
-		}
-	fi
-	
-	# Instalar este programa no diretório do root para todos os usuários
-	# caso ainda não estiver instalado em /usr/local/bin/storecli.
-	if [[ ! -x '/usr/local/bin/storecli' ]]; then
-		# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
-		local url_setup_sh='https://raw.github.com/Brunopvh/storecli/master/setup.sh'
-		_yellow "Instalando script storecli em ... /usr/local/bin/storecli"
-		__download__ "$url_setup_sh" "$DirTemp/setup.sh" 1> "$OutputDevice" 2>&1 || return 1
-		chmod +x "$DirTemp/setup.sh"
-		sudo "$DirTemp/setup.sh" || {
-			_red "Falha ao tentar instalar o script storecli em ... /usr/local/bin/storecli"
-		}
+	if [[ "$IgnoreCli" != 'True' ]] && [[ "$1" != '--configure' ]] && [[ "$1" != '-c' ]]; then
+		check_requeriments_cli || return 1
 	fi
 
 	_update_storecli
@@ -944,9 +317,9 @@ main()
 	while [[ $1 ]]; do
 		case "$1" in
 			-b|--broke) _BROKE;;
-			-c|--configure) _run_configuration_dep;;
+			-c|--configure) _install_requeriments;;
 			-l) shift; _list_applications "$@"; return 0; break;;
-			-u|--self-update) "$scriptInstallStoreli"; break;;
+			-u|--self-update) "$SCRIPT_STORECLI_INSTALLER"; break;;
 			install) shift; _pkg_manager_storecli "$@" || STATUS_OUTPUT=1; break;;
 			remove)  shift; _uninstall_packages "$@" || STATUS_OUTPUT=1; break;;
 			-y|--yes) ;;
@@ -961,7 +334,7 @@ main()
 
 if [[ -z $1 ]]; then
 	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com o zenity.
-	main_menu # Executar janela/menu gráfico com zenity.
+	main_menu
 else
 	# Executar a função main passando todos os argumentos recebidos na linha de comando.
 	main "${@}" && STATUS_OUTPUT=0

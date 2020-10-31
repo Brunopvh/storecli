@@ -133,10 +133,10 @@ destinationFilesYoutubeDlGuiUser=(
 # PeaZip
 declare -A destinationFilesPeazip
 destinationFilesPeazip=(
-	[file_desktop]="$DIR_DESKTOP_USER/peazip.desktop" 
-	[file_png]="$DIR_ICON_USER/peazip.png"
-	[file_bin]="$DIR_BIN_USER/peazip"
-	[dir]="$DIR_BIN_USER/peazip-amd64"
+	[file_desktop]="$DIR_DESKTOP_ROOT/peazip.desktop" 
+	[file_png]="$DIR_ICON_ROOT/256x256/apps/peazip.png"
+	[script]="/usr/local/bin/peazip"
+	[dir]="/opt/peazip-amd64"
 )
 
 

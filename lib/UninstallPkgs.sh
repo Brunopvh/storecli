@@ -72,7 +72,7 @@ _uninstall_packages()
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
 			edge) _uninstall_edge;;
-			torbrowser) "$scriptTorBrowser" --remove;;	
+			torbrowser) "$SCRIPT_TORBROWSER_INSTALLER" --remove;;	
 
 			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
 			tixati) __rmdir__ "${destinationFilesTixati[@]}";;

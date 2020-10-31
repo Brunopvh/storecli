@@ -180,7 +180,7 @@ _veracrypt()
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	printf "%s" "[>] Importando key: "
+	_println "Importando key $vc_url_asc ... "
 	if wget -q "$vc_url_asc" -O- | gpg --import 1> /dev/null 2>&1; then
 		_syellow "OK"
 	else
@@ -211,176 +211,49 @@ _veracrypt()
 	fi
 }
 
-
-# Debian/Ubuntu/Mint
-_woeusb_debian()
+_woeusb_cli_linux()
 {
-	# Instalar dependências, baixar o programa e compilar o código fonte.
-	# libwxgtk3.0-gtk3-dev
-	local woeusbRequeriments=('devscripts' 'equivs'  'grub-pc-bin' 'p7zip-full')
-	local github_woeusb="https://github.com/slacka/WoeUSB.git"
-	local dir_woeusb="$DirGitclone/WoeUSB"
-		
-	_APT update || return 1
-	__pkg__ "${woeusbRequeriments[@]}" || return 1
-	
-	# Instalar libwxgtk3
-	case "$os_codename" in
-		buster|bionic|tricia) __pkg__ 'libwxgtk3.0-dev' || return 1;;
-		focal|ulyana) __pkg__ 'libwxgtk3.0-gtk3-dev' || return 1;;
-		*) _show_info 'ProgramNotFound' 'WoeUSB'; return 1;;
-	esac
-	
-	_gitclone "$github_woeusb" || return 1
-	_yellow "Entrando no diretório ... $dir_woeusb"
-	cd "$dir_woeusb"
-	_yellow "Executando: ./setup-development-environment.bash"; ./setup-development-environment.bash
-	_yellow "Executando: dpkg-buildpackage -uc -b -d"
-	
-	sudo dpkg-buildpackage -uc -b -d || {
-		_red "Falha: dpkg-buildpackage -uc -b -d"
-		return 1 
-	}
+	local URL_SCRIPT_WOEUSB='https://github.com/WoeUSB/WoeUSB/raw/master/sbin/woeusb'
+	local WOEUSB_TEMP_FILE="$DirTemp"/woeusb.tmp
 
-	_msg "OK"
-
-	# Instalação do pacote .deb
-	# O pacote .deb será gerado um diretório atrás do diretório de compilação, ou seja cd ..
-	cd "$DirGitclone"
-	sudo mv woeusb_*amd64.deb woeusb_amd64.deb
-	if [[ ! -f woeusb_amd64.deb ]]; then
-		_red "(_woeusb) arquivo '.deb' não encontrado"
-		return 1
+	_print "Baixando ... $WOEUSB_TEMP_FILE"
+	_println "Conectando ... $URL_SCRIPT_WOEUSB "
+	if is_executable curl; then
+		if curl -sSL "$URL_SCRIPT_WOEUSB" -o "$WOEUSB_TEMP_FILE"; then
+			_syellow "OK"
+		else
+			_sred "FALHA"
+			return 1
+		fi
+	elif is_executable wget; then
+		if wget -q "$URL_SCRIPT_WOEUSB" -O "$WOEUSB_TEMP_FILE"; then
+			_syellow "OK"
+		else
+			_sred "FALHA"
+			return 1
+		fi
 	fi
-
-	if _DPKG --install "$DirGitclone/woeusb_amd64.deb"; then
-		_green 'WoeUSB foi instalado com sucesso'	
-	else
-		_BROKE # Remover pacotes quebrados.
-		_red '(WoeUSB) falha'
-		return 1
-	fi
-
-	#===============================================================#
-	#======================== salvar o arquivo .deb ? ==============#
-	if _YESNO "Deseja salvar o arquivo woeusb_amd64.deb"; then
-		mkdir -p "$HOME/Downloads"
-		cp -vu "$DirGitclone/WoeUSB_amd64.deb" "$HOME"/Downloads/woeusb_amd64.deb
-		_msg "Arquivo salvo em: $HOME/Downloads/woeusb_amd64.deb"
-	fi
+	__sudo__ mv "$WOEUSB_TEMP_FILE" '/usr/local/bin/woeusb'
+	__sudo__ chmod +x '/usr/local/bin/woeusb'
 }
 
-
-_woeusb_archlinux()
+_woeusb_ng()
 {
-	# Clonar o repositório e compilar o pacote
-	# Requerimentos para archlinux wx-config|wxGTK-devel dh-autoreconf devscripts
+	# https://github.com/WoeUSB/WoeUSB-ng
+	requeriments_woeusb_ng_debian=(git p7zip-full python3-pip python3-wxgtk4.0)
 
-	local github_woeusb="https://github.com/slacka/WoeUSB.git"
-	local dir_woeusb="$DirGitclone/WoeUSB"
+	if [[ -f /etc/debian_version ]]; then
+		__pkg__ "${requeriments_woeusb_ng_debian[@]}"
+		__sudo__ pip3 install WoeUSB-ng
+	fi
 
-	# Habilitar repositório [multilib] em /etc/pacman.conf
-	__sudo__ "$scriptAddRepo" --repo arch || {
-		_red "Falha: $scriptAddRepo --repo arch"
-		return 1
-	}	
-
-	# Instalar requerimentos antes de compilar
-	__pkg__ 'wxgtk3' 'lib32-wxgtk2'
-			
-	_gitclone "$github_woeusb" || return 1
-	chmod -R +x "$dir_woeusb" 
-
-	cd "$dir_woeusb"
-	_yellow "Executando: ./setup-development-environment.bash"
-	./setup-development-environment.bash 2>> "$LogErro" || {
-		_red "Falha: ./setup-development-environment"
-		return 1
-	}
-
-
-	_yellow "Executando: autoreconf --force --install"
-	autoreconf --force --install 2>> "$LogErro" || {
-		_red "Falha: autoreconf --force --install"
-		return 1
-	}
-
-	_yellow "Executando: ./configure" 
-	./configure 2>> "$LogErro" || {
-		_red "Falha: ./configure"
-		return 1
-	}
-
-	_yellow "Executando: make" 
-	make 2>> "$LogErro" || {
-		_red "Falha: make"
-		return 1
-	}
-
-	sudo make install || {
-		_red "Falha: sudo make install"
-		return 1
-	}
 }
 
-
-_woeusb_github()
-{
-	# Clonar o repositório e compilar o pacote
-	# Requerimentos para compilar o pacote:
-	# wx-config|wxGTK-devel dh-autoreconf devscripts
-
-	local github_woeusb="https://github.com/slacka/WoeUSB.git"
-	local dir_woeusb="$DirGitclone/WoeUSB"
-
-	_gitclone "$github_woeusb" || return 1
-	chmod -R +x "$dir_woeusb"
-
-	_yellow "Instale wx-config no seu sistema"
-	cd "$dir_woeusb"
-
-	_yellow "Executando: ./setup-development-environment.bash"
-	if ! ./setup-development-environment.bash 2>> "$LogErro"; then
-		_red "Falha: ./setup-development-environment"
-		return 1
-	fi
-
-	_yellow "Executando: autoreconf --force --install"
-	if ! autoreconf --force --install 2>> "$LogErro"; then
-		_red "Falha: autoreconf --force --install"
-		return 1
-	fi
-
-	_yellow "Executando: ./configure" 
-	if ! ./configure 2>> "$LogErro"; then
-		_red "Falha: ./configure"
-		return 1
-	fi
-
-	_yellow "Executando: make" 
-	if ! make 2>> "$LogErro"; then
-		_red "Falha: make"
-		return 1
-	fi
-
-
-	_yellow "Executando: make install"
-	if ! sudo make install; then
-		_red "Falha: sudo make install"
-		return 1
-	fi
-}
-	
 _woeusb()
 {
-	case "$os_id" in
-		debian|ubuntu|linuxmint) _woeusb_debian;;
-		fedora) __pkg__ 'WoeUSB.x86_64';;
-		arch) _woeusb_archlinux;;
-		'opensuse-leap') __pkg__ WoeUSB;;
-		*) _woeusb_github;;
-	esac
-		
+	_woeusb_cli_linux
+	_woeusb_ng
+
 	if is_executable 'woeusb'; then
 		_show_info 'SuccessInstalation' 'woeusb'
 		return 0
@@ -822,7 +695,7 @@ _codecs_tumbleweed()
 	# https://forums.opensuse.org/showthread.php/523476-Multimedia-Guide-for-openSUSE-Tumbleweed
 	
 	# Adicionar repostórios
-	"$scriptAddRepo" --repo tumbleweed
+	"$SCRIPT_ADD_REPO" --repo tumbleweed
 
 	# Instalar os codecs
 	local array_tumbleweed_codecs=(
@@ -917,7 +790,7 @@ _codecs_debian()
 _codecs_fedora()
 {
 	# Add repo fusion non free
-	sudo "$scriptAddRepo" --repo fedora
+	sudo "$SCRIPT_ADD_REPO" --repo fedora
 
 	local array_gstreamer_fedora=(
 		gstreamer-plugins-espeak 
@@ -1064,21 +937,40 @@ _smplayer()
 _spotify_debian()
 {
 	# https://wiki.debian.org/spotify
-	_msg "Adicionando key e repositório"
-	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45
+	# https://www.spotify.com/br/download/linux/
+	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
+	local url_key_spotify='https://download.spotify.com/debian/pubkey_0D811D58.gpg'
+	_isroot || return 1
+	_println "(_spotify_debian): adicionando key spotify "
+	if ! curl -sS "$url_key_spotify" | sudo apt-key add -; then
+		_sred "FALHA"
+		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
+		return 1
+	fi
+
+	_println "Adicioando repositório spotify "	
 	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
-	_APT update
+	_APT update || return 1
 	__pkg__ 'spotify-client'
 }
 
 _spotify_ubuntu()
 {
 	# https://www.spotify.com/br/download/linux/
-	_msg "Adicionando key e repositório"
-	wget -q https://download.spotify.com/debian/pubkey.gpg -O- | sudo apt-key add - 
-	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
-	_APT update 
- 	__pkg__ 'spotify-client'
+	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
+	local url_key_spotify='https://download.spotify.com/debian/pubkey_0D811D58.gpg'
+	_isroot || return 1
+	_println "(_spotify_ubuntu): adicionando key spotify "
+	if ! curl -sS "$url_key_spotify" | sudo apt-key add -; then
+		_sred "FALHA"
+		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
+		return 1
+	fi
+
+	_println "Adicioando repositório spotify "	
+	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
+	_APT update || return 1
+	__pkg__ 'spotify-client'
 }
 
 _spotify_archlinux()
@@ -1166,8 +1058,20 @@ _totem(){
 
 _vlc_fedora()
 {
-	sudo "$scriptAddRepo" --repo fedora # Adicionar repositórios fusion non free
-	__pkg__ vlc 'python-vlc'
+	local repos_fusion_free='https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release'
+	local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
+	print_line
+	_yellow "Adicionando os seguintes repositórios: "
+	_print "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	_print "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm"
+	_print "fedora-workstation-repositories"
+	print_line
+
+	_DNF install "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	_DNF install "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" 
+	_DNF install fedora-workstation-repositories 
+
+	__pkg__ vlc 'python-vlc' || return 1
 }
 
 _vlc()
@@ -1568,11 +1472,11 @@ _torbrowser()
 {
 	# local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		_print "Executando $scriptTorBrowser --install --downloadonly"
-		"$scriptTorBrowser" --install --downloadonly
+		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install --downloadonly"
+		"$SCRIPT_TORBROWSER_INSTALLER" --install --downloadonly
 	else
-		_print "Executando $scriptTorBrowser --install"
-		"$scriptTorBrowser" --install
+		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install"
+		"$SCRIPT_TORBROWSER_INSTALLER" --install
 	fi
 }
 
@@ -1986,14 +1890,15 @@ _tixati_tarfile()
 	# Já instalado.
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	_yellow "Obtendo url de download tixati aguarde..."
-	local tixati_pag__download__nloads='https://www.tixati.com/download/linux.html'
-	local tixati_html=$(wget -q -O- "$tixati_pag__download__nloads" | grep -m 1 'tixati.*64.*tar.gz')
+	# Salvar o html da pagina de download no arquivo html temporário padrão. 
+	# Ver a variável "HtmlTemporaryFile".
+	get_html 'https://www.tixati.com/download/linux.html' || return 1
+	local tixati_html=$(grep -m 1 'tixati.*64.*tar.gz' "$HtmlTemporaryFile")
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
 	local signatureFile="${TarFile}.asc"
-	
+
 	[[ -f "$path_file_asc" ]] && rm "$path_file_asc"
 	__download__ "$url_tarfile" "$TarFile" || return 1
 	__download__ "$url_signature_file" "$signatureFile" || return 1
@@ -2001,15 +1906,10 @@ _tixati_tarfile()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	_println "Importando key tixati "
-	if wget -q -O- https://www.tixati.com/tixati.key -o- | gpg --import 1>> "$LogFile" 2>> "$LogErro"; then
-		_syellow "OK"
-	else
-		_sred "Falha"
-		return 1
-	fi
+	# Importar key com a função gpg_import
+	gpg_import https://www.tixati.com/tixati.key || return 1
 
-	# Gpg
+	# verificar integridade com a fução __gpg__
 	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
@@ -2505,7 +2405,7 @@ _compactadores()
 _firmware()
 {
 	if [[ "$os_id" != 'debian' ]]; then
-		_yellow "Este pacote está disponível apenas para sistemas Debian"
+		_red "Este pacote está disponível apenas para sistemas Debian"
 		return 1
 	fi
 
@@ -2523,16 +2423,16 @@ _gparted()
 	__pkg__ gparted
 }
 
-_peazip()
+_peazip_old()
 {
 	# Já instalado
 	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
 	# Url fixo versão 6.8
-	local peazip_url__download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$DirDownloads/$(basename $peazip_url__download)"
+	local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_file="$DirDownloads/$(basename $peazip_url_download)"
 	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
 
-	__download__ "$peazip_url__download" "$path_file" || return 1
+	__download__ "$peazip_url_download" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
 
 	__shasum__ "$path_file" "$hash_file" || return 1
@@ -2579,6 +2479,74 @@ _peazip()
 		return 1
 	fi
 }
+
+
+_peazip()
+{
+	# 'http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	# https://github.com/peazip/PeaZip/releases/download/7.4.2/peazip_portable-7.4.2.LINUX.x86_64.GTK2.tar.gz
+	# https://peazip.github.io/peazip-linux.html
+
+	# Já instalado
+	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
+	local peazip_download_page='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_file="$DirDownloads/$(basename $peazip_download_page)"
+
+	__download__ "$peazip_download_page" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
+	
+	_unpack "$path_file" || return 1
+	_print "Entrando no diretório ... $DirUnpack"
+	cd "$DirUnpack"
+	mv -v $(ls -d peazip*) "peazip-amd64" 1> /dev/null || return 1
+	__sudo__ mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
+	__sudo__ chown -R root:root "${destinationFilesPeazip[dir]}"
+	__sudo__ chmod a+x "${destinationFilesPeazip[dir]}"/peazip
+	_print "Entrando no diretório ... ${destinationFilesPeazip[dir]}"
+	cd "${destinationFilesPeazip[dir]}" 
+	__sudo__ cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[file_png]}"     
+	# __sudo__ cp -u FreeDesktop_integration/peazip.desktop "${destinationFilesPeazip[file_desktop]}"
+
+	_yellow "Criando arquivo '.desktop'"
+	{
+		echo '[Desktop Entry]'
+		echo 'Version=1.0'
+		echo 'Encoding=UTF-8'
+		echo 'Name=PeaZip'
+		echo 'MimeType=application/x-gzip;application/x-tar;application/x-deb;bzip;application/x-rar'
+		echo 'GenericName=Archiving Tool'
+		echo 'Exec=peazip %F'
+		echo "Icon=${destinationFilesPeazip[file_png]}"
+		echo 'Type=Application'
+		echo 'Terminal=false'
+		echo 'X-KDE-HasTempFileOption=true'
+		echo 'Categories=GTK;KDE;Utility;System;Archiving;'
+	} | sudo tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
+                               
+	_yellow "Criando script para execução via linha de comando"
+	{
+		echo -e "#!/bin/sh\n"
+		echo -e "cd ${destinationFilesPeazip[dir]}"
+		echo -e "./peazip \$@"
+	} | sudo tee "${destinationFilesPeazip[script]}" 1> /dev/null
+	__sudo__ chmod a+x "${destinationFilesPeazip[script]}"
+
+	_show_info 'AddFileDesktop'
+	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
+
+	is_executable 'gtk-update-icon-cache' && sudo gtk-update-icon-cache
+
+	if is_executable 'peazip'; then
+		_show_info 'SuccessInstalation' 'peazip'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'peazip'
+		return 1
+	fi
+}
+
 
 _refind_zip()
 {
@@ -2977,8 +2945,8 @@ _ohmybash()
 	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
 	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
 	
-	if is_executable "$scriptOhmybashInstaller"; then
-		"$scriptOhmybashInstaller"
+	if is_executable "$SCRIPT_OHMYBASH_INSTALLER"; then
+		"$SCRIPT_OHMYBASH_INSTALLER"
 	else 
 		sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
 	fi

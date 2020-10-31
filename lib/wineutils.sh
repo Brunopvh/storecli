@@ -22,7 +22,7 @@ _python37_windows32()
 	__download__ "$url_python37_windows32" "$path_file_python37" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_msg "Executando: winetricks atmlib cmd"
-	"$scriptWinetricksLocal" atmlib cmd
+	"$SCRIPT_WINETRICKS_LOCAL" atmlib cmd
 	_msg "Instalando: python37" 
 	wine "$path_file_python37"
 }
@@ -45,7 +45,7 @@ _python37_windows32_portable()
 	__download__ "$url_python37_portable" "$path_file_python37_portable" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_print "(_python37_windows32_portable) - executando: winetricks atmlib dotnet45 cmd"
-	"$scriptWinetricksLocal" atmlib dotnet45 cmd
+	"$SCRIPT_WINETRICKS_LOCAL" atmlib dotnet45 cmd
 
 	_unpack "$path_file_python37_portable" || return 1
 	mkdir -p "$HOME"/.wine/drive_c/python37

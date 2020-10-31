@@ -263,3 +263,65 @@ _FLATPAK()
 		return 1
 	fi
 }
+
+__pkg__()
+{
+	# Função para instalar os pacotes via linha de comando de acordo 
+	# o gerenciador de pacotes de cada sistema.
+
+	#=============================================================#
+	# Somente baixar os pacotes caso receber '-d' ou '--downloadonly'
+	# na linha de comando.
+	#=============================================================#
+	
+	if [[ "$DownloadOnly" == 'True' ]] && [[ "$AssumeYes" == 'True' ]]; then 
+		# Somente baixar os pacotes e assumir yes para indagações.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then 
+			_PKG install -y "$@" || return 1
+		elif [[ -f /etc/debian_version ]] && [[ -x $(which apt 2> /dev/null) ]]; then
+			_APT install --download-only --yes "$@" || return 1
+		elif [[ -f /etc/fedora-release ]] && [[ -x $(which dnf 2> /dev/null) ]]; then
+			_DNF install --downloadonly -y "$@" || return 1
+		elif [[ "$os_id" == 'opensuse-leap' ]] || [[ "$os_id" == 'opensuse-tumbleweed' ]]; then
+			_ZYPPER download "$@" || return 1
+		elif [[ "$os_id" == 'arch' ]]; then
+			_PACMAN -S --noconfirm --needed --downloadonly "$@" || return 1
+		else
+			_red "(__pkg__) Erro: $@"
+			return 1
+		fi
+		return "$?"
+	
+	elif [[ "$DownloadOnly" == 'True' ]]; then
+		# Somente baixar os pacotes.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then 
+			_PKG install "$@"
+			return 
+		fi
+		
+		case "$os_id" in
+			debian|ubuntu|linuxmint) _APT install --download-only "$@" || return 1;;
+			opensuse-leap|opensuse-tumbleweed) _ZYPPER download "$@" || return 1;;
+			fedora) _DNF install --downloadonly "$@" || return 1;;
+			arch) _PACMAN -S --needed --downloadonly "$@" || return 1;;
+		esac
+	elif [[ "$AssumeYes" == 'True' ]]; then 
+		# Assumir yes para indagações durante a instalação, equivalênte ao comando
+		# apt install -y / aptitude install -y em sistemas debian.
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install -y "$@"; return; fi
+		case "$os_id" in
+			debian|ubuntu|linuxmint) _APT install --yes "$@" || return 1;;
+			opensuse-leap|opensuse-tumbleweed) _ZYPPER install -y "$@" || return 1;;
+			fedora) _DNF install -y "$@" || return 1;;
+			arch) _PACMAN -S --noconfirm --needed "$@" || return 1;;
+		esac
+	else
+		if [[ $(uname -s) == 'FreeBSD' ]]; then _PKG install "$@"; return; fi
+		case "$os_id" in
+			debian|ubuntu|linuxmint) _APT install "$@" || return 1;;
+			opensuse-leap|opensuse-tumbleweed) _ZYPPER install "$@" || return 1;;
+			fedora) _DNF install "$@" || return 1;;
+			arch) _PACMAN -S --needed "$@" || return 1;;
+		esac
+	fi
+}
