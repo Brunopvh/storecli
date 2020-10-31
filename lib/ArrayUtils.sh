@@ -251,6 +251,7 @@ programs_midia=(
 programs_system=(
 	bluetooth
 	compactadores
+	google-earth
 	gparted
 	peazip
 	refind

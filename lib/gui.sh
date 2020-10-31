@@ -121,6 +121,7 @@ list_menu_system=(
 	'TRUE Voltar'
 	'FALSE bluetooth'
     'FALSE compactadores'
+	'FALSE google-earth'
     'FALSE gparted'
     'FALSE peazip'
     'FALSE refind'
@@ -344,6 +345,7 @@ menu_system(){
 			firmware-linux-nonfree) main install -y firmware-linux-nonfree;;
 			firmware-ralink) main install -y firmware-ralink;;
 			firmware-realtek) main install -y firmware-realtek;;
+			google-earth) main install -y google-earth;;
 			gparted) main install -y gparted;;
 			peazip) main install -y peazip;;
 			refind) main install -y refind;;
@@ -394,11 +396,11 @@ menu_gnomeshell()
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			dash-to-dock) storecli install -y dash-to-dock;;
-			drive-menu) storecli install -y drive-menu;;
+			dash-to-dock) main install -y dash-to-dock;;
+			drive-menu) main install -y drive-menu;;
 			gnome-backgrounds) storecli install -y gnome-backgrounds;;
-			gnome-tweaks) storecli install -y gnome-tweaks;;
-			topicons-plus) storecli install -y topicons-plus;;
+			gnome-tweaks) main install -y gnome-tweaks;;
+			topicons-plus) main install -y topicons-plus;;
 		esac
 		echo -e "Menu Preferências"
 	done
@@ -420,15 +422,21 @@ menu_tools()
 
 		case "$option" in
 			Voltar) _yellow "Voltando..."; break;;
-			Atualizar_este_script) main --self-update;;
+			Atualizar_este_script) "$SCRIPT_STORECLI_INSTALLER";;
 			Remover_pacotes_quebrados) _BROKE;;
-			Instalar_dependencias) _run_configuration_dep;;
+			Instalar_dependencias) _install_requeriments;;
 		esac
 		echo -e "Menu Ferramentas"
 	done
 }
 
 main_menu(){
+	
+	if ! is_executable storecli; then
+		_yellow "Instalando o script storecli"
+		sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+	fi
+
 	print_line
 	_yellow "Menu Principal"
 	

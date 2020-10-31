@@ -285,10 +285,9 @@ __rmdir__()
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# o comando de remoção será com 'sudo'.
 	cd "$DirTemp"
-	_print "Entrando no diretório ... $DirTemp"
-	
-	while [[ $1 ]]; do
-		if ls "$1" 1> /dev/null 2>&1; then
+	while [[ $1 ]]; do		
+		cd $(dirname "$1")
+		if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -L "$1" ]]; then
 			_yellow "Removendo ... $1"; sleep 0.04
 			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
@@ -308,7 +307,7 @@ _clear_temp_dirs()
 
 __gpg__()
 {
-	_print "Executando gpg $@"
+	_println "Verificando integridade ... "
 	if gpg "$@" 1> "$OutputDevice" 2>&1; then  
 		_syellow "OK"
 	else
@@ -329,7 +328,8 @@ gpg_import()
 	# EX:
 	#   gpg_import url
 	#   gpg_import file
-
+	local TempFileAsc=$(mktemp)
+	
 	if [[ -z $1 ]]; then
 		_red "(gpg_import): opção incorreta detectada. Use gpg_import <file> | gpg_import <url>"
 	fi
@@ -347,18 +347,11 @@ gpg_import()
 			return 1
 		fi
 		
-		_println "Importando key apartir do url ... $1 "
-		if is_executable curl && curl -s "$1" | gpg --import 1> /dev/null 2>&1; then
-			echo "OK"
-			return 0
-		elif is_executable wget && wget -q -O- "$1" | gpg --import 1> /dev/null 2>&1; then
-			echo "OK"
-			return 0
-		else
-			_sred "FALHA"
-			return 1
-		fi
+		_print "Importando key apartir do url ... $1 "
+		curl -sSL "$1" -o "$TempFileAsc"		
+		gpg --import "$TempFileAsc" 1> /dev/null && return 0
 	fi
+	_sred "FALHA"
 	return 1
 }
 
@@ -380,7 +373,7 @@ get_html()
 	_yellow "Executando ... curl -sSL $1"
 	
 	if curl -sSL "$1" -o "$HtmlTemporaryFile"; then
-		_yellow "Html salvo em ... $HtmlTemporaryFile"
+		_yellow "HTML salvo em ... $HtmlTemporaryFile"
 		return 0
 	else
 		_red "FALHA"
@@ -408,8 +401,10 @@ __shasum__()
 	# Calucular o tamanho do arquivo
 	len_file=$(du -hs $1 | awk '{print $1}')
 
-	_print "Gerando hash do arquivo ... $1 $len_file "
+	_print "Gerando hash do arquivo ... $1 $len_file"
 	hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
+	_print "$2 => HASH original"
+	_print "$hash_file => HASH local"
 	_println "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
 		_syellow 'OK'
@@ -525,42 +520,51 @@ _unpack()
 
 	# Detectar a extensão do arquivo.
 	if [[ "${path_file: -6}" == 'tar.gz' ]]; then    # tar.gz - 6 ultimos caracteres.
-		type_file='tar.gz'
+		type_file='TarGz'
 	elif [[ "${path_file: -7}" == 'tar.bz2' ]]; then # tar.bz2 - 7 ultimos carcteres.
-		type_file='tar.bz2'
+		type_file='TarBz2'
 	elif [[ "${path_file: -6}" == 'tar.xz' ]]; then  # tar.xz
-		type_file='tar.xz'
+		type_file='TarXz'
 	elif [[ "${path_file: -4}" == '.zip' ]]; then    # .zip
-		type_file='zip'
+		type_file='Zip'
 	elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
-		type_file='deb'
+		type_file='DebPkg'
 	else
-		_red "(_unpack) arquivo não suportado: $path_file"
+		_red "(_unpack) ERRO arquivo não suportado ... $path_file"
 		__rmdir__ "$path_file"
 		return 1
 	fi
 
 	# Calcular o tamanho do arquivo
 	local len_file=$(du -hs $path_file | awk '{print $1}')
-	_println "Descomprimindo $len_file ... $path_file ... $(date +%H:%M:%S) "
+	_println "$(date +%H:%M:%S) - Descomprimindo [$len_file] ... $path_file "
 	
-	# Descomprimir.	
-	case "$type_file" in
-		'tar.gz') tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		'tar.bz2') tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		'tar.xz') tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		zip) unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1;;
-		deb) ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1;;
-		*) return 1;;
-	esac
+	# Descomprimir de acordo com cada extensão de arquivo.	
+	if [[ "$type_file" == 'TarGz' ]]; then
+		tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1
+	elif [[ "$type_file" == 'TarBz2' ]]; then
+		tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1
+	elif [[ "$type_file" == 'TarXz' ]]; then
+		tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1
+	elif [[ "$type_file" == 'Zip' ]]; then
+		unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1
+	elif [[ "$type_file" == 'DebPkg' ]]; then
+		
+		if [[ -f /etc/debian_version ]]; then    # Descompressão em sistemas DEBIAN
+			ar -x "$path_file" 1> /dev/null 2>&1
+		else                                     # Descompressão em outros sistemas.
+			ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1
+		fi
+	fi	
 
+	# Verificar se a extração foi concluida com sucesso.
 	if [[ "$?" == '0' ]]; then
 		_syellow "OK"
 		return 0
 	else
 		_sred "FALHA"
-		_red "(_unpack) erro: $path_file"
-		__rmdir__ "$path_file"
+		_red "(_unpack) ERRO ... $path_file"
+		#__rmdir__ "$path_file"
 		return 1
 	fi
 }
@@ -647,6 +651,7 @@ _pkg_manager_storecli()
 			bluetooth) _bluetooth;;
 			bspwm) _bspwm;;
 			compactadores) _compactadores;;
+			google-earth) _google_earth;;
 			gparted) _gparted;;
 			peazip) _peazip;;
 			refind) _refind;;

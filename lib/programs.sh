@@ -6,26 +6,24 @@ github='https://github.com'
 _etcher_package_deb()
 {
 	# https://github.com/balena-io/etcher/releases
-	local URLetcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
-	local PathFileEtcher="$DirDownloads/$(basename $URLetcher)"
+	local url_etcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
+	local PathFileEtcher="$DirDownloads/$(basename $url_etcher)"
 
-	_yellow "Adicionando key e repositório"
-	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
-	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
-	__download__ "$URLetcher" "$PathFileEtcher" || return 1
-	_APT update	
-	_GDEBI "$PathFileEtcher"
-	_BROKE
+	__download__ "$url_etcher" "$PathFileEtcher" || return 1
+	_APT update || return 1
+	_APT install "$PathFileEtcher" || _BROKE
+	return 0
 }
 
-_etcher_ubuntu()
+_etcher_debian()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
+	# https://github.com/balena-io/etcher/releases
 	_yellow "Adicionando key e repositório"
-	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
+	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61 || return 1 
 	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
-	_APT update
-	__pkg__ 'balena-etcher-electron'
+	_APT update || return 1
+	__pkg__ balena-etcher-electron || return 1	
 }
 
 _etcher_archlinux()
@@ -52,8 +50,8 @@ _etcher_archlinux()
 _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
-	_yellow "Adicionando repositório"
-	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -O /etc/yum.repos.d/etcher-rpm.repo
+	# _yellow "Executando ... curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo"
+	__sudo__ curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
 	__pkg__ 'balena-etcher-electron'
 }
 
@@ -101,8 +99,7 @@ _etcher()
 	is_executable 'balena-etcher-electron' && _show_info 'PkgInstalled' 'Etcher' && return 0
 
 	case "$os_id" in
-		ubuntu|linuxmint) _etcher_ubuntu;;
-		debian) _etcher_package_deb;;
+		ubuntu|linuxmint|debian) _etcher_debian;;
 		fedora) _etcher_fedora;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
@@ -166,40 +163,34 @@ _veracrypt()
 		return 1
 	fi
 
-	# Já instalado?.
-	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
-	
-	local vc_url_download='https://launchpadlibrarian.net/461886552/veracrypt-1.24-Update4-setup.tar.bz2'
-	local vc_url_sig="https://launchpadlibrarian.net/461886553/veracrypt-1.24-Update4-setup.tar.bz2.sig"
-	local vc_url_asc='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
-	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
-	local veracryptSigFile="$DirDownloads/$(basename $vc_url_sig)"
-
-	__download__ "$vc_url_download" "$veracryptTarFile" || return 1
-	__download__ "$vc_url_sig" "$veracryptSigFile" || return 1
-	
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	_println "Importando key $vc_url_asc ... "
-	if wget -q "$vc_url_asc" -O- | gpg --import 1> /dev/null 2>&1; then
-		_syellow "OK"
-	else
-		_sred "FALHA"
-		return 1
-	fi
-
-	__gpg__ --verify "$veracryptSigFile" "$veracryptTarFile" || return 1
-	_unpack "$veracryptTarFile" || return 1
-	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
-	chmod +x "$DirTemp"/veracrypt-setupx64
-
 	if ! is_executable xterm; then
 		__pkg__ xterm
 	fi
+
+	# Já instalado?.
+	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
+	
+	get_html 'https://www.veracrypt.fr/en/Downloads.html'
+	url_package_tar=$(grep -m 1 'download.*.tar' "$HtmlTemporaryFile" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
+	url_signature_file="${url_package_tar}.sig"	
+	VeracryptTarFile="$DirDownloads/$(basename $url_package_tar)"
+	VeracryptSigFile="${VeracryptTarFile}.sig"
+
+	__download__ "$url_package_tar" "$VeracryptTarFile" || return 1
+	__download__ "$url_signature_file" "$VeracryptSigFile" || return 1
+	# Somente baixar
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	
+	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
+	__gpg__ --verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
+	_unpack "$VeracryptTarFile" || return 1
+	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
+	chmod +x "$DirTemp"/veracrypt-setupx64
+	
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$os_id" in
-		arch) _green "Instalando o pacote: gtk2"; __pkg__ gtk2;;
+		arch) __pkg__ gtk2;;
 	esac
 
 	if is_executable 'veracrypt'; then
@@ -2417,69 +2408,42 @@ _firmware()
 	esac
 }
 
+_google_earth_debian()
+{
+	# https://sempreupdate.com.br/como-instalar-o-google-earth-no-ubuntu-18-04-e-linux-mint-19/
+	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_amd64.deb'
+	path_file="$DirDownloads/$(basename $url_google_earth)"
+	__download__ "$url_google_earth" "$path_file" || return 1
+	_APT install "$path_file" || return 1
+	return 0
+}
+
+_google_earth_fedora()
+{
+	# https://edpsblog.wordpress.com/2013/06/25/google-earth-no-debian-fedora-e-opensuse/
+	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_x86_64.rpm'
+	path_file="$DirDownloads/$(basename $url_google_earth)"
+	__download__ "$url_google_earth" "$path_file" || return 1
+	_DNF install "$path_file" || return 1
+	return 0
+}
+
+_google_earth()
+{
+	if [[ -f /etc/debian_version ]]; then
+		_google_earth_debian
+	elif [[ -f /etc/fedora-reliase ]]; then
+		_google_earth_fedora
+	else
+		_show_info 'ProgramNotFound' 'google-earth'
+		return 1 
+	fi
+}
 
 _gparted()
 {
 	__pkg__ gparted
 }
-
-_peazip_old()
-{
-	# Já instalado
-	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
-	# Url fixo versão 6.8
-	local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$DirDownloads/$(basename $peazip_url_download)"
-	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
-
-	__download__ "$peazip_url_download" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
-
-	__shasum__ "$path_file" "$hash_file" || return 1
-	_unpack "$path_file" || return 1
-
-	cd "$DirUnpack"
-	mv -v $(ls -d peazip*) "$DirUnpack/peazip-amd64" 1> /dev/null
-	mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
-	
-	cd "${destinationFilesPeazip[dir]}" 
-	cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[file_png]}"     
-	cp -u "${destinationFilesPeazip[dir]}"/peazip "${destinationFilesPeazip[file_bin]}"
-
-	echo '[Desktop Entry]' > "${destinationFilesPeazip[file_desktop]}"
-	{
-		echo 'Version=1.0'
-		echo 'Encoding=UTF-8'
-		echo 'Name=PeaZip'
-		echo 'MimeType=application/x-gzip;application/x-tar;application/x-deb;bzip;application/x-rar'
-		echo 'GenericName=Archiving Tool'
-		echo 'Exec=peazip %F'
-		echo 'Icon=peazip.png'
-		echo 'Type=Application'
-		echo 'Terminal=false'
-		echo 'X-KDE-HasTempFileOption=true'
-		echo 'Categories=GTK;KDE;Utility;System;Archiving;'
-	} | tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
-
-	chmod -R a+x "${destinationFilesPeazip[dir]}"
-	chmod -R a+rwx "${destinationFilesPeazip[file_desktop]}"                                 
-
-	_show_info 'AddFileDesktop'
-	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
-
-	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
-
-	if is_executable 'peazip'; then
-		_show_info 'SuccessInstalation' 'peazip'
-		return 0
-	else
-		_show_info 'InstalationFailed' 'peazip'
-		return 1
-	fi
-}
-
 
 _peazip()
 {
@@ -2610,7 +2574,7 @@ _stacer_debian()
 	__download__ "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	_DPKG --install "$path_file"
+	_APT install -y "$path_file"
 }
 
 _stacer_fedora()
@@ -2653,9 +2617,9 @@ _stacer_appimage()
 	chmod +rwx "${destinationFilesStacer[file_desktop]}"
 
 	_yellow "Criando atalho na Área de Trabalho"
-	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesStacer[file_desktop]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesStacer[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesStacer[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesStacer[file_desktop]}" ~/Desktop/ 2> /dev/null
 
 	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
 
@@ -2688,23 +2652,22 @@ _virtualbox_extpack()
 	#   Baixa o pacote (extensionpack) instala o pacote usando o virtualbox
 	# e adiciona o usuário atual no grupo  vboxuser.
 	#
-	_white "Aguarde"
-	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
-	local vb_html=$(wget -q -O- "$vb_pag" | grep -m 1 "Oracle.*Ext.*vbox.*")
-	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
-	local path_file="$DirDownloads/$(basename $vb_url)"
+	
+	get_html "https://www.virtualbox.org/wiki/Downloads"
+	virtualbox_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" "$HtmlTemporaryFile")
+	virtualbox_url_extension_pack=$(echo "$virtualbox_html" | sed 's/.*href="//g;s/">.*//g')
+	local path_file="$DirDownloads/$(basename $virtualbox_url_extension_pack)"
 
-	__download__ "$vb_url" "$path_file" || return 1
+	__download__ "$virtualbox_url_extension_pack" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Instalação
-	_yellow "Instalando Extension Pack"
-	sudo VBoxManage extpack install --replace "$path_file"
+	__sudo__ VBoxManage extpack install --replace "$path_file"
 
 	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1
 	
-	#sudo gpasswd -a "$USER" vboxusers  
-	sudo usermod -a -G vboxusers $USER	
+	# sudo gpasswd -a "$USER" vboxusers  
+	__sudo__ usermod -a -G vboxusers $USER	
 }
 
 _virtualbox_fedora()
@@ -2759,16 +2722,26 @@ _virtualbox_debian()
 	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
 	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
 	
-	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
-	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
-	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
-	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
+	_println "Executando ... curl -sSL $url_key_virtualbox | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
 
-	case "$os_codename" in
-		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
-	esac
-
+	_println "Executando ... curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
+	
+	if [[ "$os_codename" == 'buster' ]]; then
+		vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
+	else
+		_red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"
+		return 1
+	fi	
+	
+	# Verificar se já existe repositório do virtualbox nos diretórios e subdiretórios /etc/apt/sources.list
 	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
 	if [[ "$?" == '0' ]]; then
 		_print "Repositório virtualbox encontrado pulando"
@@ -2776,15 +2749,9 @@ _virtualbox_debian()
 		_println "Adicionando repositório virtualbox ... "
 		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
 	fi
-
-	# Limpar o cache antes de adicionar as chaves (recomendado).
-	# _msg "Limpando o cache do (apt)"
-	# _APT clean
-	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	# Atualizar o cache 'apt update' apartir da função _APT.
-	_APT update 
-	# __pkg__ libvpx6 
+	_APT update  
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
 	__pkg__ 'virtualbox-6.1' || return 1
@@ -2797,10 +2764,18 @@ _virtualbox_ubuntu()
 	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
 	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
 	
-	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
-	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
-	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
-	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
+	# Adicionar keys
+	_println "Executando ... curl -sSL $url_key_virtualbox | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
+
+	_println "Executando ... curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
 
 	case "$os_codename" in
 		focal|ulyana) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib";;
@@ -2815,14 +2790,10 @@ _virtualbox_ubuntu()
 		_println "Adicionando repositório virtualbox ... "
 		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
 	fi
-
-	# Limpar o cache antes de adicionar as chaves (recomendado).
-	# _msg "Limpando o cache do (apt)"
-	# _APT clean
-	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
+	
 	# __pkg__ libvpx6 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
@@ -2843,23 +2814,18 @@ _virtualbox_archlinux()
 	# /usr/lib/modules-load.d/virtualbox-host-modules-arch.conf -> Arquivo de configuração
 	
 	local array_vb_archlinux=(
-		'virtualbox' 
-		'virtualbox-host-modules-arch'
-		'linux-headers'
+		'virtualbox' 'virtualbox-host-modules-arch' 'linux-headers'
 	)
 
 	for c in "${array_vb_archlinux[@]}"; do
-		_msg "[+] Instalando" "$c"
-		__pkg__ "$c"
-		_msg "${C_red}[!]${CReset} Falha" "$c"
+		__pkg__ "$c" || _red "Falha: $c"
 	done
 
 	# /etc/modules-load.d/virtualbox.conf
 	# sudo depmod -a
-	_white "Configurando módulos"
-	sudo /sbin/rcvboxdrv setup
-	sudo /sbin/vboxconfig
-	sudo modprobe vboxdrv
+	_msg "Executando ... /sbin/rcvboxdrv setup"; sudo /sbin/rcvboxdrv setup
+	_msg "Executando ... sudo /sbin/vboxconfig"; sudo /sbin/vboxconfig
+	_msg "Executando ... sudo modprobe vboxdrv"; sudo modprobe vboxdrv
 
 	# Configuração para carregar o módulo durante o boot.
 	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
@@ -2886,18 +2852,24 @@ _virtualbox_linux_run()
 
 	# Pagina de download do virtualbox
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
+	get_html 'https://www.virtualbox.org/wiki/Linux_Downloads'
 
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
-	vbox_html=$(wget -q -O- $vbox_pag | egrep "(https.*download.*64.run|SHA256)")
-
-	# Filtrar o url do arquivo executável (.run) e atribuir path para download.
+	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" "$HtmlTemporaryFile")
+	
+	# Filtrar o url do arquivo executável (.run)
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
+
+	# Filtrar versão do virtualbox na string URL
 	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
+
+	# Atribuir path do arquivo a ser baixado.
 	path_file="$DirDownloads/$(basename $vbox_url_run)"
 	
-	# Definir o url de download do arquivo com as hashs e seu destino de download.
+	# Definir o url de download do arquivo 'SHA256SUMS' com as hashs e seu destino de download.
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
 	vbox_path_file_hash="$DirDownloads/virtualbox_$vbox_version.check"
+	_msg "Baixando virtualbox versão $vbox_version"	
 
 	__download__ "$vbox_url_run" "$path_file" || return 1
 	__download__ "$vbox_url_hash" "$vbox_path_file_hash" || return
@@ -2905,14 +2877,14 @@ _virtualbox_linux_run()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	# Obter a HASH da versão atual no que está no arquivo .check
-	# em seguida verificar a integridade do pacote.
-	vbox_sum=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
-	__shasum__ "$path_file" "$vbox_sum" || return 1
+	# Obter a HASH do pacote de instalação com a extensão .run. As informações
+	# estão no arquivo '.check'. Em seguida verificar a integridade do pacote.
+	shasum_package_vitualbox=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
+	__shasum__ "$path_file" "$shasum_package_vitualbox" || return 1
 	chmod +x "$path_file"
-	sudo "$path_file"
-	sudo /sbin/rcvboxdrv setup
-	sudo /sbin/vboxconfig
+	__sudo__ "$path_file"
+	__sudo__ /sbin/rcvboxdrv setup
+	__sudo__ /sbin/vboxconfig
 	_virtualbox_extpack
 }
 

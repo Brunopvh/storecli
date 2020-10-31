@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_30'
+__version__='2020_10_31'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -69,6 +69,7 @@ mkdir -p "$DIR_CONFIG_USER"
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
+# export TemporaryDirectory="/tmp/storecli_$USER"
 export TemporaryDirectory=$(mktemp --directory)
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
@@ -314,6 +315,12 @@ main()
 
 	_update_storecli
 
+	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com o zenity.
+	if [[ -z $1 ]]; then
+		main_menu
+		return "$?"
+	fi
+
 	while [[ $1 ]]; do
 		case "$1" in
 			-b|--broke) _BROKE;;
@@ -332,23 +339,20 @@ main()
 	return "$STATUS_OUTPUT"
 }
 
-if [[ -z $1 ]]; then
-	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com o zenity.
-	main_menu
+
+# Executar a função main passando todos os argumentos recebidos na linha de comando.
+main "${@}" && STATUS_OUTPUT=0
+
+# Remover diretórios e subdiretórios temporários ao encerrar o programa.
+silent='True' # habilitar o silente para não echoar mensagens de remoção dos arquivos.
+__rmdir__ "$TemporaryDirectory"
+
+if [[ "$STATUS_OUTPUT" == 0 ]]; then
+	exit 0
 else
-	# Executar a função main passando todos os argumentos recebidos na linha de comando.
-	main "${@}" && STATUS_OUTPUT=0
-
-	# Remover diretórios e subdiretórios temporários ao encerrar o programa.
-	silent='True' # habilitar o silente para não echoar mensagens de remoção dos arquivos.
-	__rmdir__ "$TemporaryDirectory"
-
-	if [[ "$STATUS_OUTPUT" == 0 ]]; then
-		exit 0
-	else
-		exit 1
-	fi
+	exit 1
 fi
+
 
 
 

@@ -90,7 +90,7 @@ _DPKG()
 		sleep 0.2
 	done
 
-	_print "Executando ... sudo dpkg $@"
+	_msg "Executando ... sudo dpkg $@"
 	if sudo dpkg "$@"; then
 		return 0
 	else
@@ -132,13 +132,10 @@ _APT()
 		sleep 0.2
 	done
 
-	# [[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
-	# [[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
-	# [[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
 	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
 	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
 
-	_print "Executando ... sudo apt $@"
+	_msg "Executando ... sudo apt $@"
 	if sudo apt "$@"; then
 		return 0
 	else
