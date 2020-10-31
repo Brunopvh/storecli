@@ -248,6 +248,16 @@ _list_applications()
 	done	
 }
 
+_isroot()
+{
+	printf " + Autênticação necessária para [$USER]: \n"
+	if [[ $(sudo id -u) == '0' ]]; then
+		return 0	
+	else
+		_red "(_isroot): falha na autênticação."
+		return 1
+	fi
+}
 
 
 __sudo__()
@@ -298,7 +308,7 @@ _clear_temp_dirs()
 
 __gpg__()
 {
-	_println "Verificando integridade "
+	_print "Executando gpg $@"
 	if gpg "$@" 1> "$OutputDevice" 2>&1; then  
 		_syellow "OK"
 	else
@@ -354,24 +364,30 @@ gpg_import()
 
 get_html()
 {
+
+	if ! is_executable curl; then
+		_sred "Esta função precisa da ferramenta 'curl' para prosseguir."
+		return 1
+	fi
+
 	# Verificar se $1 e do tipo url.
 	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
 		_red "(gpg_import): url inválida"
 		return 1
 	fi
 
-	_yellow "Baixando o html apartir da url ... $1"
 	echo ' ' > "$HtmlTemporaryFile"
-	if is_executable curl; then
-		curl -s "$1" -o "$HtmlTemporaryFile" || return 1
-	elif is_executable wget; then
-		wget -q "$1" -O "$HtmlTemporaryFile" || return 1
+	_yellow "Executando ... curl -sSL $1"
+	
+	if curl -sSL "$1" -o "$HtmlTemporaryFile"; then
+		_yellow "Html salvo em ... $HtmlTemporaryFile"
+		return 0
 	else
-		_red "Instale a ferramenta curl ou wget."
+		_red "FALHA"
 		return 1
-	fi
-	_yellow "Html salvo em ... $HtmlTemporaryFile"
+	fi	
 }
+
 
 __shasum__()
 {

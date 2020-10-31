@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_10_25_dev'
+__version__='2020_10_30_dev'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -293,8 +293,8 @@ main()
 	done
 
 	# Se a string 'requeriments OK' não estiver no arquivo de configuração significa 
-	# que a função de configuração de configuração do sistema ainda não foi executada 
-	# no sistema atual, ou seja, se o GREP abaixo retornar status diferente de '0' a 
+	# que a função de configuração do sistema ainda não foi executada no sistema atual, 
+	# ou seja, se o GREP abaixo retornar status diferente de '0' a 
 	# função de configuração será invocada.
 	if [[ "$IgnoreCli" != 'True' ]]; then
 		if ! grep -q 'requeriments OK' "$configFILE"; then
@@ -308,25 +308,9 @@ main()
 	# Exemplos:  
 	#   storecli --ignore-cli install <pacote>
 	#   storecli -I install <pacote>
-	
 	if [[ "$IgnoreCli" != 'True' ]] && [[ "$1" != '--configure' ]] && [[ "$1" != '-c' ]]; then
 		check_requeriments_cli || return 1
 	fi
-
-	# Instalar este programa no diretório do root para todos os usuários
-	# caso ainda não estiver instalado em /usr/local/bin/storecli.
-	[[ "$IgnoreCli" != 'True' ]] && {
-	if [[ ! -x '/usr/local/bin/storecli' ]]; then
-		# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
-		local url_setup_sh='https://raw.github.com/Brunopvh/storecli/master/setup.sh'
-		_yellow "Instalando script storecli em ... /usr/local/bin/storecli"
-		__download__ "$url_setup_sh" "$DirTemp/setup.sh" 1> "$OutputDevice" 2>&1 || return 1
-		chmod +x "$DirTemp/setup.sh"
-		sudo "$DirTemp/setup.sh" || {
-			_red "Falha ao tentar instalar o script storecli em ... /usr/local/bin/storecli"
-		}
-	fi
-	}
 
 	_update_storecli
 
@@ -350,7 +334,7 @@ main()
 
 if [[ -z $1 ]]; then
 	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com o zenity.
-	main_menu # Executar janela/menu gráfico com zenity.
+	main_menu
 else
 	# Executar a função main passando todos os argumentos recebidos na linha de comando.
 	main "${@}" && STATUS_OUTPUT=0

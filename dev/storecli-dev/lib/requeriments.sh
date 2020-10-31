@@ -161,7 +161,7 @@ check_requeriments_cli()
 {
 	# Verificar requerimentos minimos de sistema para que os programas possam ser 
 	# instalados com sucesso. Esta função será executada sempre que o programa iniciar.
-	LIST_REQUERIMENTS_UNIX=(sudo curl wget awk python3 zenity)
+	LIST_REQUERIMENTS_UNIX=(sudo wget awk zenity find curl python3)
 	for R in "${LIST_REQUERIMENTS_UNIX[@]}"; do
 		if ! is_executable "$R"; then
 			_red "Dependência não encontrada ... $R"

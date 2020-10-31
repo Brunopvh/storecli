@@ -220,14 +220,14 @@ _woeusb_cli_linux()
 	_println "Conectando ... $URL_SCRIPT_WOEUSB "
 	if is_executable curl; then
 		if curl -sSL "$URL_SCRIPT_WOEUSB" -o "$WOEUSB_TEMP_FILE"; then
-			_syellow "[curl] OK"
+			_syellow "OK"
 		else
 			_sred "FALHA"
 			return 1
 		fi
 	elif is_executable wget; then
 		if wget -q "$URL_SCRIPT_WOEUSB" -O "$WOEUSB_TEMP_FILE"; then
-			_syellow "[wget] OK"
+			_syellow "OK"
 		else
 			_sred "FALHA"
 			return 1
@@ -937,21 +937,40 @@ _smplayer()
 _spotify_debian()
 {
 	# https://wiki.debian.org/spotify
-	_msg "Adicionando key e repositório"
-	sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45
+	# https://www.spotify.com/br/download/linux/
+	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
+	local url_key_spotify='https://download.spotify.com/debian/pubkey_0D811D58.gpg'
+	_isroot || return 1
+	_println "(_spotify_debian): adicionando key spotify "
+	if ! curl -sS "$url_key_spotify" | sudo apt-key add -; then
+		_sred "FALHA"
+		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
+		return 1
+	fi
+
+	_println "Adicioando repositório spotify "	
 	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
-	_APT update
+	_APT update || return 1
 	__pkg__ 'spotify-client'
 }
 
 _spotify_ubuntu()
 {
 	# https://www.spotify.com/br/download/linux/
-	_msg "Adicionando key e repositório"
-	wget -q https://download.spotify.com/debian/pubkey.gpg -O- | sudo apt-key add - 
-	echo "deb http://repository.spotify.com stable non-free" | sudo tee /etc/apt/sources.list.d/spotify.list
-	_APT update 
- 	__pkg__ 'spotify-client'
+	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
+	local url_key_spotify='https://download.spotify.com/debian/pubkey_0D811D58.gpg'
+	_isroot || return 1
+	_println "(_spotify_ubuntu): adicionando key spotify "
+	if ! curl -sS "$url_key_spotify" | sudo apt-key add -; then
+		_sred "FALHA"
+		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
+		return 1
+	fi
+
+	_println "Adicioando repositório spotify "	
+	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
+	_APT update || return 1
+	__pkg__ 'spotify-client'
 }
 
 _spotify_archlinux()
@@ -1039,8 +1058,20 @@ _totem(){
 
 _vlc_fedora()
 {
-	sudo "$SCRIPT_ADD_REPO" --repo fedora # Adicionar repositórios fusion non free
-	__pkg__ vlc 'python-vlc'
+	local repos_fusion_free='https://download1.rpmfusion.org/free/fedora/rpmfusion-free-release'
+	local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
+	print_line
+	_yellow "Adicionando os seguintes repositórios: "
+	_print "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	_print "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm"
+	_print "fedora-workstation-repositories"
+	print_line
+
+	_DNF install "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	_DNF install "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm" 
+	_DNF install fedora-workstation-repositories 
+
+	__pkg__ vlc 'python-vlc' || return 1
 }
 
 _vlc()
@@ -2392,16 +2423,16 @@ _gparted()
 	__pkg__ gparted
 }
 
-_peazip()
+_peazip_old()
 {
 	# Já instalado
 	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
 	# Url fixo versão 6.8
-	local peazip_url__download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$DirDownloads/$(basename $peazip_url__download)"
+	local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_file="$DirDownloads/$(basename $peazip_url_download)"
 	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
 
-	__download__ "$peazip_url__download" "$path_file" || return 1
+	__download__ "$peazip_url_download" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
 
 	__shasum__ "$path_file" "$hash_file" || return 1
@@ -2448,6 +2479,74 @@ _peazip()
 		return 1
 	fi
 }
+
+
+_peazip()
+{
+	# 'http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	# https://github.com/peazip/PeaZip/releases/download/7.4.2/peazip_portable-7.4.2.LINUX.x86_64.GTK2.tar.gz
+	# https://peazip.github.io/peazip-linux.html
+
+	# Já instalado
+	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
+	local peazip_download_page='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
+	local path_file="$DirDownloads/$(basename $peazip_download_page)"
+
+	__download__ "$peazip_download_page" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
+	
+	_unpack "$path_file" || return 1
+	_print "Entrando no diretório ... $DirUnpack"
+	cd "$DirUnpack"
+	mv -v $(ls -d peazip*) "peazip-amd64" 1> /dev/null || return 1
+	__sudo__ mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
+	__sudo__ chown -R root:root "${destinationFilesPeazip[dir]}"
+	__sudo__ chmod a+x "${destinationFilesPeazip[dir]}"/peazip
+	_print "Entrando no diretório ... ${destinationFilesPeazip[dir]}"
+	cd "${destinationFilesPeazip[dir]}" 
+	__sudo__ cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[file_png]}"     
+	# __sudo__ cp -u FreeDesktop_integration/peazip.desktop "${destinationFilesPeazip[file_desktop]}"
+
+	_yellow "Criando arquivo '.desktop'"
+	{
+		echo '[Desktop Entry]'
+		echo 'Version=1.0'
+		echo 'Encoding=UTF-8'
+		echo 'Name=PeaZip'
+		echo 'MimeType=application/x-gzip;application/x-tar;application/x-deb;bzip;application/x-rar'
+		echo 'GenericName=Archiving Tool'
+		echo 'Exec=peazip %F'
+		echo "Icon=${destinationFilesPeazip[file_png]}"
+		echo 'Type=Application'
+		echo 'Terminal=false'
+		echo 'X-KDE-HasTempFileOption=true'
+		echo 'Categories=GTK;KDE;Utility;System;Archiving;'
+	} | sudo tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
+                               
+	_yellow "Criando script para execução via linha de comando"
+	{
+		echo -e "#!/bin/sh\n"
+		echo -e "cd ${destinationFilesPeazip[dir]}"
+		echo -e "./peazip \$@"
+	} | sudo tee "${destinationFilesPeazip[script]}" 1> /dev/null
+	__sudo__ chmod a+x "${destinationFilesPeazip[script]}"
+
+	_show_info 'AddFileDesktop'
+	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
+
+	is_executable 'gtk-update-icon-cache' && sudo gtk-update-icon-cache
+
+	if is_executable 'peazip'; then
+		_show_info 'SuccessInstalation' 'peazip'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'peazip'
+		return 1
+	fi
+}
+
 
 _refind_zip()
 {
