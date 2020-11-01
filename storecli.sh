@@ -95,6 +95,7 @@ export LogFile="$HOME/.cache/storecli/storecli.log"
 export LogErro="$HOME/.cache/storecli/storecli.err"
 export OutputDevice="$HOME/.cache/storecli/storecli-output.log"
 
+echo '' > "$OutputDevice"
 touch "$configFILE"
 touch "$LogFile"
 touch "$LogErro"

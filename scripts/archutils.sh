@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-10-10'
+VERSION='2020-10-31'
 # 
 # Uso:
 # $0 -t /dev/sdX -e /dev/sdaE -h /dev/sdaH -r /dev/sdaR -b /sdaB
@@ -183,6 +183,7 @@ declare -A DiskInfoTarget
 DiskInfoTarget=() # Array com informações do disco selecionado para instalação.
 CliArguments="$@"
 
+[[ ! -z $1 ]] && {
 while [[ $1 ]]; do
 	case "$1" in
 		-b|--boot) shift; DiskInfoTarget[partition_boot]="$1";;      # /boot - Opcional
@@ -195,6 +196,7 @@ while [[ $1 ]]; do
 	esac
 	shift
 done
+}
  
 #=======================================================#
 
@@ -350,8 +352,8 @@ _umount_partiton()
 		_yellow "$patition desmontada com sucesso"
 		return 0
 	else
-		_red "(_umount_partiton): Falha ao tentar desmontar: $partiton"
-		return 1
+		_red "(_umount_partiton) Falha ao tentar desmontar ... $partiton"
+		sleep 1
 	fi
 }
 
@@ -366,7 +368,7 @@ _mount_partiton()
 		return 0
 	fi
 
-	_msg "Montando $partition em $mount_point"
+	_msg "Montando $partition ==> $mount_point"
 	if mount "$partition" "$mount_ponint"; then
 		_yellow "$patition montada com sucesso em $mount_point"
 	else

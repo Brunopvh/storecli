@@ -1967,55 +1967,29 @@ _youtube_dl()
 	# https://github.com/ytdl-org/youtube-dl/releases/download/2019.11.28/youtube-dl-2019.11.28.tar.gz.sig
 	# https://yt-dl.org/downloads/latest/youtube-dl
 
-	local url_ytdl_test='https://yt-dl.org/downloads/latest/youtube-dl'
-	local url_ytdl_sig='https://yt-dl.org/downloads/latest/youtube-dl.sig'
-	local url_ytdl_asc_philipp='https://phihag.de/keys/A4826A18.asc'
-	local url_ytdl_asc_sergey='https://dstftw.github.io/keys/18A9236D.asc'
+	# Já instalado.
+	#is_executable "$DIR_BIN_USER/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
 
-	local path_file_sig="$DirTemp/youtube-dl.sig"
-	local path_file="$DirDownloads/youtube-dl"   
+	local URL_YOUTUBE_DL_LATEST='https://yt-dl.org/downloads/latest/youtube-dl'
+	local URL_YOUTUBE_DL_SIG='https://yt-dl.org/downloads/latest/youtube-dl.sig'
+	local URL_ASC_SERGEY='https://dstftw.github.io/keys/18A9236D.asc'
+
+	local PATH_SIGNATURE_FILE="$DirDownloads/youtube-dl.sig"
+	local PATH_YTDL="$DirDownloads/youtube-dl"   
 	local hash_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
 	
-	__download__ "$url_ytdl_test" "$path_file" || return 1 
-	
-	printf '%s' "[+] Baixando: $path_file_sig "
-	if wget -q "$url_ytdl_sig" -O "$path_file_sig"; then
-		_syellow 'OK'
-	else
-		_sred 'FALHA'
-		__rmdir__ "$path_file_sig"
-		return 1
-	fi
-
+	__download__ "$URL_YOUTUBE_DL_LATEST" "$PATH_YTDL" || return 1 
+	__download__ "$URL_YOUTUBE_DL_SIG" "$PATH_SIGNATURE_FILE" || return 1 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
-	
-	# Asc philipp
-	printf "%s" "[>] Importando: $url_ytdl_asc_philipp "
-	if wget -q -O- "$url_ytdl_asc_philipp" | gpg --import - 1> /dev/null 2> /dev/null; then  
-		_syellow 'OK'
-	else
-		echo ' '
-		_red "Falha"
-	fi
-	
-	# Asc sergey
-	printf "%s" "[>] Importando: $url_ytdl_asc_sergey "
-	if wget -q -O- "$url_ytdl_asc_sergey" | gpg --import - 1> /dev/null 2> /dev/null; then 
-		_syellow 'OK'
-	else
-		echo ' '
-		_red "Falha"
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$PATH_YTDL" && return 0
 
-	# Gpg
-	__gpg__ --verify "$path_file_sig" "$path_file" || return 1
+	gpg_import 'https://dstftw.github.io/keys/18A9236D.asc' || return 1
 	
-	# Já instalado.
-	is_executable "$DIR_BIN_USER/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
-
-	_white "Instalando youtube-dl em ~/.local/bin"
-	cp -u "$path_file" "$DIR_BIN_USER"/youtube-dl
+	# Verificar integridade do script youtube-dl.
+	__gpg__ --verify "$PATH_SIGNATURE_FILE" "$PATH_YTDL" || return 1
+	
+	_msg "Instalando youtube-dl em ~/.local/bin"
+	cp -u "$PATH_YTDL" "$DIR_BIN_USER"/youtube-dl
 	chmod a+x "$DIR_BIN_USER"/youtube-dl
 
 	if is_executable 'youtube-dl'; then
@@ -2432,7 +2406,7 @@ _google_earth()
 {
 	if [[ -f /etc/debian_version ]]; then
 		_google_earth_debian
-	elif [[ -f /etc/fedora-reliase ]]; then
+	elif [[ -f /etc/fedora-release ]]; then
 		_google_earth_fedora
 	else
 		_show_info 'ProgramNotFound' 'google-earth'

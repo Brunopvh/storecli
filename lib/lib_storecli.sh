@@ -308,13 +308,12 @@ _clear_temp_dirs()
 __gpg__()
 {
 	_println "Verificando integridade ... "
-	if gpg "$@" 1> "$OutputDevice" 2>&1; then  
+	gpg "$@" 1> "$OutputDevice" 2>&1
+	if [[ $? == '0' ]]; then  
 		_syellow "OK"
 	else
 		_sred "FALHA"
-		for X in "${@}"; do
-			[[ -f "$X" ]] && __rmdir__ "$X"
-		done
+		sleep 1
 		return 1
 	fi
 	return 0
@@ -335,8 +334,10 @@ gpg_import()
 	fi
 
 	if [[ -f "$1" ]]; then
-		_print "Importando apartir do arquivo ... $1"
-		if ! gpg --import "$1"; then
+		_println "Importando apartir do arquivo ... $1"
+		if gpg --import "$1" 1> /dev/null 2>&1; then
+			_syellow "OK"
+		else
 			_sred "FALHA"
 			return 1
 		fi
@@ -347,12 +348,15 @@ gpg_import()
 			return 1
 		fi
 		
-		_print "Importando key apartir do url ... $1 "
+		_println "Importando key apartir da url ... $1 "
 		curl -sSL "$1" -o "$TempFileAsc"		
-		gpg --import "$TempFileAsc" 1> /dev/null && return 0
+		if gpg --import "$TempFileAsc" 1> /dev/null 2>&1; then
+			_syellow "OK"
+		else
+			_sred "FALHA"
+			return 1
+		fi
 	fi
-	_sred "FALHA"
-	return 1
 }
 
 get_html()
