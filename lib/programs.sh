@@ -1514,7 +1514,7 @@ _megasync_opensuse_tumbleweed()
 
 _megasync_debian()
 {
-	# find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
+	local url_key_megasync='https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key'
 	local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
 	local mega_file_list="/etc/apt/sources.list.d/megasync.list"
 
@@ -1523,9 +1523,19 @@ _megasync_debian()
 		return 1
 	fi
 
-	_white "Adicionando key e repositório"	
-	wget -q -O- 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
-	echo "$mega_repos" | sudo tee "$mega_file_list"
+	_println "Executando ... curl -sSL $url_key_megasync | sudo apt-key add - "
+	if ! curl -sSL "$url_key_megasync" | sudo apt-key add -; then
+		_sred "FALHA"
+		return 1
+	fi
+
+	find /etc/apt -name *.list | xargs grep "^deb https.*mega.nz.*Debian.*" 2> /dev/null
+	if [[ $? == '0' ]]; then
+		_yellow "Repositório megasync encontrado pulando..."
+	else
+		_println "Adicionando repositório ... "	
+		echo "$mega_repos" | sudo tee "$mega_file_list"
+	fi
 	_APT update
 	__pkg__ megasync || return 1
 }
@@ -1653,28 +1663,41 @@ _megasync()
 
 _tor_debian()
 {
-	local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
-	local tor_file_list='/etc/apt/sources.list.d/torproject.list'
+	local URL_TOR_ASC='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
+	local TOR_FILE_SOURCE_LIST='/etc/apt/sources.list.d/torproject.list'
 
 	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then  # Ubuntu bionic
-		tor_repos='deb https://deb.torproject.org/torproject.org bionic main'
+		TOR_REPO_MAIN='deb https://deb.torproject.org/torproject.org bionic main'
 	elif [[ "$os_codename" == 'buster' ]]; then                                  # Debian buster
-		tor_repos='deb https://deb.torproject.org/torproject.org buster main'
+		TOR_REPO_MAIN='deb https://deb.torproject.org/torproject.org buster main'
 	else
 		_show_info 'ProgramNotFound' 'tor'
 		return
 	fi
 
-	_yellow "Importando chaves"
+	_println "Executando ... curl -sSL $URL_TOR_ASC | sudo gpg --import "
+	if curl -sSL "$URL_TOR_ASC" | sudo gpg --import 1> /dev/null 2>&1; then
+		echo "OK"
+	else
+		_sred "FALHA"
+		return 1
+	fi
 	
-	wget -q -O- "$tor_asc" | sudo gpg --import || _red "Falha" && return 1
-	sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' || return 1
+	_println "Executando ... gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - "
+	if ! sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'; then
+		_sred "FALHA"
+		return 1
+	fi
 
-	_yellow "Adicionando repositório"
-	echo "$tor_repos" | sudo tee "$tor_file_list" 1> /dev/null
+	# Verificar se o repositório já exite no diretório ou subdiretório /etc/apt.
+	find /etc/apt -name *.list | xargs grep '^deb https.*deb.torproject.org/torproject.org buster main'
+	if [[ $? == '0' ]]; then
+		_yellow "Repositório encontrado pulando..."
+	else
+		_println "Adicionando repositório "
+		echo "$TOR_REPO_MAIN" | sudo tee "$TOR_FILE_SOURCE_LIST" 
+	fi
 	_APT update
-
-	_yellow "Instalando tor deb.torproject.org-keyring"
 	__pkg__ tor deb.torproject.org-keyring
 	__pkg__ proxychains || return 1
 }
@@ -1710,10 +1733,9 @@ _skype_debian()
 	local path_file="$DirDownloads/$(basename $skype_url)"
 
 	__download__ "$skype_url" "$path_file" || return 1
-
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	_DPKG --install "$path_file" || return 1
+	_APT install "$path_file" || return 1
 }
 
 _skype()
@@ -2203,7 +2225,6 @@ _youtube_dlgui_debian()
 {
 	# Testado apenas no debian 10.
 	if [[ "$os_codename" == 'buster' ]]; then
-		_msg "Instalando: python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext"
 		__pkg__ python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
 		
 	else
@@ -2211,7 +2232,7 @@ _youtube_dlgui_debian()
 		return 1
 	fi
 
-	pip install wheel --user
+	__sudo__ pip install wheel
 	_youtube_dlgui_compile || return 1
 
 }
