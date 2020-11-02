@@ -1258,8 +1258,12 @@ _firefox_lang()
 	# Verificar se o idioma da sessão e pt_br e em seguida instalar o
 	# pacote de idiomas pt_br para firefox.
 	local lang=$(set | grep -m 1 '^LANG=' | sed 's/.*=//g')
-	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
-
+	case "$lang" in
+		pt_BR.UTF-8) ;;
+		pt_BR.utf-8) ;;
+		*) return 0;;
+	esac
+	
 	case "$os_id" in
 		arch) __pkg__ 'firefox-i18n-pt-br';;
 		debian) __pkg__ 'firefox-esr-l10n-pt-br';;
@@ -1284,17 +1288,26 @@ _firefox()
 _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
+	local url_key_google_chrome='https://dl.google.com/linux/linux_signing_key.pub'
 	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'
 	local google_chrome_path_key="$DirTemp/linux_signing_key.pub"	
-	# Baixar e adicionar o arquiovo '.pub'
-	__download__ 'https://dl.google.com/linux/linux_signing_key.pub' "$google_chrome_path_key" || return 1
-	_println "Adicionando key ... $google_chrome_path_key "
-	sudo apt-key add "$google_chrome_path_key" || return 1
-	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
-	_println "Adicionando repositório ... "
-	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
+	
+	# Baixar e adicionar o arquivo '.pub'
+	_print "Executando ... curl -sSL $url_key_google_chrome | sudo apt-key add -"
+	if ! curl -sSL "$url_key_google_chrome" | sudo apt-key add -; then
+		_sred "FALHA"
+		return 1
+	fi
+	
+	find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
+	if [[ $? == '0' ]]; then
+		_println "Adicionando repositório ... "
+		echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
+	else
+		_yellow "Repositório google-chrome encontrado pulando..."
+	fi
 	# sudo apt install libu2f-udev
-	_APT update
+	_APT update || return 1
 	__pkg__ 'google-chrome-stable' 
 }
 
@@ -1303,7 +1316,7 @@ _google_chrome_fedora()
 {
 	# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
 	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-	_DNF install fedora-workstation-repositories
+	_DNF install -y fedora-workstation-repositories
 	_DNF config-manager --set-enabled google-chrome
 	__pkg__ 'google-chrome-stable'
 }
@@ -2403,12 +2416,53 @@ _firmware()
 	esac
 }
 
+_cpux_appimage()
+{
+	local URL_CPUX_APPIMAGE='https://github.com/X0rg/CPU-X/releases/download/v4.0.1/CPU-X-v4.0.1-x86_64.AppImage'
+	local path_cpux_appimage="$DirDownloads/$(basename $URL_CPUX_APPIMAGE)"
+	
+	is_executable cpux && _show_info 'PkgInstalled' 'cpux' && return 0
+	
+	__download__ "$URL_CPUX_APPIMAGE" "$path_cpux_appimage" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	cp -vu "$path_cpux_appimage" "${destinationFilesCpux[file]}"
+	chmod +x "${destinationFilesCpux[file]}"
+	
+	# Criar arquivo '.desktop'
+	{
+		echo "[Desktop Entry]"
+		echo "Name=CPU-X"
+		echo "Version=1.0"
+		echo "Exec=${destinationFilesCpux[file]}"
+		echo "Type=Application"		
+	} > "${destinationFilesCpux[file_desktop]}"
+	
+	if is_executable cpux; then
+		_show_info 'PkgInstalled' 'cpu-x'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'cpux'
+		return 1
+	fi
+}
+
+_cpux()
+{
+	# https://github.com/X0rg/CPU-X
+	if [[ -f /etc/fedora-release ]]; then
+		__pkg__ cpu-x
+	else
+		_cpux_appimage
+	fi
+}
+
 _google_earth_debian()
 {
 	# https://sempreupdate.com.br/como-instalar-o-google-earth-no-ubuntu-18-04-e-linux-mint-19/
 	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_amd64.deb'
 	path_file="$DirDownloads/$(basename $url_google_earth)"
 	__download__ "$url_google_earth" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	_APT install "$path_file" || return 1
 	return 0
 }
@@ -2419,6 +2473,7 @@ _google_earth_fedora()
 	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_x86_64.rpm'
 	path_file="$DirDownloads/$(basename $url_google_earth)"
 	__download__ "$url_google_earth" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	_DNF install "$path_file" || return 1
 	return 0
 }

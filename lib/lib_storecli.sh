@@ -178,14 +178,14 @@ _list_applications()
 			Desenvolvimento)
 					printf "%s\n" "  Desenvolvimento: "
 					for APP in "${programs_development[@]}"; do
-						printf "%s\n" "      $APP"
+						printf "%s\n" "     $APP"
 					done
 					printf "\n"
 					;;
 			Escritorio)
 					printf "%s\n" "  Escritorio: "
 					for APP in "${programs_office[@]}"; do
-						printf "%s\n" "      $APP"
+						printf "%5s%s\n" " " "$APP"
 					done
 					printf "\n"
 					;;
@@ -654,6 +654,7 @@ _pkg_manager_storecli()
 			Sistema) _System_All;;
 			bluetooth) _bluetooth;;
 			bspwm) _bspwm;;
+			cpu-x) _cpux;;
 			compactadores) _compactadores;;
 			google-earth) _google_earth;;
 			gparted) _gparted;;

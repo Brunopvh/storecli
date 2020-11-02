@@ -45,6 +45,15 @@ _uninstall_edge()
 	fi
 }
 
+_uninstall_cpux()
+{
+	if [[ -f /etc/fedora-release ]]; then
+		_DNF remove cpu-x
+	else
+		__rmdir__ "${destinationFilesCpux[@]}"
+	fi
+}
+
 _uninstall_stacer()
 {
 	if [[ -f /etc/debian_version ]]; then
@@ -79,6 +88,7 @@ _uninstall_packages()
 			teamviewer) _uninstall_teamviewer;;
 			youtube-dl) __rmdir__ "$directoryUSERbin/youtube-dl";;
 	
+			cpu-x) _uninstall_cpux;;
 			peazip) __rmdir__ "${destinationFilesPeazip[@]}";;
 			refind) __rmdir__ "${destinationFilesRefind[@]}";;
 			stacer) _uninstall_stacer;;

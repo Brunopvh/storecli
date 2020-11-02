@@ -121,6 +121,7 @@ list_menu_system=(
 	'TRUE Voltar'
 	'FALSE bluetooth'
     'FALSE compactadores'
+    'FALSE cpu-x'
 	'FALSE google-earth'
     'FALSE gparted'
     'FALSE peazip'
@@ -341,6 +342,7 @@ menu_system(){
 			Voltar) _yellow "Voltando..."; break;;
 			bluetooth) main install -y bluetooth;;
 			compactadores) main install -y compactadores;;
+			cpu-x) main install -y cpu-x;;
 			firmware-atheros) main install -y firmware-atheros;;
 			firmware-linux-nonfree) main install -y firmware-linux-nonfree;;
 			firmware-ralink) main install -y firmware-ralink;;

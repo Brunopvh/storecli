@@ -189,7 +189,7 @@ _RPM()
 
 _DNF()
 {
-	_print "Executando ... sudo dnf $@"
+	_msg "Executando ... sudo dnf $@"
 	if sudo dnf "$@"; then
 		return 0
 	else

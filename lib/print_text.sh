@@ -78,17 +78,10 @@ else
 	columns='45'
 fi
 
-print_line(){
-	# Função para imprimir um caractere que preencha todo espaço horizontal do terminal.
 
-	local L='-' # Caractere que será impresso ocupando todas as colunas do terminal.
-	num='1'
-	while [[ "$num" != "$columns" ]]; do
-		L="${L}-"
-		num="$(($num+1))"
-	done
-	[[ "$silent" == 'True' ]] && return 0
-	printf '%s\n' "$L"
+print_line()
+{
+	printf "%$(tput cols)s\n" | tr ' ' '-'
 }
 
 _println()

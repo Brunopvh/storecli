@@ -130,6 +130,15 @@ destinationFilesYoutubeDlGuiUser=(
 #=============================================================#
 # Sistema
 #=============================================================#
+# Cpu-X
+
+declare -A destinationFilesCpux
+destinationFilesCpux=(
+	[file_desktop]="$DIR_DESKTOP_USER/cpux.desktop"  
+	[file]="$DIR_BIN_USER/cpux"                        
+)
+
+
 # PeaZip
 declare -A destinationFilesPeazip
 destinationFilesPeazip=(
@@ -251,6 +260,7 @@ programs_midia=(
 programs_system=(
 	bluetooth
 	compactadores
+	cpu-x
 	google-earth
 	gparted
 	peazip
