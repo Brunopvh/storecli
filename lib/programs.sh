@@ -228,14 +228,33 @@ _woeusb_cli_linux()
 	__sudo__ chmod +x '/usr/local/bin/woeusb'
 }
 
+_woeusb_ng_github()
+{
+	# Instalar WoeUSB-ng apartir do código fonte no github.
+	# https://github.com/WoeUSB/WoeUSB-ng
+	local REPO_WOEUSB_NG='https://github.com/WoeUSB/WoeUSB-ng.git'
+	
+	_gitclone "$REPO_WOEUSB_NG" || return 1
+	printf "Entrando no diretório ... $DirGitclone/WoeUSB-ng\n"
+	cd "$DirGitclone/WoeUSB-ng" || return 1
+	__sudo__ pip3 install wheel
+	__sudo__ pip3 install . || return 1
+}
+
 _woeusb_ng()
 {
 	# https://github.com/WoeUSB/WoeUSB-ng
 	requeriments_woeusb_ng_debian=(git p7zip-full python3-pip python3-wxgtk4.0)
+	requeriments_woeusb_ng_fedora=(git p7zip python3-pip python3-wxpython4)
 
 	if [[ -f /etc/debian_version ]]; then
 		__pkg__ "${requeriments_woeusb_ng_debian[@]}"
 		__sudo__ pip3 install WoeUSB-ng
+	elif [[ -f /etc/fedora-release ]]; then
+		__pkg__ "${requeriments_woeusb_ng_fedora[@]}"
+		_woeusb_ng_github
+	elif [[ "$os_id" == 'arch' ]]; then
+		_woeusb_ng_github
 	fi
 
 }
@@ -2094,7 +2113,7 @@ _youtube_dlgui_file_desktop_root()
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=youtube-dl-gui"
+		echo "Exec=/usr/bin/youtube-dl-gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
