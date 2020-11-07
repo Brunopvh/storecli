@@ -1312,18 +1312,19 @@ _google_chrome_debian()
 	local google_chrome_path_key="$DirTemp/linux_signing_key.pub"	
 	
 	# Baixar e adicionar o arquivo '.pub'
-	_print "Executando ... curl -sSL $url_key_google_chrome | sudo apt-key add -"
+	_isroot || return 1
+	_println "Executando ... curl -sSL $url_key_google_chrome | sudo apt-key add - "
 	if ! curl -sSL "$url_key_google_chrome" | sudo apt-key add -; then
 		_sred "FALHA"
 		return 1
 	fi
 	
-	find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
+	find /etc/apt -name *.list | xargs grep "^deb .*http.*google\.com/linux/chrome/deb/.*stable main" 2> /dev/null
 	if [[ $? == '0' ]]; then
+		_yellow "Repositório google-chrome encontrado pulando..."
+	else
 		_println "Adicionando repositório ... "
 		echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
-	else
-		_yellow "Repositório google-chrome encontrado pulando..."
 	fi
 	# sudo apt install libu2f-udev
 	_APT update || return 1
