@@ -1335,10 +1335,12 @@ _google_chrome_debian()
 _google_chrome_fedora()
 {
 	# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
-	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-	_DNF install -y fedora-workstation-repositories
-	_DNF config-manager --set-enabled google-chrome
-	__pkg__ 'google-chrome-stable'
+	# sudo dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+	{
+		_DNF install -y fedora-workstation-repositories
+		_DNF config-manager --set-enabled google-chrome
+		__pkg__ 'google-chrome-stable'
+	} || _DNF install -y https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 }
 
 _google_chrome_opensuse()

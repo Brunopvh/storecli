@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_11_06'
+__version__='2020_11_08'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -75,7 +75,7 @@ export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
 export DirDownloads="$HOME/.cache/$__app_name__/downloads"
-export HtmlTemporaryFile="$DirTemp"/html-temp.txt
+export HtmlTemporaryFile="$DirTemp"/Temp.html
 
 mkdir -p "$TemporaryDirectory"
 mkdir -p "$DirTemp"

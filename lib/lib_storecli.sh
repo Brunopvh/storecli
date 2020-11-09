@@ -369,7 +369,7 @@ get_html()
 
 	# Verificar se $1 e do tipo url.
 	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
-		_red "(gpg_import): url inválida"
+		_red "(get_html): url inválida"
 		return 1
 	fi
 
