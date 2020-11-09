@@ -53,6 +53,10 @@ fi
 #=============================================================#
 # Diretórios do usuário
 #=============================================================#
+if [ -f ~/.bashrc ]; then
+	. ~/.bashrc
+fi
+
 DIR_BIN_USER="$HOME/.local/bin"
 DIR_ICON_USER="$HOME/.local/share/icons"
 DIR_THEMES_USER="$HOME/.themes"
