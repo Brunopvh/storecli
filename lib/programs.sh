@@ -2241,7 +2241,7 @@ _youtube_dlgui_fedora()
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
 	# Instalar dependências.
-	if [[ "$os_version" == '32' ]]; then
+	if [[ "$os_version" == '32' ]] || [[ "$os_version" == '33' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
 		__download__ "$url" "$path_file" || return 1 
 		#_RPM --install "$path_file" 
