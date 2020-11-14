@@ -3,7 +3,7 @@
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
 #
-__version__='2020-10-12'
+__version__='2020-11-14'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -83,16 +83,21 @@ is_executable()
 
 #----------------------------------------------------------#
 
-if ! is_executable curl && ! is_executable wget; then
-	_red "Instale a ferramenta 'curl' ou 'wget'"
+if ! is_executable curl && ! is_executable wget && ! is_excutable aria2c; then
+	_red "Instale uma das ferramentas a seguir ... curl, wget ou aria2c"
 	exit 1
 fi
 
 _download_repo()
 {
-	# Usar a ferramenta curl ou wget para baixar o pacote de instalação.
+	# Usar a ferramenta curl, wget ou aria2c para baixar o pacote de instalação.
 	printf "Baixando ... $url_master "
-	if is_executable wget; then
+	if is_executable aria2c; then
+		aria2c "$url_master" -d "$dir_temp" -o "storecli.tar.gz" 1> /dev/null || {
+		_red "Falha no download"
+		return 1
+        }
+	elif is_executable wget; then
         wget -q "$url_master" -O "$storecli_tar_file" || {
 		_red "Falha no download"
 		return 1
