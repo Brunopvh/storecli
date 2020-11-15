@@ -5,7 +5,7 @@
 
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(
-	wget curl gawk unzip python3 git zenity 
+	wget curl aria2 gawk unzip python3 git zenity 
 )
 
 # Python2 Ubuntu
@@ -113,6 +113,7 @@ _config_requeriments_archlinux()
 #=============================================================#
 _install_requeriments()
 {
+	AssumeYes='True'
 	_yellow "Configurando dependências deste programa"
 	if [[ "$os_id" == 'arch' ]]; then
 		_config_requeriments_archlinux || { 

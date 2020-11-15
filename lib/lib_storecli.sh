@@ -442,7 +442,9 @@ __download__()
 	_blue "Conectando ... $1"
 
 	while true; do
-		if is_executable curl; then
+		if is_executable aria2c; then
+			aria2c -c "$url" -d "$DirDownloads" -o "$(basename $path_file)" && break
+		elif is_executable curl; then
 			curl -C - -S -L -o "$path_file" "$url" && break
 		elif is_executable wget; then
 			wget -c "$url" -O "$path_file" && break
@@ -496,11 +498,44 @@ _gitclone()
 	return 0
 }
 
+
+_show_loop_procs()
+{
+	# Esta função serve para executar um loop enquanto um determinado processo
+	# do sistema está em execução, por exemplo um outro processo de instalação
+	# de pacotes, como o "apt install" ou "pacman install" por exemplo, o pid
+	# deve ser passado como argumento $1 da função. Enquanto esse processo existir
+	# o loop ira bloquar a execução deste script, que será retomada assim que o
+	# processo informado for encerrado.
+	local array_chars=('\' '|' '/' '-')
+	local num_char='0'
+	local Pid="$1"
+	local MensageText="$2"
+	local Time='0'
+
+	while true; do
+		ALL_PROCS=$(ps aux)
+		if [[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
+			break
+		fi
+
+		Char="${array_chars[$num_char]}"		
+		echo -ne "$MensageText $(($Time / 4))s ${CYellow}[${Char}]${CReset}\r" # $(date +%H:%M:%S)
+		sleep 0.25
+		
+		num_char="$(($num_char+1))"
+		Time="$(($Time+1))"
+		[[ "$num_char" == '4' ]] && num_char='0'
+	done
+	echo -e "$MensageText $(($Time / 4))s ${CGreen}[${Char}]${CReset}"	
+}
+
+
 _unpack()
 {
 	# Obrigatório informar um arquivo no argumento $1.
 	if [[ ! -f "$1" ]]; then
-		_red "(_unpack) nenhum arquivo informado como argumento"
+		printf "\033[0;31m (_unpack): nenhum arquivo informado como argumento\033[m\n"
 		return 1
 	fi
 
@@ -508,17 +543,17 @@ _unpack()
 	if [[ -d "$2" ]]; then 
 		DirUnpack="$2"
 	elif [[ -z "$DirUnpack" ]]; then
-		_red "(_unpack): o diretório de descompressão e 'nulo'."
-		return 1
+		DirUnpack=$(pwd)
 	fi
 
-	if [[ ! -d "$DirUnpack" ]]; then
-		_yellow "(_unpack): criando o diretório ... $DirUnpack"
-		mkdir -p "$DirUnpack"
+	printf "Entrando no diretório ... $DirUnpack\n"
+	cd "$DirUnpack"
+
+	if [[ ! -w "$DirUnpack" ]]; then
+		printf "\033[0;31m(_unpack): Você não tem permissão de escrita [-w] em ... $DirUnpack\n"
+		return 1
 	fi
 	
-	_yellow "Entrando no diretório ... $DirUnpack"
-	cd "$DirUnpack"
 	__rmdir__ $(ls)
 	path_file="$1"
 
@@ -534,45 +569,42 @@ _unpack()
 	elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
 		type_file='DebPkg'
 	else
-		_red "(_unpack) ERRO arquivo não suportado ... $path_file"
-		__rmdir__ "$path_file"
+		printf "\033[0;31m(_unpack): FALHA arquivo não suportado ... $path_file\033[m\n"
 		return 1
 	fi
 
 	# Calcular o tamanho do arquivo
 	local len_file=$(du -hs $path_file | awk '{print $1}')
-	_println "$(date +%H:%M:%S) - Descomprimindo [$len_file] ... $path_file "
+	#_println "$(date +%H:%M:%S) - Descomprimindo [$len_file] ... $path_file "
 	
 	# Descomprimir de acordo com cada extensão de arquivo.	
 	if [[ "$type_file" == 'TarGz' ]]; then
-		tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1
+		tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$type_file" == 'TarBz2' ]]; then
-		tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1
+		tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$type_file" == 'TarXz' ]]; then
-		tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1
+		tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$type_file" == 'Zip' ]]; then
-		unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1
+		unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$type_file" == 'DebPkg' ]]; then
 		
 		if [[ -f /etc/debian_version ]]; then    # Descompressão em sistemas DEBIAN
-			ar -x "$path_file" 1> /dev/null 2>&1
+			ar -x "$path_file" 1> /dev/null 2>&1  &
 		else                                     # Descompressão em outros sistemas.
-			ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1
+			ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1 &
 		fi
 	fi	
 
+	#_show_loop_procs "$!" "Descompactando ... $path_file"
+	_show_loop_procs "$!" "Descompactando ... $(basename $path_file) em ... $DirUnpack"
+
 	# Verificar se a extração foi concluida com sucesso.
-	if [[ "$?" == '0' ]]; then
-		_syellow "OK"
-		return 0
-	else
-		_sred "FALHA"
-		_red "(_unpack) ERRO ... $path_file"
-		#__rmdir__ "$path_file"
+	if [[ "$?" != '0' ]]; then
+		printf "\033[0;31m(_unpack): FALHA na descompressão do arquivo $path_file\033[m\n"
+		__rmdir__ "$path_file"
 		return 1
 	fi
 }
-
 
 _pkg_manager_storecli()
 {

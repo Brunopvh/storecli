@@ -81,7 +81,13 @@ fi
 
 print_line()
 {
-	printf "%$(tput cols)s\n" | tr ' ' '-'
+    [[ "$silent" == 'True' ]] && return 0
+    
+    if [[ -z $1 ]]; then
+	    printf "%$(tput cols)s\n" | tr ' ' '-'
+	else
+	    printf "%$(tput cols)s\n" | tr ' ' "$1"
+	fi
 }
 
 _println()

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_11_08'
+__version__='2020_11_15'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -239,9 +239,13 @@ _update_storecli()
 {
 	[[ "$IgnoreCli" == 'True' ]] && return 0
 	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
-	local FileConfigUpdate="$DIR_CONFIG_USER/update.conf"; touch "$FileConfigUpdate"
+	# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+	
+	local COLUMNS=$(tput cols)
+	local FileConfigUpdate="$DIR_CONFIG_USER/update.conf"
+	touch "$FileConfigUpdate"
 	local tempFileUpdate="$DirTemp/storecli.update"                    	
-	local nowDate=$(date +%Y_%m_%d) # Data atual /ano/mês/dia.
+	local nowDate=$(date +%Y_%m_%d) # Data atual /ano/mês/dia. 
 	
 	# Data de execução da última busca por atualizações.
 	local oldDateUpdate=$(grep -m 1 "date_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
@@ -255,33 +259,43 @@ _update_storecli()
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	fi
 	
-	[[ ! -z "$oldDateUpdate" ]] && printf '%s\n' "[+] Data da última busca por atualizações: $oldDateUpdate"
+	print_line
+	[[ ! -z "$oldDateUpdate" ]] && printf "Data da última busca por atualizações ... $oldDateUpdate\n"
 	
-	_println "Verificando atualização no github aguarde "
-	wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate" || { 
-		_sred "FALHA"
-		return 1
-	}
-	_syellow 'OK'	
+	printf "Verificando atualização no github aguarde "
+	
+	if is_executable aria2c; then
+	    aria2c -c https://raw.github.com/Brunopvh/storecli/master/storecli.sh -d "$DirTemp" -o 'storecli.update' 1> /dev/null
+	elif is_executable wget; then 
+	    wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate"
+	elif is_executble curl; then
+	    curl -sSL https://raw.github.com/Brunopvh/storecli/master/storecli.sh -o "$DirTemp/storecli.update"
+	fi
+	
+	[[ $? != '0' ]] && printf "\033[0;31mFALHA\033[m\n" && return 1
+	printf 'OK\n'
+	
 	OnlineVersion=$(grep -m 1 ^'__version__' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
+	printf "%-17s%-10s\n" "Versão local" "$__version__" 
+	printf "%-17s%-10s\n" "Versão online" "$OnlineVersion"
 	
-	_yellow "Versão local ($__version__)" 
-	_yellow "Versão online ($OnlineVersion)"
 	if [[ "$OnlineVersion" == "$__version__" ]]; then
-		_yellow "Script storecli está atualizado"
+		printf "Você está usando a ultima versão deste programa\n"
 		echo -e "date_update $nowDate" > "$FileConfigUpdate"
 		return 0
 	fi
 	
-	_yellow "Atualizando para versão ... $OnlineVersion"
+	printf "%-25s%-10s\n" "Atualizando para versão" "$OnlineVersion"
 	
-	if ! "$SCRIPT_STORECLI_INSTALLER"; then
-		_red "(_update_storecli) falha"
-		return 1
+	cd "$dir_of_executable"
+	if ! sh setup.sh; then
+	    _sred "FALHA na execução do script setup.sh"
+	    return 1
 	fi
-
+	
 	[[ -f "$tempFileUpdate" ]] && rm "$tempFileUpdate"
 	echo -e "date_update $nowDate" > "$FileConfigUpdate"
+	print_line
 	return 0
 }
 
@@ -293,7 +307,9 @@ main()
 			-d|--downloadonly) export DownloadOnly='True';;
 			-I|--ignore-cli) export IgnoreCli='True';;
 			-s|--silent) export silent='True';;
+			-l) shift; _list_applications "$@"; return 0; break;;
 			-h|--help) usage; return 0; break;;
+			-u|--self-update) "$SCRIPT_STORECLI_INSTALLER"; return 0; break;;
 			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
 		esac
 	done
@@ -330,13 +346,12 @@ main()
 		case "$1" in
 			-b|--broke) _BROKE;;
 			-c|--configure) _install_requeriments;;
-			-l) shift; _list_applications "$@"; return 0; break;;
-			-u|--self-update) "$SCRIPT_STORECLI_INSTALLER"; break;;
 			install) shift; _pkg_manager_storecli "$@" || STATUS_OUTPUT=1; break;;
 			remove)  shift; _uninstall_packages "$@" || STATUS_OUTPUT=1; break;;
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
+			-s|--silent) ;;
 			*) _red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
 		esac
 		shift

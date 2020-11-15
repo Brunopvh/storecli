@@ -11,20 +11,23 @@ _loop_pid()
 	local array_chars=('\' '|' '/' '-')
 	local num_char='0'
 	local Pid="$1"
+	local Time='0'
 
 	while true; do
-		if [[ $(ps aux | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
+		ALL_PROCS=$(ps aux)
+		if [[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
 			break
 		fi
 
 		Char="${array_chars[$num_char]}"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar $(date +%H:%M:%S) [${Char}]\r"
-		sleep 0.2
+		echo -ne "Aguardando processo com pid [$Pid] finalizar $(($Time / 4))s [${Char}]\r" # $(date +%H:%M:%S)
+		sleep 0.25
 		
 		num_char="$(($num_char+1))"
+		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} $(date +%H:%M:%S) [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} $(($Time / 4))s [${Char}]"	
 }
 
 
