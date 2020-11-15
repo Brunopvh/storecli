@@ -19,15 +19,16 @@ _loop_pid()
 			break
 		fi
 
-		Char="${array_chars[$num_char]}"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar $(($Time / 4))s [${Char}]\r" # $(date +%H:%M:%S)
+		Char="${array_chars[$num_char]}"
+		SecondTime="$(($Time / 4))"		
+		echo -ne "Aguardando processo com pid [$Pid] finalizar ${SecondTime}s [${Char}]\r" # $(date +%H:%M:%S)
 		sleep 0.25
 		
 		num_char="$(($num_char+1))"
 		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} $(($Time / 4))s [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} ${SecondTime}s [${Char}]"	
 }
 
 

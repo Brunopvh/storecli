@@ -454,6 +454,7 @@ __download__()
 		fi
 
 		_red "Falha no download"
+		sleep 0.5
 		if _YESNO "Deseja tentar baixar novamente"; then
 			continue
 		else
