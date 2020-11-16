@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 #
 
+[[ ! -d "$DirTemp" ]] && DirTemp=$(mktemp --directory)
+
 os_type=''
 os_id=''
 os_release=''
@@ -55,7 +57,7 @@ _YESNO()
 {
 	# Será necessário indagar o usuário repetidas vezes durante a execução
 	# do programa, em que a resposta deve ser do tipo SIM ou NÃO (s/n)
-	# esta função é para automatizar esta indagação.
+	# esta função automatiza as indagações.
 	#
 	#   se teclar "s" -----------------> retornar 0  
 	#   se teclar "n" ou nada ---------> retornar 1.
@@ -68,21 +70,21 @@ _YESNO()
 	[[ "$AssumeYes" == 'True' ]] && return 0
 		
 	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
-	read -t 15 -n 1 sn
+	read -t 20 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then
 		return 0
 	else
-		_green "${CYellow}A${CReset}bortando"
+		_print "${CYellow}A${CReset}bortando"
 		return 1
 	fi
 }
 
 _show_info()
 {
-	# Função para exibir mensagens padrão, como erro generico durante a instalação de um 
-	# programa ou um mensagem generica de sucesso.
+	# Função para exibir mensagens padrão, como por exemplo erros comuns 
+	# durante a instalação de um programa ou um mensagem genérica de sucesso.
 	[[ "$silent" == 'True' ]] && return 0
 	case "$1" in
 		AddFileDestktop) _green "Criando arquivo (.desktop)";;
@@ -250,7 +252,7 @@ _list_applications()
 
 _isroot()
 {
-	printf " + Autênticação necessária para [$USER]: \n"
+	printf " + Autênticação necessária para ${CYellow}${USER}${CReset}: \n"
 	if [[ $(sudo id -u) == '0' ]]; then
 		return 0	
 	else
@@ -263,11 +265,11 @@ _isroot()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	_print "${CYellow}E${CReset}xecutando ... sudo $@"
+	printf "${CYellow}E${CReset}xecutando ... sudo $@\n"
 	if sudo "$@"; then
 		return 0
 	else
-		_red "Falha: sudo $@"
+		_red "Falha ... sudo $@"
 		return 1
 	fi
 }
@@ -361,28 +363,31 @@ gpg_import()
 
 get_html()
 {
-
-	if ! is_executable curl; then
-		_sred "Esta função precisa da ferramenta 'curl' para prosseguir."
-		return 1
-	fi
-
 	# Verificar se $1 e do tipo url.
 	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
 		_red "(get_html): url inválida"
 		return 1
 	fi
 
-	echo ' ' > "$HtmlTemporaryFile"
-	_yellow "Executando ... curl -sSL $1"
+	rm -rf "$HtmlTemporaryFile"
+	cd "$DirTemp"
+	printf "Conectando ... $1 "
 	
-	if curl -sSL "$1" -o "$HtmlTemporaryFile"; then
-		_yellow "HTML salvo em ... $HtmlTemporaryFile"
+	if is_executable aria2c; then
+		aria2c "$1" -d "$DirTemp" -o "Temp.html" 1> /dev/null
+	elif is_executable wget; then 
+		wget -q "$1" -O "$HtmlTemporaryFile"
+	elif is_executable curl; then 
+		curl -sSL "$1" -o "$HtmlTemporaryFile"
+	fi
+
+	if [[ $? == '0' ]]; then
+		printf 'OK\n'
 		return 0
 	else
-		_red "FALHA"
+		_sred "FALHA"
 		return 1
-	fi	
+	fi
 }
 
 
@@ -438,7 +443,6 @@ __download__()
 	
 	_yellow "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
-	_blue "Baixando ... $2"
 	_blue "Conectando ... $1"
 
 	while true; do
@@ -454,8 +458,9 @@ __download__()
 		fi
 
 		_red "Falha no download"
-		sleep 0.5
+		sleep 0.2
 		if _YESNO "Deseja tentar baixar novamente"; then
+			printf "Retomando o download\n"
 			continue
 		else
 			[[ -f "$path_file" ]] && __rmdir__ "$path_file"

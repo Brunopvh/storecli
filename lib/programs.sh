@@ -1382,7 +1382,6 @@ _google_chrome_archlinux()
 
  	_gitclone "$github_chrome" || return 1
 	cd "$DirGitclone"/google-chrome
-	_msg "Instalando base-devel"
 	__pkg__ "base-devel" pipewire
 	 
 	_msg "Executando: makepkg -s"
@@ -1634,49 +1633,72 @@ _megasync_fedora()
 	__pkg__ megasync
 }
 
+_libpdfium_archlinux()
+{
+	local repos_libpdfium='https://aur.archlinux.org/libpdfium-nojs.git'
+	_gitclone "$repos_libpdfium" || return 1
+	_print "Entrando no diretório ... $DirGitclone/libpdfium-nojs"
+	cd "$DirGitclone/libpdfium-nojs"
+	_msg "Executando ... makepkg -s"
+	makepkg -s
+	_msg "Executando sudo pacman -U $(ls libpdfium-*x86_64.pkg.tar*)"
+	_PACMAN -U --noconfirm $(ls libpdfium-*x86_64.pkg.tar*) 
+}
+
 _megasync_archlinux()
 {
-	# https://github.com/meganz/MEGAsync
 	# https://unix.stackexchange.com/questions/200311/how-to-install-megasync-client-in-arch-based-antergos-linux
-	# https://aur.archlinux.org/packages/megasync/
-	#
 	# https://oxylabs.directorioforuns.com/t6-como-instalar-o-megasync-no-arch-linux
-	#
 	# https://github.com/meganz/MEGAsync/archive/master.tar.gz
 	# git clone --recursive https://github.com/meganz/MEGAsync.git
-	#
 
-	local mega_url_tar='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64/megasync-x86_64.pkg.tar.xz'
-	local path_mega_tar="$DirDownloads/$(basename $mega_url_tar)"
+	# Obter url de download dos pacotes.
+	get_html 'https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64'
+	MEGASYNC_NAME_FILE=$(grep -m 1 'megasync.*pkg.tar.zst' "$HtmlTemporaryFile" | sed 's/.*megasync/megasync/g' | awk '{print $1}')
+	MEGASYNC_NAME_FILE=$(echo -e "$MEGASYNC_NAME_FILE" | sed 's/zst.*/zst/g')
+
+	local URL_MEGA_KEY='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64/DEB_Arch_Extra.key'
+	local URL_SERVER_MEGA_ARCHLINUX='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64'
+	local URL_MEGA_TARFILE="$URL_SERVER_MEGA_ARCHLINUX/$MEGASYNC_NAME_FILE"
+	local URL_MEGA_SIGNATURE_FILE="${URL_MEGA_TARFILE}.sig"
+	local PATH_MEGA_TARFILE="$DirDownloads/$(basename $URL_MEGA_TARFILE)"
+	local PATH_MEGA_SIGNATURE_FILE=$(mktemp)
+
 
 	# Requerimentos para compilação no ArchLinux - libpdfium.
 	local array_mega_requeriments_archlinux=(
 		'crypto++' 'c-ares' 'lsb-release' 'qt5-tools' libuv libmediainfo swig doxygen 
 		)
 
-	# Baixar o pacote do repositório MEGA.
-	__download__ "$mega_url_tar" "$path_mega_tar" || return 1
+	for app in "${array_mega_requeriments_archlinux}"; do
+		__pkg__ "$app"
+	done
+	_libpdfium_archlinux
 
-	# Somente baixar
+	# Baixar o pacote de instalação e o arquivo .sig do repositório MEGA.
+	gpg_import "$URL_MEGA_KEY" || return 1
+	__download__ "$URL_MEGA_TARFILE" "$PATH_MEGA_TARFILE" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	# Instalar dependências.
-	_msg "Instalando: ${array_mega_requeriments_archlinux[@]}"
-	__pkg__ "${array_mega_requeriments_archlinux[@]}"
+	# Verificar integridade do pacote baixado.
+	_print "Conectando ... $URL_MEGA_SIGNATURE_FILE"
+	curl -sSL "$URL_MEGA_SIGNATURE_FILE" -o "$PATH_MEGA_SIGNATURE_FILE" || return 1
+	__gpg__ --verify "$PATH_MEGA_SIGNATURE_FILE" "$PATH_MEGA_TARFILE" || return 1
+	rm -rf "$PATH_MEGA_SIGNATURE_FILE" 2> /dev/null
 
 	# Copiar o instalador para o diretório temporário e em seguida instalar o pacote.
-	cp "$path_mega_tar" "$DirTemp/megasync-x86_64.pkg.tar.xz" || return 1
+	cp "$PATH_MEGA_TARFILE" "$DirTemp/megasync-x86_64.pkg.tar.xz.zst" || return 1
+	_print "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
-	_PACMAN -U megasync-x86_64.pkg.tar.xz
-
-	# Syncronizar os repositórios
+	_PACMAN -U megasync-x86_64.pkg.tar.xz.zst
 	_PACMAN -Sy
+
 }
 
 _megasync()
 {
 	# Já instalado.
-	is_executable 'megasync' && _show_info 'PkgInstalled' 'megasync' && return 0
+	#is_executable 'megasync' && _show_info 'PkgInstalled' 'megasync' && return 0
 
 	case "$os_id" in
 		'opensuse-tumbleweed') _megasync_opensuse_tumbleweed;;

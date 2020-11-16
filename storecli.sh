@@ -73,8 +73,8 @@ mkdir -p "$DIR_CONFIG_USER"
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
-# export TemporaryDirectory="/tmp/storecli_$USER"
-export TemporaryDirectory=$(mktemp --directory)
+export TemporaryDirectory="/tmp/storecli_$USER"
+#export TemporaryDirectory=$(mktemp --directory)
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"

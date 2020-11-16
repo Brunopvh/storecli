@@ -8,6 +8,52 @@
 # disco rígido, essas informações são guardadas em ARRAYS para facilitar
 # a idendificação desses arquivos e diretórios.
 
+# Verificar se as variáveis com os diretórios de configuração e instalação dos
+# aplicativos foram definidas.
+[[ -z $DIR_DESKTOP_USER ]] && DIR_DESKTOP_USER=~/.local/share/applications
+[[ -z $DIR_BIN_USER ]] && DIR_BIN_USER=~/.local/bin
+[[ -z $DIR_ICON_USER ]] && DIR_ICON_USER=~/.local/share/icons
+[[ -z $DIR_THEMES_USER ]] && DIR_THEMES_USER=~/.themes
+
+[[ ! -d $DIR_DESKTOP_USER ]] && mkdir "$DIR_DESKTOP_USER"
+[[ ! -d $DIR_BIN_USER ]] && mkdir "$DIR_BIN_USER"
+[[ ! -d $DIR_ICON_USER ]] && mkdir "$DIR_ICON_USER"
+[[ ! -d $DIR_THEMES_USER ]] && mkdir "$DIR_THEMES_USER"
+[[ ! -d $DIR_DESKTOP_USER ]] && mkdir "$DIR_DESKTOP_USER"
+
+#=============================================================#
+# Diretórios do root
+#=============================================================#
+
+[[ -z $DIR_BIN_ROOT ]] && DIR_BIN_ROOT='/usr/local/bin'
+[[ -z $DIR_ICON_ROOT ]] && DIR_ICON_ROOT='/usr/share/icons/hicolor'
+[[ -z $DIR_THEME_ROOT ]] && DIR_THEME_ROOT='/usr/share/themes/'
+[[ -z $DIR_DESKTOP_ROOT ]] && DIR_DESKTOP_ROOT='/usr/share/applications'
+
+if [[ ! -d "$DIR_BIN_ROOT" ]]; then
+	echo -e "Criando o diretório: $DIR_BIN_ROOT"
+	sudo mkdir "$DIR_BIN_ROOT"
+fi
+
+
+if [[ ! -d "$DIR_ICON_ROOT" ]]; then
+	echo -e "Criando o diretório: $DIR_ICON_ROOT"
+	sudo mkdir "$DIR_ICON_ROOT"
+fi
+
+
+if [[ ! -d "$DIR_THEME_ROOT" ]]; then
+	echo -e "Criando o diretório: $DIR_THEME_ROOT"
+	sudo mkdir "$DIR_THEME_ROOT"
+fi
+
+
+if [[ ! -d "$DIR_DESKTOP_ROOT" ]]; then
+	echo -e "Criando o diretório: $DIR_DESKTOP_ROOT"
+	sudo mkdir "$DIR_DESKTOP_ROOT"
+fi
+
+
 #=============================================================#
 # Acessorios
 #=============================================================#
@@ -196,10 +242,10 @@ destinationFilesEpsxeWin32=(
 # Listagem de todos os pacotes disponíveis para instalação.
 #=============================================================#
 programs_acessory=(
-	'etcher'
-	'gnome-disk'
-	'veracrypt'
-	'woeusb'
+	etcher
+	gnome-disk
+	veracrypt
+	woeusb
 	)
 
 programs_development=(
