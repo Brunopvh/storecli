@@ -447,7 +447,7 @@ __download__()
 
 	while true; do
 		if is_executable aria2c; then
-			aria2c -c "$url" -d "$DirDownloads" -o "$(basename $path_file)" && break
+			aria2c -c "$url" -d "$(dirname $path_file)" -o "$(basename $path_file)" && break
 		elif is_executable curl; then
 			curl -C - -S -L -o "$path_file" "$url" && break
 		elif is_executable wget; then

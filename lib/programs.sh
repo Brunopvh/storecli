@@ -1654,8 +1654,8 @@ _megasync_archlinux()
 
 	# Obter url de download dos pacotes.
 	get_html 'https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64'
-	MEGASYNC_NAME_FILE=$(grep -m 1 'megasync.*pkg.tar.zst' "$HtmlTemporaryFile" | sed 's/.*megasync/megasync/g' | awk '{print $1}')
-	MEGASYNC_NAME_FILE=$(echo -e "$MEGASYNC_NAME_FILE" | sed 's/zst.*/zst/g')
+	HTML_MEGASYNC=$(grep -m 1 'megasync.*pkg.tar.zst' "$HtmlTemporaryFile")
+	MEGASYNC_NAME_FILE=$(echo -e "$HTML_MEGASYNC" | sed 's/.*megasync/megasync/g' | awk '{print $1}' | sed 's/zst.*/zst/g')
 
 	local URL_MEGA_KEY='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64/DEB_Arch_Extra.key'
 	local URL_SERVER_MEGA_ARCHLINUX='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64'
@@ -1698,7 +1698,7 @@ _megasync_archlinux()
 _megasync()
 {
 	# Já instalado.
-	#is_executable 'megasync' && _show_info 'PkgInstalled' 'megasync' && return 0
+	is_executable 'megasync' && _show_info 'PkgInstalled' 'megasync' && return 0
 
 	case "$os_id" in
 		'opensuse-tumbleweed') _megasync_opensuse_tumbleweed;;
@@ -1969,7 +1969,6 @@ _tixati_tarfile()
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
 	local signatureFile="${TarFile}.asc"
 
-	[[ -f "$path_file_asc" ]] && rm "$path_file_asc"
 	__download__ "$url_tarfile" "$TarFile" || return 1
 	__download__ "$url_signature_file" "$signatureFile" || return 1
 	
