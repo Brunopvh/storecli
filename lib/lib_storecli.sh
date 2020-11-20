@@ -69,14 +69,14 @@ _YESNO()
 	# aceitando todas as indagações.
 	[[ "$AssumeYes" == 'True' ]] && return 0
 		
-	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
+	printf "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
 	read -t 20 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then
 		return 0
 	else
-		_print "${CYellow}A${CReset}bortando"
+		print "${CYellow}A${CReset}bortando\n"
 		return 1
 	fi
 }
@@ -265,7 +265,7 @@ _isroot()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	printf "${CYellow}E${CReset}xecutando ... sudo $@\n"
+	echo -e "${CYellow}E${CReset}xecutando ... sudo $@"
 	if sudo "$@"; then
 		return 0
 	else
@@ -504,7 +504,6 @@ _gitclone()
 	return 0
 }
 
-
 _show_loop_procs()
 {
 	# Esta função serve para executar um loop enquanto um determinado processo
@@ -521,19 +520,17 @@ _show_loop_procs()
 
 	while true; do
 		ALL_PROCS=$(ps aux)
-		if [[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
-			break
-		fi
-
+		[[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]] && break
+		
 		Char="${array_chars[$num_char]}"		
-		echo -ne "$MensageText $(($Time / 4))s ${CYellow}[${Char}]${CReset}\r" # $(date +%H:%M:%S)
-		sleep 0.25
+		echo -ne "$MensageText [${Char}]\r" # $(date +%H:%M:%S)
+		sleep 0.12
 		
 		num_char="$(($num_char+1))"
 		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "$MensageText $(($Time / 4))s ${CGreen}[${Char}]${CReset}"	
+	echo -e "$MensageText ${CGreen}[${Char}]${CReset}"	
 }
 
 
@@ -581,7 +578,6 @@ _unpack()
 
 	# Calcular o tamanho do arquivo
 	local len_file=$(du -hs $path_file | awk '{print $1}')
-	#_println "$(date +%H:%M:%S) - Descomprimindo [$len_file] ... $path_file "
 	
 	# Descomprimir de acordo com cada extensão de arquivo.	
 	if [[ "$type_file" == 'TarGz' ]]; then
@@ -601,7 +597,7 @@ _unpack()
 		fi
 	fi	
 
-	#_show_loop_procs "$!" "Descompactando ... $path_file"
+	# echo -e "$(date +%H:%M:%S)"
 	_show_loop_procs "$!" "Descompactando ... $(basename $path_file) em ... $DirUnpack"
 
 	# Verificar se a extração foi concluida com sucesso.
