@@ -11,7 +11,6 @@ _loop_pid()
 	local array_chars=('\' '|' '/' '-')
 	local num_char='0'
 	local Pid="$1"
-	local Time='0'
 
 	while true; do
 		ALL_PROCS=$(ps aux)
@@ -19,16 +18,13 @@ _loop_pid()
 			break
 		fi
 
-		Char="${array_chars[$num_char]}"
-		SecondTime="$(($Time / 4))"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar ${SecondTime}s [${Char}]\r" # $(date +%H:%M:%S)
-		sleep 0.25
-		
+		Char="${array_chars[$num_char]}"		
+		echo -ne "Aguardando processo com pid [$Pid] finalizar [${Char}]\r" # $(date +%H:%M:%S)
+		sleep 0.15
 		num_char="$(($num_char+1))"
-		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} ${SecondTime}s [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} [${Char}]"	
 }
 
 

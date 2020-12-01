@@ -289,11 +289,11 @@ __rmdir__()
 
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# o comando de remoção será com 'sudo'.
-	cd "$DirTemp"
+	
 	while [[ $1 ]]; do		
 		cd $(dirname "$1")
 		if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -L "$1" ]]; then
-			_yellow "Removendo ... $1"; sleep 0.04
+			_yellow "Removendo ... $1"; sleep 0.08
 			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
 			_red "Não encontrado ... $1"
@@ -333,14 +333,15 @@ gpg_import()
 	#   gpg_import url
 	#   gpg_import file
 	
-	if [[ -z $1 ]]; then
+	[[ -z $1 ]] && {
 		_red "(gpg_import): opção incorreta detectada. Use gpg_import <file> | gpg_import <url>"
-	fi
+	}
 
 	if [[ -f "$1" ]]; then
 		printf "Importando apartir do arquivo ... $1 "
 		if gpg --import "$1" 1> /dev/null 2>&1; then
 			_syellow "OK"
+			return 0
 		else
 			_sred "FALHA"
 			return 1
@@ -364,13 +365,19 @@ gpg_import()
 			curl -sSL "$1" -o "$TempDirAsc/$TempFileAsc"
 		elif [[ -x $(command -v wget 2> /dev/null) ]]; then
 			wget -q "$1" -O "$TempDirAsc/$TempFileAsc"
+		else
+			_sred "Instale um ferramenta para gerenciar downloads curl|aria2|wget"
+			return 1
 		fi		
 
 		# Importar Key
 		if gpg --import "$TempDirAsc/$TempFileAsc" 1> /dev/null 2>&1; then
 			_syellow "OK"
+			rm -rf "$TempDirAsc"
+			return 0
 		else
 			_sred "FALHA"
+			rm -rf "$TempDirAsc"
 			return 1
 		fi
 	fi

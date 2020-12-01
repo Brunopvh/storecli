@@ -2122,19 +2122,20 @@ _youtube_dlgui_file_desktop_user()
 	} >> "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
 
 	chmod u+x "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
-	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/Desktop/ 2> /dev/null
-	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesYoutubeDlGuiUser[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 }
 
 _youtube_dlgui_file_desktop_root()
 {
 	# Criar arquivo desktop para todos os usuarios.
-	local file_desktop_tubedl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
+	local file_desktop_youtube_dl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 
 	_show_info "AddFileDesktop"
-	echo '[Desktop Entry]' | sudo tee "$file_desktop_tubedl_gui" 1>> "$LogFile"
 	{
+		echo '[Desktop Entry]'
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
 		echo "Exec=/usr/bin/youtube-dl-gui"
@@ -2143,22 +2144,23 @@ _youtube_dlgui_file_desktop_root()
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | sudo tee -a "$file_desktop_tubedl_gui" 1> /dev/null
+	} | sudo tee "$file_desktop_youtube_dl_gui" 
 
 	_yellow "Criando atalho na Área de Trabalho"
-	cp -u "$file_desktop_tubedl_gui" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "$file_desktop_tubedl_gui" ~/'Área de trabalho'/ 2> /dev/null
-	cp -u "$file_desktop_tubedl_gui" ~/Desktop/ 2> /dev/null
+	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$file_desktop_youtube_dl_gui" ~/Desktop/ 2> /dev/null
+	is_executable gtk-update-icon-cache && __sudo__ gtk-update-icon-cache
 }
 
 _youtube_dlgui_compile()
 {
 	# Baixar e compilar o codigo fonte do youtube-dl-gui no github.
 	# Instalação no sistema em /usr/local/bin/youtube-dl-gui 
-	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
+	local url_youtube_dl_gui_master='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 
-	__download__ "$url_ytdl_gui" "$path_file" || return 1
+	__download__ "$url_youtube_dl_gui_master" "$path_file" || return 1
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
@@ -2168,22 +2170,25 @@ _youtube_dlgui_compile()
 	_msg "Compilando youtube-dl-gui"
 	
 	if is_executable python2; then
-		sudo python2 setup.py install 1>> "$LogFile" || return 1
+		sudo python2 setup.py install 1> /dev/null || return 1
 	elif is_executable python2.7; then
-		sudo python2.7 setup.py install 1>> "$LogFile" || return 1
+		sudo python2.7 setup.py install 1> /dev/null || return 1
+	elif is_executable python27; then
+		sudo python27 setup.py install 1> /dev/null || return 1
 	fi
 		
 	# Criar o arquivo ".desktop" após compilar o programa.
 	_youtube_dlgui_file_desktop_root
+	_youtube_dlgui_file_desktop_user
 	return 0
 }
 
 _youtube_dlgui_user_installer()
 {
-	local url_ytdl_gui='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
+	local url_youtube_dl_gui_master='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 	
-	__download__ "$url_ytdl_gui" "$path_file" || return 1
+	__download__ "$url_youtube_dl_gui_master" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_unpack "$path_file" || return 1
 
@@ -2204,7 +2209,7 @@ _youtube_dlgui_user_installer()
 	elif is_executable python; then
 		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
 	else
-		_red "Necessário ter o 'python 2' instalado"
+		_red "Necessário ter o 'python 2' instalado em seu sistema."
 		return 1
 	fi
 
