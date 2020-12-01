@@ -6,7 +6,7 @@
 [[ ! -f "$path_libs/print_text.sh" ]] && {
 	printf '%s\n' "ERRO lib_storecli.sh ... Biblioteca/Módulo print_text.sh não encontrado."
 	printf '%s\n' "exporte a variável $path_libs com o diretório contendo o(s) módulo(s) para libs."
-	sleep 0.5
+	sleep 1
 	exit 1
 }
 
@@ -31,36 +31,28 @@ elif [[ -f '/etc/os-release' ]]; then
 	file_release='/etc/os-release'
 fi
 
-#=============================================#
+
 # os_id
-#=============================================#
 if [[ $os_type == 'FreeBSD' ]]; then
 	os_id=$(uname -r)
 elif [[ $os_type == 'Linux' ]]; then
 	os_id=$(grep '^ID=' "$file_release" | sed 's/.*=//g;s/\"//g') # debian/ubuntu/linuxmint/fedora ...
 fi
 
-
-#=============================================#
 # os_version
-#=============================================#
 if [[ "$file_release" ]]; then
 	os_version=$(grep -m 1 '^VERSION_ID=' "$file_release" | sed 's/.*VERSION_ID=//g;s/\"//g')
 elif [[ "$os_type" == 'FreeBSD' ]]; then
 	os_version=$(uname -r)
 fi
 
-#=============================================#
 # os_release
-#=============================================#
 if [[ "$file_release" ]]; then
 	os_release=$(grep -m 1 '^VERSION=' "$file_release" | sed 's/.*VERSION=//g;s/\"//g;s/(//g;s/)//g;s/ //g')
 fi
 
 
-#=============================================#
 # Codename
-#=============================================#
 if [[ "$file_release" ]] && [[ $(grep '^VERSION_CODENAME=' "$file_release") ]]; then
 	os_codename=$(grep -m 1 '^VERSION_CODENAME=' "$file_release" | sed 's/.*VERSION_CODENAME=//g')
 fi
@@ -273,7 +265,6 @@ _isroot()
 	fi
 }
 
-
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
@@ -321,8 +312,8 @@ _clear_temp_dirs()
 
 __gpg__()
 {
-	_println "Verificando integridade ... "
-	gpg "$@" 1> "$OutputDevice" 2>&1
+	printf "Verificando integridade ... "
+	gpg "$@" 1> /dev/null 2>&1
 	if [[ $? == '0' ]]; then  
 		_syellow "OK"
 	else
@@ -341,14 +332,13 @@ gpg_import()
 	# EX:
 	#   gpg_import url
 	#   gpg_import file
-	local TempFileAsc=$(mktemp)
 	
 	if [[ -z $1 ]]; then
 		_red "(gpg_import): opção incorreta detectada. Use gpg_import <file> | gpg_import <url>"
 	fi
 
 	if [[ -f "$1" ]]; then
-		_println "Importando apartir do arquivo ... $1"
+		printf "Importando apartir do arquivo ... $1 "
 		if gpg --import "$1" 1> /dev/null 2>&1; then
 			_syellow "OK"
 		else
@@ -362,9 +352,22 @@ gpg_import()
 			return 1
 		fi
 		
-		_println "Importando key apartir da url ... $1 "
-		curl -sSL "$1" -o "$TempFileAsc"		
-		if gpg --import "$TempFileAsc" 1> /dev/null 2>&1; then
+		local TempDirAsc=$(mktemp --directory)
+		local TempFileAsc='file.key'
+		
+		printf "Salvando arquivo ... $TempDirAsc/$TempFileAsc\n"
+		printf "Importando key apartir da url ... $1 "
+		
+		if [[ -x $(command -v aria2c 2> /dev/null) ]]; then
+			aria2c "$1" -d "$TempDirAsc" -o "$TempFileAsc" 1> /dev/null
+		elif [[ -x $(command -v curl 2> /dev/null) ]]; then
+			curl -sSL "$1" -o "$TempDirAsc/$TempFileAsc"
+		elif [[ -x $(command -v wget 2> /dev/null) ]]; then
+			wget -q "$1" -O "$TempDirAsc/$TempFileAsc"
+		fi		
+
+		# Importar Key
+		if gpg --import "$TempDirAsc/$TempFileAsc" 1> /dev/null 2>&1; then
 			_syellow "OK"
 		else
 			_sred "FALHA"
