@@ -6,26 +6,24 @@ github='https://github.com'
 _etcher_package_deb()
 {
 	# https://github.com/balena-io/etcher/releases
-	local URLetcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
-	local PathFileEtcher="$DirDownloads/$(basename $URLetcher)"
+	local url_etcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
+	local PathFileEtcher="$DirDownloads/$(basename $url_etcher)"
 
-	_yellow "Adicionando key e repositório"
-	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
-	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
-	__download__ "$URLetcher" "$PathFileEtcher" || return 1
-	_APT update	
-	_GDEBI "$PathFileEtcher"
-	_BROKE
+	__download__ "$url_etcher" "$PathFileEtcher" || return 1
+	_APT update || return 1
+	_APT install "$PathFileEtcher" || _BROKE
+	return 0
 }
 
-_etcher_ubuntu()
+_etcher_debian()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
+	# https://github.com/balena-io/etcher/releases
 	_yellow "Adicionando key e repositório"
-	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61
+	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61 || return 1 
 	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
-	_APT update
-	__pkg__ 'balena-etcher-electron'
+	_APT update || return 1
+	__pkg__ balena-etcher-electron || return 1	
 }
 
 _etcher_archlinux()
@@ -52,8 +50,8 @@ _etcher_archlinux()
 _etcher_fedora()
 {
 	# https://github.com/balena-io/etcher
-	_yellow "Adicionando repositório"
-	sudo wget -q https://balena.io/etcher/static/etcher-rpm.repo -O /etc/yum.repos.d/etcher-rpm.repo
+	# _yellow "Executando ... curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo"
+	__sudo__ curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo
 	__pkg__ 'balena-etcher-electron'
 }
 
@@ -101,8 +99,7 @@ _etcher()
 	is_executable 'balena-etcher-electron' && _show_info 'PkgInstalled' 'Etcher' && return 0
 
 	case "$os_id" in
-		ubuntu|linuxmint) _etcher_ubuntu;;
-		debian) _etcher_package_deb;;
+		ubuntu|linuxmint|debian) _etcher_debian;;
 		fedora) _etcher_fedora;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
@@ -166,40 +163,34 @@ _veracrypt()
 		return 1
 	fi
 
-	# Já instalado?.
-	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
-	
-	local vc_url_download='https://launchpadlibrarian.net/461886552/veracrypt-1.24-Update4-setup.tar.bz2'
-	local vc_url_sig="https://launchpadlibrarian.net/461886553/veracrypt-1.24-Update4-setup.tar.bz2.sig"
-	local vc_url_asc='https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc'
-	local veracryptTarFile="$DirDownloads/$(basename $vc_url_download)"
-	local veracryptSigFile="$DirDownloads/$(basename $vc_url_sig)"
-
-	__download__ "$vc_url_download" "$veracryptTarFile" || return 1
-	__download__ "$vc_url_sig" "$veracryptSigFile" || return 1
-	
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	_println "Importando key $vc_url_asc ... "
-	if wget -q "$vc_url_asc" -O- | gpg --import 1> /dev/null 2>&1; then
-		_syellow "OK"
-	else
-		_sred "FALHA"
-		return 1
-	fi
-
-	__gpg__ --verify "$veracryptSigFile" "$veracryptTarFile" || return 1
-	_unpack "$veracryptTarFile" || return 1
-	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
-	chmod +x "$DirTemp"/veracrypt-setupx64
-
 	if ! is_executable xterm; then
 		__pkg__ xterm
 	fi
+
+	# Já instalado?.
+	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
+	
+	get_html 'https://www.veracrypt.fr/en/Downloads.html'
+	url_package_tar=$(grep -m 1 'download.*.tar' "$HtmlTemporaryFile" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
+	url_signature_file="${url_package_tar}.sig"	
+	VeracryptTarFile="$DirDownloads/$(basename $url_package_tar)"
+	VeracryptSigFile="${VeracryptTarFile}.sig"
+
+	__download__ "$url_package_tar" "$VeracryptTarFile" || return 1
+	__download__ "$url_signature_file" "$VeracryptSigFile" || return 1
+	# Somente baixar
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	
+	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
+	__gpg__ --verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
+	_unpack "$VeracryptTarFile" || return 1
+	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
+	chmod +x "$DirTemp"/veracrypt-setupx64
+	
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$os_id" in
-		arch) _green "Instalando o pacote: gtk2"; __pkg__ gtk2;;
+		arch) __pkg__ gtk2;;
 	esac
 
 	if is_executable 'veracrypt'; then
@@ -237,14 +228,33 @@ _woeusb_cli_linux()
 	__sudo__ chmod +x '/usr/local/bin/woeusb'
 }
 
+_woeusb_ng_github()
+{
+	# Instalar WoeUSB-ng apartir do código fonte no github.
+	# https://github.com/WoeUSB/WoeUSB-ng
+	local REPO_WOEUSB_NG='https://github.com/WoeUSB/WoeUSB-ng.git'
+	
+	_gitclone "$REPO_WOEUSB_NG" || return 1
+	printf "Entrando no diretório ... $DirGitclone/WoeUSB-ng\n"
+	cd "$DirGitclone/WoeUSB-ng" || return 1
+	__sudo__ pip3 install wheel
+	__sudo__ pip3 install . || return 1
+}
+
 _woeusb_ng()
 {
 	# https://github.com/WoeUSB/WoeUSB-ng
 	requeriments_woeusb_ng_debian=(git p7zip-full python3-pip python3-wxgtk4.0)
+	requeriments_woeusb_ng_fedora=(git p7zip python3-pip python3-wxpython4)
 
 	if [[ -f /etc/debian_version ]]; then
 		__pkg__ "${requeriments_woeusb_ng_debian[@]}"
 		__sudo__ pip3 install WoeUSB-ng
+	elif [[ -f /etc/fedora-release ]]; then
+		__pkg__ "${requeriments_woeusb_ng_fedora[@]}"
+		_woeusb_ng_github
+	elif [[ "$os_id" == 'arch' ]]; then
+		_woeusb_ng_github
 	fi
 
 }
@@ -1267,8 +1277,12 @@ _firefox_lang()
 	# Verificar se o idioma da sessão e pt_br e em seguida instalar o
 	# pacote de idiomas pt_br para firefox.
 	local lang=$(set | grep -m 1 '^LANG=' | sed 's/.*=//g')
-	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
-
+	case "$lang" in
+		pt_BR.UTF-8) ;;
+		pt_BR.utf-8) ;;
+		*) return 0;;
+	esac
+	
 	case "$os_id" in
 		arch) __pkg__ 'firefox-i18n-pt-br';;
 		debian) __pkg__ 'firefox-esr-l10n-pt-br';;
@@ -1293,17 +1307,27 @@ _firefox()
 _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
+	local url_key_google_chrome='https://dl.google.com/linux/linux_signing_key.pub'
 	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'
 	local google_chrome_path_key="$DirTemp/linux_signing_key.pub"	
-	# Baixar e adicionar o arquiovo '.pub'
-	__download__ 'https://dl.google.com/linux/linux_signing_key.pub' "$google_chrome_path_key" || return 1
-	_println "Adicionando key ... $google_chrome_path_key "
-	sudo apt-key add "$google_chrome_path_key" || return 1
-	# find /etc/apt -name *.list | xargs grep "^deb .*google\.com/linux.*stable main" 2> /dev/null
-	_println "Adicionando repositório ... "
-	echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
+	
+	# Baixar e adicionar o arquivo '.pub'
+	_isroot || return 1
+	_println "Executando ... curl -sSL $url_key_google_chrome | sudo apt-key add - "
+	if ! curl -sSL "$url_key_google_chrome" | sudo apt-key add -; then
+		_sred "FALHA"
+		return 1
+	fi
+	
+	find /etc/apt -name *.list | xargs grep "^deb .*http.*google\.com/linux/chrome/deb/.*stable main" 2> /dev/null
+	if [[ $? == '0' ]]; then
+		_yellow "Repositório google-chrome encontrado pulando..."
+	else
+		_println "Adicionando repositório ... "
+		echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
+	fi
 	# sudo apt install libu2f-udev
-	_APT update
+	_APT update || return 1
 	__pkg__ 'google-chrome-stable' 
 }
 
@@ -1311,10 +1335,12 @@ _google_chrome_debian()
 _google_chrome_fedora()
 {
 	# https://www.vivaolinux.com.br/dica/Guia-pos-instalacao-do-Fedora-22-Xfce-Spin
-	# dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
-	_DNF install fedora-workstation-repositories
-	_DNF config-manager --set-enabled google-chrome
-	__pkg__ 'google-chrome-stable'
+	# sudo dnf install https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
+	{
+		_DNF install -y fedora-workstation-repositories
+		_DNF config-manager --set-enabled google-chrome
+		__pkg__ 'google-chrome-stable'
+	} || _DNF install -y https://dl.google.com/linux/direct/google-chrome-stable_current_x86_64.rpm
 }
 
 _google_chrome_opensuse()
@@ -1356,7 +1382,6 @@ _google_chrome_archlinux()
 
  	_gitclone "$github_chrome" || return 1
 	cd "$DirGitclone"/google-chrome
-	_msg "Instalando base-devel"
 	__pkg__ "base-devel" pipewire
 	 
 	_msg "Executando: makepkg -s"
@@ -1523,7 +1548,7 @@ _megasync_opensuse_tumbleweed()
 
 _megasync_debian()
 {
-	# find /etc/apt -name *.list | xargs grep "^deb .*mega\.nz/linux.Debian.*" 2> /dev/null
+	local url_key_megasync='https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key'
 	local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
 	local mega_file_list="/etc/apt/sources.list.d/megasync.list"
 
@@ -1532,9 +1557,19 @@ _megasync_debian()
 		return 1
 	fi
 
-	_white "Adicionando key e repositório"	
-	wget -q -O- 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key' | sudo apt-key add - || return 1
-	echo "$mega_repos" | sudo tee "$mega_file_list"
+	_println "Executando ... curl -sSL $url_key_megasync | sudo apt-key add - "
+	if ! curl -sSL "$url_key_megasync" | sudo apt-key add -; then
+		_sred "FALHA"
+		return 1
+	fi
+
+	find /etc/apt -name *.list | xargs grep "^deb https.*mega.nz.*Debian.*" 2> /dev/null
+	if [[ $? == '0' ]]; then
+		_yellow "Repositório megasync encontrado pulando..."
+	else
+		_println "Adicionando repositório ... "	
+		echo "$mega_repos" | sudo tee "$mega_file_list"
+	fi
 	_APT update
 	__pkg__ megasync || return 1
 }
@@ -1598,43 +1633,66 @@ _megasync_fedora()
 	__pkg__ megasync
 }
 
+_libpdfium_archlinux()
+{
+	local repos_libpdfium='https://aur.archlinux.org/libpdfium-nojs.git'
+	_gitclone "$repos_libpdfium" || return 1
+	_print "Entrando no diretório ... $DirGitclone/libpdfium-nojs"
+	cd "$DirGitclone/libpdfium-nojs"
+	_msg "Executando ... makepkg -s"
+	makepkg -s
+	_msg "Executando sudo pacman -U $(ls libpdfium-*x86_64.pkg.tar*)"
+	_PACMAN -U --noconfirm $(ls libpdfium-*x86_64.pkg.tar*) 
+}
+
 _megasync_archlinux()
 {
-	# https://github.com/meganz/MEGAsync
 	# https://unix.stackexchange.com/questions/200311/how-to-install-megasync-client-in-arch-based-antergos-linux
-	# https://aur.archlinux.org/packages/megasync/
-	#
 	# https://oxylabs.directorioforuns.com/t6-como-instalar-o-megasync-no-arch-linux
-	#
 	# https://github.com/meganz/MEGAsync/archive/master.tar.gz
 	# git clone --recursive https://github.com/meganz/MEGAsync.git
-	#
 
-	local mega_url_tar='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64/megasync-x86_64.pkg.tar.xz'
-	local path_mega_tar="$DirDownloads/$(basename $mega_url_tar)"
+	# Obter url de download dos pacotes.
+	get_html 'https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64'
+	HTML_MEGASYNC=$(grep -m 1 'megasync.*pkg.tar.zst' "$HtmlTemporaryFile")
+	MEGASYNC_NAME_FILE=$(echo -e "$HTML_MEGASYNC" | sed 's/.*megasync/megasync/g' | awk '{print $1}' | sed 's/zst.*/zst/g')
+
+	local URL_MEGA_KEY='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64/DEB_Arch_Extra.key'
+	local URL_SERVER_MEGA_ARCHLINUX='https://mega.nz/linux/MEGAsync/Arch_Extra/x86_64'
+	local URL_MEGA_TARFILE="$URL_SERVER_MEGA_ARCHLINUX/$MEGASYNC_NAME_FILE"
+	local URL_MEGA_SIGNATURE_FILE="${URL_MEGA_TARFILE}.sig"
+	local PATH_MEGA_TARFILE="$DirDownloads/$(basename $URL_MEGA_TARFILE)"
+	local PATH_MEGA_SIGNATURE_FILE=$(mktemp)
+
 
 	# Requerimentos para compilação no ArchLinux - libpdfium.
 	local array_mega_requeriments_archlinux=(
 		'crypto++' 'c-ares' 'lsb-release' 'qt5-tools' libuv libmediainfo swig doxygen 
 		)
 
-	# Baixar o pacote do repositório MEGA.
-	__download__ "$mega_url_tar" "$path_mega_tar" || return 1
+	for app in "${array_mega_requeriments_archlinux}"; do
+		__pkg__ "$app"
+	done
+	_libpdfium_archlinux
 
-	# Somente baixar
+	# Baixar o pacote de instalação e o arquivo .sig do repositório MEGA.
+	gpg_import "$URL_MEGA_KEY" || return 1
+	__download__ "$URL_MEGA_TARFILE" "$PATH_MEGA_TARFILE" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	# Instalar dependências.
-	_msg "Instalando: ${array_mega_requeriments_archlinux[@]}"
-	__pkg__ "${array_mega_requeriments_archlinux[@]}"
+	# Verificar integridade do pacote baixado.
+	_print "Conectando ... $URL_MEGA_SIGNATURE_FILE"
+	curl -sSL "$URL_MEGA_SIGNATURE_FILE" -o "$PATH_MEGA_SIGNATURE_FILE" || return 1
+	__gpg__ --verify "$PATH_MEGA_SIGNATURE_FILE" "$PATH_MEGA_TARFILE" || return 1
+	rm -rf "$PATH_MEGA_SIGNATURE_FILE" 2> /dev/null
 
 	# Copiar o instalador para o diretório temporário e em seguida instalar o pacote.
-	cp "$path_mega_tar" "$DirTemp/megasync-x86_64.pkg.tar.xz" || return 1
+	cp "$PATH_MEGA_TARFILE" "$DirTemp/megasync-x86_64.pkg.tar.xz.zst" || return 1
+	_print "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
-	_PACMAN -U megasync-x86_64.pkg.tar.xz
-
-	# Syncronizar os repositórios
+	_PACMAN -U megasync-x86_64.pkg.tar.xz.zst
 	_PACMAN -Sy
+
 }
 
 _megasync()
@@ -1662,28 +1720,41 @@ _megasync()
 
 _tor_debian()
 {
-	local tor_asc='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
-	local tor_file_list='/etc/apt/sources.list.d/torproject.list'
+	local URL_TOR_ASC='https://deb.torproject.org/torproject.org/A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89.asc'
+	local TOR_FILE_SOURCE_LIST='/etc/apt/sources.list.d/torproject.list'
 
 	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then  # Ubuntu bionic
-		tor_repos='deb https://deb.torproject.org/torproject.org bionic main'
+		TOR_REPO_MAIN='deb https://deb.torproject.org/torproject.org bionic main'
 	elif [[ "$os_codename" == 'buster' ]]; then                                  # Debian buster
-		tor_repos='deb https://deb.torproject.org/torproject.org buster main'
+		TOR_REPO_MAIN='deb https://deb.torproject.org/torproject.org buster main'
 	else
 		_show_info 'ProgramNotFound' 'tor'
 		return
 	fi
 
-	_yellow "Importando chaves"
+	_println "Executando ... curl -sSL $URL_TOR_ASC | sudo gpg --import "
+	if curl -sSL "$URL_TOR_ASC" | sudo gpg --import 1> /dev/null 2>&1; then
+		echo "OK"
+	else
+		_sred "FALHA"
+		return 1
+	fi
 	
-	wget -q -O- "$tor_asc" | sudo gpg --import || _red "Falha" && return 1
-	sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -' || return 1
+	_println "Executando ... gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - "
+	if ! sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'; then
+		_sred "FALHA"
+		return 1
+	fi
 
-	_yellow "Adicionando repositório"
-	echo "$tor_repos" | sudo tee "$tor_file_list" 1> /dev/null
+	# Verificar se o repositório já exite no diretório ou subdiretório /etc/apt.
+	find /etc/apt -name *.list | xargs grep '^deb https.*deb.torproject.org/torproject.org buster main'
+	if [[ $? == '0' ]]; then
+		_yellow "Repositório encontrado pulando..."
+	else
+		_println "Adicionando repositório "
+		echo "$TOR_REPO_MAIN" | sudo tee "$TOR_FILE_SOURCE_LIST" 
+	fi
 	_APT update
-
-	_yellow "Instalando tor deb.torproject.org-keyring"
 	__pkg__ tor deb.torproject.org-keyring
 	__pkg__ proxychains || return 1
 }
@@ -1719,10 +1790,9 @@ _skype_debian()
 	local path_file="$DirDownloads/$(basename $skype_url)"
 
 	__download__ "$skype_url" "$path_file" || return 1
-
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	_DPKG --install "$path_file" || return 1
+	_APT install "$path_file" || return 1
 }
 
 _skype()
@@ -1899,7 +1969,6 @@ _tixati_tarfile()
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
 	local signatureFile="${TarFile}.asc"
 
-	[[ -f "$path_file_asc" ]] && rm "$path_file_asc"
 	__download__ "$url_tarfile" "$TarFile" || return 1
 	__download__ "$url_signature_file" "$signatureFile" || return 1
 	
@@ -1976,55 +2045,29 @@ _youtube_dl()
 	# https://github.com/ytdl-org/youtube-dl/releases/download/2019.11.28/youtube-dl-2019.11.28.tar.gz.sig
 	# https://yt-dl.org/downloads/latest/youtube-dl
 
-	local url_ytdl_test='https://yt-dl.org/downloads/latest/youtube-dl'
-	local url_ytdl_sig='https://yt-dl.org/downloads/latest/youtube-dl.sig'
-	local url_ytdl_asc_philipp='https://phihag.de/keys/A4826A18.asc'
-	local url_ytdl_asc_sergey='https://dstftw.github.io/keys/18A9236D.asc'
+	# Já instalado.
+	#is_executable "$DIR_BIN_USER/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
 
-	local path_file_sig="$DirTemp/youtube-dl.sig"
-	local path_file="$DirDownloads/youtube-dl"   
+	local URL_YOUTUBE_DL_LATEST='https://yt-dl.org/downloads/latest/youtube-dl'
+	local URL_YOUTUBE_DL_SIG='https://yt-dl.org/downloads/latest/youtube-dl.sig'
+	local URL_ASC_SERGEY='https://dstftw.github.io/keys/18A9236D.asc'
+
+	local PATH_SIGNATURE_FILE="$DirDownloads/youtube-dl.sig"
+	local PATH_YTDL="$DirDownloads/youtube-dl"   
 	local hash_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
 	
-	__download__ "$url_ytdl_test" "$path_file" || return 1 
-	
-	printf '%s' "[+] Baixando: $path_file_sig "
-	if wget -q "$url_ytdl_sig" -O "$path_file_sig"; then
-		_syellow 'OK'
-	else
-		_sred 'FALHA'
-		__rmdir__ "$path_file_sig"
-		return 1
-	fi
-
+	__download__ "$URL_YOUTUBE_DL_LATEST" "$PATH_YTDL" || return 1 
+	__download__ "$URL_YOUTUBE_DL_SIG" "$PATH_SIGNATURE_FILE" || return 1 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
-	
-	# Asc philipp
-	printf "%s" "[>] Importando: $url_ytdl_asc_philipp "
-	if wget -q -O- "$url_ytdl_asc_philipp" | gpg --import - 1> /dev/null 2> /dev/null; then  
-		_syellow 'OK'
-	else
-		echo ' '
-		_red "Falha"
-	fi
-	
-	# Asc sergey
-	printf "%s" "[>] Importando: $url_ytdl_asc_sergey "
-	if wget -q -O- "$url_ytdl_asc_sergey" | gpg --import - 1> /dev/null 2> /dev/null; then 
-		_syellow 'OK'
-	else
-		echo ' '
-		_red "Falha"
-	fi
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$PATH_YTDL" && return 0
 
-	# Gpg
-	__gpg__ --verify "$path_file_sig" "$path_file" || return 1
+	gpg_import 'https://dstftw.github.io/keys/18A9236D.asc' || return 1
 	
-	# Já instalado.
-	is_executable "$DIR_BIN_USER/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
-
-	_white "Instalando youtube-dl em ~/.local/bin"
-	cp -u "$path_file" "$DIR_BIN_USER"/youtube-dl
+	# Verificar integridade do script youtube-dl.
+	__gpg__ --verify "$PATH_SIGNATURE_FILE" "$PATH_YTDL" || return 1
+	
+	_msg "Instalando youtube-dl em ~/.local/bin"
+	cp -u "$PATH_YTDL" "$DIR_BIN_USER"/youtube-dl
 	chmod a+x "$DIR_BIN_USER"/youtube-dl
 
 	if is_executable 'youtube-dl'; then
@@ -2094,7 +2137,7 @@ _youtube_dlgui_file_desktop_root()
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=youtube-dl-gui"
+		echo "Exec=/usr/bin/youtube-dl-gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
@@ -2219,7 +2262,7 @@ _youtube_dlgui_fedora()
 	local path_file="$DirDownloads/$wxpython_rpm"
 	
 	# Instalar dependências.
-	if [[ "$os_version" == '32' ]]; then
+	if [[ "$os_version" == '32' ]] || [[ "$os_version" == '33' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
 		__download__ "$url" "$path_file" || return 1 
 		#_RPM --install "$path_file" 
@@ -2238,7 +2281,6 @@ _youtube_dlgui_debian()
 {
 	# Testado apenas no debian 10.
 	if [[ "$os_codename" == 'buster' ]]; then
-		_msg "Instalando: python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext"
 		__pkg__ python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
 		
 	else
@@ -2246,7 +2288,7 @@ _youtube_dlgui_debian()
 		return 1
 	fi
 
-	pip install wheel --user
+	__sudo__ pip install wheel
 	_youtube_dlgui_compile || return 1
 
 }
@@ -2417,69 +2459,84 @@ _firmware()
 	esac
 }
 
+_cpux_appimage()
+{
+	local URL_CPUX_APPIMAGE='https://github.com/X0rg/CPU-X/releases/download/v4.0.1/CPU-X-v4.0.1-x86_64.AppImage'
+	local path_cpux_appimage="$DirDownloads/$(basename $URL_CPUX_APPIMAGE)"
+	
+	is_executable cpux && _show_info 'PkgInstalled' 'cpux' && return 0
+	
+	__download__ "$URL_CPUX_APPIMAGE" "$path_cpux_appimage" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	cp -vu "$path_cpux_appimage" "${destinationFilesCpux[file]}"
+	chmod +x "${destinationFilesCpux[file]}"
+	
+	# Criar arquivo '.desktop'
+	{
+		echo "[Desktop Entry]"
+		echo "Name=CPU-X"
+		echo "Version=1.0"
+		echo "Exec=${destinationFilesCpux[file]}"
+		echo "Type=Application"		
+	} > "${destinationFilesCpux[file_desktop]}"
+	
+	if is_executable cpux; then
+		_show_info 'PkgInstalled' 'cpu-x'
+		return 0
+	else
+		_show_info 'InstalationFailed' 'cpux'
+		return 1
+	fi
+}
+
+_cpux()
+{
+	# https://github.com/X0rg/CPU-X
+	if [[ -f /etc/fedora-release ]]; then
+		__pkg__ cpu-x
+	else
+		_cpux_appimage
+	fi
+}
+
+_google_earth_debian()
+{
+	# https://sempreupdate.com.br/como-instalar-o-google-earth-no-ubuntu-18-04-e-linux-mint-19/
+	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_amd64.deb'
+	path_file="$DirDownloads/$(basename $url_google_earth)"
+	__download__ "$url_google_earth" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	_APT install "$path_file" || return 1
+	return 0
+}
+
+_google_earth_fedora()
+{
+	# https://edpsblog.wordpress.com/2013/06/25/google-earth-no-debian-fedora-e-opensuse/
+	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_x86_64.rpm'
+	path_file="$DirDownloads/$(basename $url_google_earth)"
+	__download__ "$url_google_earth" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	_DNF install "$path_file" || return 1
+	return 0
+}
+
+_google_earth()
+{
+	if [[ -f /etc/debian_version ]]; then
+		_google_earth_debian
+	elif [[ -f /etc/fedora-release ]]; then
+		_google_earth_fedora
+	else
+		_show_info 'ProgramNotFound' 'google-earth'
+		return 1 
+	fi
+}
 
 _gparted()
 {
 	__pkg__ gparted
 }
-
-_peazip_old()
-{
-	# Já instalado
-	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
-	# Url fixo versão 6.8
-	local peazip_url_download='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
-	local path_file="$DirDownloads/$(basename $peazip_url_download)"
-	local hash_file='c88f31bbe733ef5895472c78a9d84130a88d2cffd7262d115394b65bbc796d56'
-
-	__download__ "$peazip_url_download" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
-
-	__shasum__ "$path_file" "$hash_file" || return 1
-	_unpack "$path_file" || return 1
-
-	cd "$DirUnpack"
-	mv -v $(ls -d peazip*) "$DirUnpack/peazip-amd64" 1> /dev/null
-	mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
-	
-	cd "${destinationFilesPeazip[dir]}" 
-	cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[file_png]}"     
-	cp -u "${destinationFilesPeazip[dir]}"/peazip "${destinationFilesPeazip[file_bin]}"
-
-	echo '[Desktop Entry]' > "${destinationFilesPeazip[file_desktop]}"
-	{
-		echo 'Version=1.0'
-		echo 'Encoding=UTF-8'
-		echo 'Name=PeaZip'
-		echo 'MimeType=application/x-gzip;application/x-tar;application/x-deb;bzip;application/x-rar'
-		echo 'GenericName=Archiving Tool'
-		echo 'Exec=peazip %F'
-		echo 'Icon=peazip.png'
-		echo 'Type=Application'
-		echo 'Terminal=false'
-		echo 'X-KDE-HasTempFileOption=true'
-		echo 'Categories=GTK;KDE;Utility;System;Archiving;'
-	} | tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
-
-	chmod -R a+x "${destinationFilesPeazip[dir]}"
-	chmod -R a+rwx "${destinationFilesPeazip[file_desktop]}"                                 
-
-	_show_info 'AddFileDesktop'
-	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
-
-	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
-
-	if is_executable 'peazip'; then
-		_show_info 'SuccessInstalation' 'peazip'
-		return 0
-	else
-		_show_info 'InstalationFailed' 'peazip'
-		return 1
-	fi
-}
-
 
 _peazip()
 {
@@ -2610,7 +2667,7 @@ _stacer_debian()
 	__download__ "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	_DPKG --install "$path_file"
+	_APT install -y "$path_file"
 }
 
 _stacer_fedora()
@@ -2653,9 +2710,9 @@ _stacer_appimage()
 	chmod +rwx "${destinationFilesStacer[file_desktop]}"
 
 	_yellow "Criando atalho na Área de Trabalho"
-	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesStacer[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
-	ln -sf "${destinationFilesStacer[file_desktop]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesStacer[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesStacer[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesStacer[file_desktop]}" ~/Desktop/ 2> /dev/null
 
 	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
 
@@ -2688,28 +2745,28 @@ _virtualbox_extpack()
 	#   Baixa o pacote (extensionpack) instala o pacote usando o virtualbox
 	# e adiciona o usuário atual no grupo  vboxuser.
 	#
-	_white "Aguarde"
-	local vb_pag="https://www.virtualbox.org/wiki/Downloads"
-	local vb_html=$(wget -q -O- "$vb_pag" | grep -m 1 "Oracle.*Ext.*vbox.*")
-	local vb_url=$(echo "$vb_html" | sed 's/.*href="//g;s/">.*//g')
-	local path_file="$DirDownloads/$(basename $vb_url)"
+	
+	get_html "https://www.virtualbox.org/wiki/Downloads"
+	virtualbox_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" "$HtmlTemporaryFile")
+	virtualbox_url_extension_pack=$(echo "$virtualbox_html" | sed 's/.*href="//g;s/">.*//g')
+	local path_file="$DirDownloads/$(basename $virtualbox_url_extension_pack)"
 
-	__download__ "$vb_url" "$path_file" || return 1
+	__download__ "$virtualbox_url_extension_pack" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Instalação
-	_yellow "Instalando Extension Pack"
-	sudo VBoxManage extpack install --replace "$path_file"
+	__sudo__ VBoxManage extpack install --replace "$path_file"
 
 	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1
 	
-	#sudo gpasswd -a "$USER" vboxusers  
-	sudo usermod -a -G vboxusers $USER	
+	# sudo gpasswd -a "$USER" vboxusers  
+	__sudo__ usermod -a -G vboxusers $USER	
 }
 
 _virtualbox_fedora()
 {
-	local requeriments_vb_fedora=(
+	# sudo dnf install make automake gcc gcc-c++ kernel-devel
+	local requeriments_virtualbox_fedora=(
 		'libgomp' 
 		'glibc-headers' 
 		'glibc-devel' 
@@ -2720,11 +2777,12 @@ _virtualbox_fedora()
 		'kernel-devel' 
 		'binutils' 
 		'gcc' 
+		'automake'
 		'make' 
 		'patch'
 	)
 
-	__pkg__ "${requeriments_vb_fedora[@]}"
+	__pkg__ "${requeriments_virtualbox_fedora[@]}"
 	__pkg__ $(rpm -qa kernel | sort -V | tail -n 1) 
 	__pkg__ kernel-devel-$(uname -r)
 
@@ -2759,16 +2817,26 @@ _virtualbox_debian()
 	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
 	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
 	
-	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
-	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
-	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
-	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
+	_println "Executando ... curl -sSL $url_key_virtualbox | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
 
-	case "$os_codename" in
-		buster) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib";;
-		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
-	esac
-
+	_println "Executando ... curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
+	
+	if [[ "$os_codename" == 'buster' ]]; then
+		vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
+	else
+		_red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"
+		return 1
+	fi	
+	
+	# Verificar se já existe repositório do virtualbox nos diretórios e subdiretórios /etc/apt/sources.list
 	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
 	if [[ "$?" == '0' ]]; then
 		_print "Repositório virtualbox encontrado pulando"
@@ -2776,15 +2844,9 @@ _virtualbox_debian()
 		_println "Adicionando repositório virtualbox ... "
 		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
 	fi
-
-	# Limpar o cache antes de adicionar as chaves (recomendado).
-	# _msg "Limpando o cache do (apt)"
-	# _APT clean
-	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	# Atualizar o cache 'apt update' apartir da função _APT.
-	_APT update 
-	# __pkg__ libvpx6 
+	_APT update  
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
 	__pkg__ 'virtualbox-6.1' || return 1
@@ -2797,10 +2859,18 @@ _virtualbox_ubuntu()
 	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
 	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
 	
-	_println "Adicionando key virtualbox $url_key_virtualbox_2016 ... "
-	wget -q -O- "$url_key_virtualbox" | sudo apt-key add - || return 1
-	_println "Adicionando keys virtualbox $url_key_virtualbox ... "
-	wget -q -O- "$url_key_virtualbox_2016" | sudo apt-key add - || return 1
+	# Adicionar keys
+	_println "Executando ... curl -sSL $url_key_virtualbox | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
+
+	_println "Executando ... curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - "
+	curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - || {
+		_sred "FALHA"
+		return 1
+	}
 
 	case "$os_codename" in
 		focal|ulyana) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib";;
@@ -2815,14 +2885,10 @@ _virtualbox_ubuntu()
 		_println "Adicionando repositório virtualbox ... "
 		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
 	fi
-
-	# Limpar o cache antes de adicionar as chaves (recomendado).
-	# _msg "Limpando o cache do (apt)"
-	# _APT clean
-	# sudo rm -rf /var/lib/apt/lists/* 1> /dev/null 2> /dev/null
 	
 	# Atualizar o cache 'apt update' apartir da função _APT.
 	_APT update 
+	
 	# __pkg__ libvpx6 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
@@ -2843,23 +2909,18 @@ _virtualbox_archlinux()
 	# /usr/lib/modules-load.d/virtualbox-host-modules-arch.conf -> Arquivo de configuração
 	
 	local array_vb_archlinux=(
-		'virtualbox' 
-		'virtualbox-host-modules-arch'
-		'linux-headers'
+		'virtualbox' 'virtualbox-host-modules-arch' 'linux-headers'
 	)
 
 	for c in "${array_vb_archlinux[@]}"; do
-		_msg "[+] Instalando" "$c"
-		__pkg__ "$c"
-		_msg "${C_red}[!]${CReset} Falha" "$c"
+		__pkg__ "$c" || _red "Falha: $c"
 	done
 
 	# /etc/modules-load.d/virtualbox.conf
 	# sudo depmod -a
-	_white "Configurando módulos"
-	sudo /sbin/rcvboxdrv setup
-	sudo /sbin/vboxconfig
-	sudo modprobe vboxdrv
+	_msg "Executando ... /sbin/rcvboxdrv setup"; sudo /sbin/rcvboxdrv setup
+	_msg "Executando ... sudo /sbin/vboxconfig"; sudo /sbin/vboxconfig
+	_msg "Executando ... sudo modprobe vboxdrv"; sudo modprobe vboxdrv
 
 	# Configuração para carregar o módulo durante o boot.
 	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
@@ -2886,18 +2947,24 @@ _virtualbox_linux_run()
 
 	# Pagina de download do virtualbox
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
+	get_html 'https://www.virtualbox.org/wiki/Linux_Downloads'
 
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
-	vbox_html=$(wget -q -O- $vbox_pag | egrep "(https.*download.*64.run|SHA256)")
-
-	# Filtrar o url do arquivo executável (.run) e atribuir path para download.
+	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" "$HtmlTemporaryFile")
+	
+	# Filtrar o url do arquivo executável (.run)
 	vbox_url_run=$(echo "$vbox_html" | grep -m 1 '64.run' | sed 's/.*href="//g;s/run".*/run/g')
+
+	# Filtrar versão do virtualbox na string URL
 	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
+
+	# Atribuir path do arquivo a ser baixado.
 	path_file="$DirDownloads/$(basename $vbox_url_run)"
 	
-	# Definir o url de download do arquivo com as hashs e seu destino de download.
+	# Definir o url de download do arquivo 'SHA256SUMS' com as hashs e seu destino de download.
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
 	vbox_path_file_hash="$DirDownloads/virtualbox_$vbox_version.check"
+	_msg "Baixando virtualbox versão $vbox_version"	
 
 	__download__ "$vbox_url_run" "$path_file" || return 1
 	__download__ "$vbox_url_hash" "$vbox_path_file_hash" || return
@@ -2905,14 +2972,14 @@ _virtualbox_linux_run()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	# Obter a HASH da versão atual no que está no arquivo .check
-	# em seguida verificar a integridade do pacote.
-	vbox_sum=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
-	__shasum__ "$path_file" "$vbox_sum" || return 1
+	# Obter a HASH do pacote de instalação com a extensão .run. As informações
+	# estão no arquivo '.check'. Em seguida verificar a integridade do pacote.
+	shasum_package_vitualbox=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
+	__shasum__ "$path_file" "$shasum_package_vitualbox" || return 1
 	chmod +x "$path_file"
-	sudo "$path_file"
-	sudo /sbin/rcvboxdrv setup
-	sudo /sbin/vboxconfig
+	__sudo__ "$path_file"
+	__sudo__ /sbin/rcvboxdrv setup
+	__sudo__ /sbin/vboxconfig
 	_virtualbox_extpack
 }
 

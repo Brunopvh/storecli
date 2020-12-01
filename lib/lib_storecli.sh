@@ -76,7 +76,7 @@ _YESNO()
 	if [[ "${sn,,}" == 's' ]]; then
 		return 0
 	else
-		print "${CYellow}A${CReset}bortando\n"
+		printf "${CYellow}A${CReset}bortando\n"
 		return 1
 	fi
 }

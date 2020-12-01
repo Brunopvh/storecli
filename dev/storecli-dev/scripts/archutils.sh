@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-10-10'
+VERSION='2020-11-14'
 # 
 # Uso:
 # $0 -t /dev/sdX -e /dev/sdaE -h /dev/sdaH -r /dev/sdaR -b /sdaB
@@ -61,8 +61,6 @@ CBlue='\033[0;34m'
 CWhite='\033[0;37m'
 CReset='\033[m'
 
-echo -e "$CGreen"
-
 is_executable()
 {
 	# Função para verificar se um executável existe no PATH do sistema.
@@ -108,18 +106,12 @@ else
 	columns='45'
 fi
 
-print_line(){
+print_line()
+{
 	# Função para imprimir um caractere que preencha todo espaço horizontal do terminal.
-
-	local L='-' # Caractere que será impresso ocupando todas as colunas do terminal.
-	num='1'
-	while [[ "$num" != "$columns" ]]; do
-		L="${L}-"
-		num="$(($num+1))"
-	done
-	[[ "$silent" == 'True' ]] && return 0
-	printf '%s\n' "$L"
+	printf "%-${columns}s" | tr ' ' '-'
 }
+
 
 _msg()
 {
@@ -128,7 +120,7 @@ _msg()
 	print_line
 }
 
-#=======================================================#
+
 usage()
 {
 cat << EOF
@@ -153,7 +145,7 @@ EOF
 
 function _YESNO()
 {
-	echo -ne "[>] ${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: "
+	_println "${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: "
 	read -t 30 -n 1 yesno
 	echo ' '
 
@@ -170,19 +162,33 @@ if [[ $(id -u) != '0' ]]; then
 	exit 1
 fi
 
-TempDir=$(mktemp --directory); mkdir -p "$TempDir"
+if [[ $(uname -s) != 'Linux' ]]; then
+	_red "Seu sistema não e Linux"
+	exit 1
+fi
+
+TempDir=$(mktemp --directory)
 LogInfo="$TempDir/Info.log"
 LogErro="$TempDir/Erro.log"
 FileTemp="$TempDir/Tempfile.txt"
-url_storecli='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
-url_archutils='https://raw.github.com/Brunopvh/storecli/master/scripts/archutils.sh'
 
-_green "$url_archutils"
+raw_github='https://raw.github.com'
+github='https://github.com'
+repo_storecli='Brunopvh/storecli'
+url_storecli="$github/$repo_storecli/archive/master.tar.gz"
+url_archutils="$raw_github/$repo_storecli/master/scripts/archutils.sh"
+
+# Efi/Bios
+TYPE_BOOT=''
+
+_yellow "$url_archutils"
 
 declare -A DiskInfoTarget
 DiskInfoTarget=() # Array com informações do disco selecionado para instalação.
 CliArguments="$@"
 
+# Analizar a linha de comando se receber um argumento ou mais.
+[[ ! -z $1 ]] && {
 while [[ $1 ]]; do
 	case "$1" in
 		-b|--boot) shift; DiskInfoTarget[partition_boot]="$1";;      # /boot - Opcional
@@ -195,45 +201,66 @@ while [[ $1 ]]; do
 	esac
 	shift
 done
- 
-#=======================================================#
+}
+
+function check_boot_type()
+{
+	modprobe -q efivarfs
+  
+    if [[ -d "/sys/firmware/efi/" ]]; then
+		# Veficar se ponto de montagem firmware efi
+		if [[ -z $(mount | grep /sys/firmware/efi/efivars) ]]; then
+			_yellow "Executando ... mount -t efivarfs efivarfs /sys/firmware/efi/efivars"
+			mount -t efivarfs efivarfs /sys/firmware/efi/efivars
+		fi
+		TYPE_BOOT='efi'
+		_yellow "(check_boot_type):  Modo EFI detectado"
+    else
+		TYPE_BOOT='bios'
+		_yellow "(check_boot_type):  Modo BIOS detectado"
+    fi
+}
 
 function parse_disk_partitions()
 {
 	# Obter informações sobre o tipo de tabela de particionamento do disco selecionado para 
 	# instalação e o tamanaho em GB do disco.
 	if [[ ! -e "${DiskInfoTarget[instalation_disk]}" ]]; then
-		_red "(parse_disk_partitions): informe um disco para instalação"; return 1
+		_red "(parse_disk_partitions): informe um disco para instalação"
+		return 1
 	fi
 
+	# Verificar a partição informada para ser a 'raiz' / do sistema.
 	if [[ ! -e "${DiskInfoTarget[partition_root]}" ]]; then
-		_red "(parse_disk_partitions): informe uma partição raiz para instalação"; return 1
+		_red "(parse_disk_partitions): informe uma partição raiz para instalação do diretório '/'"
+		return 1
 	fi
 
+	# Filtrar informações do disco selecionado (/dev/sda, /dev/sdb/, /dev/sdc, /dev/sdx...)
 	fdisk -l "${DiskInfoTarget[instalation_disk]}" > "$FileTemp"
 	DiskInfoTarget[disk_table]=$(egrep -m 1 '(Tipo|Type|type)' "$FileTemp" | cut -d ':' -f 2 | sed 's/ //g')
-	DiskInfoTarget[disk_len]=$(egrep -m 1 '(Disco|Disk)' "$FileTemp" | awk '{print $3,$4}')
-	DiskInfoTarget[disk_len]="${DiskInfoTarget[disk_len]%%\,}"
+	DiskInfoTarget[disk_len]=$(egrep -m 1 '(Disco|Disk)' "$FileTemp" | awk '{print $3,$4}' | sed 's/\,//g')
+	#DiskInfoTarget[disk_len]="${DiskInfoTarget[disk_len]%%\,}"
 	
-	_blue "Tamanho " "${DiskInfoTarget[disk_len]}"
-	_blue "Disco para instalação ---> ${DiskInfoTarget[instalation_disk]}"
-	_blue "Ponto de montagem / ---> ${DiskInfoTarget[partition_root]}"
+	_yellow "Tamanho ... ${DiskInfoTarget[disk_len]}"
+	_yellow "Disco para instalação ... ${DiskInfoTarget[instalation_disk]}"
+	_yellow "Ponto de montagem / ... ${DiskInfoTarget[partition_root]}"
 
 	[[ -e "${DiskInfoTarget[partition_home]}" ]] && {
-		_blue "Ponto de montagem /home ---> ${DiskInfoTarget[partition_home]}"
+		_yellow "Ponto de montagem /home ... ${DiskInfoTarget[partition_home]}"
 	}
 	[[ -e "${DiskInfoTarget[partition_boot]}" ]] && {
-		_blue "Ponto de montagem /boot ---> ${DiskInfoTarget[partition_boot]}"
+		_yellow "Ponto de montagem /boot ... ${DiskInfoTarget[partition_boot]}"
 	}
 	[[ -e "${DiskInfoTarget[partition_efi]}" ]] && {
-		_blue "Ponto de montagem /boot/efi ---> ${DiskInfoTarget[partition_efi]}"
+		_yellow "Ponto de montagem /boot/efi ... ${DiskInfoTarget[partition_efi]}"
 	}
 }
 
 parse_table_disk()
 {
 	# Se a tabela de partição do disco for GPT e o usuário não informar uma partição
-	# para efi será exibida uma mensagem de erro.
+	# para montar /boot/efi será exibida uma mensagem de erro.
 	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]] && [[ ! -e "${DiskInfoTarget[partition_efi]}" ]]; then
 		_red "O disco selecionado tem tabela de partição do tipo (gpt) informe uma partição para usar (EFI)"
 		return 1
@@ -251,7 +278,7 @@ _ping()
 	# Verificar conexão com a internet.
 	_println "Aguardando conexão ... "
 	if ping -c 2 8.8.8.8 1> /dev/null; then
-		echo "[Conectado]"
+		printf "Conectado\n"
 	else
 		_red 'FALHA'
 		_red "AVISO: você está OFF-LINE - use o wifi-menu para se conectar a uma rede WIFI"
@@ -262,10 +289,11 @@ _ping()
 _PACMAN()
 {
 	# _PACMAN -S --needed "$@"
+	_msg "${CGreen}Executando ... pacman -S --noconfirm --needed $@${CReset}"
 	if pacman -S --noconfirm --needed "$@"; then
 		return 0
 	else
-		_red "(_PACMAN) erro: pacman $@"
+		_red "(_PACMAN) FALHA: pacman -S --noconfirm --needed $@"
 		return 1
 	fi
 }
@@ -315,65 +343,60 @@ pkgs_gnomeshell=(
 
 _ismount()
 {
-	# Se o dispositivo estiver montado retorna '0', se não retorna '1'.
+	# Se o dispositivo informado em "$1" estiver montado retorna '0', se não retorna '1'.
 	# Use _ismount "$1"
 	local partition="$1"
+	local partition_device=$(grep -m 1 "$1" /proc/mounts | awk '{print $1}')
 
-	if ! ls "$1" 1> /dev/null; then 
-		_red "(_ismount): informe uma partição do tipo /dev/sdXy"
-		return 1
-	fi
-
-	# Procurar o ponto de montagem no arquivo /proc/mounts
-	proc_partition_device=$(grep "$partition" '/proc/mounts' | awk '{print $1}')
-
-	if [[ "$proc_partition_device" == "$partition" ]]; then
+	if [[ "$partition_device" == "$1" ]]; then
 		return 0 # Partição está montada.
 	else
 		return 1 # Partição não montada.
 	fi
 }
 
-_umount_partiton()
+_umount_partition()
 {
 	# Desmontar uma partição montada.
 	# $1 = partição a ser desmontada
-	# USE _umount_partiton "$1"
-	local partition="$1"
-	if ! _ismount "$partiton"; then
-		_yellow "$patition não está montada."
+	# USE _umount_partition "$1"
+	
+	if ! _ismount "$1"; then
+		_yellow "(_umount_partition): $1 não está montado."
 		return 0
 	fi
 
-	_msg "Desmontando: " "$partition"
-	if umount "$partiton"; then
-		_yellow "$patition desmontada com sucesso"
+	_yellow "Desmontando ... $1"
+	if umount "$1"; then
+		_yellow "$1 desmontado com sucesso"
 		return 0
 	else
-		_red "(_umount_partiton): Falha ao tentar desmontar: $partiton"
-		return 1
-	fi
-}
-
-_mount_partiton()
-{
-	# USE _mount_partiton partiton mount-point
-	local partition="$1"
-	local mount_point="$2"
-
-	if _ismount "$partiton"; then
-		_yellow "$patition já está montada."
-		return 0
-	fi
-
-	_msg "Montando $partition em $mount_point"
-	if mount "$partition" "$mount_ponint"; then
-		_yellow "$patition montada com sucesso em $mount_point"
-	else
-		_red "(_mount_partiton) erro: mount $partition $mount_point"
-		return 1
+		_red "(_umount_partition) Falha ao tentar desmontar ... $1"
 	fi
 	sleep 1
+	return 1
+}
+
+_mount_partition()
+{
+	# USE _mount_partition partiton mount-point
+	local mount_point="$2"
+
+	if _ismount "$1"; then
+		_yellow "$1 já está montado."
+		return 0
+	fi
+
+	printf "${CYellow}Montando $1 em ... $mount_point${CReset} "
+	if mount "$1" "$mount_ponint"; then
+		_green "OK"
+		return 0
+	else
+		_red "FALHA"
+		_red "linha de comando ... mount $1 $mount_point"
+	fi
+	sleep 1
+	return 1
 }
 
 _FORMAT_FAT()
@@ -392,7 +415,7 @@ _FORMAT_FAT()
 
 	# Desmontar a partição a ser formatada caso esteja montada.
 	if _ismount "$1"; then 
-		_umount_partiton "$1" || return 1
+		_umount_partition "$1" || return 1
 	fi
 	_yellow "Executando ... mkfs.vfat -F32 $1"
 	mkfs.vfat -F32 "$1"
@@ -415,9 +438,8 @@ _FORMAT_EXT4()
 
 	# Desmontar caso esteja montado
 	if _ismount "$device"; then 
-		_umount_partiton "$device" || return 1
+		_umount_partition "$device" || return 1
 	fi
-
 
 	if [[ "$label" ]]; then
 		_yellow "Executando ... mkfs.ext4 -L $label $device"
@@ -428,7 +450,6 @@ _FORMAT_EXT4()
 	fi
 	return 0
 }
-
 
 _configure_partition_efi()
 {
@@ -443,7 +464,7 @@ _configure_partition_efi()
 		mkdir -p "/mnt/boot/efi"
 	fi
 	
-	_mount_partiton "${DiskInfoTarget[partition_efi]}" "/mnt/boot/efi" || return 1 
+	_mount_partition "${DiskInfoTarget[partition_efi]}" "/mnt/boot/efi" || return 1 
 	return 0
 }
 
@@ -458,7 +479,7 @@ _configure_partition_boot()
 		_yellow "Criando o diretório ... /mnt/boot"
 		mkdir -p /mnt/boot
 	fi
-	_mount_partiton "${DiskInfoTarget[partition_boot]}" '/mnt/boot' || return 1
+	_mount_partition "${DiskInfoTarget[partition_boot]}" '/mnt/boot' || return 1
 	return 0
 }
 
@@ -473,7 +494,7 @@ _configure_partition_home()
 		_yellow "Criando o diretório ... /mnt/boot"
 		mkdir -p /mnt/home
 	fi
-	_mount_partiton "${DiskInfoTarget[partition_home]}" '/mnt/home' || return 1
+	_mount_partition "${DiskInfoTarget[partition_home]}" '/mnt/home' || return 1
 	return 0
 }
 
@@ -487,7 +508,7 @@ _configure_base_system()
 
 	# Formatar a partição raiz para o ponto de montagem '/'. 
 	_FORMAT_EXT4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX' || return 1
-	_mount_partiton "${DiskInfoTarget[partition_root]}" '/mnt' || return 1
+	_mount_partition "${DiskInfoTarget[partition_root]}" '/mnt' || return 1
 	_configure_partition_home || return 1
 	_configure_partition_boot || return 1
 	_configure_partition_efi || return 1
@@ -555,7 +576,6 @@ _configure_pos_base()
 	pacman -Syy
 
 	for pkg in "${pkgs_cli_utils[@]}"; do
-		_msg "Instalando: $pkg"
 		_PACMAN "$pkg"
 	done
 
@@ -569,17 +589,14 @@ _install_grub()
 	# grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 	# grub-mkconfig -o /boot/grub/grub.cfg
 
-	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]]; then
-		_yellow "Instalando: grub os-prober efibootmgr"
+	if [[ "$TYPE_BOOT" == 'efi' ]]; then
 		_PACMAN grub os-prober efibootmgr || return 1
 	else
-		_yellow "Instalando: grub os-prober"
 		_PACMAN grub os-prober || return 1
 	fi
  
-
-	_yellow "Instalando grub em: ${DiskInfoTarget[instalation_disk]}"
-	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]]; then
+	_green "Instalando grub em ... ${DiskInfoTarget[instalation_disk]}"
+	if [[ "$TYPE_BOOT" == 'efi' ]]; then
 		grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck || return 1
 	else
 		grub-install "${DiskInfoTarget[instalation_disk]}" --target=i386-pc --bootloader-id=ArchLinux --recheck || return 1
@@ -605,13 +622,10 @@ _configure_systemctl()
 _install_gnome()
 {
 	for X in "${pks_cli_utils[@]}"; do
-		_msg "Instalando: $X"
 		_PACMAN "$X"
 	done
 
 	for c in "${pkgs_gnomeshell[@]}"; do
-		echo -e "$scpace_line"
-		_yellow "Instalando: $c"
 		_PACMAN "$c"
 	done
 
@@ -665,5 +679,4 @@ main()
 
 main "$@"
 
-echo -e "$CReset"
 

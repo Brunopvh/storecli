@@ -2765,7 +2765,8 @@ _virtualbox_extpack()
 
 _virtualbox_fedora()
 {
-	local requeriments_vb_fedora=(
+	# sudo dnf install make automake gcc gcc-c++ kernel-devel
+	local requeriments_virtualbox_fedora=(
 		'libgomp' 
 		'glibc-headers' 
 		'glibc-devel' 
@@ -2776,11 +2777,12 @@ _virtualbox_fedora()
 		'kernel-devel' 
 		'binutils' 
 		'gcc' 
+		'automake'
 		'make' 
 		'patch'
 	)
 
-	__pkg__ "${requeriments_vb_fedora[@]}"
+	__pkg__ "${requeriments_virtualbox_fedora[@]}"
 	__pkg__ $(rpm -qa kernel | sort -V | tail -n 1) 
 	__pkg__ kernel-devel-$(uname -r)
 

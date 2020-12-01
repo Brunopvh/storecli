@@ -11,20 +11,24 @@ _loop_pid()
 	local array_chars=('\' '|' '/' '-')
 	local num_char='0'
 	local Pid="$1"
+	local Time='0'
 
 	while true; do
-		if [[ $(ps aux | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
+		ALL_PROCS=$(ps aux)
+		if [[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]]; then 
 			break
 		fi
 
-		Char="${array_chars[$num_char]}"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar $(date +%H:%M:%S) [${Char}]\r"
-		sleep 0.2
+		Char="${array_chars[$num_char]}"
+		SecondTime="$(($Time / 4))"		
+		echo -ne "Aguardando processo com pid [$Pid] finalizar ${SecondTime}s [${Char}]\r" # $(date +%H:%M:%S)
+		sleep 0.25
 		
 		num_char="$(($num_char+1))"
+		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} $(date +%H:%M:%S) [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} ${SecondTime}s [${Char}]"	
 }
 
 
@@ -90,7 +94,7 @@ _DPKG()
 		sleep 0.2
 	done
 
-	_print "Executando ... sudo dpkg $@"
+	_msg "Executando ... sudo dpkg $@"
 	if sudo dpkg "$@"; then
 		return 0
 	else
@@ -132,13 +136,10 @@ _APT()
 		sleep 0.2
 	done
 
-	# [[ ! -z $Pid_Apt_Install ]] && _loop_pid "$Pid_Apt_Install"
-	# [[ ! -z $Pid_Apt_Systemd ]] && _loop_pid "$Pid_Apt_Systemd"
-	# [[ ! -z $Pid_Dpkg_Install ]] && _loop_pid "$Pid_Dpkg_Install"
 	[[ -f '/var/lib/dpkg/lock-frontend' ]] && sudo rm -rf '/var/lib/dpkg/lock-frontend'
 	[[ -f '/var/cache/apt/archives/lock' ]] && sudo rm -rf '/var/cache/apt/archives/lock'
 
-	_print "Executando ... sudo apt $@"
+	_msg "Executando ... sudo apt $@"
 	if sudo apt "$@"; then
 		return 0
 	else
@@ -192,7 +193,7 @@ _RPM()
 
 _DNF()
 {
-	_print "Executando ... sudo dnf $@"
+	_msg "Executando ... sudo dnf $@"
 	if sudo dnf "$@"; then
 		return 0
 	else

@@ -1,6 +1,20 @@
 #!/usr/bin/env bash
 #
 
+[[ ! -d "$DirTemp" ]] && DirTemp=$(mktemp --directory)
+[[ ! -d "$path_libs" ]] && path_libs=$(pwd)
+[[ ! -f "$path_libs/print_text.sh" ]] && {
+	printf '%s\n' "ERRO lib_storecli.sh ... Biblioteca/Módulo print_text.sh não encontrado."
+	printf '%s\n' "exporte a variável $path_libs com o diretório contendo o(s) módulo(s) para libs."
+	sleep 0.5
+	exit 1
+}
+
+[[ -z "$columns" ]] && {
+	source "$path_libs"/print_text.sh || exit 1
+
+}
+
 os_type=''
 os_id=''
 os_release=''
@@ -55,7 +69,7 @@ _YESNO()
 {
 	# Será necessário indagar o usuário repetidas vezes durante a execução
 	# do programa, em que a resposta deve ser do tipo SIM ou NÃO (s/n)
-	# esta função é para automatizar esta indagação.
+	# esta função automatiza as indagações.
 	#
 	#   se teclar "s" -----------------> retornar 0  
 	#   se teclar "n" ou nada ---------> retornar 1.
@@ -67,22 +81,22 @@ _YESNO()
 	# aceitando todas as indagações.
 	[[ "$AssumeYes" == 'True' ]] && return 0
 		
-	_println "$@ [${CYellow}s${CReset}/${CRed}n${CReset}]?: "
+	printf "$@ ${CYellow}s${CReset}/${CRed}N${CReset}?: "
 	read -t 15 -n 1 sn
 	echo ' '
 
 	if [[ "${sn,,}" == 's' ]]; then
 		return 0
 	else
-		_green "${CYellow}A${CReset}bortando"
+		printf "${CRed}Abortando${CReset}\n"
 		return 1
 	fi
 }
 
 _show_info()
 {
-	# Função para exibir mensagens padrão, como erro generico durante a instalação de um 
-	# programa ou um mensagem generica de sucesso.
+	# Função para exibir mensagens padrão, como por exemplo erros comuns 
+	# durante a instalação de um programa ou um mensagem genérica de sucesso.
 	[[ "$silent" == 'True' ]] && return 0
 	case "$1" in
 		AddFileDestktop) _green "Criando arquivo (.desktop)";;
@@ -178,14 +192,14 @@ _list_applications()
 			Desenvolvimento)
 					printf "%s\n" "  Desenvolvimento: "
 					for APP in "${programs_development[@]}"; do
-						printf "%s\n" "      $APP"
+						printf "%s\n" "     $APP"
 					done
 					printf "\n"
 					;;
 			Escritorio)
 					printf "%s\n" "  Escritorio: "
 					for APP in "${programs_office[@]}"; do
-						printf "%s\n" "      $APP"
+						printf "%5s%s\n" " " "$APP"
 					done
 					printf "\n"
 					;;
@@ -250,7 +264,7 @@ _list_applications()
 
 _isroot()
 {
-	printf " + Autênticação necessária para [$USER]: \n"
+	printf " + Autênticação necessária para ${CYellow}${USER}${CReset}: \n"
 	if [[ $(sudo id -u) == '0' ]]; then
 		return 0	
 	else
@@ -263,11 +277,11 @@ _isroot()
 __sudo__()
 {
 	# Função para executar comandos com o "sudo" e retornar '0' ou '1'.
-	_print "${CYellow}E${CReset}xecutando ... sudo $@"
+	echo -e "${CYellow}E${CReset}xecutando ... sudo $@"
 	if sudo "$@"; then
 		return 0
 	else
-		_red "Falha: sudo $@"
+		_red "Falha ... sudo $@"
 		return 1
 	fi
 }
@@ -285,10 +299,9 @@ __rmdir__()
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# o comando de remoção será com 'sudo'.
 	cd "$DirTemp"
-	_print "Entrando no diretório ... $DirTemp"
-	
-	while [[ $1 ]]; do
-		if ls "$1" 1> /dev/null 2>&1; then
+	while [[ $1 ]]; do		
+		cd $(dirname "$1")
+		if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -L "$1" ]]; then
 			_yellow "Removendo ... $1"; sleep 0.04
 			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
 		else
@@ -308,14 +321,13 @@ _clear_temp_dirs()
 
 __gpg__()
 {
-	_print "Executando gpg $@"
-	if gpg "$@" 1> "$OutputDevice" 2>&1; then  
+	_println "Verificando integridade ... "
+	gpg "$@" 1> "$OutputDevice" 2>&1
+	if [[ $? == '0' ]]; then  
 		_syellow "OK"
 	else
 		_sred "FALHA"
-		for X in "${@}"; do
-			[[ -f "$X" ]] && __rmdir__ "$X"
-		done
+		sleep 1
 		return 1
 	fi
 	return 0
@@ -329,14 +341,17 @@ gpg_import()
 	# EX:
 	#   gpg_import url
 	#   gpg_import file
-
+	local TempFileAsc=$(mktemp)
+	
 	if [[ -z $1 ]]; then
 		_red "(gpg_import): opção incorreta detectada. Use gpg_import <file> | gpg_import <url>"
 	fi
 
 	if [[ -f "$1" ]]; then
-		_print "Importando apartir do arquivo ... $1"
-		if ! gpg --import "$1"; then
+		_println "Importando apartir do arquivo ... $1"
+		if gpg --import "$1" 1> /dev/null 2>&1; then
+			_syellow "OK"
+		else
 			_sred "FALHA"
 			return 1
 		fi
@@ -347,45 +362,44 @@ gpg_import()
 			return 1
 		fi
 		
-		_println "Importando key apartir do url ... $1 "
-		if is_executable curl && curl -s "$1" | gpg --import 1> /dev/null 2>&1; then
-			echo "OK"
-			return 0
-		elif is_executable wget && wget -q -O- "$1" | gpg --import 1> /dev/null 2>&1; then
-			echo "OK"
-			return 0
+		_println "Importando key apartir da url ... $1 "
+		curl -sSL "$1" -o "$TempFileAsc"		
+		if gpg --import "$TempFileAsc" 1> /dev/null 2>&1; then
+			_syellow "OK"
 		else
 			_sred "FALHA"
 			return 1
 		fi
 	fi
-	return 1
 }
 
 get_html()
 {
-
-	if ! is_executable curl; then
-		_sred "Esta função precisa da ferramenta 'curl' para prosseguir."
-		return 1
-	fi
-
 	# Verificar se $1 e do tipo url.
 	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
-		_red "(gpg_import): url inválida"
+		_red "(get_html): url inválida"
 		return 1
 	fi
 
-	echo ' ' > "$HtmlTemporaryFile"
-	_yellow "Executando ... curl -sSL $1"
+	rm -rf "$HtmlTemporaryFile"
+	cd "$DirTemp"
+	printf "Conectando ... $1 "
 	
-	if curl -sSL "$1" -o "$HtmlTemporaryFile"; then
-		_yellow "Html salvo em ... $HtmlTemporaryFile"
+	if is_executable aria2c; then
+		aria2c "$1" -d "$DirTemp" -o "Temp.html" 1> /dev/null
+	elif is_executable wget; then 
+		wget -q "$1" -O "$HtmlTemporaryFile"
+	elif is_executable curl; then 
+		curl -sSL "$1" -o "$HtmlTemporaryFile"
+	fi
+
+	if [[ $? == '0' ]]; then
+		printf 'OK\n'
 		return 0
 	else
-		_red "FALHA"
+		_sred "FALHA"
 		return 1
-	fi	
+	fi
 }
 
 
@@ -408,8 +422,10 @@ __shasum__()
 	# Calucular o tamanho do arquivo
 	len_file=$(du -hs $1 | awk '{print $1}')
 
-	_print "Gerando hash do arquivo ... $1 $len_file "
+	_print "Gerando hash do arquivo ... $1 $len_file"
 	hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
+	_print "$2 => HASH original"
+	_print "$hash_file => HASH local"
 	_println "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
 		_syellow 'OK'
@@ -439,11 +455,12 @@ __download__()
 	
 	_yellow "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
-	_blue "Baixando ... $2"
 	_blue "Conectando ... $1"
 
 	while true; do
-		if is_executable curl; then
+		if is_executable aria2c; then
+			aria2c -c "$url" -d "$(dirname $path_file)" -o "$(basename $path_file)" && break
+		elif is_executable curl; then
 			curl -C - -S -L -o "$path_file" "$url" && break
 		elif is_executable wget; then
 			wget -c "$url" -O "$path_file" && break
@@ -453,7 +470,9 @@ __download__()
 		fi
 
 		_red "Falha no download"
+		sleep 0.2
 		if _YESNO "Deseja tentar baixar novamente"; then
+			printf "Retomando o download\n"
 			continue
 		else
 			[[ -f "$path_file" ]] && __rmdir__ "$path_file"
@@ -497,11 +516,41 @@ _gitclone()
 	return 0
 }
 
+_show_loop_procs()
+{
+	# Esta função serve para executar um loop enquanto um determinado processo
+	# do sistema está em execução, por exemplo um outro processo de instalação
+	# de pacotes, como o "apt install" ou "pacman install" por exemplo, o pid
+	# deve ser passado como argumento $1 da função. Enquanto esse processo existir
+	# o loop ira bloquar a execução deste script, que será retomada assim que o
+	# processo informado for encerrado.
+	local array_chars=('\' '|' '/' '-')
+	local num_char='0'
+	local Pid="$1"
+	local MensageText="$2"
+	local Time='0'
+
+	while true; do
+		ALL_PROCS=$(ps aux)
+		[[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]] && break
+		
+		Char="${array_chars[$num_char]}"		
+		echo -ne "$MensageText [${Char}]\r" # $(date +%H:%M:%S)
+		sleep 0.12
+		
+		num_char="$(($num_char+1))"
+		Time="$(($Time+1))"
+		[[ "$num_char" == '4' ]] && num_char='0'
+	done
+	echo -e "$MensageText ${CGreen}[${Char}]${CReset}"	
+}
+
+
 _unpack()
 {
 	# Obrigatório informar um arquivo no argumento $1.
 	if [[ ! -f "$1" ]]; then
-		_red "(_unpack) nenhum arquivo informado como argumento"
+		printf "\033[0;31m (_unpack): nenhum arquivo informado como argumento\033[m\n"
 		return 1
 	fi
 
@@ -509,62 +558,67 @@ _unpack()
 	if [[ -d "$2" ]]; then 
 		DirUnpack="$2"
 	elif [[ -z "$DirUnpack" ]]; then
-		_red "(_unpack): o diretório de descompressão e 'nulo'."
-		return 1
+		DirUnpack=$(pwd)
 	fi
 
-	if [[ ! -d "$DirUnpack" ]]; then
-		_yellow "(_unpack): criando o diretório ... $DirUnpack"
-		mkdir -p "$DirUnpack"
+	printf "Entrando no diretório ... $DirUnpack\n"
+	cd "$DirUnpack"
+
+	if [[ ! -w "$DirUnpack" ]]; then
+		printf "\033[0;31m(_unpack): Você não tem permissão de escrita [-w] em ... $DirUnpack\n"
+		return 1
 	fi
 	
-	_yellow "Entrando no diretório ... $DirUnpack"
-	cd "$DirUnpack"
 	__rmdir__ $(ls)
 	path_file="$1"
 
 	# Detectar a extensão do arquivo.
 	if [[ "${path_file: -6}" == 'tar.gz' ]]; then    # tar.gz - 6 ultimos caracteres.
-		type_file='tar.gz'
+		type_file='TarGz'
 	elif [[ "${path_file: -7}" == 'tar.bz2' ]]; then # tar.bz2 - 7 ultimos carcteres.
-		type_file='tar.bz2'
+		type_file='TarBz2'
 	elif [[ "${path_file: -6}" == 'tar.xz' ]]; then  # tar.xz
-		type_file='tar.xz'
+		type_file='TarXz'
 	elif [[ "${path_file: -4}" == '.zip' ]]; then    # .zip
-		type_file='zip'
+		type_file='Zip'
 	elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
-		type_file='deb'
+		type_file='DebPkg'
 	else
-		_red "(_unpack) arquivo não suportado: $path_file"
-		__rmdir__ "$path_file"
+		printf "\033[0;31m(_unpack): FALHA arquivo não suportado ... $path_file\033[m\n"
 		return 1
 	fi
 
 	# Calcular o tamanho do arquivo
 	local len_file=$(du -hs $path_file | awk '{print $1}')
-	_println "Descomprimindo $len_file ... $path_file ... $(date +%H:%M:%S) "
 	
-	# Descomprimir.	
-	case "$type_file" in
-		'tar.gz') tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		'tar.bz2') tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		'tar.xz') tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1;;
-		zip) unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1;;
-		deb) ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1;;
-		*) return 1;;
-	esac
+	# Descomprimir de acordo com cada extensão de arquivo.	
+	if [[ "$type_file" == 'TarGz' ]]; then
+		tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
+	elif [[ "$type_file" == 'TarBz2' ]]; then
+		tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
+	elif [[ "$type_file" == 'TarXz' ]]; then
+		tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
+	elif [[ "$type_file" == 'Zip' ]]; then
+		unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1 &
+	elif [[ "$type_file" == 'DebPkg' ]]; then
+		
+		if [[ -f /etc/debian_version ]]; then    # Descompressão em sistemas DEBIAN
+			ar -x "$path_file" 1> /dev/null 2>&1  &
+		else                                     # Descompressão em outros sistemas.
+			ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1 &
+		fi
+	fi	
 
-	if [[ "$?" == '0' ]]; then
-		_syellow "OK"
-		return 0
-	else
-		_sred "FALHA"
-		_red "(_unpack) erro: $path_file"
+	# echo -e "$(date +%H:%M:%S)"
+	_show_loop_procs "$!" "Descompactando ... $(basename $path_file) em ... $DirUnpack"
+
+	# Verificar se a extração foi concluida com sucesso.
+	if [[ "$?" != '0' ]]; then
+		printf "\033[0;31m(_unpack): FALHA na descompressão do arquivo $path_file\033[m\n"
 		__rmdir__ "$path_file"
 		return 1
 	fi
 }
-
 
 _pkg_manager_storecli()
 {
@@ -646,7 +700,9 @@ _pkg_manager_storecli()
 			Sistema) _System_All;;
 			bluetooth) _bluetooth;;
 			bspwm) _bspwm;;
+			cpu-x) _cpux;;
 			compactadores) _compactadores;;
+			google-earth) _google_earth;;
 			gparted) _gparted;;
 			peazip) _peazip;;
 			refind) _refind;;
