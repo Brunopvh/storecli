@@ -174,7 +174,7 @@ _install()
 	mv * "$destination_storecli"/ || return 1
 	
 	if [ $INSTALL_DEV = TRUE ]; then
-		printf "Instalando versão de desenvolvimento"
+		printf "Versão de desenvolvimento "
 		ln -sf "$destination_storecli"/dev/storecli-dev/storecli.sh "$destination_link_storecli" || return 1
 	else
 		ln -sf "$destination_storecli"/storecli.sh "$destination_link_storecli" || return 1
