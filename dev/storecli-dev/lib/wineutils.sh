@@ -293,11 +293,6 @@ _install_wine_archlinux()
 
 _install_script_winetricks()
 {
-	if is_executable winetricks; then
-		_yellow 'winetricks já está instalado'
-		return 0
-	fi
-
 	if ! is_executable wine; then
 		_red "(_install_script_winetricks): necessário instalar o 'wine' antes de prosseguir."
 		return 1
@@ -309,7 +304,7 @@ _install_script_winetricks()
 	SCRIPT_WINETRICKS="/usr/local/bin/winetricks"
 
 	# Winetricks requeriments
-	requeriments_winetricks=(zenity cabextract unrar unzip wget)
+	requeriments_winetricks=(zenity cabextract unzip aria2)
 	requeriments_winetricks_debian=(binutils fuseiso p7zip-full policykit-1 xz-utils)
 	requeriments_winetricks_suse=(binutils fuseiso p7zip polkit xdg-utils xz)
 
