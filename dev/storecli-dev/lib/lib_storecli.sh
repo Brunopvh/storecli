@@ -3,16 +3,8 @@
 
 [[ ! -d "$DirTemp" ]] && DirTemp=$(mktemp --directory)
 [[ ! -d "$path_libs" ]] && path_libs=$(pwd)
-[[ ! -f "$path_libs/print_text.sh" ]] && {
-	printf '%s\n' "ERRO lib_storecli.sh ... Biblioteca/Módulo print_text.sh não encontrado."
-	printf '%s\n' "exporte a variável $path_libs com o diretório contendo o(s) módulo(s) para libs."
-	sleep 1
-	exit 1
-}
-
 [[ -z "$columns" ]] && {
 	source "$path_libs"/print_text.sh || exit 1
-
 }
 
 os_type=''
@@ -85,175 +77,6 @@ _YESNO()
 	fi
 }
 
-_show_info()
-{
-	# Função para exibir mensagens padrão, como por exemplo erros comuns 
-	# durante a instalação de um programa ou um mensagem genérica de sucesso.
-	[[ "$silent" == 'True' ]] && return 0
-	case "$1" in
-		AddFileDestktop) _green "Criando arquivo (.desktop)";;
-		DownloadOnly) _green "Feito somente download";;
-		PkgInstalled) _green "($2) está instalado";;
-		SuccessInstalation) _green "($2) instalado com sucesso";;
-		InstalationFailed) _red "Falha ao tentar instalar ($2)";;
-		ProgramNotFound) _red "Programa indisponível para o seu sistema: $2";;
-	esac
-}
-
-_list_applications()
-{
-	# Função para listar os programas disponíveis para instalação no sistema
-	# também lista programas de uma categoria especifica, bastando informar essa
-	# categoria como argumento.
-	# EXEMPLO:
-	#   storecli -l Acessorios  -> Lista somente a categoria acessorios
-
-	if [[ -z $1 ]]; then
-		printf "%s\n" "  Acessorios: " # Acessorios
-		for APP in "${programs_acessory[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Desenvolvimento: " # Desenvolvimento
-		for APP in "${programs_development[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Escritorio: " # Escritório
-		for APP in "${programs_office[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Navegadores: " # Navegadores
-		for APP in "${programs_browser[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Internet: " # Internt
-		for APP in "${programs_internet[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Midia: " # Midia
-		for APP in "${programs_midia[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Sistema: " # Sistema
-		for APP in "${programs_system[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Preferencias: " # Preferências
-		for APP in "${programs_preferences[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Gnome Shell: " # Gnome Shell
-		for APP in "${programs_gnomeshell[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-
-		printf "\n"
-		printf "%s\n" "  Wine: " # Gnome Shell
-		for APP in "${programs_wine[@]}"; do
-			printf "%s\n" "      $APP"
-		done
-		printf "\n"
-
-		return 0
-	fi
-
-	for arg in "${@}"; do
-		case "$arg" in
-			Acessorios)
-					printf "%s\n" "  Acessorios: "
-					for APP in "${programs_acessory[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Desenvolvimento)
-					printf "%s\n" "  Desenvolvimento: "
-					for APP in "${programs_development[@]}"; do
-						printf "%s\n" "     $APP"
-					done
-					printf "\n"
-					;;
-			Escritorio)
-					printf "%s\n" "  Escritorio: "
-					for APP in "${programs_office[@]}"; do
-						printf "%5s%s\n" " " "$APP"
-					done
-					printf "\n"
-					;;
-			Navegadores)
-					printf "%s\n" "  Navegadores: "
-					for APP in "${programs_browser[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Internet)
-					printf "%s\n" "  Internet: "
-					for APP in "${programs_internet[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Midia)
-					printf "%s\n" "  Midia: "
-					for APP in "${programs_midia[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Sistema)
-					printf "%s\n" "  Sistema: "
-					for APP in "${programs_system[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Preferencias)
-					printf "%s\n" "  Preferencias: "
-					for APP in "${programs_preferences[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			GnomeShell)
-					printf "%s\n" "  Gnome Shell: "
-					for APP in "${programs_gnomeshell[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			Wine)
-					printf "%s\n" "  Wine: "
-					for APP in "${programs_wine[@]}"; do
-						printf "%s\n" "      $APP"
-					done
-					printf "\n"
-					;;
-			*)
-				printf "\n"
-				_red "(_list_applications) categoria inválida: $arg"
-				printf "\n"
-					;;
-		esac
-		shift
-	done	
-}
-
 _isroot()
 {
 	printf " + Autênticação necessária para ${CYellow}${USER}${CReset}: \n"
@@ -285,16 +108,16 @@ __rmdir__()
 	# Use:
 	#     __rmdir__ <diretório> ou
 	#     __rmdir__ <arquivo>
-	[[ -z $1 ]] && return 1
-
 	# Se o arquivo/diretório não for removido por falta de privilegio 'root'
 	# o comando de remoção será com 'sudo'.
 	
+	[[ -z $1 ]] && return 1
 	while [[ $1 ]]; do		
 		cd $(dirname "$1")
 		if [[ -f "$1" ]] || [[ -d "$1" ]] || [[ -L "$1" ]]; then
-			_yellow "Removendo ... $1"; sleep 0.08
+			printf "Removendo ... $1\n"
 			rm -rf "$1" 2> /dev/null || sudo rm -rf "$1"
+			sleep 0.08
 		else
 			_red "Não encontrado ... $1"
 		fi
@@ -314,6 +137,21 @@ __gpg__()
 {
 	printf "Verificando integridade ... "
 	gpg "$@" 1> /dev/null 2>&1
+	if [[ $? == '0' ]]; then  
+		_syellow "OK"
+	else
+		_sred "FALHA"
+		sleep 1
+		return 1
+	fi
+	return 0
+}
+
+
+gpg_verify()
+{
+	echo -ne "Verificando integridade do arquivo ... $(basename $2) "
+	gpg --verify "$1" "$2" 1> /dev/null 2>&1
 	if [[ $? == '0' ]]; then  
 		_syellow "OK"
 	else
@@ -356,7 +194,6 @@ gpg_import()
 		local TempDirAsc=$(mktemp --directory)
 		local TempFileAsc='file.key'
 		
-		printf "Salvando arquivo ... $TempDirAsc/$TempFileAsc\n"
 		printf "Importando key apartir da url ... $1 "
 		
 		if [[ -x $(command -v aria2c 2> /dev/null) ]]; then
@@ -413,6 +250,41 @@ get_html()
 }
 
 
+_get_html_page()
+{
+	# $1 = url
+	# $2 = filtro a ser aplicado no contéudo html.
+	# 
+	# EX: _get_html_page URL filter='name-file.tar.gz'
+	#     _get_html_page URL
+
+	# Verificar se $1 e do tipo url.
+	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
+		_red "(get_html): url inválida"
+		return 1
+	fi
+
+	local temp_dir_html=$(mktemp --directory)
+	local temp_file_html='temp.html'
+	
+	if is_executable aria2c; then
+		aria2c "$1" -d "$temp_dir_html" -o "$temp_file_html" 1> /dev/null
+	elif is_executable wget; then 
+		wget -q "$1" -O "$temp_dir_html/$temp_file_html"
+	elif is_executable curl; then 
+		curl -sSL "$1" -o "$temp_dir_html/$temp_file_html"
+	fi
+
+	# Filtrar ou exibir todo o contéudo da página
+	if [[ ! -z $2 ]]; then
+		Find=$(echo "$2" | sed 's/^find=//g')
+		grep -m 1 "$Find" "$temp_dir_html/$temp_file_html"
+	else
+		cat "$temp_dir_html/$temp_file_html"
+	fi
+	rm -rf "$temp_dir_html" 2> /dev/null
+}
+
 __shasum__()
 {
 	# Esta função compara a hash de um arquivo local no disco com
@@ -432,11 +304,11 @@ __shasum__()
 	# Calucular o tamanho do arquivo
 	len_file=$(du -hs $1 | awk '{print $1}')
 
-	_print "Gerando hash do arquivo ... $1 $len_file"
+	printf "Gerando hash do arquivo ... $1 $len_file\n"
 	hash_file=$(sha256sum "$1" | cut -d ' ' -f 1)
-	_print "$2 => HASH original"
-	_print "$hash_file => HASH local"
-	_println "Comparando valores "
+	printf "%-15s%65s\n" "HASH original" "$2"
+	printf "%-15s%65s\n" "HASH local" "$hash_file"
+	printf "Comparando valores "
 	if [[ "$hash_file" == "$2" ]]; then
 		_syellow 'OK'
 		return 0
@@ -506,11 +378,11 @@ _gitclone()
 		__pkg__ git || return 1
 	fi
 
-	_green "Entrando no diretório ... $DirGitclone" 
+	_print "Entrando no diretório ... $DirGitclone" 
 	cd "$DirGitclone"
 	dir_repo=$(basename "$1" | sed 's/.git//g')
 	if [[ -d "$DirGitclone/$dir_repo" ]]; then
-		_yellow "Encontrado: $DirGitclone/$dir_repo"
+		_yellow "Diretório encontrado ... $DirGitclone/$dir_repo"
 		if _YESNO "Deseja remover o diretório clonado anteriormente"; then
 			__rmdir__ "$dir_repo"
 		else
@@ -538,21 +410,19 @@ _show_loop_procs()
 	local num_char='0'
 	local Pid="$1"
 	local MensageText="$2"
-	local Time='0'
-
+	
 	while true; do
 		ALL_PROCS=$(ps aux)
 		[[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]] && break
 		
 		Char="${array_chars[$num_char]}"		
-		echo -ne "$MensageText [${Char}]\r" # $(date +%H:%M:%S)
+		echo -ne "$MensageText ${CYellow}[${Char}]${CReset}\r" # $(date +%H:%M:%S)
 		sleep 0.12
 		
 		num_char="$(($num_char+1))"
-		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "$MensageText ${CGreen}[${Char}]${CReset}"	
+	echo -e "$MensageText [${Char}] OK"	
 }
 
 
@@ -628,122 +498,4 @@ _unpack()
 		__rmdir__ "$path_file"
 		return 1
 	fi
-}
-
-_pkg_manager_storecli()
-{
-	# Instalação dos programas, esta função recebe como parâmetro os pacotes a serem instalados
-	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
-	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
-	if [[ -z $1 ]]; then
-		_list_applications
-		return 1
-	fi
-
-	echo -e ".... $(date +%H:%M:%S) $____app_name____ V$__version__ ...."
-	_clear_temp_dirs
-
-	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
-	case "$os_codename" in
-		tina|tricia) export os_codename='bionic';;
-	esac
-
-	while [[ $1 ]]; do
-		[[ -z $1 ]] && return 0 
-		case "$1" in 
-			Acessorios) _Acessory_All;;
-			etcher) _etcher;;
-			gnome-disk) _gnome_disk;;
-			plank) _plank;;
-			veracrypt) _veracrypt;;
-			woeusb) _woeusb;;
-
-			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
-			'android-studio') _android_studio;;
-			codeblocks) _codeblocks;;
-			java) _java;;
-			idea) _idea_ic;;
-			pycharm) _pycharm;;
-			sublime-text) _sublime_text;;
-			vim) _vim;;
-			vscode) _vscode;;
-
-			Escritorio) _Office_All;;
-			atril) _atril;;
-			'fontes-ms') _fontes_microsoft;;
-			libreoffice) _libreoffice;;
-			libreoffice-appimage) _libreoffice_appimage;;
-
-			Navegadores) _Browser_All;;
-			chromium) _chromium;;
-			edge) _edge;;
-			firefox) _firefox;;
-			'google-chrome') _google_chrome;;
-			'opera-stable') _opera_stable;;
-			torbrowser) _torbrowser;;
-
-			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
-			clipgrab) _clipgrab_appimage;;
-			megasync) _megasync;;
-			proxychains) _proxychains;;
-			qbittorrent) _qbittorrent;;
-			skype) _skype;;
-			teamviewer) _teamviewer;;
-			telegram) _telegram;;
-			tixati) _tixati;;
-			uget) _uget;;
-			youtube-dl) _youtube_dl;;
-			youtube-dl-gui) _youtube_dlgui;;
-		
-			Midia) _Midia_All;;
-			blender) _blender;;
-			celluloid) _celluloid;;
-			cinema) _cinema;;
-			codecs) _codecs;;
-			'gnome-mpv') _gnome_mpv;;
-			smplayer) _smplayer;;
-			spotify) _spotify;;
-			parole) _parole;;
-			totem) _totem;;
-			vlc) _vlc;;
-
-			Sistema) _System_All;;
-			bluetooth) _bluetooth;;
-			bspwm) _bspwm;;
-			cpu-x) _cpux;;
-			compactadores) _compactadores;;
-			google-earth) _google_earth;;
-			gparted) _gparted;;
-			peazip) _peazip;;
-			refind) _refind;;
-			stacer) _stacer;;
-			virtualbox) _virtualbox;;
-
-			ohmybash) _ohmybash;;			
-			ohmyzsh) _ohmyzsh;;
-			papirus) _papirus;;
-			sierra) _sierra;;
-		
-			'dash-to-dock') _dashtodock;;
-			'drive-menu') _drive_menu;;
-			'gnome-backgrounds') _gnome_backgrounds;;
-			'gnome-tweaks') _gnome_tweaks;;
-			'topicons-plus') _topicons_plus;;
-			
-			Wine) _Wine_All;;
-			wine) _install_wine;;
-			winetricks) _install_script_winetricks;;
-			epsxe-win) _epsxe_windows;;
-			python37-windows-portable) _python37_windows32_portable;;
-			python37-windows) _python37_windows32;;
-			youtube-dl-gui-windows) _youtube_dlgui_windows;;
-			install) ;;
-			-y|--yes) ;;
-			-d|--downloadonly) ;;
-			-I|--ignore-cli) ;;
-			*) _red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
-		esac
-		shift
-	done
-	return "$?"
 }

@@ -3,7 +3,7 @@
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
 #
-__version__='2020-11-14'
+__version__='2020-12-01'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -172,7 +172,14 @@ _install()
 	mv $(ls -d storecli*) storecli 
 	cd storecli
 	mv * "$destination_storecli"/ || return 1
-	ln -sf "$destination_storecli"/storecli.sh "$destination_link_storecli" || return 1
+	
+	if [ $INSTALL_DEV = TRUE ]; then
+		printf "Instalando versão de desenvolvimento"
+		ln -sf "$destination_storecli"/dev/storecli-dev/storecli.sh "$destination_link_storecli" || return 1
+	else
+		ln -sf "$destination_storecli"/storecli.sh "$destination_link_storecli" || return 1
+	fi
+	
 	chmod -R a+x "$destination_storecli"
 	chmod a+x "$destination_link_storecli" 
 	

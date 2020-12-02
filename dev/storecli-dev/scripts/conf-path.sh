@@ -62,16 +62,16 @@ backup()
 	if [ -f "$bash_config" ]; then
 		if [ ! -f ~/.bashrc.backup ]; then
 			printf "\033[5;33mCriando backup do arquivo\033[m ..... ~/.bashrc => ~/.bashrc.backup\n"
-			cp -v ~/.bashrc ~/.bashrc.backup
-			sleep 1
+			cp -vn ~/.bashrc ~/.bashrc.backup
+			sleep 0.5
 		fi
 	fi
 
 	if [ -f "$zsh_config" ]; then
 		if [ ! -f ~/.zshrc.backup ]; then
 			printf "\033[5;33mCriando backup do arquivo\033[m ..... ~/.zshrc => ~/.zshrc.backup\n"
-			cp -v ~/.zshrc ~/.zshrc.backup
-			sleep 1
+			cp -vn ~/.zshrc ~/.zshrc.backup
+			sleep 0.5
 		fi
 	fi
 }

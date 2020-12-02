@@ -3,6 +3,22 @@
 
 github='https://github.com'
 
+
+_show_info()
+{
+	# Função para exibir mensagens padrão, como por exemplo erros comuns 
+	# durante a instalação de um programa ou um mensagem genérica de sucesso.
+	[[ "$silent" == 'True' ]] && return 0
+	case "$1" in
+		AddFileDestktop) _green "Criando arquivo (.desktop)";;
+		DownloadOnly) _green "Feito somente download";;
+		PkgInstalled) _green "($2) está instalado";;
+		SuccessInstalation) _green "($2) instalado com sucesso";;
+		InstalationFailed) _red "Falha ao tentar instalar ($2)";;
+		ProgramNotFound) _red "Programa indisponível para o seu sistema: $2";;
+	esac
+}
+
 _etcher_package_deb()
 {
 	# https://github.com/balena-io/etcher/releases
@@ -497,14 +513,15 @@ _idea_ic()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	__shasum__ "$path_file" "$idea_sha256" || return 1
 	_unpack "$path_file" || return 1
+	
 	cd "$DirUnpack" 
 	mv $(ls -d idea-*) idea-IC
-	_println "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
+	echo -e "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
 	mv idea-IC "${destinationFilesIdeaic[dir]}" || return 1
-	_syellow 'OK'
-	_print "Entrando no diretório ... ${destinationFilesIdeaic[dir]}"
-	cd "${destinationFilesIdeaic[dir]}"
-	cp -v ./bin/idea.png "${destinationFilesIdeaic[file_png]}"
+	printf 'OK\n'
+	echo -e "Entrando no diretório ... ${destinationFilesIdeaic[dir]}/bin"
+	cd "${destinationFilesIdeaic[dir]}/bin"
+	cp -vu idea.png "${destinationFilesIdeaic[file_png]}"
 
 	_print "Criando arquivo '.desktop'"
 	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
@@ -1960,10 +1977,8 @@ _tixati_tarfile()
 	# Já instalado.
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	# Salvar o html da pagina de download no arquivo html temporário padrão. 
-	# Ver a variável "HtmlTemporaryFile".
-	get_html 'https://www.tixati.com/download/linux.html' || return 1
-	local tixati_html=$(grep -m 1 'tixati.*64.*tar.gz' "$HtmlTemporaryFile")
+	# Baixar o html da página de download e filtrar pela ocorrência tixati.
+	local tixati_html=$(_get_html_page 'https://www.tixati.com/download/linux.html' find='tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
@@ -1979,7 +1994,7 @@ _tixati_tarfile()
 	gpg_import https://www.tixati.com/tixati.key || return 1
 
 	# verificar integridade com a fução __gpg__
-	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
+	gpg_verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
 	case "$os_id" in
