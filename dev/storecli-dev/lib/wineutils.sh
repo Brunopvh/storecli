@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # Variáveis globais para o wine.
-path_python3_portable="$HOME/.wine/drive_c/python37/python.exe"
+path_python3_portable=~/".wine/drive_c/python37/python.exe"
 
 
 _python37_windows32()
@@ -209,13 +209,9 @@ _epsxe_windows()
 _install_wine_ubuntu()
 {
 	# Instalação do wine no Ubuntu/Linuxmint.
-
-	_yellow "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
-	# Limpar arquivos temporarios.
 	_clear_temp_dirs
 
-	url_key_wine_stable='https://dl.winehq.org/wine-builds/winehq.key'
 	case "$os_codename" in
 		tricia|bionic) 
 			repo_wine_stable='deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main'
@@ -230,23 +226,12 @@ _install_wine_ubuntu()
 			return 1
 			;;
 	esac
-
-	_println "Adicionado key wine-stable " 
-	wget -q "$url_key_wine_stable" -O wine.key
-	sudo apt-key add wine.key
-
-	_println "Adicionado key libfaudio "
-	wget -q "$url_key_libfaudio" -O libfaudio.key
-	sudo apt-key add libfaudio.key
-
-	_print "Adicionado repositórios"
-	sudo add-apt-repository "$repo_wine_stable"
-	sudo add-apt-repository "$repo_libfaudio"
-
 	# Adicionar suporte a ARCH i386.
-	_yellow "Executando ... sudo dpkg --add-architecture i386"
 	_DPKG --add-architecture i386
-	_APT update
+	_apt_key_add 'https://dl.winehq.org/wine-builds/winehq.key'
+	_apt_key_add "$url_key_libfaudio"
+	_addrepo_in_sources_list "$repo_wine_stable" /etc/apt/sources.list.d/wine-stable.list
+	_addrepo_in_sources_list "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
 	__pkg__ 'libfaudio0:i386' || return 1
 
 	requeriments_wine_debian=(
@@ -264,7 +249,6 @@ _install_wine_ubuntu()
 _install_wine_debian()
 {
 	# Instalação do wine no Debian buster.
-	_yellow "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
 	_clear_temp_dirs
 
@@ -277,34 +261,18 @@ _install_wine_debian()
 			;;
 		*) _red "Intale o wine manualmente usado o 'apt'"; return 1;;
 	esac
-
-	_println "Adicionado key wine-stable "
-	if ! wget -q "$url_key_wine_stable" -O- | sudo apt-key add -; then
-		_sred "FALHA"
-		return 1
-	fi
-
-	_println "Adicionado key libfaudio "
-	if ! wget -q "$url_key_libfaudio" -O- | sudo apt-key add -; then
-		_sred "FALHA"
-		return 1
-	fi
-	
-	_print "Adicionado repositórios"
-	echo "$repo_wine_stable" | sudo tee /etc/apt/sources.list.d/wine.list
-	echo "$repo_libfaudio" |sudo tee /etc/apt/sources.list.d/libfaudio.list
-	
 	# Adicionar suporte a ARCH i386.
-	_print "Executando ... sudo dpkg --add-architecture i386"
 	_DPKG --add-architecture i386
-	_APT update
+	_apt_key_add "$url_key_wine_stable" || return 1
+	_apt_key_add "$url_key_libfaudio" || return 1
+	_addrepo_in_sources_list "$repo_wine_stable" /etc/apt/sources.list.d/wine.list
+	_addrepo_in_sources_list "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
 	__pkg__ 'libfaudio0:i386' || return 1
 
 	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
 	for APP in "${requeriments_wine_debian[@]}"; do
 		__pkg__ "$APP" || break
 	done
-
 }
 
 _install_wine_fedora()

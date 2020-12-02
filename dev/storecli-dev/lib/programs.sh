@@ -1503,8 +1503,7 @@ _megasync_ubuntu()
 	
 	local url_ubuntu_main='http://archive.ubuntu.com/ubuntu/pool/main'
 	local url_libraw16="$url_ubuntu_main/libr/libraw/libraw16_0.18.8-1ubuntu0.3_amd64.deb"
-	local mega_file_list="/etc/apt/sources.list.d/megasync.list"
-	path_libraw="$DirDownloads/$(basename $url_libraw16)" # Requerimento para ubutnu 19.10
+	path_libraw="$DirDownloads/$(basename $url_libraw16)" # Requerido para ubutnu 19.10
 
 	case "$os_codename" in
 		bionic|tricia) 
@@ -1529,7 +1528,7 @@ _megasync_ubuntu()
 	esac
 
 	_apt_key_add "$mega_url_key" || return 1
-	_addrepo_in_sources_list "$mega_repos_ubuntu" || return 1
+	_addrepo_in_sources_list "$mega_repos_ubuntu" /etc/apt/sources.list.d/megasync.list || return 1
 	__pkg__ 'libc-ares2' libmediainfo0v5 
 	__pkg__ megasync
 }

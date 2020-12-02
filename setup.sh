@@ -173,7 +173,7 @@ _install()
 	cd storecli
 	mv * "$destination_storecli"/ || return 1
 	
-	if [ $INSTALL_DEV = TRUE ]; then
+	if [ $INSTALL_DEV -eq 1 ]; then
 		printf "Versão de desenvolvimento "
 		ln -sf "$destination_storecli"/dev/storecli-dev/storecli.sh "$destination_link_storecli" || return 1
 	else

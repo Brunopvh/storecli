@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-11-14'
+VERSION='2020-12-02'
 # 
 # Uso:
 # $0 -t /dev/sdX -e /dev/sdaE -h /dev/sdaH -r /dev/sdaR -b /sdaB
@@ -640,6 +640,7 @@ _install_gnome()
 
 main()
 {
+	check_boot_type
 	if [[ ! -z $1 ]]; then
 		parse_disk_partitions || return 1
 		parse_table_disk || return 
