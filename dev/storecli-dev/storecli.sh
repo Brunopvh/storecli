@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_12_01'
+__version__='2020_12_02'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -187,7 +187,7 @@ SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"
 usage()
 {
 cat << EOF
-    Use: $__script__ -b|-c|-d|-I|-h|-l|-s|-v
+    Use: $__script__ -b|-c|-d|-I|-h|-l|-v
          $__script__ install <pacote>
          $__script__ remove <pacote>
 
@@ -582,7 +582,6 @@ main()
 			-y|--yes) export AssumeYes='True';;
 			-d|--downloadonly) export DownloadOnly='True';;
 			-I|--ignore-cli) export IgnoreCli='True';;
-			-s|--silent) export silent='True';;
 			-l) shift; _list_applications "$@"; return 0; break;;
 			-h|--help) usage; return 0; break;;
 			-u|--self-update) "$SCRIPT_STORECLI_INSTALLER"; return 0; break;;
@@ -627,7 +626,6 @@ main()
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			-s|--silent) ;;
 			*) _red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
 		esac
 		shift

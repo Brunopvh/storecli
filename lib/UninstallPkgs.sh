@@ -19,7 +19,11 @@ _uninstall_etcher()
 
 _uninstall_vscode()
 {
-	__rmdir__ "${destinationFilesVscode[@]}"
+	if [[ -f /etc/debian_version ]]; then
+		_APT remove code
+	else
+		__rmdir__ "${destinationFilesVscode[@]}"
+	fi
 }
 
 _uninstall_teamviewer()

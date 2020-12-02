@@ -81,8 +81,6 @@ fi
 
 print_line()
 {
-    [[ "$silent" == 'True' ]] && return 0
-    
     if [[ -z $1 ]]; then
 	    printf "%$(tput cols)s\n" | tr ' ' '-'
 	else
@@ -92,21 +90,17 @@ print_line()
 
 _println()
 {
-	# Imprimir mensagens com printf sem quebrar linhas.
-	[[ "$silent" == 'True' ]] && return 0
+	# Imprimir mensagens sem quebrar linhas.
 	echo -ne " + $@"
 }
 
 _print()
 {
-	# Imprimir texto com formatação e quebra de linha.
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e " + $@"
 }
 
 _msg()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	print_line
 	echo -e " $@"
 	print_line
@@ -114,57 +108,46 @@ _msg()
 
 _red()
 {
-	# Não imprimir nada se a opção -s|--silent estiver na linha de comando.
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CRed} ! ${CReset}$@"
 }
 
 _green()
 {
-	# Não imprimir nada se a opção -s|--silent estiver na linha de comando.
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CGreen} + ${CReset}$@"
 }
 
 _yellow()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CYellow} + ${CReset}$@"
 }
 
 _blue()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CBlue} + ${CReset}$@"
 }
 
 _white()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CWhite} + ${CReset}$@"
 }
 
 _sred()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CSRed}$@${CReset}"
 }
 
 _sgreen()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CSGreen}$@${CReset}"
 }
 
 _syellow()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CSYellow}$@${CReset}"
 }
 
 _sblue()
 {
-	[[ "$silent" == 'True' ]] && return 0
 	echo -e "${CSBlue}$@${CReset}"
 }
 

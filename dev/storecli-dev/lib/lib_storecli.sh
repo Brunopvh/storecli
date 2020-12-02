@@ -332,38 +332,57 @@ __download__()
 		return 0
 	fi
 
-	url="$1"
-	path_file="$2"
+	local url="$1"
+	local path_file="$2"
+	local count=3
 	
-	_yellow "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
+	[[ ! -z $path_file ]] && _blue "Salvando em ... $path_file"
 	_blue "Conectando ... $1"
 
 	while true; do
-		if is_executable aria2c; then
-			aria2c -c "$url" -d "$(dirname $path_file)" -o "$(basename $path_file)" && break
-		elif is_executable curl; then
-			curl -C - -S -L -o "$path_file" "$url" && break
-		elif is_executable wget; then
-			wget -c "$url" -O "$path_file" && break
+		if [[ ! -z $path_file ]]; then
+			if is_executable aria2c; then
+				aria2c -c "$url" -d "$(dirname $path_file)" -o "$(basename $path_file)" && break
+			elif is_executable curl; then
+				curl -C - -S -L -o "$path_file" "$url" && break
+			elif is_executable wget; then
+				wget -c "$url" -O "$path_file" && break
+			else
+				return 1
+				break
+			fi
 		else
-			return 1
-			break
+			if is_executable aria2c; then
+				aria2c -c "$url" -d "$DirDownloads" && break
+			elif is_executable curl; then
+				curl -C - -S -L -O "$url" && break
+			elif is_executable wget; then
+				wget -c "$url" && break
+			else
+				return 1
+				break
+			fi
 		fi
 
 		_red "Falha no download"
-		sleep 0.2
-		if _YESNO "Deseja tentar baixar novamente"; then
-			printf "Retomando o download\n"
+		sleep 0.1
+		local count="$(($count-1))"
+		if [[ $count > 0 ]]; then
+			_yellow "Tentando novamente. Restando [$count] tentativa(s) restante(s)."
 			continue
 		else
 			[[ -f "$path_file" ]] && __rmdir__ "$path_file"
+			_sred "$(print_line)"
 			return 1
 			break
 		fi
 	done
-	[[ "$?" != '0' ]] && return 1
-	return 0
+	if [[ "$?" == '0' ]]; then
+		return 0
+	else
+		_sred "$(print_line)"
+	fi
 }
 
 _gitclone()

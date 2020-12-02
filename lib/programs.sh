@@ -3,6 +3,22 @@
 
 github='https://github.com'
 
+
+_show_info()
+{
+	# Função para exibir mensagens padrão, como por exemplo erros comuns 
+	# durante a instalação de um programa ou um mensagem genérica de sucesso.
+	[[ "$silent" == 'True' ]] && return 0
+	case "$1" in
+		AddFileDestktop) _green "Criando arquivo (.desktop)";;
+		DownloadOnly) _green "Feito somente download";;
+		PkgInstalled) _green "($2) está instalado";;
+		SuccessInstalation) _green "($2) instalado com sucesso";;
+		InstalationFailed) _red "Falha ao tentar instalar ($2)";;
+		ProgramNotFound) _red "Programa indisponível para o seu sistema: $2";;
+	esac
+}
+
 _etcher_package_deb()
 {
 	# https://github.com/balena-io/etcher/releases
@@ -207,23 +223,8 @@ _woeusb_cli_linux()
 	local URL_SCRIPT_WOEUSB='https://github.com/WoeUSB/WoeUSB/raw/master/sbin/woeusb'
 	local WOEUSB_TEMP_FILE="$DirTemp"/woeusb.tmp
 
-	_print "Baixando ... $WOEUSB_TEMP_FILE"
-	_println "Conectando ... $URL_SCRIPT_WOEUSB "
-	if is_executable curl; then
-		if curl -sSL "$URL_SCRIPT_WOEUSB" -o "$WOEUSB_TEMP_FILE"; then
-			_syellow "OK"
-		else
-			_sred "FALHA"
-			return 1
-		fi
-	elif is_executable wget; then
-		if wget -q "$URL_SCRIPT_WOEUSB" -O "$WOEUSB_TEMP_FILE"; then
-			_syellow "OK"
-		else
-			_sred "FALHA"
-			return 1
-		fi
-	fi
+	__download__ "$URL_SCRIPT_WOEUSB" "$WOEUSB_TEMP_FILE" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	__sudo__ mv "$WOEUSB_TEMP_FILE" '/usr/local/bin/woeusb'
 	__sudo__ chmod +x '/usr/local/bin/woeusb'
 }
@@ -246,10 +247,9 @@ _woeusb_ng()
 	# https://github.com/WoeUSB/WoeUSB-ng
 	requeriments_woeusb_ng_debian=(git p7zip-full python3-pip python3-wxgtk4.0)
 	requeriments_woeusb_ng_fedora=(git p7zip python3-pip python3-wxpython4)
-
 	if [[ -f /etc/debian_version ]]; then
 		__pkg__ "${requeriments_woeusb_ng_debian[@]}"
-		__sudo__ pip3 install WoeUSB-ng
+		_woeusb_ng_github
 	elif [[ -f /etc/fedora-release ]]; then
 		__pkg__ "${requeriments_woeusb_ng_fedora[@]}"
 		_woeusb_ng_github
@@ -497,14 +497,15 @@ _idea_ic()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	__shasum__ "$path_file" "$idea_sha256" || return 1
 	_unpack "$path_file" || return 1
+	
 	cd "$DirUnpack" 
 	mv $(ls -d idea-*) idea-IC
-	_println "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
+	echo -e "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
 	mv idea-IC "${destinationFilesIdeaic[dir]}" || return 1
-	_syellow 'OK'
-	_print "Entrando no diretório ... ${destinationFilesIdeaic[dir]}"
-	cd "${destinationFilesIdeaic[dir]}"
-	cp -v ./bin/idea.png "${destinationFilesIdeaic[file_png]}"
+	printf 'OK\n'
+	echo -e "Entrando no diretório ... ${destinationFilesIdeaic[dir]}/bin"
+	cd "${destinationFilesIdeaic[dir]}/bin"
+	cp -vu idea.png "${destinationFilesIdeaic[file_png]}"
 
 	_print "Criando arquivo '.desktop'"
 	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
@@ -632,25 +633,22 @@ _vim()
 
 _vscode_package_deb()
 {
-	local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
+	#local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
+	local url_code_debian='https://update.code.visualstudio.com/latest/linux-deb-x64/stable'
 	local path_file="$DirDownloads/vscode-amd64.deb"
 	__download__ "$url_code_debian" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	_DPKG --install "$path_file" # .deb
+	_APT install "$path_file" -y || _BROKE
 }
 
 _vscode_tarfile()
 {
-	local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
+	#local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
+	local url_vscode_tar='https://update.code.visualstudio.com/latest/linux-x64/stable'
 	local path_file="$DirDownloads/vscode.tar.gz"
 
 	__download__ "$url_vscode_tar" "$path_file"
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-
 	_unpack "$path_file" || return 1
 
 	cd "$DirUnpack"
@@ -686,7 +684,7 @@ _vscode()
 	is_executable 'code' && _show_info 'PkgInstalled' 'code' && return 0
 
 	case "$os_id" in
-		debian|ubuntu|linuxmint) _vscode_tarfile;;
+		debian|ubuntu|linuxmint) _vscode_package_deb;;
 		*) _vscode_tarfile;;
 	esac
 	
@@ -783,18 +781,13 @@ _codecs_debian()
 	local hash_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
 	local path_file="$DirDownloads/$(basename $url_wcodecs)"
 
-	__download__ "$url_wcodecs" "$path_file" || return 1
-	
-	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
-
 	__pkg__ --install-recommends ffmpeg ffmpegthumbnailer
 	__pkg__ lame
 
+	__download__ "$url_wcodecs" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 	__shasum__ "$path_file" "$hash_wcodecs" || return 1
-	
-	_msg "Instalando: $path_file"
-	_DPKG --install "$path_file" || return 1
+	_APT intall "$path_file" -y || _BROKE
 }
 
 _codecs_fedora()
@@ -844,10 +837,7 @@ _codecs_fedora()
 		'xvidcore' 
 	)
 
-	_msg "Instalando: ${array_codecs_fedora[@]}"
 	__pkg__ "${array_codecs_fedora[@]}"
-
-	_msg "Instalando: ${array_gstreamer_fedora[@]}"	
 	__pkg__ "${array_gstreamer_fedora[@]}"
 }
 
@@ -949,37 +939,14 @@ _spotify_debian()
 	# https://wiki.debian.org/spotify
 	# https://www.spotify.com/br/download/linux/
 	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
-	local url_key_spotify='https://download.spotify.com/debian/pubkey_0D811D58.gpg'
 	_isroot || return 1
-	_println "(_spotify_debian): adicionando key spotify "
-	if ! curl -sS "$url_key_spotify" | sudo apt-key add -; then
-		_sred "FALHA"
+	if ! _apt_key_add 'https://download.spotify.com/debian/pubkey_0D811D58.gpg'; then
 		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
 		return 1
 	fi
 
-	_println "Adicioando repositório spotify "	
-	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
-	_APT update || return 1
-	__pkg__ 'spotify-client'
-}
-
-_spotify_ubuntu()
-{
-	# https://www.spotify.com/br/download/linux/
-	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
-	local url_key_spotify='https://download.spotify.com/debian/pubkey_0D811D58.gpg'
-	_isroot || return 1
-	_println "(_spotify_ubuntu): adicionando key spotify "
-	if ! curl -sS "$url_key_spotify" | sudo apt-key add -; then
-		_sred "FALHA"
-		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
-		return 1
-	fi
-
-	_println "Adicioando repositório spotify "	
-	echo 'deb http://repository.spotify.com stable non-free' | sudo tee /etc/apt/sources.list.d/spotify.list
-	_APT update || return 1
+	SPOTIFY_REPO='deb http://repository.spotify.com stable non-free'
+	_addrepo_in_sources_list "$SPOTIFY_REPO" /etc/apt/sources.list.d/spotify.list 	
 	__pkg__ 'spotify-client'
 }
 
@@ -1007,7 +974,6 @@ _spotify_archlinux()
 	)
 	
 	for X in "${array_spotify_requeriments[@]}"; do
-		_msg "Instalando: $X"
 		__pkg__ "$X"
 	done
 		
@@ -1051,7 +1017,7 @@ _spotify()
 	if [[ "$os_id" == 'debian' ]]; then
 		_spotify_debian
 	elif [[ "$os_id" == 'ubuntu' ]] || [[ "$os_id" == 'linuxmint' ]]; then
-		_spotify_ubuntu
+		_spotify_debian
 	elif [[ "$os_id" == 'arch' ]]; then
 		_spotify_archlinux
 	elif [[ "$os_id" == 'fedora' ]]; then
@@ -1307,28 +1273,10 @@ _firefox()
 _google_chrome_debian()
 {
 	local google_chrome_repo='deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main'
-	local url_key_google_chrome='https://dl.google.com/linux/linux_signing_key.pub'
-	local google_chrome_file='/etc/apt/sources.list.d/google-chrome.list'
-	local google_chrome_path_key="$DirTemp/linux_signing_key.pub"	
-	
-	# Baixar e adicionar o arquivo '.pub'
 	_isroot || return 1
-	_println "Executando ... curl -sSL $url_key_google_chrome | sudo apt-key add - "
-	if ! curl -sSL "$url_key_google_chrome" | sudo apt-key add -; then
-		_sred "FALHA"
-		return 1
-	fi
-	
-	find /etc/apt -name *.list | xargs grep "^deb .*http.*google\.com/linux/chrome/deb/.*stable main" 2> /dev/null
-	if [[ $? == '0' ]]; then
-		_yellow "Repositório google-chrome encontrado pulando..."
-	else
-		_println "Adicionando repositório ... "
-		echo "$google_chrome_repo" | sudo tee "$google_chrome_file"
-	fi
-	# sudo apt install libu2f-udev
-	_APT update || return 1
-	__pkg__ 'google-chrome-stable' 
+	_apt_key_add 'https://dl.google.com/linux/linux_signing_key.pub' || return 1
+	_addrepo_in_sources_list "$google_chrome_repo" /etc/apt/sources.list.d/google-chrome.list
+	__pkg__ 'google-chrome-stable' # sudo apt install libu2f-udev
 }
 
 
@@ -1414,20 +1362,8 @@ _google_chrome()
 _opera_stable_debian()
 {
 	local opera_repo='deb [arch=amd64] https://deb.opera.com/opera-stable/ stable non-free'
-	local opera_file='/etc/apt/sources.list.d/opera-stable.list'
-	
-	_white "Importando key"
-	sudo sh -c 'wget -q http://deb.opera.com/archive.key -O- | apt-key add -' || return 1
-	
-	find /etc/apt -name *.list | xargs grep "^deb .*deb\.opera.* stable.*free$" 2> /dev/null
-
-	if [[ $? == '0' ]]; then
-		_white "Repositório já está disponível 'pulando'"
-	else
-		_white "Adicionando repositório"
-		echo "$opera_repo" | sudo tee "$opera_file"
-	fi
-	_APT update
+	_apt_key_add 'http://deb.opera.com/archive.key'
+	_addrepo_in_sources_list "$opera_repo" /etc/apt/sources.list.d/opera-stable.list 
 	__pkg__ 'opera-stable' || return 1	
 }
 
@@ -1548,29 +1484,14 @@ _megasync_opensuse_tumbleweed()
 
 _megasync_debian()
 {
-	local url_key_megasync='https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key'
-	local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"	
-	local mega_file_list="/etc/apt/sources.list.d/megasync.list"
-
 	if [[ "$os_codename" != 'buster' ]]; then
 		_red "A instalação de MegaSync não está disponível para o seu sistema"
 		return 1
 	fi
 
-	_println "Executando ... curl -sSL $url_key_megasync | sudo apt-key add - "
-	if ! curl -sSL "$url_key_megasync" | sudo apt-key add -; then
-		_sred "FALHA"
-		return 1
-	fi
-
-	find /etc/apt -name *.list | xargs grep "^deb https.*mega.nz.*Debian.*" 2> /dev/null
-	if [[ $? == '0' ]]; then
-		_yellow "Repositório megasync encontrado pulando..."
-	else
-		_println "Adicionando repositório ... "	
-		echo "$mega_repos" | sudo tee "$mega_file_list"
-	fi
-	_APT update
+	local mega_repos="deb https://mega.nz/linux/MEGAsync/Debian_10.0/ ./"
+	_apt_key_add 'https://mega.nz/linux/MEGAsync/Debian_10.0/Release.key'
+	_addrepo_in_sources_list "$mega_repos" /etc/apt/sources.list.d/megasync.list
 	__pkg__ megasync || return 1
 }
 
@@ -1595,7 +1516,7 @@ _megasync_ubuntu()
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_19.10/Release.key'
 			__download__ "$url_libraw16" "$path_libraw" || return 1 
 			_msg "Instalando: $path_libraw"
-			_DPKG --install "$path_libraw" || return 1
+			_APT install "$path_libraw" -y || _BROKE
 			;;
 		focal|ulyana)
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_20.04/ ./"
@@ -1607,10 +1528,8 @@ _megasync_ubuntu()
 			;;
 	esac
 
-	_msg "Adicionando key e repositório"
-	wget -q -O- "$mega_url_key" -o- | sudo apt-key add - || return 1
-	echo "$mega_repos_ubuntu" | sudo tee "$mega_file_list" 1> /dev/null
-	_APT update 
+	_apt_key_add "$mega_url_key" || return 1
+	_addrepo_in_sources_list "$mega_repos_ubuntu" || return 1
 	__pkg__ 'libc-ares2' libmediainfo0v5 
 	__pkg__ megasync
 }
@@ -1960,10 +1879,8 @@ _tixati_tarfile()
 	# Já instalado.
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
-	# Salvar o html da pagina de download no arquivo html temporário padrão. 
-	# Ver a variável "HtmlTemporaryFile".
-	get_html 'https://www.tixati.com/download/linux.html' || return 1
-	local tixati_html=$(grep -m 1 'tixati.*64.*tar.gz' "$HtmlTemporaryFile")
+	# Baixar o html da página de download e filtrar pela ocorrência tixati.
+	local tixati_html=$(_get_html_page 'https://www.tixati.com/download/linux.html' find='tixati.*64.*tar.gz')
 	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
@@ -1979,7 +1896,7 @@ _tixati_tarfile()
 	gpg_import https://www.tixati.com/tixati.key || return 1
 
 	# verificar integridade com a fução __gpg__
-	__gpg__ --verify "$signatureFile" "$TarFile" || return 1
+	gpg_verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
 	case "$os_id" in

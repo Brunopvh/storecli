@@ -11,7 +11,6 @@ _loop_pid()
 	local array_chars=('\' '|' '/' '-')
 	local num_char='0'
 	local Pid="$1"
-	local Time='0'
 
 	while true; do
 		ALL_PROCS=$(ps aux)
@@ -19,16 +18,13 @@ _loop_pid()
 			break
 		fi
 
-		Char="${array_chars[$num_char]}"
-		SecondTime="$(($Time / 4))"		
-		echo -ne "Aguardando processo com pid [$Pid] finalizar ${SecondTime}s [${Char}]\r" # $(date +%H:%M:%S)
-		sleep 0.25
-		
+		Char="${array_chars[$num_char]}"		
+		echo -ne "Aguardando processo com pid [$Pid] finalizar [${Char}]\r" # $(date +%H:%M:%S)
+		sleep 0.15
 		num_char="$(($num_char+1))"
-		Time="$(($Time+1))"
 		[[ "$num_char" == '4' ]] && num_char='0'
 	done
-	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} ${SecondTime}s [${Char}]"	
+	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} [${Char}]"	
 }
 
 
@@ -148,6 +144,72 @@ _APT()
 	fi
 }
 
+_apt_key_add()
+{
+	if [[ -f "$1" ]]; then
+		printf "(_apt_key_add) Adicionando key apartir do arquivo ... $1 "
+		sudo apt-key add "$1" || return 1
+	else 
+		if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
+			_red "(_apt_key_add): url inválida $1"
+			return 1
+		fi
+
+		# Obter key apartir do url $1.
+		local temp_dir_key=$(mktemp --directory)
+		local temp_file_key="temp.key"
+		printf "Adicionando key apartir do url ... $1 "
+		if [[ -x $(command -v aria2c 2> /dev/null) ]]; then
+			aria2c "$1" -d "$temp_dir_key" -o "$temp_file_key" 1> /dev/null
+		elif [[ -x $(command -v curl 2> /dev/null) ]]; then
+			curl -sSL "$1" -o "$temp_dir_key/$temp_file_key"
+		elif [[ -x $(command -v wget 2> /dev/null) ]]; then
+			wget -q "$1" -O "$temp_dir_key/$temp_file_key"
+		else
+			_sred "FALHA"
+			return 1
+		fi
+
+		# Adicionar key
+		if [[ $? == 0 ]]; then
+			sudo apt-key add "$temp_dir_key/$temp_file_key" || return 1
+			return 0
+		else
+			_sred "FALHA"
+			return 1
+		fi
+	fi
+}
+
+_addrepo_in_sources_list()
+{
+	# $1 = repositório para adicionar em /etc/apt/sources.list.d/
+	# Se o repositório já existir em outro arquivo a adição do repositório
+	# será IGNORADA.
+
+	# $2 = Nome do arquivo para gravar o repositório. Se o arquivo já existir
+	# a adição do repositório será IGNORADA. 
+
+	# IMPORTANTE antes de adicionar os repositório, e necessário adicionar key.pub 
+	# para cada repositório, para evitar problemas quando atualizar o cache do apt (sudo apt update)
+	if [[ -z $2 ]]; then
+		_sred "(_addrepo_in_sources_list): Necessário informar um arquivo para adicionar o repositório"
+		return 1
+	fi
+
+	local repo="$1"
+	local file_repo="$2"
+	find /etc/apt -name *.list | xargs grep "^${repo}" 2> /dev/null
+	if [[ $? == 0 ]] || [[ -f "$file_repo" ]]; then
+		printf "${CGreen}INFO${CReset} ... repositório já existe em /etc/apt pulando.\n"
+		return 0
+	else
+		printf "${CGreen}A${CReset}dicionando repositório em ... $file_repo\n"
+		echo -e "$repo" | sudo tee "$file_repo"
+		_APT update || return 1
+	fi
+	return 0
+}
 
 
 #=============================================================#
