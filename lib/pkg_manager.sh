@@ -27,6 +27,17 @@ _loop_pid()
 	echo -e "Aguardando processo com pid [$Pid] ${CYellow}finalizado${CReset} [${Char}]"	
 }
 
+is_admin(){
+	printf "Autênticação necessária para prosseguir "
+	if [[ $(sudo id -u) == 0 ]]; then
+		printf "OK\n"
+		return 0
+	else
+		printf "\033[0;31mFALHA\033[m\n"
+		return 1
+	fi
+}
+
 
 _GDEBI()
 {
@@ -146,6 +157,8 @@ _APT()
 
 _apt_key_add()
 {
+	is_admin || return 1
+
 	if [[ -f "$1" ]]; then
 		printf "(_apt_key_add) Adicionando key apartir do arquivo ... $1 "
 		sudo apt-key add "$1" || return 1

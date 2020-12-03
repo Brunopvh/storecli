@@ -2836,22 +2836,8 @@ _virtualbox_debian()
 
 _virtualbox_ubuntu()
 {
-	local virtualbox_sources_list="/etc/apt/sources.list.d/virtualbox.list"
-	local url_key_virtualbox_2016='https://www.virtualbox.org/download/oracle_vbox_2016.asc'
-	local url_key_virtualbox='https://www.virtualbox.org/download/oracle_vbox.asc'
-	
-	# Adicionar keys
-	_println "Executando ... curl -sSL $url_key_virtualbox | sudo apt-key add - "
-	curl -sSL $url_key_virtualbox | sudo apt-key add - || {
-		_sred "FALHA"
-		return 1
-	}
-
-	_println "Executando ... curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - "
-	curl -sSL $url_key_virtualbox_2016 | sudo apt-key add - || {
-		_sred "FALHA"
-		return 1
-	}
+	_apt_key_add 'https://www.virtualbox.org/download/oracle_vbox_2016.asc' || return 1
+	_apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
 
 	case "$os_codename" in
 		focal|ulyana) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib";;
@@ -2859,16 +2845,7 @@ _virtualbox_ubuntu()
 		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
 	esac
 
-	find /etc/apt -name *.list | xargs grep "^deb .*download\.virtualbox\.org.*debian.*contrib$" 2> /dev/null
-	if [[ "$?" == '0' ]]; then
-		_print "Repositório virtualbox encontrado pulando"
-	else
-		_println "Adicionando repositório virtualbox ... "
-		echo "$vbox_repo" | sudo tee "$virtualbox_sources_list"
-	fi
-	
-	# Atualizar o cache 'apt update' apartir da função _APT.
-	_APT update 
+	_addrepo_in_sources_list "$vbox_repo" /etc/apt/sources.list.d/virtualbox.list
 	
 	# __pkg__ libvpx6 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
