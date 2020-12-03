@@ -313,6 +313,7 @@ programs_system=(
 	refind
 	stacer
 	virtualbox
+	virtualbox-extensionpack
 	)
 
 programs_preferences=(

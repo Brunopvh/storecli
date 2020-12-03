@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-VERSION='2020-12-02'
+VERSION='2020-12-03'
 # 
 # Uso:
 # $0 -t /dev/sdX -e /dev/sdaE -h /dev/sdaH -r /dev/sdaR -b /sdaB
