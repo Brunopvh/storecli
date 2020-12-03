@@ -2410,11 +2410,71 @@ _cpux_appimage()
 	fi
 }
 
+_cpux_ubuntu()
+{
+	case "$os_codename" in
+		bionic|tricia) ;;
+		*) _cpux_appimage; return 0;;
+	esac
+
+	local URL_CPUX_TAR='https://github.com/X0rg/CPU-X/releases/download/v4.0.1/CPU-X_v4.0.1_Ubuntu.tar.gz'
+	local PATH_CPUX_TARFILE="$DirDownloads/$(basename $URL_CPUX_TAR)"
+
+	__download__ "$URL_CPUX_TAR" "$PATH_CPUX_TARFILE" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+
+	_unpack "$PATH_CPUX_TARFILE" || return 1
+	if [[ "$os_codename" == 'bionic' ]] || [[ "$os_codename" == 'tricia' ]]; then
+		printf "Entrando no diretório ... $DirUnpack/xUbuntu_18.04/amd64\n"
+		cd "$DirUnpack/xUbuntu_18.04/amd64" || return 1
+	else
+		_sred "Programa indisponível para o seu sistema."
+		return 1
+	fi
+
+	cp -vu cpu-x_*amd64.deb "$DirTemp"/cpu-x-amd64.deb
+	cp -vu cpuidtool_*amd64.deb "$DirTemp"/cpuidtool_amd64.deb
+	cp -vu libcpuid15_*amd64.deb "$DirTemp"/libcpuid15_amd64.deb
+	printf "Entrando no diretório ... $DirTemp\n"
+	cd "$DirTemp"
+	_DPKG --install cpu-x-amd64.deb cpuidtool_amd64.deb libcpuid15_amd64.deb || _BROKE
+}
+
+
+_cpux_debian()
+{
+	# https://github.com/X0rg/CPU-X/releases/download/v4.0.1/CPU-X_v4.0.1_Debian.tar.gz
+	case "$os_codename" in
+		buster) ;;
+		*) _cpux_appimage; return 0;;
+	esac
+
+	local URL_CPUX_TAR='https://github.com/X0rg/CPU-X/releases/download/v4.0.1/CPU-X_v4.0.1_Debian.tar.gz'
+	local PATH_CPUX_TARFILE="$DirDownloads/$(basename $URL_CPUX_TAR)"
+
+	__download__ "$URL_CPUX_TAR" "$PATH_CPUX_TARFILE" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+
+	_unpack "$PATH_CPUX_TARFILE" || return 1
+	printf "Entrando no diretório ... $DirUnpack/Debian_10/amd64\n"
+	cd "$DirUnpack/Debian_10/amd64" || return 1
+	cp -vu cpu-x_*amd64.deb "$DirTemp"/cpu-x-amd64.deb
+	cp -vu cpuidtool_*amd64.deb "$DirTemp"/cpuidtool_amd64.deb
+	cp -vu libcpuid15_*amd64.deb "$DirTemp"/libcpuid15_amd64.deb
+	printf "Entrando no diretório ... $DirTemp\n"
+	cd "$DirTemp"
+	_DPKG --install cpu-x-amd64.deb cpuidtool_amd64.deb libcpuid15_amd64.deb || _BROKE
+}
+
 _cpux()
 {
 	# https://github.com/X0rg/CPU-X
 	if [[ -f /etc/fedora-release ]]; then
 		__pkg__ cpu-x
+	elif [[ "$os_id" == 'debian' ]]; then
+		_cpux_debian
+	elif [[ "$os_id" == 'ubuntu' ]]; then
+		_cpux_ubuntu
 	else
 		_cpux_appimage
 	fi
