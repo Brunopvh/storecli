@@ -3,7 +3,7 @@
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
 #
-__version__='2020-12-02'
+__version__='2020-12-03'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -73,8 +73,8 @@ is_executable()
 {
 	# Verificar se uma executável existe na variável PATH.
 	# retorna 0 se sim, ou 1 se não existir.
-	executable_app=$(command -v "$1" 2> /dev/null)
-	if [ -x "$executable_app" ]; then
+	executable_app=$(command -v $1 2> /dev/null)
+	if [ -x $executable_app ]; then
 		return 0
 	else
 		return 1

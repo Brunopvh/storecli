@@ -259,6 +259,7 @@ _pkg_manager_storecli()
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
+			microsoft-teams) _microsoft_teams;;
 			plank) _plank;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
@@ -322,6 +323,7 @@ _pkg_manager_storecli()
 			peazip) _peazip;;
 			refind) _refind;;
 			stacer) _stacer;;
+			timeshift) _timeshift;;
 			virtualbox) _virtualbox;;
 			virtualbox-extensionpack) _virtualbox_extension_pack;; 
 

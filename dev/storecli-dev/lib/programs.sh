@@ -218,6 +218,20 @@ _veracrypt()
 	fi
 }
 
+_microsoft_teams()
+{
+	if [[ -f /etc/debian_version ]]; then
+		local URL_MICROSOFT_TEAMS='https://go.microsoft.com/fwlink/p/?LinkID=2112886&clcid=0x416&culture=pt-br&country=BR'
+		local PATH_MICROSOFT_TEAMS="$DirDownloads/teams-amd64.deb"
+	elif [[ -f /etc/fedora-release ]]; then
+		local URL_MICROSOFT_TEAMS='https://go.microsoft.com/fwlink/p/?LinkID=2112907&clcid=0x416&culture=pt-br&country=BR'
+		local PATH_MICROSOFT_TEAMS="$DirDownloads/teams-x86_64.rpm"
+	fi
+
+	__download__ "$URL_MICROSOFT_TEAMS" "$PATH_MICROSOFT_TEAMS" || return 1
+	__pkg__ "$PATH_MICROSOFT_TEAMS"
+}
+
 _woeusb_cli_linux()
 {
 	local URL_SCRIPT_WOEUSB='https://github.com/WoeUSB/WoeUSB/raw/master/sbin/woeusb'
@@ -2710,6 +2724,20 @@ _stacer()
 			;;
 		*) _stacer_appimage;;
 	esac
+}
+
+_timeshift_debian()
+{
+	local URL_TIME_SHIFT='https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_amd64.deb'
+	local PATH_TIME_SHIFT="$DirDownloads/$(basename $URL_TIME_SHIFT)"
+
+	__download__ "$URL_TIME_SHIFT" "$PATH_TIME_SHIFT" || return 1
+	_APT install "$PATH_TIME_SHIFT"
+}
+
+_timeshift()
+{
+	__pkg__ 'timeshift'
 }
 
 _virtualbox_extension_pack()
