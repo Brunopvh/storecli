@@ -237,6 +237,19 @@ _ping()
 	fi
 }
 
+_get_storecli_online_version()
+{
+	local URL_STORECLI_MASTER='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
+	local TEMP_DIR_UPDATE="$(mktemp --directory)-storecli-update"
+	local FILE_UPDATE='storecli.update'
+
+	__download__ "$URL_STORECLI_MASTER" "$TEMP_DIR_UPDATE/$FILE_UPDATE" 1> /dev/null || return 1
+
+	local OnlineVersion=$(grep -m 1 '^__version__=' "$TEMP_DIR_UPDATE/$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
+	echo -e "$OnlineVersion"
+	rm -rf "$TEMP_DIR_UPDATE/$FILE_UPDATE" 1> /dev/null 2>&1
+}
+
 _update_storecli()
 {
 	[[ "$IgnoreCli" == 'True' ]] && return 0
@@ -264,20 +277,9 @@ _update_storecli()
 	print_line
 	[[ ! -z "$oldDateUpdate" ]] && printf "Data da última busca por atualizações ... $oldDateUpdate\n"
 	
-	printf "Verificando atualização no github aguarde "
-	
-	if is_executable aria2c; then
-	    aria2c -c https://raw.github.com/Brunopvh/storecli/master/storecli.sh -d "$DirTemp" -o 'storecli.update' 1> /dev/null
-	elif is_executable wget; then 
-	    wget -q https://raw.github.com/Brunopvh/storecli/master/storecli.sh -O "$tempFileUpdate"
-	elif is_executble curl; then
-	    curl -sSL https://raw.github.com/Brunopvh/storecli/master/storecli.sh -o "$DirTemp/storecli.update"
-	fi
-	
-	[[ $? != '0' ]] && printf "\033[0;31mFALHA\033[m\n" && return 1
-	printf 'OK\n'
-	
-	OnlineVersion=$(grep -m 1 ^'__version__' "$tempFileUpdate" | sed "s/.*=//g;s/'//g")
+	_ping || return 1
+	printf "Verificando atualização no github aguarde\n"	
+	OnlineVersion=$(_get_storecli_online_version)
 	printf "%-17s%-10s\n" "Versão local" "$__version__" 
 	printf "%-17s%-10s\n" "Versão online" "$OnlineVersion"
 	
