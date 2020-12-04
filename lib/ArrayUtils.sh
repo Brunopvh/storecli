@@ -244,6 +244,7 @@ destinationFilesEpsxeWin32=(
 programs_acessory=(
 	etcher
 	gnome-disk
+	microsoft-teams
 	veracrypt
 	woeusb
 	)
@@ -312,7 +313,9 @@ programs_system=(
 	peazip
 	refind
 	stacer
+	timeshift
 	virtualbox
+	virtualbox-extensionpack
 	)
 
 programs_preferences=(

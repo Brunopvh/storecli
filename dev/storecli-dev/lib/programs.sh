@@ -2792,8 +2792,10 @@ _virtualbox_fedora()
 	__pkg__ $(rpm -qa kernel | sort -V | tail -n 1) 
 	__pkg__ kernel-devel-$(uname -r)
 
-	_rpm_key_add "https://www.virtualbox.org/download/oracle_vbox.asc" || return 1
-	_addrepo_in_fedora "http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo" || return 1
+	local URL_REPO_VBOX_FEDORA='http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	local URL_KEY_VBOX='https://www.virtualbox.org/download/oracle_vbox.asc'
+	_rpm_key_add "$URL_KEY_VBOX" || return 1
+	_addrepo_in_fedora "$URL_REPO_VBOX_FEDORA" /etc/yum.repos.d/virtualbox.repo || return 1
 	
 	case "$os_version" in
 		31) __pkg__ 'VirtualBox-6.0' || return 1;;

@@ -412,8 +412,10 @@ _addrepo_in_fedora()
 		__download__ "$url_repo" "$temp_file_repo" 1> /dev/null || return 1
 		__sudo__ mv "temp_file_repo" "$file_repo" 
 		__sudo__ chown root:root "$file_repo"
+		__sudo__ chmod 644 "$file_repo"
 		_syellow "OK"
 	fi
+	rm -rf "$temp_file_repo" 
 	return 0
 }
 

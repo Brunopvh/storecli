@@ -198,7 +198,7 @@ _veracrypt()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 	
 	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
-	__gpg__ --verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
+	gpg_verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
 	_unpack "$VeracryptTarFile" || return 1
 	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
 	chmod +x "$DirTemp"/veracrypt-setupx64
@@ -216,6 +216,20 @@ _veracrypt()
 		_show_info 'InstalationFailed' 'veracrypt'
 		return 1
 	fi
+}
+
+_microsoft_teams()
+{
+	if [[ -f /etc/debian_version ]]; then
+		local URL_MICROSOFT_TEAMS='https://go.microsoft.com/fwlink/p/?LinkID=2112886&clcid=0x416&culture=pt-br&country=BR'
+		local PATH_MICROSOFT_TEAMS="$DirDownloads/teams-amd64.deb"
+	elif [[ -f /etc/fedora-release ]]; then
+		local URL_MICROSOFT_TEAMS='https://go.microsoft.com/fwlink/p/?LinkID=2112907&clcid=0x416&culture=pt-br&country=BR'
+		local PATH_MICROSOFT_TEAMS="$DirDownloads/teams-x86_64.rpm"
+	fi
+
+	__download__ "$URL_MICROSOFT_TEAMS" "$PATH_MICROSOFT_TEAMS" || return 1
+	__pkg__ "$PATH_MICROSOFT_TEAMS"
 }
 
 _woeusb_cli_linux()
@@ -1601,7 +1615,7 @@ _megasync_archlinux()
 	# Verificar integridade do pacote baixado.
 	_print "Conectando ... $URL_MEGA_SIGNATURE_FILE"
 	curl -sSL "$URL_MEGA_SIGNATURE_FILE" -o "$PATH_MEGA_SIGNATURE_FILE" || return 1
-	__gpg__ --verify "$PATH_MEGA_SIGNATURE_FILE" "$PATH_MEGA_TARFILE" || return 1
+	gpg_verify "$PATH_MEGA_SIGNATURE_FILE" "$PATH_MEGA_TARFILE" || return 1
 	rm -rf "$PATH_MEGA_SIGNATURE_FILE" 2> /dev/null
 
 	# Copiar o instalador para o diretório temporário e em seguida instalar o pacote.
@@ -1879,8 +1893,8 @@ _tixati_tarfile()
 	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
 
 	# Baixar o html da página de download e filtrar pela ocorrência tixati.
-	local tixati_html=$(_get_html_page 'https://www.tixati.com/download/linux.html' find='tixati.*64.*tar.gz')
-	local url_tarfile=$(echo "$tixati_html" | sed 's/gz".*/gz/g;s/.*="//g')
+	local download_page='https://www.tixati.com/download/linux.html'
+	local url_tarfile=$(_get_html_page "$download_page" --find 'tixati.*64.*tar.gz' | sed 's/gz".*/gz/g;s/.*="//g')
 	local url_signature_file="${url_tarfile}.asc"
 	local TarFile="$DirDownloads/$(basename $url_tarfile)"
 	local signatureFile="${TarFile}.asc"
@@ -1891,10 +1905,7 @@ _tixati_tarfile()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	# Importar key com a função gpg_import
 	gpg_import https://www.tixati.com/tixati.key || return 1
-
-	# verificar integridade com a fução __gpg__
 	gpg_verify "$signatureFile" "$TarFile" || return 1
 
 	# Instalar gconf2.
@@ -1929,9 +1940,7 @@ _tixati_tarfile()
 		gconftool-2 --set --type=string /desktop/gnome/url-handlers/magnet/need-terminal false
 	fi
 
-	if is_executable gtk-update-icon-cache; then
-		sudo gtk-update-icon-cache
-	fi
+	is_executable gtk-update-icon-cache && sudo gtk-update-icon-cache
 
 	if is_executable 'tixati'; then
 		_show_info 'SuccessInstalation' 'tixati'
@@ -1980,7 +1989,7 @@ _youtube_dl()
 	gpg_import 'https://dstftw.github.io/keys/18A9236D.asc' || return 1
 	
 	# Verificar integridade do script youtube-dl.
-	__gpg__ --verify "$PATH_SIGNATURE_FILE" "$PATH_YTDL" || return 1
+	gpg_verify "$PATH_SIGNATURE_FILE" "$PATH_YTDL" || return 1
 	
 	_msg "Instalando youtube-dl em ~/.local/bin"
 	cp -u "$PATH_YTDL" "$DIR_BIN_USER"/youtube-dl
@@ -2717,7 +2726,21 @@ _stacer()
 	esac
 }
 
-_virtualbox_extpack()
+_timeshift_debian()
+{
+	local URL_TIME_SHIFT='https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_amd64.deb'
+	local PATH_TIME_SHIFT="$DirDownloads/$(basename $URL_TIME_SHIFT)"
+
+	__download__ "$URL_TIME_SHIFT" "$PATH_TIME_SHIFT" || return 1
+	_APT install "$PATH_TIME_SHIFT"
+}
+
+_timeshift()
+{
+	__pkg__ 'timeshift'
+}
+
+_virtualbox_extension_pack()
 {
 	# Após instalar o virtualbox no sistema, devemos executar esta
 	# função para instalar o pacote extensionpack (em qualquer distro)
@@ -2726,18 +2749,20 @@ _virtualbox_extpack()
 	#   Baixa o pacote (extensionpack) instala o pacote usando o virtualbox
 	# e adiciona o usuário atual no grupo  vboxuser.
 	#
-	
-	get_html "https://www.virtualbox.org/wiki/Downloads"
-	virtualbox_html=$(grep -m 1 "Oracle.*Ext.*vbox.*" "$HtmlTemporaryFile")
-	virtualbox_url_extension_pack=$(echo "$virtualbox_html" | sed 's/.*href="//g;s/">.*//g')
-	local path_file="$DirDownloads/$(basename $virtualbox_url_extension_pack)"
 
-	__download__ "$virtualbox_url_extension_pack" "$path_file" || return 1
+	is_executable virtualbox || {
+		_sred "Instale o virtualbox para prosseguir."
+		return 1
+	}
+	
+	local VBOX_DOWN_PAGE="https://www.virtualbox.org/wiki/Downloads"
+	local URL_EXTENSION_PACK=$(_get_html_page "$VBOX_DOWN_PAGE" --find "Oracle.*Ext.*vbox.*" | sed 's/.*href="//g;s/">.*//g')
+	local PATH_EXTENSION_PACK="$DirDownloads/$(basename $URL_EXTENSION_PACK)"
+
+	__download__ "$URL_EXTENSION_PACK" "$PATH_EXTENSION_PACK" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	# Instalação
-	__sudo__ VBoxManage extpack install --replace "$path_file"
-
+	__sudo__ VBoxManage extpack install --replace "$PATH_EXTENSION_PACK"
 	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1
 	
 	# sudo gpasswd -a "$USER" vboxusers  
@@ -2767,13 +2792,10 @@ _virtualbox_fedora()
 	__pkg__ $(rpm -qa kernel | sort -V | tail -n 1) 
 	__pkg__ kernel-devel-$(uname -r)
 
-	__download__ "https://www.virtualbox.org/download/oracle_vbox.asc" "$DirDownloads/oracle_vbox.asc"
-	_yellow "Importando: $DirDownloads/oracle_vbox.asc"
-	sudo rpm --import "$DirDownloads/oracle_vbox.asc"
-	__rmdir__ "$DirDownloads/oracle_vbox.asc"
-	
-	_white "Adicionando repositório: http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo"
-	sudo sh -c 'wget -q -O /etc/yum.repos.d/virtualbox.repo http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	local URL_REPO_VBOX_FEDORA='http://download.virtualbox.org/virtualbox/rpm/fedora/virtualbox.repo'
+	local URL_KEY_VBOX='https://www.virtualbox.org/download/oracle_vbox.asc'
+	_rpm_key_add "$URL_KEY_VBOX" || return 1
+	_addrepo_in_fedora "$URL_REPO_VBOX_FEDORA" /etc/yum.repos.d/virtualbox.repo || return 1
 	
 	case "$os_version" in
 		31) __pkg__ 'VirtualBox-6.0' || return 1;;
@@ -2781,12 +2803,12 @@ _virtualbox_fedora()
 	esac
 	
 	# Módulos
-	_white "Configurando módulos"
+	_msg "Configurando módulos"
 	sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
 	sudo sh -c '/sbin/vboxconfig'
 
 	# Instalar o pacote ExtensionPack.
-	_virtualbox_extpack 
+	_virtualbox_extension_pack 
 }
 
 _virtualbox_debian()
@@ -2831,7 +2853,7 @@ _virtualbox_debian()
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
 	__pkg__ linux-headers-$(uname -r)
 	__pkg__ 'virtualbox-6.1' || return 1
-	_virtualbox_extpack
+	_virtualbox_extension_pack
 }
 
 _virtualbox_ubuntu()
@@ -2852,7 +2874,7 @@ _virtualbox_ubuntu()
 	__pkg__ linux-headers-$(uname -r)
 	print_line
 	__pkg__ 'virtualbox-6.1' || return 1
-	_virtualbox_extpack
+	_virtualbox_extension_pack
 }
 
 _virtualbox_archlinux()
@@ -2884,7 +2906,7 @@ _virtualbox_archlinux()
 	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
 
 	# Instalar o pacote ExtensionPack.
-	#_virtualbox_extpack 
+	#_virtualbox_extension_pack 
 }
 
 _virtualbox_linux_run()
@@ -2938,7 +2960,7 @@ _virtualbox_linux_run()
 	__sudo__ "$path_file"
 	__sudo__ /sbin/rcvboxdrv setup
 	__sudo__ /sbin/vboxconfig
-	_virtualbox_extpack
+	_virtualbox_extension_pack
 }
 
 _virtualbox()
@@ -3369,4 +3391,3 @@ _Wine_All()
 		main install "${programs_wine[@]}"
 	fi
 }
-

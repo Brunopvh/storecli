@@ -172,13 +172,7 @@ _install()
 	mv $(ls -d storecli*) storecli 
 	cd storecli
 	cp -R -u * "$destination_storecli"/. || return 1
-	
-	if [ $INSTALL_DEV -eq 1 ]; then
-		printf "Versão de desenvolvimento "
-		ln -sf "$destination_storecli"/dev/storecli-dev/storecli.sh "$destination_link_storecli" || return 1
-	else
-		ln -sf "$destination_storecli"/storecli.sh "$destination_link_storecli" || return 1
-	fi
+	ln -sf "$destination_storecli"/storecli.sh "$destination_link_storecli" || return 1
 	
 	chmod -R a+x "$destination_storecli"
 	chmod a+x "$destination_link_storecli" 
