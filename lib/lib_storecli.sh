@@ -403,14 +403,14 @@ _addrepo_in_fedora()
 
 	local url_repo="$1"
 	local file_repo="$2"
-	local temp_file_repo=$(mktemp)
+	local temp_file_repo="$(mktemp)_yum.repo"
 
 	if [[ -f "$file_repo" ]]; then
 		printf "${CGreen}INFO${CReset} ... repositório já existe em /etc/yum.repos.d pulando.\n"
 	else
-		printf "${CGreen}A${CReset}dicionando repositório em ... $file_repo "
+		printf "${CGreen}A${CReset}dicionando repositório em ... $file_repo\n"
 		__download__ "$url_repo" "$temp_file_repo" 1> /dev/null || return 1
-		__sudo__ mv "temp_file_repo" "$file_repo" 
+		__sudo__ mv "$temp_file_repo" "$file_repo" 
 		__sudo__ chown root:root "$file_repo"
 		__sudo__ chmod 644 "$file_repo"
 		_syellow "OK"
