@@ -222,6 +222,26 @@ cat << EOF
 EOF
 }
 
+function res()
+{
+	if is_executable xdpyinfo; then
+		# Resolution=$(xdpyinfo | grep -A 3 "screen #0" | grep dimensions | awk '{print $4}' | sed 's/(//g')
+		Resolution=$(xdpyinfo | grep -A 3 "screen #0" | grep dimensions | tr -s " " | cut -d" " -f 3)
+		ResolutionX=$(echo $Resolution | cut -d 'x' -f 1)
+		ResolutionY=$(echo $Resolution | cut -d 'x' -f 2)
+	fi
+	
+	if [[ -z $Resolution ]]; then
+		SetResolutionX=130
+		SetResolutionY=30
+	else
+		SetResolutionX="$(($ResolutionX/2))"
+		SetResolutionY="$(($ResolutionY/2))"
+	fi
+
+	SetGeometry="${SetResolutionX}x${SetResolutionY}"
+}
+
 main()
 {	
 	for ARG in "$@"; do

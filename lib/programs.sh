@@ -23,14 +23,31 @@ _install_storecli()
 {
 	local URL_STORECLI='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 	is_executable storecli || "$SCRIPT_STORECLI_INSTALLER"
+
+	if is_executable xdpyinfo; then
+		#Resolution=$(xdpyinfo | grep -A 3 "screen #0" | grep dimensions | tr -s " " | cut -d" " -f 3)
+		Resolution=$(xdpyinfo | grep -A 3 "screen #0" | grep dimensions | awk '{print $4}' | sed 's/(//g')
+		ResolutionX=$(echo $Resolution | cut -d 'x' -f 1)
+		ResolutionY=$(echo $Resolution | cut -d 'x' -f 2)
+	fi
 	
+	if [[ -z $Resolution ]]; then
+		SetResolutionX=130
+		SetResolutionY=30
+	else
+		SetResolutionX="$(($ResolutionX/2))"
+		SetResolutionY="$(($ResolutionY/2))"
+	fi
+
+	SetGeometry="${SetResolutionX}x${SetResolutionY}"
+
 	_show_info 'AddFileDesktop' 
 	echo "[Desktop Entry]" > "${destinationFilesStorecli[file_desktop]}"
     {
         echo "Name=Storecli Gui"
         echo "Version=$__version__"
         echo "Icon=system-software-install"
-        echo "Exec=xterm -name StorecliGui -geo 120 storecli"
+        echo "Exec=xterm -title StorecliGui -geo $SetGeometry -e 'storecli; read -p PressioneEnter:'"
         echo "Terminal=false"
         echo "Categories=Acessory;"
         echo "Type=Application"
