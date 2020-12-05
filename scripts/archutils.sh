@@ -240,7 +240,7 @@ function parse_disk_partitions()
 	fdisk -l "${DiskInfoTarget[instalation_disk]}" > "$FileTemp"
 	DiskInfoTarget[disk_table]=$(egrep -m 1 '(Tipo|Type|type)' "$FileTemp" | cut -d ':' -f 2 | sed 's/ //g')
 	DiskInfoTarget[disk_len]=$(egrep -m 1 '(Disco|Disk)' "$FileTemp" | awk '{print $3,$4}' | sed 's/\,//g')
-	#DiskInfoTarget[disk_len]="${DiskInfoTarget[disk_len]%%\,}"
+	DiskInfoTarget[disk_len]="${DiskInfoTarget[disk_len]%%\,}"
 	
 	_yellow "Tamanho ... ${DiskInfoTarget[disk_len]}"
 	_yellow "Disco para instalação ... ${DiskInfoTarget[instalation_disk]}"

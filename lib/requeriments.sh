@@ -31,13 +31,12 @@ requeriments_python3_freebsd=(
 # Módulos python3
 _config_python3()
 {
-	
 	if is_executable 'pip3'; then
-		_yellow "Executando: pip3 install wheel wget --user"
-		pip3 install wheel wget --user && return 0 
+		_yellow "Executando: pip3 install wheel --user"
+		pip3 install wheel --user && return 0 
 	elif is_executable 'pip'; then
-		_yellow "Executando: pip install wheel wget --user"
-		pip install wheel wget --user && return 0 
+		_yellow "Executando: pip install wheel --user"
+		pip install wheel --user && return 0 
 	elif is_executable 'pip2'; then
 		_yellow "Executando: pip2 install wheel --user"
 		pip2 install wheel --user && return 0
@@ -88,8 +87,20 @@ _config_requeriments_opensuseleap()
 }
 
 # Debian
+check_debian_nonfree_repo()
+{
+	local os_codename=$(grep '^VERSION_CODENAME=' /etc/os-release | sed 's/VERSION_CODENAME=//g')
+	if find /etc/apt -name *.list | xargs grep "^deb" | grep -q "${os_codename}.*non-free"; then
+		echo "Repositório non-free encontrado"
+	else
+		echo -ne "Adicionando repositório non-free em /etc/apt/sources.list "
+		echo "deb http://deb.debian.org/debian ${os_codename} main contrib non-free" | sudo tee -a /etc/apt/sources.list
+	fi
+}
+
 _config_requeriments_debian()
 {
+	check_debian_nonfree_repo
 	_APT update || return 1
 	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 	__pkg__ aptitude gdebi dirmngr apt-transport-https gnupg gpgv2 gpgv xz-utils || return 1

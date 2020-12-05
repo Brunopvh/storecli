@@ -19,6 +19,29 @@ _show_info()
 	esac
 }
 
+_install_storecli()
+{
+	local URL_STORECLI='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
+	is_executable storecli || "$SCRIPT_STORECLI_INSTALLER"
+	
+	_show_info 'AddFileDesktop' 
+	echo "[Desktop Entry]" > "${destinationFilesStorecli[file_desktop]}"
+    {
+        echo "Name=Storecli Gui"
+        echo "Version=$__version__"
+        echo "Icon=system-software-install"
+        echo "Exec=xterm -name StorecliGui -geo 120 storecli"
+        echo "Terminal=false"
+        echo "Categories=Acessory;"
+        echo "Type=Application"
+    } >> "${destinationFilesStorecli[file_desktop]}"
+
+	cp -u "${destinationFilesStorecli[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesStorecli[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesStorecli[file_desktop]}" ~/Desktop/ 2> /dev/null 
+	printf "OK\n"
+}
+
 _etcher_package_deb()
 {
 	# https://github.com/balena-io/etcher/releases

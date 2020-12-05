@@ -64,6 +64,13 @@ destinationFilesEtcher=(
 	[file_appimage]="$DIR_BIN_USER/balena-etcher-electron"
 	)
 
+declare -A destinationFilesStorecli
+destinationFilesStorecli=(
+	[file_desktop]="$DIR_DESKTOP_USER/storecli.desktop"
+	[link]="$DIR_BIN_USER/storecli"
+	[dir]="$DIR_BIN_USER/storecli-amd64"
+	)
+
 #=============================================================#
 # Desenvolvimento
 #=============================================================#
@@ -245,6 +252,7 @@ programs_acessory=(
 	etcher
 	gnome-disk
 	microsoft-teams
+	storecli-gui
 	veracrypt
 	woeusb
 	)

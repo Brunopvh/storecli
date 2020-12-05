@@ -261,6 +261,7 @@ _pkg_manager_storecli()
 			gnome-disk) _gnome_disk;;
 			microsoft-teams) _microsoft_teams;;
 			plank) _plank;;
+			storecli-gui) _install_storecli;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 
