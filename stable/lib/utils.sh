@@ -319,6 +319,7 @@ _pkg_manager_storecli()
 			bspwm) _bspwm;;
 			cpu-x) _cpux;;
 			compactadores) _compactadores;;
+			genymotion) _genymotion;;
 			google-earth) _google_earth;;
 			gparted) _gparted;;
 			peazip) _peazip;;

@@ -316,6 +316,7 @@ programs_system=(
 	bluetooth
 	compactadores
 	cpu-x
+	genymotion
 	google-earth
 	gparted
 	peazip
