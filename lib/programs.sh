@@ -2834,7 +2834,7 @@ _virtualbox_additions()
 		__sudo__ m-a prepare
 		_APT install -y virtualbox-guest-x11
 	elif [[ -f /etc/fedora-release ]]; then
-		_DNF install -y dkms gcc
+		_DNF install -y gcc kernel-devel kernel-headers dkms make bzip2 perl libxcrypt-compat
 		_DNF install -y $(rpm -qa kernel | sort -V | tail -n 1)
 		_DNF install -y kernel-devel-$(uname -r)
 		_DNF install -y virtualbox-guest-additions
@@ -2846,21 +2846,26 @@ _virtualbox_additions()
 
 _virtualbox_fedora()
 {
+	# https://www.if-not-true-then-false.com/2010/install-virtualbox-guest-additions-on-fedora-centos-red-hat-rhel/
 	# sudo dnf install make automake gcc gcc-c++ kernel-devel
+	#    
 	local requeriments_virtualbox_fedora=(
-		'libgomp' 
-		'glibc-headers' 
-		'glibc-devel' 
-		'kernel-headers' 
-		'dkms' 
-		'qt5-qtx11extras' 
-		'libxkbcommon' 
-		'kernel-devel' 
-		'binutils' 
-		'gcc' 
-		'automake'
-		'make' 
-		'patch'
+		bzip2
+		perl 
+		libxkbcommon
+		libxcrypt-compat
+		libgomp
+		glibc-headers
+		glibc-devel
+		kernel-headers
+		kernel-devel 
+		dkms
+		qt5-qtx11extras
+		binutils
+		gcc
+		automake
+		make 
+		patch
 	)
 
 	__pkg__ "${requeriments_virtualbox_fedora[@]}"
