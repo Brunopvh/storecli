@@ -4,7 +4,11 @@
 [[ ! -d "$DirTemp" ]] && DirTemp=$(mktemp --directory)
 [[ ! -d "$path_libs" ]] && path_libs=$(pwd)
 [[ -z "$columns" ]] && {
-	source "$path_libs"/print_text.sh || exit 1
+	source "$path_libs"/print_text.sh || {
+		printf "lib ... print_text.sh não encontrada, saindo "
+		sleep 2
+		exit 1
+	}
 }
 
 os_type=''
@@ -841,7 +845,7 @@ _show_loop_procs()
 	local num_char='0'
 	local Pid="$1"
 	local MensageText="$2"
-	
+
 	while true; do
 		ALL_PROCS=$(ps aux)
 		[[ $(echo -e "$ALL_PROCS" | grep -m 1 "$Pid" | awk '{print $2}') != "$Pid" ]] && break

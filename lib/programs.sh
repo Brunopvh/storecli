@@ -610,8 +610,9 @@ _pycharm()
 	__shasum__ "$path_file" "$sha256_pycharm" || return 1
 	_unpack "$path_file" || return 1
 
-	cd "$DirUnpack" 
-	mv $(ls -d pycharm*) "${destinationFilesPycharm[dir]}" 1> /dev/null
+	cd "$DirUnpack"
+	printf "${CGreen}C${CReset}opiando arquivos ... " 
+	mv $(ls -d pycharm*) "${destinationFilesPycharm[dir]}" 1> /dev/null && printf "OK\n"
 	cp -u "${destinationFilesPycharm[dir]}"/bin/pycharm.png "${destinationFilesPycharm[file_png]}"
 
 	# Criar atalho para execução na linha de comando.
