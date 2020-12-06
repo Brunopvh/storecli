@@ -2827,24 +2827,21 @@ _virtualbox_extension_pack()
 _virtualbox_additions()
 {
 	# https://www.blogopcaolinux.com.br/2017/08/Instalando-Adicionais-para-Convidado-no-Debian.html
+	# https://4fasters.com.br/2018/09/18/como-deixar-o-centos-em-tela-cheia-no-virtual-box/
 	if [[ -f /etc/debian_version ]]; then
 		_APT install -y build-essential module-assistant
 		_APT install -y linux-headers-$(uname -r)
 		__sudo__ m-a prepare
+		_APT install -y virtualbox-guest-x11
 	elif [[ -f /etc/fedora-release ]]; then
 		_DNF install -y dkms gcc
 		_DNF install -y $(rpm -qa kernel | sort -V | tail -n 1)
 		_DNF install -y kernel-devel-$(uname -r)
-
+		_DNF install -y virtualbox-guest-additions
 	fi
 
 	print_line
-	# ADDITIONS
-	if [[ -f /media/$USER/VBoxLinuxAdditions.run ]]; then
-		__sudo__ sh /media/$USER/VBoxLinuxAdditions.run
-	elif [[ -f /run/media/cdrom/VBoxLinuxAdditions.run ]]; then
-		__sudo__ /run/media/$USER/VBoxLinuxAdditions.run
-	fi
+
 }
 
 _virtualbox_fedora()
