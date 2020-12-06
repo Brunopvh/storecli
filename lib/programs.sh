@@ -2529,6 +2529,20 @@ _cpux()
 	fi
 }
 
+_genymotion()
+{
+	local URL_GENYMOTION='https://dl.genymotion.com/releases/genymotion-3.1.2/genymotion-3.1.2-linux_x64.bin'
+	local PATH_GENYMOTION="$DirDownloads/$(basename $URL_GENYMOTION)"
+
+	__download__ "$URL_GENYMOTION" "$PATH_GENYMOTION" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+
+	cd "$DIR_BIN_USER"
+	chmod +x "$PATH_GENYMOTION"
+	"$PATH_GENYMOTION"
+
+}
+
 _google_earth_debian()
 {
 	# https://sempreupdate.com.br/como-instalar-o-google-earth-no-ubuntu-18-04-e-linux-mint-19/
@@ -2811,6 +2825,7 @@ _virtualbox_extension_pack()
 
 _virtualbox_additions()
 {
+	# https://www.blogopcaolinux.com.br/2017/08/Instalando-Adicionais-para-Convidado-no-Debian.html
 	if [[ -f /etc/debian_version ]]; then
 		_APT install -y build-essential module-assistant
 		_APT install -y linux-headers-$(uname -r)
@@ -2824,10 +2839,10 @@ _virtualbox_additions()
 
 	print_line
 	# ADDITIONS
-	if [[ -f /media/cdrom/VBoxLinuxAdditions.run ]]; then
-		__sudo__ sh /media/cdrom/VBoxLinuxAdditions.run
+	if [[ -f /media/$USER/VBoxLinuxAdditions.run ]]; then
+		__sudo__ sh /media/$USER/VBoxLinuxAdditions.run
 	elif [[ -f /run/media/cdrom/VBoxLinuxAdditions.run ]]; then
-		__sudo__ /run/media/cdrom/VBoxLinuxAdditions.run
+		__sudo__ /run/media/$USER/VBoxLinuxAdditions.run
 	fi
 }
 
@@ -2883,7 +2898,7 @@ _virtualbox_debian()
 	_apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
 
 	if [[ "$os_codename" == 'buster' ]]; then
-		vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
+		virtualbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
 	else
 		_red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"
 		return 1
