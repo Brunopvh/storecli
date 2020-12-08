@@ -118,7 +118,7 @@ check_debian_nonfree_repo()
 
 _config_requeriments_debian()
 {
-	check_debian_nonfree_repo; return
+	check_debian_nonfree_repo
 	_APT update || return 1
 	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 	__pkg__ aptitude gdebi dirmngr apt-transport-https gnupg gpgv2 gpgv xz-utils || return 1
