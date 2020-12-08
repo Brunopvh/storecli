@@ -208,7 +208,7 @@ _veracrypt()
 	# Verificar a assinatura do arquivo de instalação.
 	# gpg --verify veracrypt-1.23-setup.tar.bz2.sig veracrypt-1.23-setup.tar.bz2
 	#
-	# 'https://launchpad.net/veracrypt/trunk/1.23/+download/veracrypt-1.23-setup.tar.bz2'
+	# https://launchpad.net/veracrypt/trunk/1.23/+download/veracrypt-1.23-setup.tar.bz2
 	# https://launchpad.net/veracrypt/trunk/1.24-update4/&#43;download/veracrypt-1.24-Update4-setup.tar.bz2
 	#
 	# libgtk-x11-2.0.so.0 (ArchLinux)
@@ -226,17 +226,19 @@ _veracrypt()
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 	
-	get_html 'https://www.veracrypt.fr/en/Downloads.html'
-	url_package_tar=$(grep -m 1 'download.*.tar' "$HtmlTemporaryFile" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
+	# get_html 'https://www.veracrypt.fr/en/Downloads.html'
+	local VERACRYPT_DOWN_PAGE='https://www.veracrypt.fr/en/Downloads.html'
+	
+	veracrypt_html_page=$(_get_html_page "$VERACRYPT_DOWN_PAGE" --find download.*.tar)
+	url_package_tar=$(echo -e "$veracrypt_html_page" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
 	url_signature_file="${url_package_tar}.sig"	
 	VeracryptTarFile="$DirDownloads/$(basename $url_package_tar)"
 	VeracryptSigFile="${VeracryptTarFile}.sig"
 
 	__download__ "$url_package_tar" "$VeracryptTarFile" || return 1
 	__download__ "$url_signature_file" "$VeracryptSigFile" || return 1
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	
+	  
 	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
 	gpg_verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
 	_unpack "$VeracryptTarFile" || return 1

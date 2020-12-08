@@ -5,7 +5,7 @@
 
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(
-	wget curl aria2 gawk unzip python3 git zenity 
+	wget curl aria2 gawk unzip python3 git zenity xterm 
 )
 
 # Python2 Ubuntu
@@ -41,7 +41,7 @@ _config_python3()
 		_yellow "Executando: pip2 install wheel --user"
 		pip2 install wheel --user && return 0
 	fi
-	_red "(_config_python3): Falha"
+	_red "(_config_python3): Falha instale o pacote pip ou pip3"
 	return 1
 }
 
