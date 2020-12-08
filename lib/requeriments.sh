@@ -93,6 +93,11 @@ check_debian_nonfree_repo()
 {
 	local os_codename=$(grep '^VERSION_CODENAME=' /etc/os-release | sed 's/VERSION_CODENAME=//g')
 
+	if [[ -z $os_codename ]]; then
+		_red "(os_codename) é nulo, adicione os repositório main non-free manualmente."
+		return 1
+	fi
+
 	# Verificar e adicionar repositório main no Debian.
 	if find /etc/apt -name *.list | xargs grep "^deb.*debian.org" | grep -q "debian ${os_codename} main"; then
 		printf "Repositório main encontrado pulando.\n"
