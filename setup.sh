@@ -25,14 +25,19 @@ else
 	DESTINATION_LINK=~/.local/bin/storecli
 fi
 
+is_executable()
+{
+	command -v "$@" >/dev/null 2>&1
+}
+
 _download_storecli()
 {
 	printf "Conectando ... $URL_STORECLI_MASTER "
-	if [ -x $(command -v aria2c 2> /dev/null) ]; then
+	if is_executable aria2c; then
 		aria2c "$URL_STORECLI_MASTER" -d "$TEMP_DIR" -o storecli.tar.gz 1> /dev/null
-	elif [ -x $(command -v wget 2> /dev/null) ]; then
+	elif is_executable wget; then
 		wget -q "$URL_STORECLI_MASTER" -O "$TEMP_DIR"/storecli.tar.gz
-	elif [ -x $(command -v curl 2> /dev/null) ]; then
+	elif is_executable curl; then
 		curl -sSL -o "$TEMP_DIR"/storecli.tar.gz
 	else
 		printf "ERRO: Instale uma ferramenta para gerenciar downloads curl|aria2c|wget\n"
