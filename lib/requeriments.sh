@@ -31,6 +31,7 @@ requeriments_python3_freebsd=(
 # Módulos python3
 _config_python3()
 {
+
 	if is_executable 'pip3'; then
 		_yellow "Executando: pip3 install wheel --user"
 		pip3 install wheel --user && return 0 
@@ -40,9 +41,10 @@ _config_python3()
 	elif is_executable 'pip2'; then
 		_yellow "Executando: pip2 install wheel --user"
 		pip2 install wheel --user && return 0
+	else
+		_red "(_config_python3): Falha instale o pacote pip ou pip3"
+		return 1
 	fi
-	_red "(_config_python3): Falha instale o pacote pip ou pip3"
-	return 1
 }
 
 #=============================================================#
