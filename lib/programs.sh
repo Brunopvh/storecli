@@ -3052,17 +3052,24 @@ _ohmybash()
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
 	local ohmybashZipFile="$DirDownloads/ohmybash.zip"
-	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
-	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
+	local url_installer_ohmybash='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
+	local ohmybash_installer="$DirTemp/ohmybash_installer.sh"
 	
 	if is_executable "$SCRIPT_OHMYBASH_INSTALLER"; then
 		"$SCRIPT_OHMYBASH_INSTALLER"
 	else 
-		sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
+		__download__ "$url_installer_ohmybash" "$ohmybash_installer" || return 1
+		 [[ "$DownloadOnly" == 'True' ]] && {
+			printf "${CGreen}F${CReset}eito somente download.\n"
+			return 0
+		}
 	fi
 
 	__download__ "$ohmybash_master" "$ohmybashZipFile" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
+	[[ "$DownloadOnly" == 'True' ]] && {
+			printf "${CGreen}F${CReset}eito somente download.\n"
+			return 0
+		}
 
 	_unpack "$ohmybashZipFile" || return 1
 	_msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
@@ -3098,9 +3105,30 @@ _ohmybash()
 	esac
 
 	_msg "Habilitando o tema $option para ohmybash"
-	sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc"
-	_white "OK"
-	
+	sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" ~/.bashrc
+	printf "OK\n"
+}
+
+_install_zsh_powerline()
+{
+	# https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+	local URL_POWERLINE_REPO='https://github.com/powerline/fonts/archive/master.zip'
+	local PATH_POWERLINE_FILE="$DirDownloads/powerline.zip"
+
+	__download__ "$URL_POWERLINE_REPO" "$PATH_POWERLINE_FILE" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && {
+		printf "${CGreen}F${CReset}eito somente download.\n"
+		return 0
+	}
+
+	_unpack "$PATH_POWERLINE_FILE" || return 1
+	cd "$DirUnpack"/fonts-master
+	chmod +x install.sh
+	./install.sh
+
+	_font='agnoster'
+	_msg "Configurando fonte $_font em ~/.zshrc"
+	sed -i "s|ZSH_THEME=.*|ZSH_THEME=$_font|g" ~/.zshrc
 }
 
 _ohmyzsh()
@@ -3108,13 +3136,23 @@ _ohmyzsh()
 	# sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
+	local URL_INSTALLER_ZSH='https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+	local PATH_ZSH_INSTALLER="$DirTemp/zsh-installer.sh"
+
 	if ! is_executable 'zsh'; then
-		_yellow "Necessário instalar shell [zsh]"
+		_YESNO "Para prosseguir é necessário instalar o shell 'zsh'" || return 1
 		__pkg__ zsh	
 	fi
 	
-	_yellow "Instalando ohmyzsh"
-	sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
+	__download__ "$URL_INSTALLER_ZSH" "$PATH_ZSH_INSTALLER" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && {
+		printf "${CGreen}F${CReset}eito somente download.\n"
+		return 0
+	}
+
+	sh "$PATH_ZSH_INSTALLER"
+	rm -rf "$PATH_ZSH_INSTALLER" 2> /dev/null
+	_install_zsh_powerline
 }
 
 _papirus_debian()
