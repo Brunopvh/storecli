@@ -226,7 +226,6 @@ _veracrypt()
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 	
-	# get_html 'https://www.veracrypt.fr/en/Downloads.html'
 	local VERACRYPT_DOWN_PAGE='https://www.veracrypt.fr/en/Downloads.html'
 	
 	veracrypt_html_page=$(_get_html_page "$VERACRYPT_DOWN_PAGE" --find download.*.tar)
@@ -650,21 +649,18 @@ _pycharm()
 _sublime_text()
 {
 	# Já instalado.
-	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
-	
-	_yellow "Obtendo url de download aguarde..."
-	sublime_pag='https://www.sublimetext.com/3'
-	sublime_html=$(wget -q -O- "$sublime_pag" | grep -m 1 'http.*sublime.*x64.tar.bz2')
-	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
-	path_file="$DirDownloads/$(basename $sublime_url)"
+	#is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 
-	__download__ "$sublime_url" "$path_file" || return 1
-	
-	# Somente baixar
+	local SUBLIME_DOWN_PAGE='https://www.sublimetext.com/3'
+	local SUBLIME_HTML=$(_get_html_page "$SUBLIME_DOWN_PAGE" --find sublime.*x64.tar.bz2)
+	local URL_SUBLIME_TARFILE=$(echo $SUBLIME_HTML | sed 's/">64.*//g;s/.*href="//g')
+	local PATH_SUBLIME="$DirDownloads/$(basename $URL_SUBLIME_TARFILE)"
+
+	__download__ "$URL_SUBLIME_TARFILE" "$PATH_SUBLIME" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
-	_unpack "$path_file" || return 1
+	_unpack "$PATH_SUBLIME" || return 1
 
-	sudo cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
+	__sudo__ cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
 	sudo cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[file_png]}" 
 	sudo mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"
 	sudo ln -sf "${destinationFilesSublime[dir]}"/sublime_text "${destinationFilesSublime[link]}" 
