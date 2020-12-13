@@ -96,10 +96,11 @@ check_debian_nonfree_repo()
 
 	[[ "$os_id" == 'debian' ]] || return
 
-	if [[ -z $os_codename ]]; then
-		_red "(os_codename) é nulo, adicione os repositório main non-free manualmente."
+	[[ -z $os_codename != 'buster' ]] && {
+		_red "(check_debian_nonfree_repo): seu sistema não é Debian Buster, adicione os repositórios main contrib non-free manualmente."
 		return 1
-	fi
+	}
+	
 
 	# Verificar e adicionar repositório main no Debian.
 	if find /etc/apt -name *.list | xargs grep "^deb.*debian.org" | grep -q "debian ${os_codename} main"; then
