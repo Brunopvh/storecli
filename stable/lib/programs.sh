@@ -208,7 +208,7 @@ _veracrypt()
 	# Verificar a assinatura do arquivo de instalação.
 	# gpg --verify veracrypt-1.23-setup.tar.bz2.sig veracrypt-1.23-setup.tar.bz2
 	#
-	# 'https://launchpad.net/veracrypt/trunk/1.23/+download/veracrypt-1.23-setup.tar.bz2'
+	# https://launchpad.net/veracrypt/trunk/1.23/+download/veracrypt-1.23-setup.tar.bz2
 	# https://launchpad.net/veracrypt/trunk/1.24-update4/&#43;download/veracrypt-1.24-Update4-setup.tar.bz2
 	#
 	# libgtk-x11-2.0.so.0 (ArchLinux)
@@ -226,17 +226,18 @@ _veracrypt()
 	# Já instalado?.
 	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
 	
-	get_html 'https://www.veracrypt.fr/en/Downloads.html'
-	url_package_tar=$(grep -m 1 'download.*.tar' "$HtmlTemporaryFile" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
+	local VERACRYPT_DOWN_PAGE='https://www.veracrypt.fr/en/Downloads.html'
+	
+	veracrypt_html_page=$(_get_html_page "$VERACRYPT_DOWN_PAGE" --find download.*.tar)
+	url_package_tar=$(echo -e "$veracrypt_html_page" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
 	url_signature_file="${url_package_tar}.sig"	
 	VeracryptTarFile="$DirDownloads/$(basename $url_package_tar)"
 	VeracryptSigFile="${VeracryptTarFile}.sig"
 
 	__download__ "$url_package_tar" "$VeracryptTarFile" || return 1
 	__download__ "$url_signature_file" "$VeracryptSigFile" || return 1
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	
+	  
 	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
 	gpg_verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
 	_unpack "$VeracryptTarFile" || return 1
@@ -648,21 +649,18 @@ _pycharm()
 _sublime_text()
 {
 	# Já instalado.
-	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
-	
-	_yellow "Obtendo url de download aguarde..."
-	sublime_pag='https://www.sublimetext.com/3'
-	sublime_html=$(wget -q -O- "$sublime_pag" | grep -m 1 'http.*sublime.*x64.tar.bz2')
-	sublime_url=$(echo "$sublime_html" | sed 's/">64.*//g;s/.*href="//g')
-	path_file="$DirDownloads/$(basename $sublime_url)"
+	#is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 
-	__download__ "$sublime_url" "$path_file" || return 1
-	
-	# Somente baixar
+	local SUBLIME_DOWN_PAGE='https://www.sublimetext.com/3'
+	local SUBLIME_HTML=$(_get_html_page "$SUBLIME_DOWN_PAGE" --find sublime.*x64.tar.bz2)
+	local URL_SUBLIME_TARFILE=$(echo $SUBLIME_HTML | sed 's/">64.*//g;s/.*href="//g')
+	local PATH_SUBLIME="$DirDownloads/$(basename $URL_SUBLIME_TARFILE)"
+
+	__download__ "$URL_SUBLIME_TARFILE" "$PATH_SUBLIME" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
-	_unpack "$path_file" || return 1
+	_unpack "$PATH_SUBLIME" || return 1
 
-	sudo cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
+	__sudo__ cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
 	sudo cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[file_png]}" 
 	sudo mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"
 	sudo ln -sf "${destinationFilesSublime[dir]}"/sublime_text "${destinationFilesSublime[link]}" 
@@ -2827,43 +2825,45 @@ _virtualbox_extension_pack()
 _virtualbox_additions()
 {
 	# https://www.blogopcaolinux.com.br/2017/08/Instalando-Adicionais-para-Convidado-no-Debian.html
+	# https://4fasters.com.br/2018/09/18/como-deixar-o-centos-em-tela-cheia-no-virtual-box/
 	if [[ -f /etc/debian_version ]]; then
 		_APT install -y build-essential module-assistant
 		_APT install -y linux-headers-$(uname -r)
 		__sudo__ m-a prepare
+		_APT install -y virtualbox-guest-x11
 	elif [[ -f /etc/fedora-release ]]; then
-		_DNF install -y dkms gcc
+		_DNF install -y gcc kernel-devel kernel-headers dkms make bzip2 perl libxcrypt-compat
 		_DNF install -y $(rpm -qa kernel | sort -V | tail -n 1)
 		_DNF install -y kernel-devel-$(uname -r)
-
+		_DNF install -y virtualbox-guest-additions
 	fi
 
 	print_line
-	# ADDITIONS
-	if [[ -f /media/$USER/VBoxLinuxAdditions.run ]]; then
-		__sudo__ sh /media/$USER/VBoxLinuxAdditions.run
-	elif [[ -f /run/media/cdrom/VBoxLinuxAdditions.run ]]; then
-		__sudo__ /run/media/$USER/VBoxLinuxAdditions.run
-	fi
+
 }
 
 _virtualbox_fedora()
 {
+	# https://www.if-not-true-then-false.com/2010/install-virtualbox-guest-additions-on-fedora-centos-red-hat-rhel/
 	# sudo dnf install make automake gcc gcc-c++ kernel-devel
+	#    
 	local requeriments_virtualbox_fedora=(
-		'libgomp' 
-		'glibc-headers' 
-		'glibc-devel' 
-		'kernel-headers' 
-		'dkms' 
-		'qt5-qtx11extras' 
-		'libxkbcommon' 
-		'kernel-devel' 
-		'binutils' 
-		'gcc' 
-		'automake'
-		'make' 
-		'patch'
+		bzip2
+		perl 
+		libxkbcommon
+		libxcrypt-compat
+		libgomp
+		glibc-headers
+		glibc-devel
+		kernel-headers
+		kernel-devel 
+		dkms
+		qt5-qtx11extras
+		binutils
+		gcc
+		automake
+		make 
+		patch
 	)
 
 	__pkg__ "${requeriments_virtualbox_fedora[@]}"
@@ -3048,17 +3048,24 @@ _ohmybash()
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
 	local ohmybashZipFile="$DirDownloads/ohmybash.zip"
-	local url_installer='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
-	local ohmybash_installer="$DirDownloads/ohmybash_installer.sh"
+	local url_installer_ohmybash='https://raw.github.com/ohmybash/oh-my-bash/master/tools/install.sh'
+	local ohmybash_installer="$DirTemp/ohmybash_installer.sh"
 	
 	if is_executable "$SCRIPT_OHMYBASH_INSTALLER"; then
 		"$SCRIPT_OHMYBASH_INSTALLER"
 	else 
-		sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)" 
+		__download__ "$url_installer_ohmybash" "$ohmybash_installer" || return 1
+		 [[ "$DownloadOnly" == 'True' ]] && {
+			printf "${CGreen}F${CReset}eito somente download.\n"
+			return 0
+		}
 	fi
 
 	__download__ "$ohmybash_master" "$ohmybashZipFile" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
+	[[ "$DownloadOnly" == 'True' ]] && {
+			printf "${CGreen}F${CReset}eito somente download.\n"
+			return 0
+		}
 
 	_unpack "$ohmybashZipFile" || return 1
 	_msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
@@ -3094,9 +3101,30 @@ _ohmybash()
 	esac
 
 	_msg "Habilitando o tema $option para ohmybash"
-	sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" "$HOME/.bashrc"
-	_white "OK"
-	
+	sed -i "s|OSH_THEME=.*|OSH_THEME=$option|g" ~/.bashrc
+	printf "OK\n"
+}
+
+_install_zsh_powerline()
+{
+	# https://github.com/ohmyzsh/ohmyzsh/wiki/Themes
+	local URL_POWERLINE_REPO='https://github.com/powerline/fonts/archive/master.zip'
+	local PATH_POWERLINE_FILE="$DirDownloads/powerline.zip"
+
+	__download__ "$URL_POWERLINE_REPO" "$PATH_POWERLINE_FILE" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && {
+		printf "${CGreen}F${CReset}eito somente download.\n"
+		return 0
+	}
+
+	_unpack "$PATH_POWERLINE_FILE" || return 1
+	cd "$DirUnpack"/fonts-master
+	chmod +x install.sh
+	./install.sh
+
+	_font='agnoster'
+	_msg "Configurando fonte $_font em ~/.zshrc"
+	sed -i "s|ZSH_THEME=.*|ZSH_THEME=$_font|g" ~/.zshrc
 }
 
 _ohmyzsh()
@@ -3104,13 +3132,23 @@ _ohmyzsh()
 	# sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
+	local URL_INSTALLER_ZSH='https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh'
+	local PATH_ZSH_INSTALLER="$DirTemp/zsh-installer.sh"
+
 	if ! is_executable 'zsh'; then
-		_yellow "Necessário instalar shell [zsh]"
+		_YESNO "Para prosseguir é necessário instalar o shell 'zsh'" || return 1
 		__pkg__ zsh	
 	fi
 	
-	_yellow "Instalando ohmyzsh"
-	sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"	
+	__download__ "$URL_INSTALLER_ZSH" "$PATH_ZSH_INSTALLER" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && {
+		printf "${CGreen}F${CReset}eito somente download.\n"
+		return 0
+	}
+
+	sh "$PATH_ZSH_INSTALLER"
+	rm -rf "$PATH_ZSH_INSTALLER" 2> /dev/null
+	_install_zsh_powerline
 }
 
 _papirus_debian()

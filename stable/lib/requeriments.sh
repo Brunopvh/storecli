@@ -5,7 +5,7 @@
 
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(
-	wget curl aria2 gawk unzip python3 git zenity 
+	wget curl aria2 gawk unzip python3 git zenity xterm 
 )
 
 # Python2 Ubuntu
@@ -31,6 +31,7 @@ requeriments_python3_freebsd=(
 # Módulos python3
 _config_python3()
 {
+
 	if is_executable 'pip3'; then
 		_yellow "Executando: pip3 install wheel --user"
 		pip3 install wheel --user && return 0 
@@ -40,9 +41,10 @@ _config_python3()
 	elif is_executable 'pip2'; then
 		_yellow "Executando: pip2 install wheel --user"
 		pip2 install wheel --user && return 0
+	else
+		_red "(_config_python3): Falha instale o pacote pip ou pip3"
+		return 1
 	fi
-	_red "(_config_python3): Falha"
-	return 1
 }
 
 #=============================================================#
@@ -89,7 +91,14 @@ _config_requeriments_opensuseleap()
 # Debian
 check_debian_nonfree_repo()
 {
+	local os_id=$(grep '^ID=' /etc/os-release | sed 's/ID=//g')
 	local os_codename=$(grep '^VERSION_CODENAME=' /etc/os-release | sed 's/VERSION_CODENAME=//g')
+
+	[[ "$os_id" == 'debian' ]] || return
+	[[ "$os_codename" != 'buster' ]] && {
+		_red "(check_debian_nonfree_repo): seu sistema não é Debian Buster, adicione os repositórios main contrib non-free manualmente."
+		return 1
+	}
 
 	# Verificar e adicionar repositório main no Debian.
 	if find /etc/apt -name *.list | xargs grep "^deb.*debian.org" | grep -q "debian ${os_codename} main"; then
@@ -116,7 +125,7 @@ check_debian_nonfree_repo()
 
 _config_requeriments_debian()
 {
-	check_debian_nonfree_repo; return
+	check_debian_nonfree_repo
 	_APT update || return 1
 	__pkg__ "${requeriments_cli_linux[@]}" || return 1
 	__pkg__ aptitude gdebi dirmngr apt-transport-https gnupg gpgv2 gpgv xz-utils || return 1
