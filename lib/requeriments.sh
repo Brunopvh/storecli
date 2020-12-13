@@ -91,7 +91,10 @@ _config_requeriments_opensuseleap()
 # Debian
 check_debian_nonfree_repo()
 {
+	local os_id=$(grep '^ID=' /etc/os-release | sed 's/ID=//g')
 	local os_codename=$(grep '^VERSION_CODENAME=' /etc/os-release | sed 's/VERSION_CODENAME=//g')
+
+	[[ "$os_id" == 'debian' ]] || return
 
 	if [[ -z $os_codename ]]; then
 		_red "(os_codename) é nulo, adicione os repositório main non-free manualmente."

@@ -880,7 +880,7 @@ _unpack()
 	cd "$DirUnpack"
 
 	if [[ ! -w "$DirUnpack" ]]; then
-		printf "\033[0;31m(_unpack): Você não tem permissão de escrita [-w] em ... $DirUnpack\n"
+		printf "\033[0;31m(_unpack): Você não tem permissão de escrita [-w] em ... $DirUnpack\033[m\n"
 		return 1
 	fi
 	
