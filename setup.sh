@@ -3,7 +3,7 @@
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
 #
-__version__='2020-12-08'
+__version__='2020-12-19'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -52,7 +52,7 @@ _download_storecli()
 	return 1
 }
 
-_copy_files()
+_copy_files_old()
 {
 	# Libs
 	printf "Copiando lib ==> $INSTALATION_DIR/lib "
@@ -102,6 +102,17 @@ _copy_files()
 	# cp -R -v -u storecli-amd64 $INSTALATION_DIR
 }
 
+_copy_files()
+{
+	printf "Copiando $1 >> $2 "
+	if cp -R -u -v "$1" "$2"; then
+		printf "OK\n"
+	else
+		printf "ERRO\n"
+	fi
+	return 1
+}
+
 _install_storecli()
 {
 	_download_storecli || return 1
@@ -124,7 +135,13 @@ _install_storecli()
 	}
 
 	mkdir -p $INSTALATION_DIR
-	_copy_files || return 1
+	_copy_files "lib" "$INSTALATION_DIR" || return 1
+	_copy_files "scripts" "$INSTALATION_DIR" || return 1
+	_copy_files "stable" "$INSTALATION_DIR" || return 1
+	_copy_files "python" "$INSTALATION_DIR" || return 1
+	_copy_files "setup.sh" "$INSTALATION_DIR" || return 1
+	_copy_files "storecli.sh" "$INSTALATION_DIR" || return 1
+
 	chmod -R a+x $INSTALATION_DIR
 	ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK
 
