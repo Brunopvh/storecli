@@ -64,7 +64,7 @@ _download_storecli()
 
 _copy_files()
 {
-	printf "Copiando $1 >> $2 "
+	printf "Copiando $1 ===> $2 "
 	if cp -R -u "$1" "$2"; then
 		printf "OK\n"
 		return 0
@@ -96,12 +96,12 @@ _install_storecli()
 	}
 
 	mkdir -p $INSTALATION_DIR
-	_copy_files "lib" "$INSTALATION_DIR" || return 1
-	_copy_files "scripts" "$INSTALATION_DIR" || return 1
-	_copy_files "stable" "$INSTALATION_DIR" || return 1
-	_copy_files "python" "$INSTALATION_DIR" || return 1
-	_copy_files "setup.sh" "$INSTALATION_DIR" || return 1
-	_copy_files "storecli.sh" "$INSTALATION_DIR" || return 1
+	_copy_files "lib" "$INSTALATION_DIR" 
+	_copy_files "scripts" "$INSTALATION_DIR" 
+	_copy_files "stable" "$INSTALATION_DIR"
+	_copy_files "python" "$INSTALATION_DIR" 
+	_copy_files "setup.sh" "$INSTALATION_DIR" 
+	_copy_files "storecli.sh" "$INSTALATION_DIR"
 
 	printf "Configurando permissões para execução\n"; chmod -R a+x $INSTALATION_DIR
 
