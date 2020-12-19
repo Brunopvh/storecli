@@ -89,6 +89,8 @@ _install_wxpython_win32()
 
 _youtube_dlgui_windows()
 {
+	# O youtube-dl-gui para windows via wine está funcionando perfeitamente no fedora 32, porém
+	# não funciona nas outras distros.
 	# https://mrs0m30n3.github.io/youtube-dl-gui/
 	# https://github.com/MrS0m30n3/youtube-dl-gui
 	# https://pypi.org/project/twodict/
@@ -259,7 +261,9 @@ _install_wine_debian()
 			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10 ./'
 			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10/Release.key'
 			;;
-		*) _red "Intale o wine manualmente usado o 'apt'"; return 1;;
+		*) _red "Intale o wine manualmente usado o 'apt'"
+			return 1
+			;;
 	esac
 	# Adicionar suporte a ARCH i386.
 	_DPKG --add-architecture i386
@@ -267,6 +271,7 @@ _install_wine_debian()
 	_apt_key_add "$url_key_libfaudio" || return 1
 	_addrepo_in_sources_list "$repo_wine_stable" /etc/apt/sources.list.d/wine.list
 	_addrepo_in_sources_list "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
+	_APT update || return 1
 	__pkg__ 'libfaudio0:i386' || return 1
 
 	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
@@ -282,9 +287,9 @@ _install_wine_fedora()
 
 _install_wine_archlinux()
 {
-	_print "(_install_wine_archlinux): entrando no diretório ... $dir_of_executable/scripts"
+	_print "Entrando no diretório ... $dir_of_executable/scripts"
 	cd "$dir_of_executable/scripts"
-	_print "(_install_wine_archlinux): executando ... sudo ./addrepo.py --repo arch"
+	_print "Executando ... sudo ./addrepo.py --repo arch"
 	# Adicionar suporte ao repositório multilib no archlinux.
 	sudo ./addrepo.py --repo arch
 	_PACMAN -Sy

@@ -2826,7 +2826,11 @@ _virtualbox_additions()
 {
 	# https://www.blogopcaolinux.com.br/2017/08/Instalando-Adicionais-para-Convidado-no-Debian.html
 	# https://4fasters.com.br/2018/09/18/como-deixar-o-centos-em-tela-cheia-no-virtual-box/
-	if [[ -f /etc/debian_version ]]; then
+	if [[ "$os_id" == 'debian' ]]; then
+		_APT install -y build-essential module-assistant
+		_APT install -y linux-headers-$(uname -r)
+		__sudo__ m-a prepare
+	elif [[ "$os_id" == 'ubuntu' ]]; then
 		_APT install -y build-essential module-assistant
 		_APT install -y linux-headers-$(uname -r)
 		__sudo__ m-a prepare
@@ -2837,9 +2841,7 @@ _virtualbox_additions()
 		_DNF install -y kernel-devel-$(uname -r)
 		_DNF install -y virtualbox-guest-additions
 	fi
-
 	print_line
-
 }
 
 _virtualbox_fedora()
@@ -2921,9 +2923,16 @@ _virtualbox_ubuntu()
 	_apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
 
 	case "$os_codename" in
-		focal|ulyana) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib";;
-		bionic|tricia) vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib";;
-		*) _red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"; return 1;;
+		focal|ulyana) 
+				vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib"
+				;;
+		bionic|tricia) 
+				vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib"
+				;;
+		*) 
+			_red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"
+			return 1
+			;;
 	esac
 
 	_addrepo_in_sources_list "$vbox_repo" /etc/apt/sources.list.d/virtualbox.list

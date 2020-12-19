@@ -3,7 +3,7 @@
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
 #
-__version__='2020-12-08'
+__version__='2020-12-19'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -11,6 +11,16 @@ __version__='2020-12-08'
 #
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
+
+__script__=$(readlink -f "$0")
+
+case "$1" in
+	-h|--help)
+		echo "Use: ./$(basename $__script__) para instalar o script storecli." 
+		echo "     ./$(basename $__script__) -r|--remove para desinstalar o script storecli."
+		exit 0
+		;;
+esac
 
 URL_STORECLI_MASTER='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 TEMP_DIR="$(mktemp --directory)-installer-storecli"
@@ -54,52 +64,14 @@ _download_storecli()
 
 _copy_files()
 {
-	# Libs
-	printf "Copiando lib ==> $INSTALATION_DIR/lib "
-	if cp -R -u lib $INSTALATION_DIR; then
+	printf "Copiando $1 >> $2 "
+	if cp -R -u "$1" "$2"; then
 		printf "OK\n"
+		return 0
 	else
-		printf "ERRO"
+		printf "ERRO\n"
 		return 1
 	fi
-
-	# Scripts
-	printf "Copiando scripts ==> $INSTALATION_DIR/scripts "
-	if cp -R -u scripts $INSTALATION_DIR; then
-		printf "OK\n"
-	else
-		printf "ERRO"
-		return 1
-	fi
-
-	# Stable
-	printf "Copiando stable ==> $INSTALATION_DIR/stable "
-	if cp -R -u stable $INSTALATION_DIR; then
-		printf "OK\n"
-	else
-		printf "ERRO"
-		return 1
-	fi
-
-	# Setup
-	printf "Copiando setup.sh ==> $INSTALATION_DIR/setup.sh "
-	if cp -R -u setup.sh $INSTALATION_DIR; then
-		printf "OK\n"
-	else
-		printf "ERRO"
-		return 1
-	fi
-
-	# Storecli
-	printf "Copiando storecli.sh ==> $INSTALATION_DIR/storecli.sh "
-	if cp -R -u storecli.sh $INSTALATION_DIR; then
-		printf "OK\n"
-	else
-		printf "ERRO"
-		return 1
-	fi
-	return 0
-	# cp -R -v -u storecli-amd64 $INSTALATION_DIR
 }
 
 _install_storecli()
@@ -124,9 +96,16 @@ _install_storecli()
 	}
 
 	mkdir -p $INSTALATION_DIR
-	_copy_files || return 1
-	chmod -R a+x $INSTALATION_DIR
-	ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK
+	_copy_files "lib" "$INSTALATION_DIR" || return 1
+	_copy_files "scripts" "$INSTALATION_DIR" || return 1
+	_copy_files "stable" "$INSTALATION_DIR" || return 1
+	_copy_files "python" "$INSTALATION_DIR" || return 1
+	_copy_files "setup.sh" "$INSTALATION_DIR" || return 1
+	_copy_files "storecli.sh" "$INSTALATION_DIR" || return 1
+
+	printf "Configurando permissões para execução\n"; chmod -R a+x $INSTALATION_DIR
+
+	printf "Criando link para execução\n"; ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK
 
 
 	if [ -x $DESTINATION_LINK ]; then
@@ -143,7 +122,7 @@ main()
 {
 	
 	case "$1" in 
-		--remove) 
+		-r|--remove) 
 				printf "Desinstalando storecli ... "
 				rm -rf $INSTALATION_DIR
 				rm -rf $DESTINATION_LINK
