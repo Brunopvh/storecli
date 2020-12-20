@@ -642,6 +642,7 @@ _nodejs_lts_deb()
 
 	case "$os_codename" in
 		buster) NODEJS_REPO='deb https://deb.nodesource.com/node_14.x buster main';;
+		bionic) NODEJS_REPO='deb https://deb.nodesource.com/node_14.x bionic main';;
 		*) _red "Programa indisponível para o seu sistema."; return 1;;
 	esac
 
