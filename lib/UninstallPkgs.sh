@@ -79,6 +79,7 @@ _uninstall_packages()
 
 			android-studio) __rmdir__ "${destinationFilesAndroidStudio[@]}";;
 			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
+			nodejs) __rmdir__ "${destinationFilesNodejs[dir]}";;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
 			sublime-text) __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;

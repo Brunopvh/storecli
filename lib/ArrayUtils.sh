@@ -91,6 +91,16 @@ destinationFilesIdeaic=(
 	[dir]="$DIR_BIN_USER/idea-IC"
 	)
 
+
+
+declare -A destinationFilesNodejs
+destinationFilesNodejs=(             
+	[script]="$DIR_BIN_USER/nodejs"                  
+	[dir]="$DIR_BIN_USER/nodejs-amd64"
+	[npm_link]="$DIR_BIN_USER/npm" 
+	[npx_link]="$DIR_BIN_USER/npx"           
+)
+
 declare -A destinationFilesPycharm
 destinationFilesPycharm=(
 	[file_desktop]="$DIR_DESKTOP_USER/pycharm.desktop"
@@ -261,6 +271,7 @@ programs_development=(
 	android-studio
 	codeblocks
 	idea
+	nodejs
 	pycharm
 	sublime-text
 	vim

@@ -594,6 +594,71 @@ _idea_ic()
 	fi
 }
 
+_nodejs_lts_tar()
+{
+	# https://nodejs.org/en/
+	local URL_NODEJS_TARFILE='https://nodejs.org/dist/v14.15.3/node-v14.15.3-linux-x64.tar.xz'
+	local PATH_NODEJS_TARFILE="$DirDownloads/$(basename $URL_NODEJS_TARFILE)"
+
+	if [[ -d "${destinationFilesNodejs[dir]}" ]]; then
+		_red "Desinstale a versão anterior para prosseguir."
+		return 1
+	fi
+
+	__download__ "$URL_NODEJS_TARFILE" "$PATH_NODEJS_TARFILE" || return 1
+	_unpack "$PATH_NODEJS_TARFILE" || return 1
+	cd $DirUnpack
+	mv $(ls -d node-*) nodejs
+	echo -e "Instalando em ... ${destinationFilesNodejs[dir]}"
+	mv nodejs "${destinationFilesNodejs[dir]}"
+	
+	echo -e "Criando link para node em ... ${destinationFilesNodejs[script]}"
+	
+	echo '#!/bin/sh' > "${destinationFilesNodejs[script]}"
+	echo -e "\ncd ${destinationFilesNodejs[dir]}/bin" >> "${destinationFilesNodejs[script]}"
+	echo './node' >> "${destinationFilesNodejs[script]}"
+	chmod +x "${destinationFilesNodejs[script]}"
+
+	printf "Criando link para npm em ... ${destinationFilesNodejs[npm_link]}\n"
+	ln -sf "${destinationFilesNodejs[dir]}"/lib/node_modules/npm/bin/npm-cli.js "${destinationFilesNodejs[npm_link]}"
+	printf "Criando link para npx em ... ${destinationFilesNodejs[npx_link]}\n"
+	ln -sf "${destinationFilesNodejs[dir]}"/lib/node_modules/npm/bin/npx-cli.js "${destinationFilesNodejs[npx_link]}"
+}
+
+_nodejs_lts_deb()
+{
+	# https://github.com/nodesource/distributions/blob/master/README.md#debmanual
+	# https://github.com/nodesource/distributions/blob/master/README.md
+	# 
+	# deb https://deb.nodesource.com/node_14.x buster main
+	# curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
+	# 
+	# To install the Yarn package manager, run:
+    # curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+    # echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    # sudo apt-get update && sudo apt-get install yarn
+
+	[[ ! -f /etc/debian_version ]] && return 1
+
+	case "$os_codename" in
+		buster) NODEJS_REPO='deb https://deb.nodesource.com/node_14.x buster main';;
+		*) _red "Programa indisponível para o seu sistema."; return 1;;
+	esac
+
+	_isroot || return 1
+	_apt_key_add 'https://deb.nodesource.com/gpgkey/nodesource.gpg.key' || return 1
+	_addrepo_in_sources_list "$NODEJS_REPO" /etc/apt/sources.list.d/nodesource.list
+	__pkg__ nodejs
+}
+
+_nodejs_lts()
+{
+	if [[ "$os_id" == 'debian' ]]; then
+		_nodejs_lts_deb
+	else
+		_nodejs_lts_tar
+	fi
+}
 
 _pycharm()
 {

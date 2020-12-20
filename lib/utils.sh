@@ -270,6 +270,7 @@ _pkg_manager_storecli()
 			codeblocks) _codeblocks;;
 			java) _java;;
 			idea) _idea_ic;;
+			nodejs) _nodejs_lts;;
 			pycharm) _pycharm;;
 			sublime-text) _sublime_text;;
 			vim) _vim;;
