@@ -656,11 +656,13 @@ main()
 	read -t 15 -n 1 -p "Digite um número e pressione enter: " op
 	echo ' '
 
+	check_boot_type
+
 	case "$op" in
 		0) exit;;
 		1) 
-			parse_disk_partitions || return 1
-			parse_table_disk || return 1
+			parse_disk_partitions
+			parse_table_disk
 			if ! _YESNO "Deseja prosseguir"; then
 				_red "Saindo"
 				return 0
