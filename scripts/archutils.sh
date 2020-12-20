@@ -42,6 +42,10 @@ VERSION='2020-11-14'
 # INSTALAÇÃO DE FONTES NO SISTEMA.
 # sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
 # 
+# INSTALAÇÃO DO XFCE
+# pacman -S xfce4 xfce4-goodies lightdm lightdm-gtk-greeter networkmanager network-manager-applet
+# systemctl enable lightdm
+# systemctl enable NetworkManager
 #
 #------------------------------------------------------------------#
 # REFERÊNCIAS
@@ -145,7 +149,7 @@ EOF
 
 function _YESNO()
 {
-	_println "${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: "
+	echo -ne "${@} [${CGreen}s${CReset}/${CRed}n${CReset}]: "
 	read -t 30 -n 1 yesno
 	echo ' '
 
@@ -509,9 +513,9 @@ _configure_base_system()
 	# Formatar a partição raiz para o ponto de montagem '/'. 
 	_FORMAT_EXT4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX' || return 1
 	_mount_partition "${DiskInfoTarget[partition_root]}" '/mnt' || return 1
-	_configure_partition_home || return 1
-	_configure_partition_boot || return 1
-	_configure_partition_efi || return 1
+	_configure_partition_home
+	_configure_partition_boot 
+	_configure_partition_efi
 
 	# Loadkeys
 	_yellow "Executando ... loadkeys br-abnt2"
