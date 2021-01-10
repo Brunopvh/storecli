@@ -577,8 +577,8 @@ _idea_ic()
 
 	_print "Criando atalho para execução"
 	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[file_script]}"
-	echo -e "cd ${destinationFilesIdeaic[file_desktop]}/bin" >> "${destinationFilesIdeaic[file_script]}"
-	echo -e "./idea.sh \$\@" >> "${destinationFilesIdeaic[file_script]}"
+	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[file_script]}"
+	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[file_script]}"
 	chmod +x "${destinationFilesIdeaic[file_script]}"
 
 	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
