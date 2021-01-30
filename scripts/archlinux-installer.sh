@@ -433,7 +433,7 @@ _format_to_fat32()
 	fi
 
 	# Desmontar a partição a ser formatada caso esteja montada. 
-	_umount_partition "$1" || return 1
+	_umount_partition "$1"
 	_yellow "Executando ... mkfs.vfat -F32 $1"
 	mkfs.vfat -F32 "$1"
 }
@@ -450,7 +450,7 @@ _format_to_ext4()
 	fi
 
 	# Desmontar caso esteja montado
-	 _umount_partition "$device" || return 1
+	 _umount_partition "$device"
 
 	if [[ "$label" ]]; then
 		_yellow "Executando ... mkfs.ext4 -L $label $device"
@@ -546,7 +546,7 @@ _configure_base_system()
 
 	# Pacstrap
 	_yellow "Executando: pacstrap /mnt base base-devel linux linux-firmware python3 vim curl"
-	pacstrap /mnt base base-devel linux linux-firmware python3 || {
+	pacstrap /mnt base base-devel linux linux-firmware python3 vim curl || {
 		_red "(_configure_base_system) erro: pacstrap"
 		return 1
 	}
@@ -650,11 +650,13 @@ _install_gnome()
 function get_script_online_version()
 {
 	# Baixar a versão deste script no github se a versão online for diferente da versão local.
-	NowTime=$(date +%H:%M:%S)
 	config_file=/root/"${__appname__}.cfg"
 	touch "$config_file"
+	
+	NowTime=$(date +%Y_%m_%d)
+	OldTime=$(cat "$config_file")
 
-	grep "$NowTime" "$config_file" && return 0
+	[[ "$NowTime" == "$OldTime" ]] && return 0
 
 	cd $temp_dir
 	path_download_online_script="$dir_of_executable/${__appname__}-new-version.sh"
@@ -699,7 +701,7 @@ main()
 	_yellow "2 - Instalar POS BASE - (opição usada após o arch-chroot)"
 	_yellow "3 - Instalar Grub"
 	_yellow "4 - Instalar gnome-shell"
-	read -t 15 -n 1 -p "Digite um número e pressione enter: " op
+	read -t 40 -n 1 -p "Digite um número e pressione enter: " op
 	echo ' '
 
 	check_boot_type
