@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
 #
-__version__='2021-01-17'
+__version__='2021-01-30'
 __appname__='archlinux-installer'
-# 
+__author__='Bruno Chaves'
+__script__=$(readlink -f "$0")
+dir_of_executable=$(dirname "$__script__")
 
 #----------------------------------------------------------------#
 # INSTALAÇÃO BÁSICA DO ARCHLINUX
@@ -18,26 +20,34 @@ __appname__='archlinux-installer'
 #   6 - Formatar a partição de instalação -> mkfs.ext4 /dev/particao
 #   7 - Montar a partição de instalação -> mount /dev/particao /mnt
 #
-#
+#----------------------------------------------------------------#
 #
 # pacstrap /mnt base base-devel
 # genfstab -U -p /mnt >> /mnt/etc/fstab
-# 
+#
+#----------------------------------------------------------------#
 # CONFIGURAR O GRUB EFI
+#----------------------------------------------------------------#
 # grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 # grub-mkconfig -o /boot/grub/grub.cfg
 #
+#----------------------------------------------------------------#
 # WIFI
+#----------------------------------------------------------------#
 # systemctl status NetworkManager
 # systemctl start NetworkManager
 # systemctl enable NetwokrManager
 # systemctl enable gdm
 #
+#----------------------------------------------------------------#
 # XORG
+#----------------------------------------------------------------#
 # pacman -Sy
 # pacman -S xorg-server
 #
+#----------------------------------------------------------------#
 # CONFIGURAÇÃO DO TECLADO
+#----------------------------------------------------------------#
 # localectl list-keymaps
 # localectl set-keymap --no-convert br-abnt2 
 #
@@ -170,17 +180,14 @@ if [[ $(uname -s) != 'Linux' ]]; then
 	exit 1
 fi
 
+loadkeys br-abnt2 
 temp_dir=$(mktemp --directory)
 temp_file="$temp_dir/Tempfile.txt"
 LogInfo="$temp_dir/Info.log"
 LogErro="$temp_dir/Erro.log"
-
 REPOS_STORECLI='https://github.com/Brunopvh/storecli'
 URL_STORECLI_MASTER="$REPOS_STORECLI/archive/master.tar.gz"
 URL_ARCHLINUX_INSTALLER='https://raw.github.com/Brunopvh/storecli/master/scripts/archlinux-installer.sh'
-
-print_line
-_yellow "$URL_ARCHLINUX_INSTALLER"
 
 # Efi/Bios
 TYPE_BOOT='' # $(ls /sys/firmware/efi/efivars)
@@ -199,15 +206,67 @@ while [[ $1 ]]; do
 		-r|--root) shift; DiskInfoTarget[partition_root]="$1";;      # /
 		-t|--target) shift; DiskInfoTarget[instalation_disk]="$1";;  # disco alvo - /dev/sda, /dev/sdb, /dev/sdc
 		-h|--help) usage; exit; break;;
+		-v|--version) echo -e "$__version__"; exit 0; break;;
 		*)  _red "Opção/Agumento inválida: $1"; exit 1; break;;
 	esac
 	shift
 done
 }
 
+#=======================================================#
+# Lista de pacotes utils para cli e interface gráfica.
+#=======================================================#
+pkgs_cli_utils=(
+	'dosfstools'
+	'mtools'
+	'network-manager-applet'
+	'networkmanager'
+	'wpa_supplicant'
+	'wireless_tools'
+	'wpa_actiond'	
+	'dhclient'
+	'sudo'
+	'dialog'
+	'ntfs-3g'
+	'curl'
+	'git'
+	'vim'
+	'ttf-dejavu' 
+	'ttf-liberation' 
+	'noto-fonts'
+)
+
+pkgs_laptop_utils=(
+	'acpi' 
+	'acpid'
+)
+
+# Pacotes para instalação do gnome-shell no arch.
+pkgs_gnomeshell=(
+	'xorg-server'
+	'xf86-video-video-intel'
+	'libgl'
+	'mesa'
+	'gdm'
+	'gnome'
+	'gnome-terminal'
+	'nautilus'
+	'gnome-control-center'
+	'adwaita-icon-theme'
+)
+
+function show_logo(){
+	print_line
+	_yellow "${CGreen}Url         -> ${CReset}$URL_ARCHLINUX_INSTALLER"
+	_yellow "${CGreen}Repositório -> ${CReset}$REPOS_STORECLI"
+	_yellow "${CGreen}Versão      -> ${CReset}$__version__"
+	_yellow "${CGreen}Autor       -> ${CReset}$__author__"
+}
+
 function check_boot_type()
 {
 	# Verificar se o tipos de boot e Bios/Efi e definir a variável TYPE_BOOT.
+	# ls /sys/firmware/efi/efivars
 	modprobe -q efivarfs
     if [[ -d "/sys/firmware/efi/" ]]; then
 		if [[ -z $(mount | grep /sys/firmware/efi/efivars) ]]; then
@@ -298,47 +357,11 @@ _PACMAN()
 	fi
 }
 
-#=======================================================#
-# Lista de pacotes utils para cli e interface gráfica.
-#=======================================================#
-pkgs_cli_utils=(
-	'dosfstools'
-	'mtools'
-	'network-manager-applet'
-	'networkmanager'
-	'wpa_supplicant'
-	'wireless_tools'
-	'wpa_actiond'	
-	'dhclient'
-	'sudo'
-	'dialog'
-	'ntfs-3g'
-	'curl'
-	'git'
-	'vim'
-	'ttf-dejavu' 
-	'ttf-liberation' 
-	'noto-fonts'
-)
-
-pkgs_laptop_utils=(
-	'acpi' 
-	'acpid'
-)
-
-# Pacotes para instalação do gnome-shell no arch.
-pkgs_gnomeshell=(
-	'xorg-server'
-	'xf86-video-video-intel'
-	'libgl'
-	'mesa'
-	'gdm'
-	'gnome'
-	'gnome-terminal'
-	'nautilus'
-	'gnome-control-center'
-	'adwaita-icon-theme'
-)
+__mount__()
+{
+	mount "$@" || return 1
+	return 0
+}
 
 _ismount()
 {
@@ -363,7 +386,7 @@ _umount_partition()
 	_ismount "$1" || return 1 # Partição não está montada.
 
 	echo -ne "${CYellow}Desmontando ... ${1}${CReset} "
-	umount "$1"
+	mount "$1" 
 	if [[ $? == 0 ]]; then
 		_yellow "OK"
 		return 0
@@ -379,7 +402,7 @@ _mount_partition()
 	_ismount "$1" && return 0 # Partição já está montada.
 
 	echo "${CYellow}Montando $1 em ... ${2}${CReset} "
-	mount "${1}" "${2}"
+	__mount__ "$1" "$2"
 	if [[ $? == 0 ]]; then
 		_yellow "OK"
 		return 0
@@ -480,10 +503,29 @@ _configure_partition_home()
 	return 0
 }
 
+_configure_locale()
+{
+	_yellow "Executando ... export LANG=pt_BR.UTF-8"; export LANG=pt_BR.UTF-8
+	_yellow "Executando ... timedatectl set-ntp true"; timedatectl set-ntp true; timedatectl status
+	_yellow "Executando ... loadkeys br-abnt2"; loadkeys br-abnt2
+	_yellow "Configurando ... pt_BR.UTF-8"
+	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 
+	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen
+
+	# /usr/share/zoneinfo/America/Porto_Velho - Configurar horário de Porto Velho/RO
+	_yellow "Executando: ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime"
+	ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime
+	_yellow "Configurando ... /etc/locale.conf"; echo 'LANG="pt_BR.UTF-8"' > '/etc/locale.conf'
+	_yellow "Configurando ... /etc/vconsole.conf"; echo 'KEYMAP=br-abnt2' > '/etc/vconsole.conf'
+	_yellow "Executando ... locale-gen"; locale-gen
+}
+
 _configure_base_system()
 {
 	# Configuração básica de instalação do sistema. Está função deve é executada antes da instalação do
 	# sistema é interface gráfica.
+	# genfstab -U /mnt >> /mnt/etc/fstab
+
 	mkdir -p /mnt
 	mkdir -p /mnt/boot
 	mkdir -p /mnt/home
@@ -494,65 +536,44 @@ _configure_base_system()
 	_configure_partition_home
 	_configure_partition_boot 
 	_configure_partition_efi
-
-	# Loadkeys
-	_yellow "Executando ... loadkeys br-abnt2"
-	loadkeys br-abnt2
-
-	_yellow "Configurando idioma pt_BR.UTF-8"
-	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 
-	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen
-
-	_yellow "Configurando horário do sistema"
-	timedatectl set-ntp true
+	_configure_locale
 
 	# Pacstrap
-	_yellow "Executando: pacstrap /mnt base base-devel linux linux-firmware python3 vim"
-	if ! pacstrap /mnt base 'base-devel' linux 'linux-firmware' python3; then
+	_yellow "Executando: pacstrap /mnt base base-devel linux linux-firmware python3 vim curl"
+	pacstrap /mnt base base-devel linux linux-firmware python3 || {
 		_red "(_configure_base_system) erro: pacstrap"
 		return 1
-	fi
+	}
 
 	# Configuar fstab.
 	_yellow "Executando: genfstab -U -p /mnt >> /mnt/etc/fstab"
 	genfstab -p /mnt >> /mnt/etc/fstab
+	curl -L -S $URL_ARCHLINUX_INSTALLER -o "/mnt/${__appname__}.sh"
 	_yellow "Executando: arch-chroot /mnt /bin/bash"
 	_green "Execute os comandos a seguir para proxima fase"
 	_green "curl -L -S $URL_ARCHLINUX_INSTALLER -o archutils.sh"
 	_green "chmod +x archutils.sh; ./archutils.sh"
-	
+	ls /mnt/*.sh
 	arch-chroot /mnt /bin/bash
 }
 
 _configure_pos_base()
 {
-	# /usr/share/zoneinfo/America/Porto_Velho
-	# Configurar horário de Porto Velho/RO
-	_yellow "Executando: ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime"
-	ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime
+	_configure_locale
 
-	# Idioma pt_BR.UTF-8
-	_yellow "Configurando: /etc/locale.gen"
-	sed -i 's/#pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen
-
-	_yellow "Configurando: /etc/locale.conf"
-	echo 'LANG="pt_BR.UTF-8"' > '/etc/locale.conf'
-
-	_yellow "Configurando: KEYMAP=br-abnt2 em /etc/vconsole.conf"
-	echo 'KEYMAP=br-abnt2' > '/etc/vconsole.conf'
-
-	_yellow "Executando ... locale-gen"
-	locale-gen
-
+	if [[ -f /etc/hosts ]] && [[ ! -f /etc/hosts.bak ]]; then
+		cp /etc/hosts /etc/hosts.bak
+	fi
+	
 	# Hostname
-	_yellow "Digite um HOSTENAME para sua máquina: "; read host_name
-	_yellow "Usando este hostname $host_name"
-	echo "$host_name" > '/etc/hostname'
-
+	HOSTENAME="archlinux"
+	_yellow "Digite um HOSTENAME para sua máquina: "; read -t 10 HOSTENAME
+	_yellow "Usando este hostname $HOSTENAME"
+	echo "$HOSTENAME" > '/etc/hostname'
 	_yellow "Configurando /etc/hosts"
 	echo '127.0.0.1	localhost.localdomain	localhost' >> '/etc/hosts'
 	echo '::1	localhost.localdomain	localhost' >> '/etc/hosts'
-	echo -e "127.0.0.1	${host_name}.localdomain	$host_name" >> '/etc/hosts'
+	echo -e "127.0.0.1	${HOSTENAME}.localdomain	$HOSTENAME" >> '/etc/hosts'
 
 	_yellow "Executando pacman -Syy"
 	pacman -Syy
@@ -620,8 +641,36 @@ _install_gnome()
 	_yellow "umount -R /mnt"
 }
 
+function get_script_online_version()
+{
+	# Baixar a versão deste script no github se a versão online for diferente da versão local.
+	cd $temp_dir
+	path_download_online_script="$dir_of_executable/${__appname__}-new-version.sh"
+
+	print_line
+	echo -ne "${CYellow}Buscando por atualização aguarde ... "
+	curl -SL "$URL_ARCHLINUX_INSTALLER" -o "$path_download_online_script" || {
+		_red "Falha"
+		return 1
+	}
+	_green 'OK'
+	chmod +x $path_download_online_script
+	online_version=$($path_download_online_script -v)
+
+	if [[ "$online_version" == "$__version__" ]]; then
+		_green "Você tem a ultima versão deste script"
+		rm "$path_download_online_script"
+		return 1
+	else
+		_green "Nova versão [$online_version] baixada em ... $path_download_online_script"
+		return 0
+	fi
+}
+
 main()
 {
+	get_script_online_version && return 0
+
 	if [[ ! -z $1 ]]; then
 		parse_disk_partitions || return 1
 		parse_table_disk || return 

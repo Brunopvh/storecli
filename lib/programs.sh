@@ -3,7 +3,6 @@
 
 github='https://github.com'
 
-
 _show_info()
 {
 	# Função para exibir mensagens padrão, como por exemplo erros comuns 

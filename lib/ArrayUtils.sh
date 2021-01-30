@@ -1,6 +1,5 @@
 #!/usr/bin/env bash
 #
-
 #
 # Este arquivo guarda informações como dirtórios e arquivos de alguns programas
 # para tornar a instalação e remoção dos programas mais prática.
@@ -10,6 +9,7 @@
 
 # Verificar se as variáveis com os diretórios de configuração e instalação dos
 # aplicativos foram definidas.
+[[ -z $DIR_SHARE_USER ]] && DIR_SHARE_USER=~/".local/share"
 [[ -z $DIR_DESKTOP_USER ]] && DIR_DESKTOP_USER=~/.local/share/applications
 [[ -z $DIR_BIN_USER ]] && DIR_BIN_USER=~/.local/bin
 [[ -z $DIR_ICON_USER ]] && DIR_ICON_USER=~/.local/share/icons
