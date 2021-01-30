@@ -658,8 +658,6 @@ function get_script_online_version()
 	
 	NowTime=$(date +%Y_%m_%d)
 	OldTime=$(cat "$config_file")
-
-	_green "#NowTime - $OldTime"
 	[[ "$NowTime" == "$OldTime" ]] && return 0
 
 	cd $temp_dir
@@ -674,7 +672,8 @@ function get_script_online_version()
 	_green 'OK'
 	chmod +x $path_download_online_script
 	online_version=$($path_download_online_script -v)
-
+	echo -e "$NowTime" > "$config_file"
+	
 	if [[ "$online_version" == "$__version__" ]]; then
 		_green "Você tem a ultima versão deste script"
 		return 1
@@ -682,8 +681,6 @@ function get_script_online_version()
 		_green "Nova versão [$online_version] baixada em ... $path_download_online_script"
 		return 0
 	fi
-
-	echo "$NowTime" > "$config_file"
 }
 
 main()
