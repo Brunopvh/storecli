@@ -598,6 +598,8 @@ _install_grub()
 	# grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
 	# grub-mkconfig -o /boot/grub/grub.cfg
 
+	parse_disk_partitions || return 1
+
 	if [[ "$TYPE_BOOT" == 'efi' ]]; then
 		_PACMAN grub os-prober efibootmgr || return 1
 	else
@@ -656,6 +658,7 @@ function get_script_online_version()
 	NowTime=$(date +%Y_%m_%d)
 	OldTime=$(cat "$config_file")
 
+	_green "#NowTime - $OldTime"
 	[[ "$NowTime" == "$OldTime" ]] && return 0
 
 	cd $temp_dir
