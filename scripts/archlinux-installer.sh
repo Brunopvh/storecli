@@ -588,6 +588,8 @@ _configure_pos_base()
 		_PACMAN "$pkg"
 	done
 
+	_configure_systemctl
+
 	_green "Para finalizar defina sua senha de ${Red}root${Reset} com o comando passwd"
 	_green "Também e recomendado habilitar o multilib em /etc/pacman.conf"
 	_green "Em seguida execute este programa novamente e escolha a opição 3 no menu"
@@ -631,7 +633,7 @@ _configure_systemctl()
 	_yellow "systemctl enable gdm"; systemctl enable gdm
 }
 
-_install_gnome()
+_install_gnome_desktop()
 {
 	for X in "${pks_cli_utils[@]}"; do
 		_PACMAN "$X"
@@ -645,9 +647,14 @@ _install_gnome()
 	print_line
 	_yellow "Execute as ações a seguir manualmente"
 	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
-	_yellow "usermod -aG wheel"
+	_yellow "usermod -aG wheel seu_nome"
 	_yellow "Edite o arquivo visudo"
 	_yellow "umount -R /mnt"
+}
+
+_install_xfce_desktop()
+{
+	echo
 }
 
 function get_script_online_version()
@@ -673,7 +680,7 @@ function get_script_online_version()
 	chmod +x $path_download_online_script
 	online_version=$($path_download_online_script -v)
 	echo -e "$NowTime" > "$config_file"
-	
+
 	if [[ "$online_version" == "$__version__" ]]; then
 		_green "Você tem a ultima versão deste script"
 		return 1
@@ -685,6 +692,7 @@ function get_script_online_version()
 
 main()
 {
+	_ping || return 1
 	get_script_online_version
 	sleep 1
 
@@ -692,8 +700,6 @@ main()
 		parse_disk_partitions || return 1
 		parse_table_disk || return 
 	fi
-
-	_ping || return 1
 
 	_yellow "MENU PRINCIPAL"
 	_yellow "0 - Sair"
@@ -704,7 +710,7 @@ main()
 	read -t 40 -n 1 -p "Digite um número e pressione enter: " op
 	echo ' '
 
-	check_boot_type
+	[[ "$op" != 0 ]] && check_boot_type
 
 	case "$op" in
 		0) exit;;
@@ -721,7 +727,7 @@ main()
 			;;
 		2) _configure_pos_base "$@";;
 		3) _install_grub;;
-		4) _install_gnome;;
+		4) _install_gnome_desktop;;
 		*) return 1;;
 	esac
 

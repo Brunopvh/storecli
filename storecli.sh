@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2021_01_30'
+__version__='2021_01_31'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #

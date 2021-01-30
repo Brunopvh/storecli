@@ -47,7 +47,7 @@ _download_storecli()
 	elif is_executable wget; then
 		wget -q "$URL_STORECLI_MASTER" -O "$TEMP_DIR"/storecli.tar.gz
 	elif is_executable curl; then
-		curl -sSL -o "$TEMP_DIR"/storecli.tar.gz
+		curl -sSL -o "$TEMP_DIR"/storecli.tar.gz "$URL_STORECLI_MASTER"
 	else
 		printf "ERRO: Instale uma ferramenta para gerenciar downloads curl|aria2c|wget\n"
 		return 1
