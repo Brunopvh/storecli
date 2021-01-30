@@ -70,6 +70,12 @@ dir_of_executable=$(dirname "$__script__")
 # https://stackoverflow.com/questions/402377/using-getopts-to-process-long-and-short-command-line-options
 # https://www.dicas-l.com.br/arquivo/fatiando_opcoes_com_o_getopts.php
 #
+#----------------------------------------------------------------#
+# Obtendo a ultima versão deste script
+#----------------------------------------------------------------#
+#
+# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/scripts/archlinux-installer.sh)"
+#
 
 CRed='\033[0;31m'
 CGreen='\033[0;32m'
@@ -644,11 +650,17 @@ _install_gnome()
 function get_script_online_version()
 {
 	# Baixar a versão deste script no github se a versão online for diferente da versão local.
+	NowTime=$(date +%H:%M:%S)
+	config_file=/root/"${__appname__}.cfg"
+	touch "$config_file"
+
+	grep "$NowTime" "$config_file" && return 0
+
 	cd $temp_dir
 	path_download_online_script="$dir_of_executable/${__appname__}-new-version.sh"
 
 	print_line
-	echo -ne "${CYellow}Buscando por atualização aguarde ... "
+	_yellow "Buscando por atualização aguarde ..."
 	curl -SL "$URL_ARCHLINUX_INSTALLER" -o "$path_download_online_script" || {
 		_red "Falha"
 		return 1
@@ -665,11 +677,14 @@ function get_script_online_version()
 		_green "Nova versão [$online_version] baixada em ... $path_download_online_script"
 		return 0
 	fi
+
+	echo "$NowTime" > "config_file"
 }
 
 main()
 {
-	get_script_online_version && return 0
+	get_script_online_version
+	sleep 1
 
 	if [[ ! -z $1 ]]; then
 		parse_disk_partitions || return 1
