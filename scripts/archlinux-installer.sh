@@ -573,7 +573,7 @@ _configure_pos_base()
 	
 	# Hostname
 	HOSTENAME="archlinux"
-	_yellow "Digite um HOSTENAME para sua máquina: "; read -t 10 HOSTENAME
+	_yellow "Digite um HOSTENAME para sua máquina: "; read -t 30 HOSTENAME
 	_yellow "Usando este hostname $HOSTENAME"
 	echo "$HOSTENAME" > '/etc/hostname'
 	_yellow "Configurando /etc/hosts"
@@ -673,7 +673,6 @@ function get_script_online_version()
 
 	if [[ "$online_version" == "$__version__" ]]; then
 		_green "Você tem a ultima versão deste script"
-		rm "$path_download_online_script"
 		return 1
 	else
 		_green "Nova versão [$online_version] baixada em ... $path_download_online_script"
