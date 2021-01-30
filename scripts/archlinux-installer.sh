@@ -515,8 +515,8 @@ _configure_locale()
 	_yellow "Executando ... timedatectl set-ntp true"; timedatectl set-ntp true; timedatectl status
 	_yellow "Executando ... loadkeys br-abnt2"; loadkeys br-abnt2
 	_yellow "Configurando ... pt_BR.UTF-8"
-	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen 
-	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8' /etc/locale.gen
+	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen 
+	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen
 
 	# /usr/share/zoneinfo/America/Porto_Velho - Configurar horário de Porto Velho/RO
 	_yellow "Executando: ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime"
