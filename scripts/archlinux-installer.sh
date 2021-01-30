@@ -654,7 +654,7 @@ _install_gnome_desktop()
 
 _install_xfce_desktop()
 {
-	echo
+	_red "(_install_xfce_desktop): esta função ainda está em desenvolvimento."
 }
 
 function get_script_online_version()
