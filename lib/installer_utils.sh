@@ -699,6 +699,18 @@ __sudo__()
 	fi
 }
 
+get_extension_file()
+{
+	# Usar o comando "file" para saber qual o cabeçalho de um arquivo qualquer.
+	[[ -z $1 ]] && return 1
+	is_executable file || {
+		echo 'None'
+		return 1
+	}
+
+	file "$1" | cut -d ' ' -f 2
+}
+
 __rmdir__()
 {
 	# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
@@ -1053,23 +1065,23 @@ _unpack()
 	
 	# Descomprimir de acordo com cada extensão de arquivo.	
 	if [[ "$extension_file" == 'gzip' ]]; then
-		tar -zxvf "$path_file" -C "$DIR_UNPACK" 1> /dev/null 2>&1 &
+		tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$extension_file" == 'bzip2' ]]; then
-		tar -jxvf "$path_file" -C "$DIR_UNPACK" 1> /dev/null 2>&1 &
+		tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$extension_file" == 'XZ' ]]; then
-		tar -Jxf "$path_file" -C "$DIR_UNPACK" 1> /dev/null 2>&1 &
+		tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$extension_file" == 'Zip' ]]; then
-		unzip "$path_file" -d "$DIR_UNPACK" 1> /dev/null 2>&1 &
+		unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1 &
 	elif [[ "$extension_file" == 'Debian' ]]; then
 		
 		if [[ -f /etc/debian_version ]]; then    # Descompressão em sistemas DEBIAN
 			ar -x "$path_file" 1> /dev/null 2>&1  &
 		else                                     # Descompressão em outros sistemas.
-			ar -x "$path_file" --output="$DIR_UNPACK" 1> /dev/null 2>&1 &
+			ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1 &
 		fi
 	fi
 
 	# echo -e "$(date +%H:%M:%S)"
-	_show_loop_procs "$!" "Descompactando ... $(basename $path_file) em ... $DirUnpack"
+	_show_loop_procs "$!" "Descompactando ... [$extension_file] ... $(basename $path_file) em ... $DirUnpack"
 	return 0
 }

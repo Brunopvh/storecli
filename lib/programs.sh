@@ -3379,9 +3379,8 @@ _topicons_plus_github()
 	__download__ "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
+	#__pkg__ make
 	_unpack "$path_file" || return 1
-	__pkg__ make
-
 	cd "$DirUnpack"
 	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
 	cd topicons_plus
@@ -3400,7 +3399,7 @@ _topicons_plus()
 {
 	case "$os_id" in
 		fedora) __pkg__ 'gnome-shell-extension-topicons-plus';;
-		debian) __pkg__ 'gnome-shell-extension-top-icons-plus';;
+		debian) _topicons_plus_github;; # __pkg__ 'gnome-shell-extension-top-icons-plus'
 		*) _topicons_plus_github;;
 	esac
 }
