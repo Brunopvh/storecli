@@ -363,9 +363,11 @@ _PACMAN()
 {
 	_msg "${CGreen}Executando ... pacman -S --noconfirm --needed $@${CReset}"
 	if pacman -S --noconfirm --needed "$@"; then
+		sleep 1
 		return 0
 	else
 		_red "(_PACMAN) FALHA: pacman -S --noconfirm --needed $@"
+		sleep 3
 		return 1
 	fi
 }
