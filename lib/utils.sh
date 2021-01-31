@@ -316,6 +316,7 @@ _pkg_manager_storecli()
 			vlc) _vlc;;
 
 			Sistema) _System_All;;
+			archlinux-installer) _archlinux_installer;;
 			bluetooth) _bluetooth;;
 			bspwm) _bspwm;;
 			cpu-x) _cpux;;

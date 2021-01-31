@@ -3,7 +3,7 @@
 # Este script serve para inserir os diretórios que contém binário na
 # HOME('~/bin' e '~/.local/bin') na variável PATH do usuario atual.
 #
-VERSION='2020-09-26'
+__version__='2021-01-31'
 #
 
 # NÃO pode ser root.
@@ -13,8 +13,8 @@ VERSION='2020-09-26'
 }
 
 KERNEL_TYPE=$(uname -s)
-bash_config="$HOME/.bashrc"
-zsh_config="$HOME/.zshrc"
+bash_config=~/.bashrc
+zsh_config=~/.zshrc
 
 touch "$bash_config"
 touch "$zsh_config"
@@ -24,8 +24,7 @@ echo "$PATH" | grep -q "$HOME/.local/bin" || {
 	PATH="$HOME/.local/bin:$PATH"
 }
 
-
-path_bash()
+config_bashrc()
 {
 	# Criar o arquivo ~/.bashrc se não existir
 	if [ ! -f "$bash_config" ]; then
@@ -42,7 +41,7 @@ path_bash()
 	echo "Execute ... bash -c \"source $bash_config\""
 }
 
-path_zsh()
+config_zshrc()
 {
 	# Criar o arquivo ~/.zshrc se não existir
 	if [ ! -f "$zsh_config" ]; then
@@ -79,8 +78,8 @@ backup()
 main()
 {
 	backup
-	path_bash
-	path_zsh
+	config_bashrc
+	config_zshrc
 }
 
 main

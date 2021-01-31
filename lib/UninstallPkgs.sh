@@ -102,6 +102,7 @@ _uninstall_packages()
 			teamviewer) _uninstall_teamviewer;;
 			youtube-dl) __rmdir__ "$directoryUSERbin/youtube-dl";;
 	
+			archlinux-installer) __rmdir__ "${destinationFilesArchlinuxInstaller[@]}";;
 			cpu-x) _uninstall_cpux;;
 			peazip) __rmdir__ "${destinationFilesPeazip[@]}";;
 			refind) __rmdir__ "${destinationFilesRefind[@]}";;

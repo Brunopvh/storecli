@@ -193,8 +193,13 @@ destinationFilesYoutubeDlGuiUser=(
 #=============================================================#
 # Sistema
 #=============================================================#
-# Cpu-X
+# archlinux-installer
+declare -A destinationFilesArchlinuxInstaller
+destinationFilesArchlinuxInstaller=(
+	[script]="$DIR_BIN_ROOT/archlinux-installer"
+	)
 
+# Cpu-X
 declare -A destinationFilesCpux
 destinationFilesCpux=(
 	[file_desktop]="$DIR_DESKTOP_USER/cpux.desktop"  
@@ -324,6 +329,7 @@ programs_midia=(
 	)
 
 programs_system=(
+	archlinux-installer
 	bluetooth
 	compactadores
 	cpu-x

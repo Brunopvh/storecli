@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-__version__='2021-01-30'
+__version__='2021-01-31'
 __appname__='archlinux-installer'
 __author__='Bruno Chaves'
 __script__=$(readlink -f "$0")
@@ -186,7 +186,6 @@ if [[ $(uname -s) != 'Linux' ]]; then
 	exit 1
 fi
 
-loadkeys br-abnt2 
 temp_dir=$(mktemp --directory)
 temp_file="$temp_dir/Tempfile.txt"
 LogInfo="$temp_dir/Info.log"
@@ -225,16 +224,11 @@ done
 pkgs_cli_utils=(
 	'dosfstools'
 	'mtools'
-	'network-manager-applet'
-	'networkmanager'
-	'wpa_supplicant'
-	'wireless_tools'
-	'wpa_actiond'	
-	'dhclient'
 	'sudo'
 	'dialog'
 	'ntfs-3g'
 	'curl'
+	'python'
 	'git'
 	'vim'
 	'ttf-dejavu' 
@@ -242,15 +236,22 @@ pkgs_cli_utils=(
 	'noto-fonts'
 )
 
-pkgs_laptop_utils=(
-	'acpi' 
-	'acpid'
-)
+pkgs_net_utils=(
+	networkmanager 
+	network-manager-applet
+	wpa_supplicant
+	wireless_tools
+	wpa_actiond	
+	dhclient
+	)
+
+pkgs_xorg=(
+	xorg-server
+	xf86-video-intel
+	)
 
 # Pacotes para instalação do gnome-shell no arch.
 pkgs_gnomeshell=(
-	'xorg-server'
-	'xf86-video-intel'
 	'libgl'
 	'mesa'
 	'gdm'
@@ -260,6 +261,12 @@ pkgs_gnomeshell=(
 	'gnome-control-center'
 	'adwaita-icon-theme'
 )
+
+pkgs_laptop_utils=(
+	'acpi' 
+	'acpid'
+)
+
 
 function show_logo(){
 	print_line
@@ -581,15 +588,10 @@ _configure_pos_base()
 	echo '::1	localhost.localdomain	localhost' >> '/etc/hosts'
 	echo -e "127.0.0.1	${HOSTENAME}.localdomain	$HOSTENAME" >> '/etc/hosts'
 
-	_yellow "Executando pacman -Syy"
-	pacman -Syy
-
-	for pkg in "${pkgs_cli_utils[@]}"; do
-		_PACMAN "$pkg"
-	done
-
+	_yellow "Executando pacman -Syy"; pacman -Syy
+	_install_cli_utils
+	_install_net_utils
 	_configure_systemctl
-
 	_green "Para finalizar defina sua senha de ${Red}root${Reset} com o comando passwd"
 	_green "Também e recomendado habilitar o multilib em /etc/pacman.conf"
 	_green "Em seguida execute este programa novamente e escolha a opição 3 no menu"
@@ -621,29 +623,37 @@ _install_grub()
 	return 0
 }
 
+_install_net_utils()
+{
+	_PACMAN "${pkgs_net_utils[@]}"
+}
+
+_install_xorg_utils()
+{
+	for pkg in "${pkgs_xorg[@]}"; do _PACMAN "$pkg"; done
+}
+
+_install_cli_utils()
+{
+	for pkg in "${pkgs_cli_utils[@]}"; do _PACMAN "$pkg"; done
+}
+
 _configure_systemctl()
 {
 	# systemctl status NetworkManager
-	# systemctl start NetworkManager
-	# systemctl enable NetworkManager
-	# systemctl enable gdm
-	#_yellow "Executando: systemctl status NetworkManager"
 	_yellow "systemctl start NetworkManager"; systemctl start NetworkManager
 	_yellow "systemctl enable NetworkManager"; systemctl enable NetworkManager
-	_yellow "systemctl enable gdm"; systemctl enable gdm
 }
 
 _install_gnome_desktop()
 {
-	for X in "${pks_cli_utils[@]}"; do
-		_PACMAN "$X"
-	done
-
-	for c in "${pkgs_gnomeshell[@]}"; do
-		_PACMAN "$c"
-	done
-
+	_install_cli_utils
+	_install_net_utils
+	_install_xorg_utils
+	for pkg in "${pkgs_gnomeshell[@]}"; do _PACMAN "$pkg"; done
 	_configure_systemctl
+	systemctl enable gdm
+	
 	print_line
 	_yellow "Execute as ações a seguir manualmente"
 	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
@@ -654,7 +664,19 @@ _install_gnome_desktop()
 
 _install_xfce_desktop()
 {
-	_red "(_install_xfce_desktop): esta função ainda está em desenvolvimento."
+	_install_cli_utils
+	_install_net_utils
+	_install_xorg_utils
+	_PACMAN xfce4 xfce4-goodies lightdm lightdm-gtk-greeter
+	_configure_systemctl
+	systemctl enable lightdm
+
+	print_line
+	_yellow "Execute as ações a seguir manualmente"
+	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
+	_yellow "usermod -aG wheel seu_nome"
+	_yellow "Edite o arquivo visudo"
+	_yellow "umount -R /mnt"
 }
 
 function get_script_online_version()
@@ -701,12 +723,14 @@ main()
 		parse_table_disk || return 
 	fi
 
+	loadkeys br-abnt2 
 	_yellow "MENU PRINCIPAL"
 	_yellow "0 - Sair"
 	_yellow "1 - Instalar base ARCH"
 	_yellow "2 - Instalar POS BASE - (opição usada após o arch-chroot)"
 	_yellow "3 - Instalar Grub"
 	_yellow "4 - Instalar gnome-shell"
+	_yellow "5 - Instalar xfce4"
 	read -t 40 -n 1 -p "Digite um número e pressione enter: " op
 	echo ' '
 
@@ -722,12 +746,12 @@ main()
 				return 0
 			fi
 			_configure_base_system "$@"
-			_yellow "(_configure_base_system) -> (main): Saindo..."
 			exit 0
 			;;
 		2) _configure_pos_base "$@";;
 		3) _install_grub;;
 		4) _install_gnome_desktop;;
+		5) _install_xfce_desktop;;
 		*) return 1;;
 	esac
 

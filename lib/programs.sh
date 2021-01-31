@@ -2374,6 +2374,27 @@ _youtube_dlgui()
 	fi
 }
 
+_archlinux_installer()
+{
+	local URL_ARCHLINUX_INSTALLER='https://raw.github.com/Brunopvh/storecli/master/scripts/archlinux-installer.sh'
+	local DESTINATION_ARCHLINUX_INSTALLER="$DirDownloads/archlinux-installer"
+	if [[ -z $dir_local_scripts ]]; then
+		__download__ "$URL_ARCHLINUX_INSTALLER" "$DESTINATION_ARCHLINUX_INSTALLER" || return 1
+		__sudo__ cp "$DESTINATION_ARCHLINUX_INSTALLER" "${destinationFilesArchlinuxInstaller[script]}" 
+	else
+		__sudo__ cp "$dir_local_scripts/archlinux-installer.sh" "${destinationFilesArchlinuxInstaller[script]}"
+	fi
+	__sudo__ chmod a+x "${destinationFilesArchlinuxInstaller[script]}"
+
+	if is_executable archlinux-installer; then
+		_green 'archlinux-installer instalado com sucesso.'
+		return 0
+	else
+		_red 'Falha ao tentar instalar archlinux-installer'
+		return 1
+	fi
+}
+
 _bluetooth()
 {
 	if [[ "$os_id" != 'debian' ]]; then
