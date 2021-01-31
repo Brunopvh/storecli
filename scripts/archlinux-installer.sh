@@ -250,7 +250,7 @@ pkgs_laptop_utils=(
 # Pacotes para instalação do gnome-shell no arch.
 pkgs_gnomeshell=(
 	'xorg-server'
-	'xf86-video-video-intel'
+	'xf86-video-intel'
 	'libgl'
 	'mesa'
 	'gdm'
