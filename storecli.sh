@@ -80,8 +80,8 @@ mkdir -p "$DIR_CONFIG_USER"
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
-readonly export TemporaryDirectory="/tmp/storecli_$USER"
-#readonly export TemporaryDirectory=$(mktemp --directory)
+#readonly export TemporaryDirectory="/tmp/storecli_$USER"
+readonly export TemporaryDirectory=$(mktemp --directory)
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
 export DirUnpack="$TemporaryDirectory/unpack"
@@ -303,7 +303,7 @@ main()
 main "${@}" && STATUS_OUTPUT=0
 
 # Remover diretórios e subdiretórios temporários ao encerrar o programa.
-#__rmdir__ "$TemporaryDirectory" 1> /dev/null
+__rmdir__ "$TemporaryDirectory" 1> /dev/null
 
 if [[ "$STATUS_OUTPUT" == 0 ]]; then
 	exit 0

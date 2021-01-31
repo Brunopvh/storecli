@@ -3379,7 +3379,7 @@ _topicons_plus_github()
 	__download__ "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	#__pkg__ make
+	__pkg__ make
 	_unpack "$path_file" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
