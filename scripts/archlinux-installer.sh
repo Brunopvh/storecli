@@ -238,7 +238,6 @@ pkgs_cli_utils=(
 
 pkgs_net_utils=(
 	networkmanager 
-	network-manager-applet
 	wpa_supplicant
 	wireless_tools
 	wpa_actiond	
@@ -386,9 +385,11 @@ _ismount()
 
 	if [[ "$partition_device" == "$1" ]]; then
 		_yellow "Dispositivo $1 está montado."
+		sleep 1
 		return 0 # Partição está montada.
 	else
 		_red "Dispositivo não montado ... $1"
+		sleep 1
 		return 1 # Partição não montada.
 	fi
 }
@@ -404,9 +405,11 @@ _umount_partition()
 	mount "$1" 
 	if [[ $? == 0 ]]; then
 		_yellow "OK"
+		sleep 0.5
 		return 0
 	else
 		_red "Falha"
+		sleep 1
 		return 1
 	fi
 }
@@ -420,9 +423,11 @@ _mount_partition()
 	__mount__ "$1" "$2"
 	if [[ $? == 0 ]]; then
 		_yellow "OK"
+		sleep 0.5
 		return 0
 	else
 		_red "Falha"
+		sleep 1
 		return 1
 	fi
 }
@@ -495,7 +500,7 @@ _configure_partition_boot()
 
 	# Formatar e montar a partição /boot.
 	_format_to_ext4 "${DiskInfoTarget[partition_boot]}" 'ARCHBOOT'
-	if [[ -d /mnt/boot ]]; then
+	if [[ ! -d /mnt/boot ]]; then
 		_yellow "Criando o diretório ... /mnt/boot"
 		mkdir -p /mnt/boot
 	fi
@@ -510,8 +515,8 @@ _configure_partition_home()
 
 	# Formatar e montar a partição /home.
 	_format_to_ext4 "${DiskInfoTarget[partition_home]}" 'ARCHHOME'
-	if [[ -d /mnt/home ]]; then
-		_yellow "Criando o diretório ... /mnt/boot"
+	if [[ ! -d /mnt/home ]]; then
+		_yellow "Criando o diretório ... /mnt/home"
 		mkdir -p /mnt/home
 	fi
 	_mount_partition "${DiskInfoTarget[partition_home]}" '/mnt/home' || return 1
@@ -520,19 +525,19 @@ _configure_partition_home()
 
 _configure_locale()
 {
-	_yellow "Executando ... export LANG=pt_BR.UTF-8"; export LANG=pt_BR.UTF-8
-	_yellow "Executando ... timedatectl set-ntp true"; timedatectl set-ntp true; timedatectl status
-	_yellow "Executando ... loadkeys br-abnt2"; loadkeys br-abnt2
-	_yellow "Configurando ... pt_BR.UTF-8"
+	_yellow "Configurando locale"
+	export LANG=pt_BR.UTF-8
+	timedatectl set-ntp true 1> /dev/null # timedatectl status 
+	loadkeys br-abnt2 1> /dev/null
 	sed -i 's/^#pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen 
 	sed -i 's/^# pt_BR.UTF-8/pt_BR.UTF-8/g' /etc/locale.gen
 
 	# /usr/share/zoneinfo/America/Porto_Velho - Configurar horário de Porto Velho/RO
-	_yellow "Executando: ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime"
 	ln -sf /usr/share/zoneinfo/America/Porto_Velho /etc/localtime
-	_yellow "Configurando ... /etc/locale.conf"; echo 'LANG="pt_BR.UTF-8"' > '/etc/locale.conf'
-	_yellow "Configurando ... /etc/vconsole.conf"; echo 'KEYMAP=br-abnt2' > '/etc/vconsole.conf'
-	_yellow "Executando ... locale-gen"; locale-gen
+	echo 'LANG="pt_BR.UTF-8"' > '/etc/locale.conf'
+	echo 'KEYMAP=br-abnt2' > '/etc/vconsole.conf'
+	locale-gen 1> /dev/null
+	sleep 1
 }
 
 _configure_base_system()
@@ -563,12 +568,11 @@ _configure_base_system()
 	# Configuar fstab.
 	_yellow "Executando: genfstab -U -p /mnt >> /mnt/etc/fstab"
 	genfstab -p /mnt >> /mnt/etc/fstab
-	curl -L -S $URL_ARCHLINUX_INSTALLER -o "/mnt/${__appname__}.sh"
+	curl -L -S $URL_ARCHLINUX_INSTALLER -o "/mnt/root/${__appname__}.sh"
 	_yellow "Executando: arch-chroot /mnt /bin/bash"
 	_green "Execute os comandos a seguir para proxima fase"
 	_green "curl -L -S $URL_ARCHLINUX_INSTALLER -o archutils.sh"
 	_green "chmod +x archutils.sh; ./archutils.sh"
-	ls /mnt/*.sh
 	arch-chroot /mnt /bin/bash
 }
 
@@ -725,7 +729,7 @@ main()
 		parse_table_disk || return 
 	fi
 
-	loadkeys br-abnt2 
+	loadkeys br-abnt2 1> /dev/null 2>&1 
 	_yellow "MENU PRINCIPAL"
 	_yellow "0 - Sair"
 	_yellow "1 - Instalar base ARCH"

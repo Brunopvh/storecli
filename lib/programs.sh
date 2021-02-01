@@ -714,7 +714,7 @@ _pycharm()
 _sublime_text()
 {
 	# Já instalado.
-	#is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
+	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 
 	local SUBLIME_DOWN_PAGE='https://www.sublimetext.com/3'
 	local SUBLIME_HTML=$(_get_html_page "$SUBLIME_DOWN_PAGE" --find sublime.*x64.tar.bz2)
