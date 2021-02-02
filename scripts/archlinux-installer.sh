@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-__version__='2021-01-31'
+__version__='2021-02-02'
 __appname__='archlinux-installer'
 __author__='Bruno Chaves'
 __script__=$(readlink -f "$0")
@@ -26,9 +26,14 @@ dir_of_executable=$(dirname "$__script__")
 # genfstab -U -p /mnt >> /mnt/etc/fstab
 #
 #----------------------------------------------------------------#
-# CONFIGURAR O GRUB EFI
+# CONFIGURAR O GRUB 
 #----------------------------------------------------------------#
+# - EFI
 # grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck
+# 
+# - BIOS
+# grub-install DEVICE --target=i386-pc --bootloader-id=ArchLinux --recheck
+# 
 # grub-mkconfig -o /boot/grub/grub.cfg
 #
 #----------------------------------------------------------------#
@@ -54,10 +59,14 @@ dir_of_executable=$(dirname "$__script__")
 # sudo setxkbmap -model abnt2 -layout br -variant abnt2
 # sudo nano /etc/X11/xorg.conf.d/10-evdev.conf
 #
+#----------------------------------------------------------------#
 # INSTALAÇÃO DE FONTES NO SISTEMA.
+#----------------------------------------------------------------#
 # sudo pacman -S ttf-dejavu ttf-liberation noto-fonts
 # 
+#----------------------------------------------------------------#
 # INSTALAÇÃO DO XFCE
+#----------------------------------------------------------------#
 # pacman -S xfce4 xfce4-goodies lightdm lightdm-gtk-greeter networkmanager network-manager-applet
 # systemctl enable lightdm
 # systemctl enable NetworkManager
@@ -73,7 +82,6 @@ dir_of_executable=$(dirname "$__script__")
 #----------------------------------------------------------------#
 # Obtendo a ultima versão deste script
 #----------------------------------------------------------------#
-#
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/scripts/archlinux-installer.sh)"
 #
 
@@ -166,7 +174,7 @@ function _YESNO()
 	# Mostra uma mensagem para o usuário responder sim ou não e retorna 1
 	# caso a resposta seja não ou 0 caso a resposta seja sim.
 	echo -ne "${@} [${CGreen}s${CReset}/${CRed}N${CReset}]: "
-	read -t 20 -n 1 yesno
+	read -t 30 -n 1 yesno
 	echo ' '
 	case "${yesno,,}" in
 		s|S|y|Y) return 0;;
@@ -181,10 +189,10 @@ if [[ $(id -u) != '0' ]]; then
 	exit 1
 fi
 
-if [[ $(uname -s) != 'Linux' ]]; then
+[[ $(uname -s) != 'Linux' ]] && {
 	_red "Seu sistema não e Linux"
 	exit 1
-fi
+}
 
 temp_dir=$(mktemp --directory)
 temp_file="$temp_dir/Tempfile.txt"
@@ -198,18 +206,17 @@ URL_ARCHLINUX_INSTALLER='https://raw.github.com/Brunopvh/storecli/master/scripts
 TYPE_BOOT='' # $(ls /sys/firmware/efi/efivars)
 
 declare -A DiskInfoTarget
-DiskInfoTarget=() # Array com informações do disco selecionado para instalação.
 CliArguments="$@"
 
 # Analizar a linha de comando se receber um argumento ou mais.
 [[ ! -z $1 ]] && {
 while [[ $1 ]]; do
 	case "$1" in
-		-b|--boot) shift; DiskInfoTarget[partition_boot]="$1";;      # /boot - Opcional
-		-e|--efi) shift; DiskInfoTarget[partition_efi]="$1";;        # /efi - Somente para EFI/GPT (obrigatório).
-		-H|--home) shift; DiskInfoTarget[partition_home]="$1";;      # /home - Opcional
-		-r|--root) shift; DiskInfoTarget[partition_root]="$1";;      # /
-		-t|--target) shift; DiskInfoTarget[instalation_disk]="$1";;  # disco alvo - /dev/sda, /dev/sdb, /dev/sdc
+		-b|--boot) shift; partition_boot="$1";;      # /boot - Opcional
+		-e|--efi) shift; partition_efi="$1";;        # /efi - Somente para EFI/GPT (obrigatório).
+		-H|--home) shift; partition_home="$1";;      # /home - Opcional
+		-r|--root) shift; partition_root="$1";;      # /
+		-t|--target) shift; device_target_to_installation="$1";;  # disco alvo - /dev/sda, /dev/sdb, /dev/sdc
 		-h|--help) usage; exit; break;;
 		-v|--version) echo -e "$__version__"; exit 0; break;;
 		*)  _red "Opção/Agumento inválida: $1"; exit 1; break;;
@@ -217,11 +224,13 @@ while [[ $1 ]]; do
 	shift
 done
 }
+device_target_to_installationLEN=''
+device_target_to_installationTABLE=''
 
 #=======================================================#
 # Lista de pacotes utils para cli e interface gráfica.
 #=======================================================#
-pkgs_cli_utils=(
+PROGRAMS_CLI_UTILS=(
 	'dosfstools'
 	'mtools'
 	'sudo'
@@ -236,7 +245,7 @@ pkgs_cli_utils=(
 	'noto-fonts'
 )
 
-pkgs_net_utils=(
+PROGRAMS_INTERNET_UTILS=(
 	networkmanager 
 	wpa_supplicant
 	wireless_tools
@@ -244,13 +253,13 @@ pkgs_net_utils=(
 	dhclient
 	)
 
-pkgs_xorg=(
+PROGRAMS_XORG_UTILS=(
 	xorg-server
 	xf86-video-intel
 	)
 
 # Pacotes para instalação do gnome-shell no arch.
-pkgs_gnomeshell=(
+PROGRAMS_GNOME_SHELL=(
 	'libgl'
 	'mesa'
 	'gdm'
@@ -259,6 +268,13 @@ pkgs_gnomeshell=(
 	'nautilus'
 	'gnome-control-center'
 	'adwaita-icon-theme'
+)
+
+PROGRAMS_XFCE=(
+	xfce4 
+	xfce4-goodies 
+	lightdm 
+	lightdm-gtk-greeter
 )
 
 pkgs_laptop_utils=(
@@ -277,7 +293,7 @@ function show_logo(){
 
 function check_boot_type()
 {
-	# Verificar se o tipos de boot e Bios/Efi e definir a variável TYPE_BOOT.
+	# Verificar se o tipo de boot e Bios/Efi e definir a variável TYPE_BOOT.
 	# ls /sys/firmware/efi/efivars
 	modprobe -q efivarfs
     if [[ -d "/sys/firmware/efi/" ]]; then
@@ -291,58 +307,64 @@ function check_boot_type()
 		TYPE_BOOT='bios'
 		_yellow "(check_boot_type):  Modo BIOS detectado"
     fi
+   	sleep 0.25
 }
 
 function parse_disk_partitions()
 {
-	# Obter informações sobre o tipo de tabela de particionamento do disco selecionado para 
-	# instalação e o tamanaho em GB do disco.
-	if [[ ! -e "${DiskInfoTarget[instalation_disk]}" ]]; then
+	# Obter informações sobre o dispositivo de instalação tamanho/tipo/...
+	if [[ -z "${device_target_to_installation}" ]]; then
 		_red "(parse_disk_partitions): informe um disco para instalação"
 		return 1
 	fi
 
 	# Verificar a partição informada para ser a 'raiz' / do sistema.
-	if [[ ! -e "${DiskInfoTarget[partition_root]}" ]]; then
+	if [[ -z "${partition_root}" ]]; then
 		_red "(parse_disk_partitions): informe uma partição raiz para instalação do diretório '/'"
 		return 1
 	fi
 
 	# Filtrar informações do disco selecionado (/dev/sda, /dev/sdb/, /dev/sdc, /dev/sdx...)
-	fdisk -l "${DiskInfoTarget[instalation_disk]}" > "$temp_file"
-	DiskInfoTarget[disk_table]=$(egrep -m 1 '(Tipo|Type|type)' "$temp_file" | cut -d ':' -f 2 | sed 's/ //g')
-	DiskInfoTarget[disk_len]=$(egrep -m 1 '(Disco|Disk)' "$temp_file" | awk '{print $3,$4}' | sed 's/\,//g')
-	DiskInfoTarget[disk_len]="${DiskInfoTarget[disk_len]%%\,}"
-	_msg "Informações do disco de instalação."
-	_yellow "Disco ... ${DiskInfoTarget[instalation_disk]}"
-	_yellow "Tamanho ... ${DiskInfoTarget[disk_len]}"
-	_yellow "Partição root ... ${DiskInfoTarget[partition_root]}"
+	fdisk -l "${device_target_to_installation}" > "$temp_file"
 
-	[[ -e "${DiskInfoTarget[partition_home]}" ]] && {
-		_yellow "Ponto de montagem /home ... ${DiskInfoTarget[partition_home]}"
+	# Tamanho do armazenamento do dispositivo GB/MB.
+	device_target_to_installationLEN=$(egrep -m 1 ^'(Disk|Disco)' "$temp_file" | cut -d ' ' -f 3-4 | sed 's/,//g')
+
+	# Tabela de partição gpt/mbr.
+	device_target_to_installationTABLE=$(egrep -m 1 '(Tipo|Type|type)' "$temp_file" | cut -d ':' -f 2 | sed 's/ //g')
+	
+	_msg "Informações do disco de instalação."
+	_yellow "Disco ... ${device_target_to_installation}"
+	_yellow "Tamanho ... ${device_target_to_instalationLEN}"
+	_yellow "Partição root ... ${partition_root}"
+
+	[[ -e "${partition_home}" ]] && {
+		_yellow "Ponto de montagem /home ... ${partition_home}"
 	}
-	[[ -e "${DiskInfoTarget[partition_boot]}" ]] && {
-		_yellow "Ponto de montagem /boot ... ${DiskInfoTarget[partition_boot]}"
+	[[ -e "${partition_boot}" ]] && {
+		_yellow "Ponto de montagem /boot ... ${partition_boot}"
 	}
-	[[ -e "${DiskInfoTarget[partition_efi]}" ]] && {
-		_yellow "Ponto de montagem /boot/efi ... ${DiskInfoTarget[partition_efi]}"
+	[[ -e "${partition_efi}" ]] && {
+		_yellow "Ponto de montagem /boot/efi ... ${partition_efi}"
 	}
+	sleep 1
 }
 
 parse_table_disk()
 {
 	# Se a tabela de partição do disco for GPT e o usuário não informar uma partição
 	# para montar /boot/efi será exibida uma mensagem de erro.
-	if [[ "${DiskInfoTarget[disk_table]}" == 'gpt' ]] && [[ ! -e "${DiskInfoTarget[partition_efi]}" ]]; then
+	if [[ "${device_target_to_installationTABLE}" == 'gpt' ]] && [[ ! -e "${partition_efi}" ]]; then
 		_red "O disco selecionado tem tabela de partição do tipo (gpt) informe uma partição para usar (EFI)"
 		return 1
 	fi
 
 	# Partição e EFI foi informada na linha de comando, mas o particionamento é do tipo MBR.
-	if [[ "${DiskInfoTarget[disk_table]}" != 'gpt' ]] && [[ ! -z "${DiskInfoTarget[partition_efi]}" ]]; then
+	if [[ "${device_target_to_installationTABLE}" != 'gpt' ]] && [[ ! -z "${partition_efi}" ]]; then
 		_red "O disco selecionado NÃO tem tabela de partição do tipo (GPT) você não pode usar (EFI)"
 		return 1
 	fi
+	sleep 1
 }
 
 _ping()
@@ -389,7 +411,7 @@ _ismount()
 		return 0 # Partição está montada.
 	else
 		_red "Dispositivo não montado ... $1"
-		sleep 1
+		sleep 2
 		return 1 # Partição não montada.
 	fi
 }
@@ -479,47 +501,47 @@ _format_to_ext4()
 _configure_partition_efi()
 {
 	# Configurar EFI em discos gpt
-	[[ ! -e "${DiskInfoTarget[partition_efi]}" ]] && return 0
+	[[ ! -e "${partition_efi}" ]] && return 0
 
 	# Perguntar se o usuário deseja fotmatar a partição efi.
-	_format_to_fat32 "${DiskInfoTarget[partition_efi]}"
+	_format_to_fat32 "${partition_efi}"
 	
 	if [[ ! -d /mnt/boot/efi ]]; then
 		_yellow "Criando o diretório ... /mnt/boot/efi"
 		mkdir -p "/mnt/boot/efi"
 	fi
 	
-	_mount_partition "${DiskInfoTarget[partition_efi]}" "/mnt/boot/efi" || return 1 
+	_mount_partition "${partition_efi}" "/mnt/boot/efi" || return 1 
 	return 0
 }
 
 _configure_partition_boot()
 {
 	# Se o usuário informar uma partição para /boot será montada na partição especificada.
-	[[ ! -e "${DiskInfoTarget[partition_boot]}" ]] && return 0
+	[[ ! -e "${partition_boot}" ]] && return 0
 
 	# Formatar e montar a partição /boot.
-	_format_to_ext4 "${DiskInfoTarget[partition_boot]}" 'ARCHBOOT'
+	_format_to_ext4 "${partition_boot}" 'ARCHBOOT'
 	if [[ ! -d /mnt/boot ]]; then
 		_yellow "Criando o diretório ... /mnt/boot"
 		mkdir -p /mnt/boot
 	fi
-	_mount_partition "${DiskInfoTarget[partition_boot]}" '/mnt/boot' || return 1
+	_mount_partition "${partition_boot}" '/mnt/boot' || return 1
 	return 0
 }
 
 _configure_partition_home()
 {	
 	# Se o usuário informar uma partição para /home ela sera montada com o comado abaixo.
-	[[ ! -e "${DiskInfoTarget[partition_home]}" ]] && return 0	
+	[[ ! -e "${partition_home}" ]] && return 0	
 
 	# Formatar e montar a partição /home.
-	_format_to_ext4 "${DiskInfoTarget[partition_home]}" 'ARCHHOME'
+	_format_to_ext4 "${partition_home}" 'ARCHHOME'
 	if [[ ! -d /mnt/home ]]; then
 		_yellow "Criando o diretório ... /mnt/home"
 		mkdir -p /mnt/home
 	fi
-	_mount_partition "${DiskInfoTarget[partition_home]}" '/mnt/home' || return 1
+	_mount_partition "${partition_home}" '/mnt/home' || return 1
 	return 0
 }
 
@@ -551,8 +573,8 @@ _configure_base_system()
 	mkdir -p /mnt/home
 
 	# Formatar a partição raiz para o ponto de montagem '/'. 
-	_format_to_ext4 "${DiskInfoTarget[partition_root]}" 'ARCHLINUX' || return 1
-	_mount_partition "${DiskInfoTarget[partition_root]}" '/mnt' || return 1
+	_format_to_ext4 "${partition_root}" 'ARCHLINUX' || return 1
+	_mount_partition "${partition_root}" '/mnt' || return 1
 	_configure_partition_home
 	_configure_partition_boot 
 	_configure_partition_efi
@@ -597,7 +619,7 @@ _configure_pos_base()
 	_yellow "Executando pacman -Syy"; pacman -Syy
 	_install_cli_utils
 	_install_net_utils
-	_configure_systemctl
+	_configure_systemctl_network
 	_green "Para finalizar defina sua senha de ${Red}root${Reset} com o comando passwd"
 	_green "Também e recomendado habilitar o multilib em /etc/pacman.conf"
 	_green "Em seguida execute este programa novamente e escolha a opição 3 no menu"
@@ -609,7 +631,9 @@ _install_grub()
 	# grub-mkconfig -o /boot/grub/grub.cfg
 
 	print_line
-	parse_disk_partitions || return 1
+	parse_disk_partitions || {
+		_red "(_install_grub): Erro"
+	}
 
 	if [[ "$TYPE_BOOT" == 'efi' ]]; then
 		_PACMAN grub os-prober efibootmgr || return 1
@@ -617,11 +641,11 @@ _install_grub()
 		_PACMAN grub os-prober || return 1
 	fi
  
-	_green "Instalando grub em ... ${DiskInfoTarget[instalation_disk]}"
+	_green "Instalando grub em ... ${device_target_to_installation}"
 	if [[ "$TYPE_BOOT" == 'efi' ]]; then
 		grub-install --target=x86_64-efi --efi-directory=/boot/efi --bootloader-id=archlinux --recheck || return 1
 	else
-		grub-install "${DiskInfoTarget[instalation_disk]}" --target=i386-pc --bootloader-id=ArchLinux --recheck || return 1
+		grub-install "${device_target_to_installation}" --target=i386-pc --bootloader-id=ArchLinux --recheck || return 1
 	fi
 
 	_yellow "Executando grub-mkconfig -o /boot/grub/grub.cfg"
@@ -631,20 +655,20 @@ _install_grub()
 
 _install_net_utils()
 {
-	_PACMAN "${pkgs_net_utils[@]}"
+	for pkg in "${PROGRAMS_INTERNET_UTILS[@]}"; do _PACMAN "$pkg"; done
 }
 
 _install_xorg_utils()
 {
-	for pkg in "${pkgs_xorg[@]}"; do _PACMAN "$pkg"; done
+	for pkg in "${PROGRAMS_XORG_UTILS[@]}"; do _PACMAN "$pkg"; done
 }
 
 _install_cli_utils()
 {
-	for pkg in "${pkgs_cli_utils[@]}"; do _PACMAN "$pkg"; done
+	for pkg in "${PROGRAMS_CLI_UTILS[@]}"; do _PACMAN "$pkg"; done
 }
 
-_configure_systemctl()
+_configure_systemctl_network()
 {
 	# systemctl status NetworkManager
 	_yellow "systemctl start NetworkManager"; systemctl start NetworkManager
@@ -656,10 +680,9 @@ _install_gnome_desktop()
 	_install_cli_utils
 	_install_net_utils
 	_install_xorg_utils
-	for pkg in "${pkgs_gnomeshell[@]}"; do _PACMAN "$pkg"; done
-	_configure_systemctl
+	for pkg in "${PROGRAMS_GNOME_SHELL[@]}"; do _PACMAN "$pkg"; done
+	_configure_systemctl_network
 	systemctl enable gdm
-	
 	print_line
 	_yellow "Execute as ações a seguir manualmente"
 	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
@@ -673,10 +696,9 @@ _install_xfce_desktop()
 	_install_cli_utils
 	_install_net_utils
 	_install_xorg_utils
-	_PACMAN xfce4 xfce4-goodies lightdm lightdm-gtk-greeter
-	_configure_systemctl
+	for pkg in "${PROGRAMS_XFCE[@]}"; do _PACMAN "$pkg"
+	_configure_systemctl_network
 	systemctl enable lightdm
-
 	print_line
 	_yellow "Execute as ações a seguir manualmente"
 	_yellow "Criar seu usuário useradd -m seu_nome; passwd seu_nome"
@@ -721,8 +743,8 @@ function get_script_online_version()
 main()
 {
 	_ping || return 1
-	get_script_online_version
-	sleep 1
+	#get_script_online_version
+	#sleep 1
 
 	if [[ ! -z $1 ]]; then
 		parse_disk_partitions || return 1
