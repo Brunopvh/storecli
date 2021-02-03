@@ -693,10 +693,11 @@ _install_gnome_desktop()
 
 _install_xfce_desktop()
 {
+	pacman -Sy
 	_install_cli_utils
 	_install_net_utils
 	_install_xorg_utils
-	for pkg in "${PROGRAMS_XFCE[@]}"; do _PACMAN "$pkg"
+	for pkg in "${PROGRAMS_XFCE[@]}"; do _PACMAN "$pkg"; done
 	_configure_systemctl_network
 	systemctl enable lightdm
 	print_line
