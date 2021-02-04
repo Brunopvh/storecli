@@ -2926,6 +2926,9 @@ _virtualbox_additions()
 		_DNF install -y $(rpm -qa kernel | sort -V | tail -n 1)
 		_DNF install -y kernel-devel-$(uname -r)
 		_DNF install -y virtualbox-guest-additions
+	elif [[ "$os_id" == 'arch' ]]; then
+		__pkg__ virtualbox-guest-iso 
+		__pkg__ virtualbox-guest-dkms
 	fi
 	print_line
 }
@@ -3124,7 +3127,10 @@ _virtualbox()
 		debian) _virtualbox_debian;;
 		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
-		arch) _virtualbox_linux_run;;	
+		arch) 
+			_virtualbox_linux_run
+			_virtualbox_additions 
+			;;	
 		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	
 	esac
 }

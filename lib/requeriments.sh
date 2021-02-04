@@ -48,8 +48,8 @@ _config_python3()
 }
 
 #=============================================================#
-
 # FreeBSD
+#=============================================================#
 _config_requeriments_freebsd()
 {
 	# Instalar ferramentas de linha de comando.
@@ -63,8 +63,8 @@ _config_requeriments_freebsd()
 
 
 #=============================================================#
-
-# Fedora e derivados
+# Fedora
+#=============================================================#
 _config_requeriments_fedora()
 {
 	# Instalar ferramentas de linha de comando.
@@ -88,7 +88,9 @@ _config_requeriments_opensuseleap()
 	return 0
 }
 
+#=============================================================#
 # Debian
+#=============================================================#
 check_debian_nonfree_repo()
 {
 	local os_id=$(grep '^ID=' /etc/os-release | sed 's/ID=//g')
@@ -135,6 +137,7 @@ _config_requeriments_debian()
 
 _config_requeriments_archlinux()
 {
+	# Instalar dependências no archlinux
 	local requeriments_python3_archlinux=(python3 python-pip python-setuptools)
 	
 	for APP in "${requeriments_cli_linux[@]}"; do 
