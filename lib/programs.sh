@@ -1549,12 +1549,16 @@ esac
 
 _torbrowser()
 {
-	# local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+	local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+
+	is_executable tor-installer || {
+		__download__ "$url_script_torbrowser_installer" "$SCRIPT_TORBROWSER_INSTALLER" || return 1
+		chmod +x "$SCRIPT_TORBROWSER_INSTALLER"
+	}
+
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install --downloadonly"
-		"$SCRIPT_TORBROWSER_INSTALLER" --install --downloadonly
+		"$SCRIPT_TORBROWSER_INSTALLER" --downloadonly --install
 	else
-		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install"
 		"$SCRIPT_TORBROWSER_INSTALLER" --install
 	fi
 }
@@ -2902,9 +2906,7 @@ _virtualbox_extension_pack()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	__sudo__ VBoxManage extpack install --replace "$PATH_EXTENSION_PACK"
-	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1
-	
-	# sudo gpasswd -a "$USER" vboxusers  
+	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1 
 	__sudo__ usermod -a -G vboxusers $USER	
 }
 
@@ -2980,6 +2982,20 @@ _virtualbox_fedora()
 	_virtualbox_extension_pack 
 }
 
+_virtualbox_package_deb()
+{
+	# Instalação do virtualbox 5.2 no Debian Buster.
+	# https://www.virtualbox.org/wiki/Downloads
+	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
+	local VIRTUALBOX_PKG_DEB="$DirDownloads/virtualbox-6.1-buster-amd64.deb"
+
+	[[ "$os_codename" != 'buster' ]] && return 1
+	html_vbox_deb_buster=$(_get_html_page "$URL_VIRTUALBOX_DOW_PAGE" --find 'buster.*.deb')
+	url_vbox_deb_buster=$(echo -e "$html_vbox_deb_buster" | sed 's/.*href="//g;s/">.*//g')
+	__download__ "$url_vbox_deb_buster" "$VIRTUALBOX_PKG_DEB" || return 1
+	_APT install "$VIRTUALBOX_PKG_DEB" || _BROKE
+}
+
 _virtualbox_debian()
 {
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
@@ -2997,7 +3013,6 @@ _virtualbox_debian()
 	fi
 
 	_addrepo_in_sources_list "$virtualbox_repo" /etc/apt/sources.list.d/virtualbox.list
-	
 	_APT update 
 	print_line 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
@@ -3124,7 +3139,7 @@ _virtualbox()
 {
 	#is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
 	case "$os_id" in
-		debian) _virtualbox_debian;;
+		debian) _virtualbox_package_deb;;
 		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
 		arch) 

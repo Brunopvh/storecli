@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2021_02_03'
+__version__='2021_02_06'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -151,10 +151,8 @@ is_executable()
 	fi
 }
 
-#=============================================================#
-# Configuração de diretórios usados por este programa para ler
-# libs e executar scripts.
-#=============================================================#
+
+# Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
 readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
 readonly export path_bash_libs="$dir_of_executable/lib"
@@ -164,7 +162,8 @@ readonly export dir_local_python="$dir_of_executable/python"
 #=============================================================#
 # Importar Libs
 #=============================================================#
-source "$path_bash_libs/ArrayUtils.sh"
+source "$path_bash_libs/destination_programs.sh"
+source "$path_bash_libs/list_programs.sh"
 source "$path_bash_libs/utils.sh"
 source "$path_bash_libs/installer_utils.sh"
 source "$path_bash_libs/requeriments.sh"
@@ -176,7 +175,7 @@ source "$path_bash_libs/gui.sh"
 # Definir os scripts locais.
 SCRIPT_CONFIG_PATH="$dir_local_scripts/conf-path.sh"
 SCRIPT_ADD_REPO="$dir_local_scripts/addrepo.py"
-SCRIPT_TORBROWSER_INSTALLER="$dir_local_scripts/tor.sh"
+SCRIPT_TORBROWSER_INSTALLER="$DIR_BIN_USER/tor-installer"
 SCRIPT_STORECLI_INSTALLER="$dir_of_executable/setup.sh"
 SCRIPT_OHMYBASH_INSTALLER="$dir_local_scripts/ohmybash.run"
 SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"

@@ -804,35 +804,17 @@ gpg_import()
 	fi
 }
 
-get_html()
-{
-	# Verificar se $1 e do tipo url.
-	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
-		_red "(get_html): url inválida"
-		return 1
-	fi
-
-	rm -rf "$HtmlTemporaryFile"
-	cd "$DirTemp"
-	printf "Conectando ... $1 "
-	__download__ "$1" "$HtmlTemporaryFile" 1> /dev/null || return 1
-
-	if [[ $? == '0' ]]; then
-		printf 'OK\n'
-		return 0
-	else
-		_sred "FALHA"
-		return 1
-	fi
-}
-
 _get_html_page()
 {
-	# $1 = url
-	# $2 = filtro a ser aplicado no contéudo html.
+	# Baixa uma página da web e retorna o contéudo na saida padrão 'stdout'
+	#
+	# $1 = url - obrigatório.
+	# $2 = filtro a ser aplicado no contéudo html - opcional.
 	# 
-	# EX: _get_html_page URL --find 'name-file.tar.gz'
-	#     _get_html_page URL
+	# EX: _get_html_page URL --find 'name-file.tar.gz' -> filtra a string 'name-file.tar.gz'
+	#                                                     no contéudo html.
+	#
+	#     _get_html_page URL -> retorna o contéudo completo na saida padrão.
 
 	# Verificar se $1 e do tipo url.
 	! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/' && {
@@ -847,10 +829,35 @@ _get_html_page()
 		shift 2
 		Find="$1"
 		grep -m 1 "$Find" "$temp_file_html"
+	elif [[ "$2" == '--find-all' ]]; then
+		grep "$Find" "$temp_file_html"
 	else
 		cat "$temp_file_html"
 	fi
 	rm -rf "$temp_file_html" 2> /dev/null
+}
+
+get_html()
+{
+	# Salava uma página html em um arquivo definido na variável HtmlTemporaryFile.
+	
+	# Verificar se $1 e do tipo url.
+	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
+		_red "(get_html): url inválida"
+		return 1
+	fi
+
+	rm -rf "$HtmlTemporaryFile" 2> /dev/null
+	cd "$DirTemp"
+	__download__ "$1" "$HtmlTemporaryFile" 1> /dev/null || return 1
+
+	if [[ $? == '0' ]]; then
+		printf 'OK\n'
+		return 0
+	else
+		_sred "FALHA"
+		return 1
+	fi
 }
 
 __shasum__()
@@ -890,24 +897,23 @@ __shasum__()
 
 __download__()
 {
-	if [[ -z $2 ]]; then
+	[[ -z $2 ]] && {
 		_red "Necessário informar um arquivo de destino."
 		return 1
-	fi
+	}
 
-	if [[ -f "$2" ]]; then
-		_blue "Arquivo encontrado: $2"
+	[[ -f "$2" ]] && {
+		_blue "Arquivo encontrado ...$2"
 		return 0
-	fi
+	}
 
 	local url="$1"
 	local path_file="$2"
 	local count=3
 	
 	cd "$DirDownloads"
-	[[ ! -z $path_file ]] && _blue "Salvando em ... $path_file"
+	_blue "Salvando ... $path_file"
 	_blue "Conectando ... $1"
-
 	while true; do
 		if [[ ! -z $path_file ]]; then
 			if is_executable aria2c; then
