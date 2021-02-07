@@ -3078,7 +3078,7 @@ _virtualbox_archlinux()
 	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
 
 	# Instalar o pacote ExtensionPack.
-	#_virtualbox_extension_pack 
+	_virtualbox_extension_pack 
 }
 
 _virtualbox_linux_run()
@@ -3137,9 +3137,9 @@ _virtualbox_linux_run()
 
 _virtualbox()
 {
-	#is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
+	is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
 	case "$os_id" in
-		debian) _virtualbox_package_deb;;
+		debian) _virtualbox_debian;;
 		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
 		arch) 
