@@ -955,8 +955,8 @@ _codecs_fedora()
 		'xvidcore' 
 	)
 
-	__pkg__ "${array_codecs_fedora[@]}"
-	__pkg__ "${array_gstreamer_fedora[@]}"
+	for PKG in "${array_codecs_fedora[@]}"; do __pkg__ "$PKG"; done
+	for PKG in "${array_gstreamer_fedora[@]}"; do __pkg__ "$PKG"; done
 
 }
 
