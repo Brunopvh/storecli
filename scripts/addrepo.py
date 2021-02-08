@@ -247,9 +247,9 @@ class AddRepo(SysInfo):
 		print(repoFusionFree)
 		print("fedora-workstation-repositories")
 		
-		system(f'sudo dnf install -y {repoFusionFree}-$(rpm -E %fedora).noarch.rpm')
-		system(f'sudo dnf install -y {repoFusionNonFree}-$(rpm -E %fedora).noarch.rpm') 
-		system('sudo dnf install -y fedora-workstation-repositories')
+		os.system(f'sudo dnf install -y {repoFusionFree}-$(rpm -E %fedora).noarch.rpm')
+		os.system(f'sudo dnf install -y {repoFusionNonFree}-$(rpm -E %fedora).noarch.rpm') 
+		os.system('sudo dnf install -y fedora-workstation-repositories')
 
 
 parser = argparse.ArgumentParser(description='Habilita repostório em distribuições Linux.')

@@ -957,6 +957,7 @@ _codecs_fedora()
 
 	__pkg__ "${array_codecs_fedora[@]}"
 	__pkg__ "${array_gstreamer_fedora[@]}"
+
 }
 
 _codecs_arch()
