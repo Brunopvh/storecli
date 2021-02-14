@@ -2295,15 +2295,16 @@ _youtube_dlgui_fedora()
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
 	# Fedora 31 e instalar usando o comando "rpm --install" ou "dnf install".
 	#
-	local f_packages='https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/31/Everything/x86_64/os/Packages/p'
-	local wxpython_rpm='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
-	local url="$f_packages/$wxpython_rpm"
-	local path_file="$DirDownloads/$wxpython_rpm"
+	
+	local archive_fedora='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases'
+	local pkg_name='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
+	local url_wxpython="$archive_fedora/31/Everything/x86_64/os/Packages/p/$pkg_name"
+	local path_file="$DirDownloads/$pkg_name"
 	
 	# Instalar dependências.
 	if [[ "$os_version" == '32' ]] || [[ "$os_version" == '33' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
-		__download__ "$url" "$path_file" || return 1 
+		__download__ "$url_wxpython" "$path_file" || return 1 
 		#_RPM --install "$path_file" 
 		_DNF install "$path_file"
 	else
