@@ -82,6 +82,7 @@ programs_system=(
 	peazip
 	refind
 	stacer
+	shm
 	timeshift
 	virtualbox
 	virtualbox-additions

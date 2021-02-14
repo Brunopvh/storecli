@@ -2870,6 +2870,17 @@ _stacer()
 	esac
 }
 
+_shm()
+{
+	local URL_SHM_INSTALLER='https://raw.github.com/Brunopvh/bash-libs/main/setup.sh'
+	local SHM_TMP_SCRIPT=$(mktemp); rm -rf "$SHM_TMP_SCRIPT"
+	__download__ "$URL_SHM_INSTALLER" "$SHM_TMP_SCRIPT" || return 1
+	chmod +x "$SHM_TMP_SCRIPT"
+	"$SHM_TMP_SCRIPT"
+	rm -rf "$SHM_TMP_SCRIPT"
+	shm --configure
+}
+
 _timeshift_debian()
 {
 	local URL_TIME_SHIFT='https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_amd64.deb'

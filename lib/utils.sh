@@ -171,6 +171,7 @@ _pkg_manager_storecli()
 			peazip) _peazip;;
 			refind) _refind;;
 			stacer) _stacer;;
+			shm) _shm;;
 			timeshift) _timeshift;;
 			virtualbox) _virtualbox;;
 			virtualbox-additions) _virtualbox_additions;;
