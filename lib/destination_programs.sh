@@ -5,17 +5,17 @@
 
 # Verificar se as variáveis com os diretórios de configuração e instalação dos
 # aplicativos foram definidas.
-[[ -z $DIR_SHARE_USER ]] && DIR_SHARE_USER=~/".local/share"
-[[ -z $DIR_DESKTOP_USER ]] && DIR_DESKTOP_USER=~/".local/share/applications"
-[[ -z $DIR_BIN_USER ]] && DIR_BIN_USER=~/.local/bin
-[[ -z $DIR_ICON_USER ]] && DIR_ICON_USER=~/.local/share/icons
-[[ -z $DIR_THEMES_USER ]] && DIR_THEMES_USER=~/.themes
+[[ -z $DIR_SHARE ]] && DIR_SHARE=~/".local/share"
+[[ -z $DIR_APPLICATIONS ]] && DIR_APPLICATIONS=~/".local/share/applications"
+[[ -z $DIR_BIN ]] && DIR_BIN=~/.local/bin
+[[ -z $DIR_ICONS ]] && DIR_ICONS=~/.local/share/icons
+[[ -z $DIR_THEMES ]] && DIR_THEMES=~/.themes
 
-[[ ! -d $DIR_DESKTOP_USER ]] && mkdir "$DIR_DESKTOP_USER"
-[[ ! -d $DIR_BIN_USER ]] && mkdir "$DIR_BIN_USER"
-[[ ! -d $DIR_ICON_USER ]] && mkdir "$DIR_ICON_USER"
-[[ ! -d $DIR_THEMES_USER ]] && mkdir "$DIR_THEMES_USER"
-[[ ! -d $DIR_DESKTOP_USER ]] && mkdir "$DIR_DESKTOP_USER"
+[[ ! -d $DIR_APPLICATIONS ]] && mkdir "$DIR_APPLICATIONS"
+[[ ! -d $DIR_BIN ]] && mkdir "$DIR_BIN"
+[[ ! -d $DIR_ICONS ]] && mkdir "$DIR_ICONS"
+[[ ! -d $DIR_THEMES ]] && mkdir "$DIR_THEMES"
+[[ ! -d $DIR_APPLICATIONS ]] && mkdir "$DIR_APPLICATIONS"
 
 
 #=============================================================#
@@ -56,15 +56,15 @@ fi
 # Etcher
 declare -A destinationFilesEtcher
 destinationFilesEtcher=(
-	[file_desktop]="$DIR_DESKTOP_USER/balena-etcher-electron.desktop"
-	[file_appimage]="$DIR_BIN_USER/balena-etcher-electron"
+	[file_desktop]="$DIR_APPLICATIONS/balena-etcher-electron.desktop"
+	[file_appimage]="$DIR_BIN/balena-etcher-electron"
 	)
 
 declare -A destinationFilesStorecli
 destinationFilesStorecli=(
-	[file_desktop]="$DIR_DESKTOP_USER/storecli.desktop"
-	[link]="$DIR_BIN_USER/storecli"
-	[dir]="$DIR_BIN_USER/storecli-amd64"
+	[file_desktop]="$DIR_APPLICATIONS/storecli.desktop"
+	[link]="$DIR_BIN/storecli"
+	[dir]="$DIR_BIN/storecli-amd64"
 	)
 
 #=============================================================#
@@ -73,36 +73,36 @@ destinationFilesStorecli=(
 # Android Studio
 declare -A destinationFilesAndroidStudio
 destinationFilesAndroidStudio=(
-	[file_desktop]="$DIR_DESKTOP_USER/jetbrains-studio.desktop"
-	[file_png]="$DIR_ICON_USER/studio.png"
-	[link]="$DIR_BIN_USER/studio"
-	[dir]="$DIR_BIN_USER/android-studio"
+	[file_desktop]="$DIR_APPLICATIONS/jetbrains-studio.desktop"
+	[file_png]="$DIR_ICONS/studio.png"
+	[link]="$DIR_BIN/studio"
+	[dir]="$DIR_BIN/android-studio"
 	)
 
 declare -A destinationFilesIdeaic
 destinationFilesIdeaic=(
-	[file_desktop]="$DIR_DESKTOP_USER/jetbrains-idea.desktop"
-	[file_png]="$DIR_ICON_USER/idea.png"
-	[file_script]="$DIR_BIN_USER/idea"
-	[dir]="$DIR_BIN_USER/idea-IC"
+	[file_desktop]="$DIR_APPLICATIONS/jetbrains-idea.desktop"
+	[file_png]="$DIR_ICONS/idea.png"
+	[file_script]="$DIR_BIN/idea"
+	[dir]="$DIR_BIN/idea-IC"
 	)
 
 
 
 declare -A destinationFilesNodejs
 destinationFilesNodejs=(             
-	[script]="$DIR_BIN_USER/nodejs"                  
-	[dir]="$DIR_BIN_USER/nodejs-amd64"
-	[npm_link]="$DIR_BIN_USER/npm" 
-	[npx_link]="$DIR_BIN_USER/npx"           
+	[script]="$DIR_BIN/nodejs"                  
+	[dir]="$DIR_BIN/nodejs-amd64"
+	[npm_link]="$DIR_BIN/npm" 
+	[npx_link]="$DIR_BIN/npx"           
 )
 
 declare -A destinationFilesPycharm
 destinationFilesPycharm=(
-	[file_desktop]="$DIR_DESKTOP_USER/pycharm.desktop"
-	[file_png]="$DIR_ICON_USER/pycharm.png"
-	[link]="$DIR_BIN_USER/pycharm"
-	[dir]="$DIR_BIN_USER/pycharm-community"
+	[file_desktop]="$DIR_APPLICATIONS/pycharm.desktop"
+	[file_png]="$DIR_ICONS/pycharm.png"
+	[link]="$DIR_BIN/pycharm"
+	[dir]="$DIR_BIN/pycharm-community"
 	)
 
 declare -A destinationFilesSublime
@@ -115,10 +115,10 @@ destinationFilesSublime=(
 
 declare -A destinationFilesVscode
 destinationFilesVscode=(
-	[file_desktop]="$DIR_DESKTOP_USER/code.desktop"  
-	[file_png]="$DIR_ICON_USER/code.png"             
-	[link]="$DIR_BIN_USER/code"                  
-	[dir]="$DIR_BIN_USER/code-amd64"            
+	[file_desktop]="$DIR_APPLICATIONS/code.desktop"  
+	[file_png]="$DIR_ICONS/code.png"             
+	[link]="$DIR_BIN/code"                  
+	[dir]="$DIR_BIN/code-amd64"            
 )
 
 #=============================================================#
@@ -128,8 +128,8 @@ destinationFilesVscode=(
 # Libreoffice AppImage.
 declare -A destinationFilesLibreofficeAppimage
 destinationFilesLibreofficeAppimage=(
-	[file_desktop]="$DIR_DESKTOP_USER/libreoffice-appimage.desktop"   
-	[file_appimage]="$DIR_BIN_USER/libreoffice-appimage"                            
+	[file_desktop]="$DIR_APPLICATIONS/libreoffice-appimage.desktop"   
+	[file_appimage]="$DIR_BIN/libreoffice-appimage"                            
 )
 
 #=============================================================#
@@ -147,10 +147,10 @@ destinationFilesLibreofficeAppimage=(
 
 declare -A destinationFilesTelegram
 destinationFilesTelegram=(
-	[file_desktop]="$DIR_DESKTOP_USER/telegramdesktop.desktop" 
-	[file_png]="$DIR_ICON_USER/telegram.png"                  
-	[link]="$DIR_BIN_USER/telegram"                       
-	[dir]="$DIR_BIN_USER/telegram-amd64"                  
+	[file_desktop]="$DIR_APPLICATIONS/telegramdesktop.desktop" 
+	[file_png]="$DIR_ICONS/telegram.png"                  
+	[link]="$DIR_BIN/telegram"                       
+	[dir]="$DIR_BIN/telegram-amd64"                  
 )
 
 
@@ -179,11 +179,11 @@ destinationFilesTeamviewer=(
 
 declare -A destinationFilesYoutubeDlGuiUser
 destinationFilesYoutubeDlGuiUser=(
-	[file_desktop]="$DIR_DESKTOP_USER/youtube-dl-gui.desktop"
-	[file_png]="$DIR_ICON_USER/youtube-dl-gui.png" 
-	[pixmaps]="$DIR_ICON_USER/youtube-dl-gui"
-	[file_script]="$DIR_BIN_USER/youtube-dl-gui"  
-	[dir]="$DIR_BIN_USER/youtube_dl_gui"                                     
+	[file_desktop]="$DIR_APPLICATIONS/youtube-dl-gui.desktop"
+	[file_png]="$DIR_ICONS/youtube-dl-gui.png" 
+	[pixmaps]="$DIR_ICONS/youtube-dl-gui"
+	[file_script]="$DIR_BIN/youtube-dl-gui"  
+	[dir]="$DIR_BIN/youtube_dl_gui"                                     
 )
 
 #=============================================================#
@@ -198,8 +198,8 @@ destinationFilesArchlinuxInstaller=(
 # Cpu-X
 declare -A destinationFilesCpux
 destinationFilesCpux=(
-	[file_desktop]="$DIR_DESKTOP_USER/cpux.desktop"  
-	[file]="$DIR_BIN_USER/cpux"                        
+	[file_desktop]="$DIR_APPLICATIONS/cpux.desktop"  
+	[file]="$DIR_BIN/cpux"                        
 )
 
 
@@ -222,8 +222,8 @@ destinationFilesRefind=(
 
 declare -A destinationFilesStacer
 destinationFilesStacer=( 
-	[file_desktop]="$DIR_DESKTOP_USER/stacer.desktop"  
-	[file_appimage]="$DIR_BIN_USER/stacer"                            
+	[file_desktop]="$DIR_APPLICATIONS/stacer.desktop"  
+	[file_appimage]="$DIR_BIN/stacer"                            
 )
 
 
@@ -234,23 +234,23 @@ destinationFilesStacer=(
 # Papirus
 declare -A destinationFilesPapirus
 destinationFilesPapirus=(
-	[papirus_dark]="$DIR_ICON_USER/Papirus-Dark" 
-	[papirus_light]="$DIR_ICON_USER/Papirus-Light" 
-	[epapirus]="$DIR_ICON_USER/ePapirus"
-	[papirus]="$DIR_ICON_USER/Papirus" 
+	[papirus_dark]="$DIR_ICONS/Papirus-Dark" 
+	[papirus_light]="$DIR_ICONS/Papirus-Light" 
+	[epapirus]="$DIR_ICONS/ePapirus"
+	[papirus]="$DIR_ICONS/Papirus" 
 )
 
 declare -A destinationFilesEpsxe
 destinationFilesEpsxe=(
-	[file_desktop]="$DIR_DESKTOP_USER/epsxe.desktop"
-	[file_png]="$DIR_ICON_USER/ePSxe.svg"
-	[link]="$DIR_BIN_USER/epsxe"
-	[dir]="$DIR_BIN_USER/epsxe-amd64"
+	[file_desktop]="$DIR_APPLICATIONS/epsxe.desktop"
+	[file_png]="$DIR_ICONS/ePSxe.svg"
+	[link]="$DIR_BIN/epsxe"
+	[dir]="$DIR_BIN/epsxe-amd64"
 )
 
 declare -A destinationFilesEpsxeWin32
 destinationFilesEpsxeWin32=(
-	[file_desktop]="$DIR_DESKTOP_USER/epsxe-win.desktop"
-	[file_script]="$DIR_BIN_USER/epsxe-win"
+	[file_desktop]="$DIR_APPLICATIONS/epsxe-win.desktop"
+	[file_script]="$DIR_BIN/epsxe-win"
 	[dir]="$HOME/.wine/drive_c/epsxe-win"
 	)

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2021_02_14'
+__version__='2021_02_20'
 __author__='Bruno Chaves'
-__app_name__='storecli'
+__appname__='storecli'	
 #
 #=============================================================#
 # INFO
@@ -39,7 +39,7 @@ if [[ $(id -u) == '0' ]]; then
 fi
 
 # Necessário ter o "sudo" intalado.
-if [[ ! -x $(which sudo 2> /dev/null) ]]; then
+if [[ ! -x $(command -v sudo) ]]; then
 	printf "\033[0;31m Instale o pacote 'sudo' e adicione [$USER] no arquivo 'sudoers' para prosseguir.\033[m\n"
 	exit 1
 fi
@@ -53,54 +53,91 @@ fi
 #=============================================================#
 # Diretórios do usuário
 #=============================================================#
-if [ -f ~/.bashrc ]; then
-	. ~/.bashrc 2> /dev/null
-fi
-
+[[ -f ~/.bashrc ]] && source ~/.bashrc 2> /dev/null
+[[ -f ~/.shmrc ]] && source ~/.shmrc
 [[ ! -d $HOME ]] && HOME=~/
 [[ ! -w $HOME ]] && {
 	printf "\033[0;31mVocê não tem permissão de escrita [-w] em ... $HOME\033[m\n"
 	exit 1
 }
 
-DIR_BIN_USER="$HOME/.local/bin"
-DIR_SHARE_USER="$HOME/.local/share"
-DIR_ICON_USER="$HOME/.local/share/icons"
-DIR_THEMES_USER="$HOME/.themes"
-DIR_DESKTOP_USER="$HOME/.local/share/applications"
-DIR_CONFIG_USER="$HOME/.config/$__app_name__"
+#=============================================================#
+# Importação de módulos externos.
+#=============================================================#
+# Repositório no github.
+# https://github.com/Brunopvh/bash-libs
+#
+# Instalação.
+# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
+# sudo sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)"
+#
+#
 
-mkdir -p "$DIR_BIN_USER"
-mkdir -p "$DIR_ICON_USER"
-mkdir -p "$DIR_THEMES_USER"
-mkdir -p "$DIR_DESKTOP_USER"
-mkdir -p "$DIR_CONFIG_USER"
+function show_import_erro()
+{
+	echo "ERRO: $@"
+	read -p 'Pressione enter para continuar... ' -t 3 Input
+	echo
+}
+
+function check_local_modules()
+{
+	#
+	[[ -z $config_path ]] && return 1
+	[[ -z $crypto ]] && return 1
+	[[ -z $file_programs ]] && return 1
+	[[ -z $os ]] && return 1
+	[[ -z $requests ]] && return 1
+	[[ -z $utils ]] && return 1
+	[[ -z $pkgmanager ]] && return 1
+	[[ -z $print_text ]] && return 1
+	[[ -z $platform ]] && return 1
+	return 1
+}
+
+check_local_modules || {
+	show_import_erro "Necessário instalar alguns módulos externos."
+	TempSetupFile=$(mktemp)
+	if [[ -x $(command -v wget) ]]; then
+		wget -q -O "$TempSetupFile" https://raw.github.com/Brunopvh/bash-libs/main/setup.sh || exit 1
+	elif [[ -x $(command -v curl) ]]; then
+		curl -fsSL -o "$TempSetupFile" https://raw.github.com/Brunopvh/bash-libs/main/setup.sh || exit 1
+	else
+		echo "Instale curl ou wget para prosseguir"
+		exit 1
+	fi
+
+	chmod +x "$TempSetupFile"
+	"$TempSetupFile"
+	exit 1
+}
 
 #=============================================================#
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
 #readonly export TemporaryDirectory="/tmp/storecli_$USER"
-readonly export TemporaryDirectory=$(mktemp --directory)
-export DirTemp="$TemporaryDirectory/temp"
-export DirGitclone="$TemporaryDirectory/gitclone"
-export DirUnpack="$TemporaryDirectory/unpack"
-export DirDownloads="$HOME/.cache/$__app_name__/downloads"
-export HtmlTemporaryFile="$DirTemp"/Temp.html
+export readonly TemporaryDirectory="$(mktemp -u)-$__appname__"; mkdir "$TemporaryDirectory"
+export readonly DirTemp="$TemporaryDirectory/temp"
+export readonly DirGitclone="$TemporaryDirectory/gitclone"
+export readonly DirUnpack="$TemporaryDirectory/unpack"
+export readonly DirDownloads="$HOME/.cache/$__appname__/downloads"
+export readonly HtmlTemporaryFile="$DirTemp/Temp.html"
+export readonly DIR_CONFIG_USER=~/.config/"$__appname__"
 
-mkdir -p "$TemporaryDirectory"
 mkdir -p "$DirTemp"
 mkdir -p "$DirGitclone"
 mkdir -p "$DirUnpack"
 mkdir -p "$DirDownloads"
+mkdir -p "$DIR_CONFIG_USER"
 
 #=============================================================#
 # Arquivos de configuração e Log.
 #=============================================================#
 export configFILE="$DIR_CONFIG_USER/requeriments.conf"
-export LogFile="$HOME/.cache/$__app_name__/storecli.log"
-export LogErro="$HOME/.cache/$__app_name__/storecli.err"
-export OutputDevice="$HOME/.cache/$__app_name__/storecli-output.log"
+export LogFile="$HOME/.cache/$__appname__/storecli.log"
+export LogErro="$HOME/.cache/$__appname__/storecli.err"
+export OutputDevice="$HOME/.cache/$__appname__/storecli-output.log"
 
 echo '' > "$OutputDevice"
 touch "$configFILE"
@@ -141,17 +178,6 @@ fi
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
 
-is_executable()
-{
-	# Função para verificar se um executável existe no PATH do sistema.
-	if [[ -x $(which "$1" 2> /dev/null) ]]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
-
 # Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
 readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
@@ -175,7 +201,7 @@ source "$path_bash_libs/gui.sh"
 # Definir os scripts locais.
 SCRIPT_CONFIG_PATH="$dir_local_scripts/conf-path.sh"
 SCRIPT_ADD_REPO="$dir_local_scripts/addrepo.py"
-SCRIPT_TORBROWSER_INSTALLER="$DIR_BIN_USER/tor-installer"
+SCRIPT_TORBROWSER_INSTALLER="$DIR_BIN/tor-installer"
 SCRIPT_STORECLI_INSTALLER="$dir_of_executable/setup.sh"
 SCRIPT_OHMYBASH_INSTALLER="$dir_local_scripts/ohmybash.run"
 SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"

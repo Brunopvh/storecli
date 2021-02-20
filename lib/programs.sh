@@ -1577,8 +1577,8 @@ _clipgrab_appimage()
 
 	__download__ "$url_clipgrab_appimage" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
-	cp -u "$path_file" "$DIR_BIN_USER"/clipgrab
-	chmod +x "$DIR_BIN_USER"/clipgrab
+	cp -u "$path_file" "$DIR_BIN"/clipgrab
+	chmod +x "$DIR_BIN"/clipgrab
 	clipgrab&
 
 	if is_executable clipgrab; then
@@ -2080,7 +2080,7 @@ _youtube_dl()
 	# https://yt-dl.org/downloads/latest/youtube-dl
 
 	# Já instalado.
-	#is_executable "$DIR_BIN_USER/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
+	#is_executable "$DIR_BIN/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
 
 	local URL_YOUTUBE_DL_LATEST='https://yt-dl.org/downloads/latest/youtube-dl'
 	local URL_YOUTUBE_DL_SIG='https://yt-dl.org/downloads/latest/youtube-dl.sig'
@@ -2101,8 +2101,8 @@ _youtube_dl()
 	gpg_verify "$PATH_SIGNATURE_FILE" "$PATH_YTDL" || return 1
 	
 	_msg "Instalando youtube-dl em ~/.local/bin"
-	cp -u "$PATH_YTDL" "$DIR_BIN_USER"/youtube-dl
-	chmod a+x "$DIR_BIN_USER"/youtube-dl
+	cp -u "$PATH_YTDL" "$DIR_BIN"/youtube-dl
+	chmod a+x "$DIR_BIN"/youtube-dl
 
 	if is_executable 'youtube-dl'; then
 		_show_info 'SuccessInstalation' 'youtube-dl'
@@ -2628,7 +2628,7 @@ _genymotion()
 	__download__ "$URL_GENYMOTION" "$PATH_GENYMOTION" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
-	cd "$DIR_BIN_USER"
+	cd "$DIR_BIN"
 	chmod +x "$PATH_GENYMOTION"
 	"$PATH_GENYMOTION"
 
