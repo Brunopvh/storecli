@@ -3,7 +3,7 @@
 #
 
 # Utilitários de linha de comando para distribuições Linux.
-requeriments_cli_linux=(aria2 gawk unzip python3 zenity xterm)
+requeriments_cli_linux=(curl git aria2 gawk unzip python3 zenity xterm)
 
 # Python3 Fedora
 requeriments_python3_fedora=(python3 python3-pip python3-setuptools)

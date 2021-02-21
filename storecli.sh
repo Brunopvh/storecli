@@ -5,20 +5,43 @@ __version__='2021_02_21'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 #
+#
+#=============================================================#
+# USO
+#=============================================================#
+# ./storecli.sh --help
+# ./storecli.sh install <app>
+# ./storecli.sh remove <app>
+# ./storecli.sh --configure
+# ./storecli.sh --list
+#
+#
+#
+#
+#
+#
 #=============================================================#
 # INFO
 #=============================================================#
 #    Este programa serve para instalar os aplicativos comumente mais
-# usados em um computador com Linux. Como por exemplo: Codecs de mídia
-# reprodutores de vídeo, navegadores de internet, IDEs entre outras
+# usados em um computador com Linux. 
+#    Exemplos: 
+# Codecs de mídia, reprodutores de vídeo, navegadores de internet, IDEs entre outras
 # ferramentas.
-#   Testado nos seguintes sistemas: Debian 10 - GNOME, Fedora 31/32 - GNOME
-# Ubuntu 18.04/20.04 - GNOME, LinuxMint 19.3, ArchLinux - GNOME.
+#   Testado nos seguintes sistemas: 
+# Debian 10 - GNOME
+# Fedora 31/32 - GNOME
+# Ubuntu 18.04/20.04 - GNOME, 
+# LinuxMint 19.3, 
+# ArchLinux - GNOME.
 #
-# Instalação via wget
+#=============================================================#
+# Instalação 
+#=============================================================#
+# Gnu wget
 # sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
-# Instalação via curl
+# cURL
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 #=============================================================#
@@ -26,6 +49,8 @@ __appname__='storecli'
 #=============================================================#
 # https://github.com/Brunopvh/storecli
 #
+
+
 
 #=============================================================#
 # Verificar requisitos minimos do sistema.

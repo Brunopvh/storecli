@@ -8,13 +8,12 @@
 #=============================================================#
 _uninstall_etcher()
 {
-	case "$OS_ID" in
-		debian|ubuntu|linuxmint) 
-						_APT remove 'balena-etcher-electron'
-						__rmdir__ '/etc/apt/sources.list.d/balena-etcher.list'
-						;;
-		*) __rmdir__ "${destinationFilesEtcher[@]}";;
-	esac
+	if [[ "$BASE_DISTRO" == 'debian' ]]; then
+		_APT remove 'balena-etcher-electron'
+		__rmdir__ '/etc/apt/sources.list.d/balena-etcher.list'
+	else
+		__rmdir__ "${destinationFilesEtcher[@]}"
+	fi
 }
 
 _uninstall_nodejs_lts()

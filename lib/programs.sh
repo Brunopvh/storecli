@@ -40,7 +40,7 @@ _install_storecli_gui()
 
 	SetGeometry="${SetResolutionX}x${SetResolutionY}"
 
-	_show_info 'AddFileDesktop' 
+	print_info 'Criando arquivo .desktop' 
 	echo "[Desktop Entry]" > "${destinationFilesStorecli[file_desktop]}"
     {
         echo "Name=Storecli Gui"
@@ -58,51 +58,33 @@ _install_storecli_gui()
 	printf "OK\n"
 }
 
-_etcher_package_deb()
+etcher_debian_file()
 {
 	# https://github.com/balena-io/etcher/releases
-	local url_etcher='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
-	local PathFileEtcher="$DirDownloads/$(basename $url_etcher)"
+	# Instalar o etcher em sistemas Debian apartir do pacote .deb.
+	local url_etcher_debian_file='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
+	local path_etcher_debian_file="$DirDownloads/$(basename $url_etcher_debian_file)"
 
-	download "$url_etcher" "$PathFileEtcher" || return 1
+	download "$url_etcher" "$path_etcher_debian_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 	_APT update || return 1
-	_APT install "$PathFileEtcher" || _BROKE
+	_APT install "$path_etcher_debian_file" || _BROKE
 	return 0
 }
 
-_etcher_debian()
+etcher_debian_online_repo()
 {
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
 	# https://github.com/balena-io/etcher/releases
-	yellow "Adicionando key e repositório"
-	sudo apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61 || return 1 
+	__sudo__ apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61 || return 1 
 	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
 	_APT update || return 1
-	system_pkgmanager balena-etcher-electron || return 1	
+	system_pkgmanager balena-etcher-electron || return 1
+	return 0	
 }
 
-_etcher_archlinux()
-{
-	# https://aur.archlinux.org/packages/balena-etcher/
-	url_pkgbuild='https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=balena-etcher'
-	url_snapshot='https://aur.archlinux.org/cgit/aur.git/snapshot/balena-etcher.tar.gz'
-	path_file="$DirDownloads/etcher_archlinux.tar.gz"
-	
-	download "$url_snapshot" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
-	unpack_archive "$path_file" || return 1
-	
-	cd "$DirUnpack"
-	mv $(ls -d balena-*) "$DirTemp/etcher"
-	cd "$DirTemp/etcher"
-	yellow "Executando: makepkg -s"
-	makepkg -s
-	
-	green "Executando sudo pacman -U $(ls etcher*.tar.*)"
-	_PACMAN -U $(ls etcher*.tar.*)
-}
 
-_etcher_fedora()
+etcher_fedora_online_repo()
 {
 	# https://github.com/balena-io/etcher
 	# yellow "Executando ... curl -sSL https://balena.io/etcher/static/etcher-rpm.repo -o /etc/yum.repos.d/etcher-rpm.repo"
@@ -113,17 +95,21 @@ _etcher_fedora()
 _etcher_appimage()
 {
 	# https://github.com/balena-io/etcher/releases/download/v1.5.81/balenaEtcher-1.5.81-x64.AppImage
-	local url='https://github.com/balena-io/etcher/releases/download/v1.5.99/balenaEtcher-1.5.99-x64.AppImage'
-	local path_file="$DirDownloads/$(basename $url)"
+	local url_etcher_appimage='https://github.com/balena-io/etcher/releases/download/v1.5.99/balenaEtcher-1.5.99-x64.AppImage'
+	local path_etcher_appimage="$DirDownloads/$(basename $url_etcher_appimage)"
 
-	download "$url" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	if [[ $(id -u) == 0 ]]; then
+		print_erro "Você não pode ser o root para instalar este pacote."
+		return 1
+	fi
+
+	download "$url_etcher_appimage" "$path_etcher_appimage" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 	
-	cp "$path_file" "${destinationFilesEtcher[file_appimage]}"
+	cp "$path_etcher_appimage" "${destinationFilesEtcher[file_appimage]}"
 	chmod +x "${destinationFilesEtcher[file_appimage]}"
 	
-	_show_info 'AddFileDesktop'
-	
+	print_info 'Criando arquivo .desktop'
 	echo "[Desktop Entry]" > "${destinationFilesEtcher[file_desktop]}"
 	{
         echo "Name=BalenaEtcher"
@@ -137,15 +123,32 @@ _etcher_appimage()
         echo "Type=Application"
     } | tee -a "${destinationFilesEtcher[file_desktop]}" 1> /dev/null
 
-  
-	_white "Criando atalho na Área de trabalho"
 	cp -u "${destinationFilesEtcher[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesEtcher[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
 	cp -u "${destinationFilesEtcher[file_desktop]}" ~/Desktop/ 2> /dev/null 
 
-	if is_executable 'gtk-update-icon-cache'; then
-		'gtk-update-icon-cache'
-	fi
+	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
+}
+
+_etcher_archlinux()
+{
+	# https://aur.archlinux.org/packages/balena-etcher/
+	url_pkgbuild='https://aur.archlinux.org/cgit/aur.git/tree/PKGBUILD?h=balena-etcher'
+	url_snapshot='https://aur.archlinux.org/cgit/aur.git/snapshot/balena-etcher.tar.gz'
+	path_file="$DirDownloads/etcher_archlinux.tar.gz"
+	
+	download "$url_snapshot" "$path_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
+	unpack_archive "$path_file" || return 1
+	
+	cd "$DirUnpack"
+	mv $(ls -d balena-*) "$DirTemp/etcher"
+	cd "$DirTemp/etcher"
+	yellow "Executando: makepkg -s"
+	makepkg -s
+	
+	green "Executando sudo pacman -U $(ls etcher*.tar.*)"
+	_PACMAN -U $(ls etcher*.tar.*)
 }
 
 _etcher()
@@ -153,18 +156,18 @@ _etcher()
 	# Já instalado.
 	is_executable 'balena-etcher-electron' && print_info 'Pacote instalado' 'Etcher' && return 0
 
-	case "$OS_ID" in
-		ubuntu|linuxmint|debian) _etcher_debian;;
-		fedora) _etcher_fedora;;
+	case "$BASE_DISTRO" in
+		debian) etcher_debian_online_repo;; # Debian/Ubuntu/Mint e derivados.
+		fedora) etcher_fedora_online_repo;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
 	esac
 
 	if is_executable 'balena-etcher-electron'; then
-		_show_info 'SuccessInstalation' 'Etcher'
+		print_info 'OK'
 		return 0
 	else
-		red '(_etcher) falha'
+		print_erro '(_etcher)'
 		return 1
 	fi
 }
@@ -235,7 +238,7 @@ _veracrypt()
 
 	download "$url_package_tar" "$VeracryptTarFile" || return 1
 	download "$url_signature_file" "$VeracryptSigFile" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	  
 	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
 	gpg_verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
@@ -250,7 +253,7 @@ _veracrypt()
 	esac
 
 	if is_executable 'veracrypt'; then
-		_show_info 'SuccessInstalation' 'veracrypt'
+		print_info 'Pacote instalado com sucesso' 'veracrypt'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'veracrypt'
@@ -269,16 +272,17 @@ _microsoft_teams()
 	fi
 
 	download "$URL_MICROSOFT_TEAMS" "$PATH_MICROSOFT_TEAMS" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	system_pkgmanager "$PATH_MICROSOFT_TEAMS"
 }
 
 _woeusb_cli_linux()
 {
 	local URL_SCRIPT_WOEUSB='https://github.com/WoeUSB/WoeUSB/raw/master/sbin/woeusb'
-	local WOEUSB_TEMP_FILE="$DirTemp"/woeusb.tmp
+	local WOEUSB_TEMP_FILE=$(mktemp -u)
 
 	download "$URL_SCRIPT_WOEUSB" "$WOEUSB_TEMP_FILE" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	__sudo__ mv "$WOEUSB_TEMP_FILE" '/usr/local/bin/woeusb'
 	__sudo__ chmod +x '/usr/local/bin/woeusb'
 }
@@ -319,7 +323,7 @@ _woeusb()
 	_woeusb_ng
 
 	if is_executable 'woeusb'; then
-		_show_info 'SuccessInstalation' 'woeusb'
+		print_info 'Pacote instalado com sucesso' 'woeusb'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'woeusb'
@@ -337,7 +341,7 @@ _android_studio_zip()
 	download "$url" "$path_file" || return 1
 	
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	
 	__shasum__ "$path_file" "$hash_android_studio" || return 1
 	unpack_archive "$path_file" || return 1
@@ -349,7 +353,7 @@ _android_studio_zip()
 	chmod -R +x "${destinationFilesAndroidStudio[dir]}" # ~/.local/bin/androi-studio
 
 	# arquivo de configuração ".desktop"
-	_show_info 'AddFileDesktop'
+	print_info 'Criando arquivo .desktop'
 	echo '[Desktop Entry]' > "${destinationFilesAndroidStudio[file_desktop]}"
 	{
 		echo "Version=1.0"
@@ -504,7 +508,7 @@ _android_studio()
 	esac
 
 	if is_executable 'studio'; then
-		_show_info 'SuccessInstalation' 'android-studio'
+		print_info 'Pacote instalado com sucesso' 'android-studio'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'android-studio'
@@ -548,7 +552,7 @@ _idea_ic()
 	local path_file="$DirDownloads/$(basename $idea_url)"
 
 	download "$idea_url" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	__shasum__ "$path_file" "$idea_sha256" || return 1
 	unpack_archive "$path_file" || return 1
 	
@@ -585,7 +589,7 @@ _idea_ic()
 	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/Desktop/ 2> /dev/null 
 
 	if is_executable idea; then
-		_show_info 'SuccessInstalation' 'ideaic'
+		print_info 'Pacote instalado com sucesso' 'ideaic'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'ideaic'
@@ -671,7 +675,7 @@ _pycharm()
 	download "$url_pycharm" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	__shasum__ "$path_file" "$sha256_pycharm" || return 1
 	unpack_archive "$path_file" || return 1
@@ -686,7 +690,7 @@ _pycharm()
 	echo -e "\ncd ${destinationFilesPycharm[dir]}/bin/ && ./pycharm.sh" >> "${destinationFilesPycharm[link]}"
 	chmod +x "${destinationFilesPycharm[link]}"
 
-	_show_info 'AddFileDesktop' 
+	print_info 'Criando arquivo .desktop' 
 	echo "[Desktop Entry]" > "${destinationFilesPycharm[file_desktop]}"
     {
         echo "Name=Pycharm Community"
@@ -703,7 +707,7 @@ _pycharm()
 	cp -u "${destinationFilesPycharm[file_desktop]}" ~/Desktop/ 2> /dev/null 
 
 	if is_executable 'pycharm'; then
-		_show_info 'SuccessInstalation' 'pycharm'
+		print_info 'Pacote instalado com sucesso' 'pycharm'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'pycharm'
@@ -722,7 +726,7 @@ _sublime_text()
 	local PATH_SUBLIME="$DirDownloads/$(basename $URL_SUBLIME_TARFILE)"
 
 	download "$URL_SUBLIME_TARFILE" "$PATH_SUBLIME" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 	unpack_archive "$PATH_SUBLIME" || return 1
 
 	__sudo__ cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
@@ -733,7 +737,7 @@ _sublime_text()
 	is_executable 'gtk-update-icon-cache' && sudo 'gtk-update-icon-cache'
 
 	if is_executable 'sublime'; then
-		_show_info 'SuccessInstalation' 'sublime'
+		print_info 'Pacote instalado com sucesso' 'sublime'
 		sublime &
 		return 0
 	else
@@ -755,7 +759,7 @@ _vscode_package_deb()
 	local url_code_debian='https://update.code.visualstudio.com/latest/linux-deb-x64/stable'
 	local path_file="$DirDownloads/vscode-amd64.deb"
 	download "$url_code_debian" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	_APT install "$path_file" -y || _BROKE
 }
 
@@ -766,7 +770,7 @@ _vscode_tarfile()
 	local path_file="$DirDownloads/vscode.tar.gz"
 
 	download "$url_vscode_tar" "$path_file"
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	unpack_archive "$path_file" || return 1
 
 	cd "$DirUnpack"
@@ -807,7 +811,7 @@ _vscode()
 	esac
 	
 	if is_executable 'code'; then
-		_show_info 'SuccessInstalation' 'code'
+		print_info 'Pacote instalado com sucesso' 'code'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'code'
@@ -903,7 +907,7 @@ _codecs_debian()
 	system_pkgmanager lame
 
 	download "$url_wcodecs" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0 
 	__shasum__ "$path_file" "$hash_wcodecs" || return 1
 	_APT install "$path_file" -y || _BROKE
 }
@@ -1099,7 +1103,7 @@ _spotify_archlinux()
 	download "$Spotify_Url_Server" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"
 	_white "Descomprimindo arquivo data.tar.gz"
@@ -1179,7 +1183,7 @@ _vlc()
 	esac
 
 	if is_executable 'vlc'; then
-		_show_info 'SuccessInstalation' 'vlc'
+		print_info 'Pacote instalado com sucesso' 'vlc'
 	else
 		_show_info 'InstalationFailed' 'vlc'
 	fi
@@ -1198,7 +1202,7 @@ _ubuntu_msttcorefonts()
 	download "$url_msttcorefonts" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0
 	 
 	system_pkgmanager cabextract || return 1
 	_DPKG --install "$path_file" || return 1
@@ -1232,7 +1236,7 @@ _libreoffice_appimage()
 	download "$url" "$path_file" || return 1
 	
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	_show_info "AddFileDesktop"
 	echo '[Desktop Entry]' | tee "${destinationFilesLibreofficeAppimage[file_desktop]}" 1> /dev/null
@@ -1258,7 +1262,7 @@ _libreoffice_appimage()
 	ln -sf "${destinationFilesLibreofficeAppimage[file_desktop]}" ~/Desktop/ 2> /dev/null
 
 	if is_executable 'libreoffice-appimage'; then
-		_show_info 'SuccessInstalation' 'libreoffice-appimage'
+		print_info 'Pacote instalado com sucesso' 'libreoffice-appimage'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'libreoffice-appimage'
@@ -1470,7 +1474,7 @@ _google_chrome()
 	esac	
 
 	if is_executable 'google-chrome'|| is_executable 'google-chrome-stable'; then
-		_show_info 'SuccessInstalation' 'google-chrome'
+		print_info 'Pacote instalado com sucesso' 'google-chrome'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'google-chrome'
@@ -1541,7 +1545,7 @@ case "$OS_ID" in
 esac	
 
 	if [[ $? == '0' ]]; then 
-		_show_info 'SuccessInstalation' 'opera'
+		print_info 'Pacote instalado com sucesso' 'opera'
 	else
 		_show_info 'InstalationFailed' 'opera'
 		return 1
@@ -1576,13 +1580,13 @@ _clipgrab_appimage()
 	local path_file="$DirDownloads/$(basename $url_clipgrab_appimage)"
 
 	download "$url_clipgrab_appimage" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	cp -u "$path_file" "$DIR_BIN"/clipgrab
 	chmod +x "$DIR_BIN"/clipgrab
 	clipgrab&
 
 	if is_executable clipgrab; then
-		_show_info 'SuccessInstalation' 'clipgrab'
+		print_info 'Pacote instalado com sucesso' 'clipgrab'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'clipgrab'
@@ -1719,7 +1723,7 @@ _megasync_archlinux()
 	# Baixar o pacote de instalação e o arquivo .sig do repositório MEGA.
 	gpg_import "$URL_MEGA_KEY" || return 1
 	download "$URL_MEGA_TARFILE" "$PATH_MEGA_TARFILE" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	# Verificar integridade do pacote baixado.
 	echo -e "Conectando ... $URL_MEGA_SIGNATURE_FILE"
@@ -1751,7 +1755,7 @@ _megasync()
 	esac
 
 	if is_executable 'megasync'; then
-		_show_info 'SuccessInstalation' 'megasync'
+		print_info 'Pacote instalado com sucesso' 'megasync'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'megasync'
@@ -1832,7 +1836,7 @@ _skype_debian()
 
 	download "$skype_url" "$path_file" || return 1
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	_APT install "$path_file" || return 1
 }
 
@@ -1876,7 +1880,7 @@ _install_teamviewer_debian()
 	download "$url_deb" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 
 	for i in "${array_tw_debian[@]}"; do
 		system_pkgmanager "$i" 
@@ -1908,7 +1912,7 @@ _install_teamviewer_fedora()
 	)
 	
 	download "$url_rpm" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar
 
 
 	# Instalar dependências
@@ -1927,7 +1931,7 @@ _teamviewer_tar()
 	download "$url_tar" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack" && cd teamviewer
@@ -1948,7 +1952,7 @@ _teamviewer()
 	esac
 
 	if is_executable 'teamviewer'; then
-		_show_info 'SuccessInstalation' 'teamviewer'
+		print_info 'Pacote instalado com sucesso' 'teamviewer'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'teamviewer'
@@ -1974,7 +1978,7 @@ _telegram()
 	esac
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	
 	# Já instalado.
 	is_executable 'telegram' && print_info 'Pacote instalado' 'telegram' && return 0
@@ -1987,7 +1991,7 @@ _telegram()
 	telegram&
 
 	if is_executable 'telegram'; then
-		_show_info 'SuccessInstalation' 'telegram'
+		print_info 'Pacote instalado com sucesso' 'telegram'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'telegram'
@@ -2010,7 +2014,7 @@ _tixati_tarfile()
 
 	download "$url_tarfile" "$TarFile" || return 1
 	download "$url_signature_file" "$signatureFile" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0 
 
 	gpg_import https://www.tixati.com/tixati.key || return 1
 	gpg_verify "$signatureFile" "$TarFile" || return 1
@@ -2060,7 +2064,7 @@ function _tixati_debian()
 
 	download "$url_debian_file" "$tixati_debian_file" || return 1
 	download "$url_signature_file" "$tixati_sig_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0 
 
 	gpg_import https://www.tixati.com/tixati.key || return 1
 	gpg_verify "$tixati_sig_file" "$tixati_debian_file" || return 1
@@ -2133,7 +2137,7 @@ _youtube_dl()
 	download "$URL_YOUTUBE_DL_LATEST" "$PATH_YTDL" || return 1 
 	download "$URL_YOUTUBE_DL_SIG" "$PATH_SIGNATURE_FILE" || return 1 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$PATH_YTDL" && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$PATH_YTDL" && return 0
 
 	gpg_import 'https://dstftw.github.io/keys/18A9236D.asc' || return 1
 	
@@ -2145,7 +2149,7 @@ _youtube_dl()
 	chmod a+x "$DIR_BIN"/youtube-dl
 
 	if is_executable 'youtube-dl'; then
-		_show_info 'SuccessInstalation' 'youtube-dl'
+		print_info 'Pacote instalado com sucesso' 'youtube-dl'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'youtube-dl'
@@ -2170,7 +2174,7 @@ _python_twodict_github()
 	fi
 
 	if [[ "$?" == '0' ]]; then 
-		_show_info 'SuccessInstalation' 'python twodict'
+		print_info 'Pacote instalado com sucesso' 'python twodict'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'python twodict'
@@ -2237,7 +2241,7 @@ _youtube_dlgui_compile()
 	download "$url_youtube_dl_gui_master" "$path_file" || return 1
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"/youtube-dl-gui-master || return 1
@@ -2263,7 +2267,7 @@ _youtube_dlgui_user_installer()
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 	
 	download "$url_youtube_dl_gui_master" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar
 	unpack_archive "$path_file" || return 1
 
 	yellow "Copiando arquivos"
@@ -2412,7 +2416,7 @@ _youtube_dlgui()
 	fi
 	
 	if is_executable 'youtube-dl-gui'; then
-		_show_info 'SuccessInstalation' 'youtube-dl-gui'
+		print_info 'Pacote instalado com sucesso' 'youtube-dl-gui'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'youtube-dl-gui'
@@ -2568,7 +2572,7 @@ _cpux_appimage()
 	is_executable cpux && print_info 'Pacote instalado' 'cpux' && return 0
 	
 	download "$URL_CPUX_APPIMAGE" "$path_cpux_appimage" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	cp -vu "$path_cpux_appimage" "${destinationFilesCpux[file]}"
 	chmod +x "${destinationFilesCpux[file]}"
 	
@@ -2601,7 +2605,7 @@ _cpux_ubuntu()
 	local PATH_CPUX_TARFILE="$DirDownloads/$(basename $URL_CPUX_TAR)"
 
 	download "$URL_CPUX_TAR" "$PATH_CPUX_TARFILE" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	unpack_archive "$PATH_CPUX_TARFILE" || return 1
 	if [[ "$VERSION_CODENAME" == 'bionic' ]] || [[ "$VERSION_CODENAME" == 'tricia' ]]; then
@@ -2633,7 +2637,7 @@ _cpux_debian()
 	local PATH_CPUX_TARFILE="$DirDownloads/$(basename $URL_CPUX_TAR)"
 
 	download "$URL_CPUX_TAR" "$PATH_CPUX_TARFILE" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	unpack_archive "$PATH_CPUX_TARFILE" || return 1
 	printf "Entrando no diretório ... $DirUnpack/Debian_10/amd64\n"
@@ -2666,7 +2670,7 @@ _genymotion()
 	local PATH_GENYMOTION="$DirDownloads/$(basename $URL_GENYMOTION)"
 
 	download "$URL_GENYMOTION" "$PATH_GENYMOTION" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	cd "$DIR_BIN"
 	chmod +x "$PATH_GENYMOTION"
@@ -2680,7 +2684,7 @@ _google_earth_debian()
 	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_amd64.deb'
 	path_file="$DirDownloads/$(basename $url_google_earth)"
 	download "$url_google_earth" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	_APT install "$path_file" || return 1
 	return 0
 }
@@ -2691,7 +2695,7 @@ _google_earth_fedora()
 	url_google_earth='http://dl.google.com/dl/earth/client/current/google-earth-stable_current_x86_64.rpm'
 	path_file="$DirDownloads/$(basename $url_google_earth)"
 	download "$url_google_earth" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	_DNF install "$path_file" || return 1
 	return 0
 }
@@ -2725,7 +2729,7 @@ _peazip()
 	local path_file="$DirDownloads/$(basename $peazip_download_page)"
 
 	download "$peazip_download_page" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar 
 	
 	unpack_archive "$path_file" "$DirUnpack" || return 1
 	echo -e "Entrando no diretório ... $DirUnpack"
@@ -2763,7 +2767,7 @@ _peazip()
 	} | sudo tee "${destinationFilesPeazip[script]}" 1> /dev/null
 	__sudo__ chmod a+x "${destinationFilesPeazip[script]}"
 
-	_show_info 'AddFileDesktop'
+	print_info 'Criando arquivo .desktop'
 	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
@@ -2771,7 +2775,7 @@ _peazip()
 	is_executable 'gtk-update-icon-cache' && sudo gtk-update-icon-cache
 
 	if is_executable 'peazip'; then
-		_show_info 'SuccessInstalation' 'peazip'
+		print_info 'Pacote instalado com sucesso' 'peazip'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'peazip'
@@ -2793,7 +2797,7 @@ _refind_zip()
 	download "$url_zip" "$path_file" || return 1
 	
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 	
 	# Já instalado.
 	is_executable 'refind-install' && print_info 'Pacote instalado' 'refind-install' && return 0
@@ -2823,7 +2827,7 @@ _refind()
 	esac
 	
 	if is_executable 'refind-install'; then
-		_show_info 'SuccessInstalation' 'refind-install'
+		print_info 'Pacote instalado com sucesso' 'refind-install'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'refind-install'
@@ -2840,7 +2844,7 @@ _stacer_debian()
 	local path_file="$DirDownloads/$(basename $url)"
 
 	download "$url" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	_APT install -y "$path_file"
 }
@@ -2862,7 +2866,7 @@ _stacer_appimage()
 	local path_file="$DirDownloads/Stacer-1.1.0-x64.AppImage"
 	
 	download "$url_stacer_appimage" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	
 	cp -u "$path_file" "${destinationFilesStacer[file_appimage]}"
 	
@@ -2892,7 +2896,7 @@ _stacer_appimage()
 	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
 
 	if is_executable 'stacer'; then
-		_show_info 'SuccessInstalation' 'Stacer'
+		print_info 'Pacote instalado com sucesso' 'Stacer'
 	else
 		_show_info 'InstalationFailed' 'stacer'
 	fi
@@ -2956,7 +2960,7 @@ _virtualbox_extension_pack()
 	local PATH_EXTENSION_PACK="$DirDownloads/$(basename $URL_EXTENSION_PACK)"
 
 	download "$URL_EXTENSION_PACK" "$PATH_EXTENSION_PACK" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	__sudo__ VBoxManage extpack install --replace "$PATH_EXTENSION_PACK"
 	question "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1 
@@ -3176,7 +3180,7 @@ _virtualbox_linux_run()
 	download "$vbox_url_hash" "$vbox_path_file_hash" || return
 
 	# Somente baixar
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	# Obter a HASH do pacote de instalação com a extensão .run. As informações
 	# estão no arquivo '.check'. Em seguida verificar a integridade do pacote.
@@ -3340,7 +3344,7 @@ _papirus_github()
 	local path_file="$DirDownloads/papirus.tar.gz"
 
 	download "$url_papirus_master" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"
@@ -3405,7 +3409,7 @@ _sierra()
 	esac
 
 	download "$url_sierra" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"
@@ -3424,7 +3428,7 @@ _dashtodock_github()
 	local path_file="$DirDownloads/dash_to_dock.tar.gz"
 
 	gitclone "$url_repo" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
 	system_pkgmanager make
 	cd "$DirGitclone"/dash-to-dock
@@ -3474,7 +3478,7 @@ _topicons_plus_github()
 	local path_file="$DirDownloads/topicons_plus.tar.gz"
 
 	download "$url" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0 
 
 	system_pkgmanager make
 	unpack_archive "$path_file" || return 1
