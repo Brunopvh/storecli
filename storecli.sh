@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2021_02_20'
+__version__='2021_02_21'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 #
@@ -35,7 +35,7 @@ fi
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
-	#exit 1
+	exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
@@ -67,7 +67,7 @@ fi
 # Repositório no github.
 # https://github.com/Brunopvh/bash-libs
 #
-# Instalação.
+# Instalação do gerenciador de pacotes para módulos externos.
 # sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
 # sudo sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)"
 #
@@ -167,6 +167,12 @@ readonly export dir_local_python="$dir_of_executable/python"
 source $config_path
 source $print_text
 source $os
+source $print_text
+source $platform
+source $pkgmanager
+source $files_programs
+source $crypto
+source $requests
 
 #=============================================================#
 # Importar Módulos locais
@@ -250,8 +256,6 @@ function _resolution()
 
 	SetGeometry="${SetResolutionX}x${SetResolutionY}"
 }
-
-
 
 _get_storecli_online_version()
 {

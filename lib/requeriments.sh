@@ -2,11 +2,6 @@
 #
 #
 
-[[ $lib_print_text == 'True' ]] || source $print_text
-[[ $lib_platform == 'True' ]] || source $platform
-[[ -z $lib_os ]] && source $os
-[[ -z $lib_pkgmanager ]] && source $pkgmanager
-
 # Utilitários de linha de comando para distribuições Linux.
 requeriments_cli_linux=(aria2 gawk unzip python3 zenity xterm)
 

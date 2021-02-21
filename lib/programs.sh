@@ -1,10 +1,6 @@
 #!/usr/bin/env bash
 #
 
-[[ $lib_files_programs == 'True' ]] || source $files_programs
-[[ $lib_crypto == 'True' ]] || source $crypto
-[[ $lib_requests == 'True' ]] || source $requests
-
 github='https://github.com'
 
 _show_info()
