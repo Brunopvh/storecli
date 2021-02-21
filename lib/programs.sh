@@ -151,7 +151,7 @@ _etcher_appimage()
 _etcher()
 {
 	# Já instalado.
-	is_executable 'balena-etcher-electron' && _show_info 'PkgInstalled' 'Etcher' && return 0
+	is_executable 'balena-etcher-electron' && print_info 'Pacote instalado' 'Etcher' && return 0
 
 	case "$OS_ID" in
 		ubuntu|linuxmint|debian) _etcher_debian;;
@@ -223,7 +223,7 @@ _veracrypt()
 	fi
 
 	# Já instalado?.
-	is_executable 'veracrypt' && _show_info 'PkgInstalled' 'veracrypt' && return 0
+	is_executable 'veracrypt' && print_info 'Pacote instalado' 'veracrypt' && return 0
 	
 	local VERACRYPT_DOWN_PAGE='https://www.veracrypt.fr/en/Downloads.html'
 	
@@ -492,7 +492,7 @@ _android_studio()
 	# https://developer.android.com/studio/index.html#downloads
 
 	# Já instalado.
-	is_executable 'studio' && _show_info 'PkgInstalled' 'android-studio' && return 0
+	is_executable 'studio' && print_info 'Pacote instalado' 'android-studio' && return 0
 
 	case "$OS_ID" in
 		debian) _android_studio_debian;;
@@ -542,7 +542,7 @@ _codeblocks()
 
 _idea_ic()
 {
-	is_executable 'idea' && _show_info 'PkgInstalled' 'ideaIC' && return 0
+	is_executable 'idea' && print_info 'Pacote instalado' 'ideaIC' && return 0
 	local idea_url='https://download-cf.jetbrains.com/idea/ideaIC-2020.2.1.tar.gz'
 	local idea_sha256='a107f09ae789acc1324fdf8d22322ea4e4654656c742e4dee8a184e265f1b014'
 	local path_file="$DirDownloads/$(basename $idea_url)"
@@ -561,7 +561,7 @@ _idea_ic()
 	cd "${destinationFilesIdeaic[dir]}/bin"
 	cp -vu idea.png "${destinationFilesIdeaic[png]}"
 
-	_print "Criando arquivo '.desktop'"
+	echo -e "Criando arquivo '.desktop'"
 	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
 	{
 		echo -e "Name=IntelliJ IDEA Ultimate Edition"
@@ -574,7 +574,7 @@ _idea_ic()
 		echo -e "Type=Application"
 	} >> "${destinationFilesIdeaic[file_desktop]}"
 
-	_print "Criando atalho para execução"
+	echo -e "Criando atalho para execução"
 	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[script]}"
 	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[script]}"
 	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[script]}"
@@ -663,7 +663,7 @@ _nodejs_lts()
 _pycharm()
 {
 	# Já instalado.
-	is_executable 'pycharm' && _show_info 'PkgInstalled' 'pycharm' && return 0
+	is_executable 'pycharm' && print_info 'Pacote instalado' 'pycharm' && return 0
 	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.2.tar.gz'
 	local sha256_pycharm='60b2eeea5237f536e5d46351fce604452ce6b16d037d2b7696ef37726e1ff78a'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
@@ -714,7 +714,7 @@ _pycharm()
 _sublime_text()
 {
 	# Já instalado.
-	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
+	is_executable 'sublime' && print_info 'Pacote instalado' 'sublime-text' && return 0
 
 	local SUBLIME_DOWN_PAGE='https://www.sublimetext.com/3'
 	local SUBLIME_HTML=$(get_html_page "$SUBLIME_DOWN_PAGE" --find sublime.*x64.tar.bz2)
@@ -799,7 +799,7 @@ _vscode_tarfile()
 _vscode()
 {
 	# Já instalado.
-	is_executable 'code' && _show_info 'PkgInstalled' 'code' && return 0
+	is_executable 'code' && print_info 'Pacote instalado' 'code' && return 0
 
 	case "$OS_ID" in
 		debian|ubuntu|linuxmint) _vscode_package_deb;;
@@ -1060,7 +1060,7 @@ _spotify_debian()
 	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
 	is_admin || return 1
 	if ! apt_key_add 'https://download.spotify.com/debian/pubkey_0D811D58.gpg'; then
-		_print "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
+		echo -e "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
 		return 1
 	fi
 
@@ -1157,9 +1157,9 @@ _vlc_fedora()
 	local repos_fusion_non_free='https://download1.rpmfusion.org/nonfree/fedora/rpmfusion-nonfree-release'
 	print_line
 	yellow "Adicionando os seguintes repositórios: "
-	_print "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
-	_print "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm"
-	_print "fedora-workstation-repositories"
+	echo -e "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
+	echo -e "$repos_fusion_non_free-$(rpm -E %fedora).noarch.rpm"
+	echo -e "fedora-workstation-repositories"
 	print_line
 
 	_DNF install "$repos_fusion_free-$(rpm -E %fedora).noarch.rpm"
@@ -1224,7 +1224,7 @@ _libreoffice_appimage()
 	# https://wiki.archlinux.org/index.php/FUSE
 	
 	# Já instalado.
-	is_executable 'libreoffice-appimage' && _show_info 'PkgInstalled' 'libreoffice-appimage' && return 0
+	is_executable 'libreoffice-appimage' && print_info 'Pacote instalado' 'libreoffice-appimage' && return 0
 	local url='https://libreoffice.soluzioniopen.com/stable/full/LibreOffice-still.full-x86_64.AppImage'
 	local path_file="$DirDownloads/$(basename $url)"
 	local hash_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e83c3ef1e6'
@@ -1343,9 +1343,9 @@ _edge()
 		__sudo__ mv /etc/yum.repos.d/packages.microsoft.com_yumrepos_edge.repo /etc/yum.repos.d/microsoft-edge-dev.repo
 		system_pkgmanager microsoft-edge-dev
 	elif [[ -f /etc/debian_version ]]; then
-		_println "Adicionando key ... https://packages.microsoft.com/keys/microsoft.asc "
+		echo -ne "Adicionando key ... https://packages.microsoft.com/keys/microsoft.asc "
 		curl -sSLf https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-		_println "Adicionando repositório ... "
+		echo -ne "Adicionando repositório ... "
 		echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge-dev.list
 		_APT update || return 1
 		system_pkgmanager microsoft-edge-dev
@@ -1568,7 +1568,7 @@ _clipgrab_appimage()
 {
 	# Instalar o clipgrab na versão AppImage.
 	if is_executable clipgrab; then
-		_show_info 'PkgInstalled' 'clipgrab'
+		print_info 'Pacote instalado' 'clipgrab'
 		return 0
 	fi
 
@@ -1678,7 +1678,7 @@ _libpdfium_archlinux()
 {
 	local repos_libpdfium='https://aur.archlinux.org/libpdfium-nojs.git'
 	gitclone "$repos_libpdfium" || return 1
-	_print "Entrando no diretório ... $DirGitclone/libpdfium-nojs"
+	echo -e "Entrando no diretório ... $DirGitclone/libpdfium-nojs"
 	cd "$DirGitclone/libpdfium-nojs"
 	msg "Executando ... makepkg -s"
 	makepkg -s
@@ -1722,14 +1722,14 @@ _megasync_archlinux()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	# Verificar integridade do pacote baixado.
-	_print "Conectando ... $URL_MEGA_SIGNATURE_FILE"
+	echo -e "Conectando ... $URL_MEGA_SIGNATURE_FILE"
 	curl -sSL "$URL_MEGA_SIGNATURE_FILE" -o "$PATH_MEGA_SIGNATURE_FILE" || return 1
 	gpg_verify "$PATH_MEGA_SIGNATURE_FILE" "$PATH_MEGA_TARFILE" || return 1
 	rm -rf "$PATH_MEGA_SIGNATURE_FILE" 2> /dev/null
 
 	# Copiar o instalador para o diretório temporário e em seguida instalar o pacote.
 	cp "$PATH_MEGA_TARFILE" "$DirTemp/megasync-x86_64.pkg.tar.xz.zst" || return 1
-	_print "Entrando no diretório ... $DirTemp"
+	echo -e "Entrando no diretório ... $DirTemp"
 	cd "$DirTemp"
 	_PACMAN -U megasync-x86_64.pkg.tar.xz.zst
 	_PACMAN -Sy
@@ -1739,7 +1739,7 @@ _megasync_archlinux()
 _megasync()
 {
 	# Já instalado.
-	is_executable 'megasync' && _show_info 'PkgInstalled' 'megasync' && return 0
+	is_executable 'megasync' && print_info 'Pacote instalado' 'megasync' && return 0
 
 	case "$OS_ID" in
 		'opensuse-tumbleweed') _megasync_opensuse_tumbleweed;;
@@ -1773,7 +1773,7 @@ _tor_debian()
 		return
 	fi
 
-	_println "Executando ... curl -sSL $URL_TOR_ASC | sudo gpg --import "
+	echo -ne "Executando ... curl -sSL $URL_TOR_ASC | sudo gpg --import "
 	if curl -sSL "$URL_TOR_ASC" | sudo gpg --import 1> /dev/null 2>&1; then
 		echo "OK"
 	else
@@ -1781,7 +1781,7 @@ _tor_debian()
 		return 1
 	fi
 	
-	_println "Executando ... gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - "
+	echo -ne "Executando ... gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - "
 	if ! sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'; then
 		sred "FALHA"
 		return 1
@@ -1792,7 +1792,7 @@ _tor_debian()
 	if [[ $? == '0' ]]; then
 		yellow "Repositório encontrado pulando..."
 	else
-		_println "Adicionando repositório "
+		echo -ne "Adicionando repositório "
 		echo "$TOR_REPO_MAIN" | sudo tee "$TOR_FILE_SOURCE_LIST" 
 	fi
 	_APT update
@@ -1939,7 +1939,7 @@ _teamviewer_tar()
 _teamviewer()
 {
 	# https://www.blogopcaolinux.com.br/2018/04/Instalando-o-TeamViewer-no-Debian-Ubuntu-e-Linux-Mint.html
-	is_executable 'teamviewer' && _show_info 'PkgInstalled' 'teamviewer' && return 0
+	is_executable 'teamviewer' && print_info 'Pacote instalado' 'teamviewer' && return 0
 
 	case "$OS_ID" in
 		debian|linuxmint|ubuntu) _install_teamviewer_debian;;
@@ -1977,7 +1977,7 @@ _telegram()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0	
 	
 	# Já instalado.
-	is_executable 'telegram' && _show_info 'PkgInstalled' 'telegram' && return 0
+	is_executable 'telegram' && print_info 'Pacote instalado' 'telegram' && return 0
 	
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack" 
@@ -1999,7 +1999,7 @@ _telegram()
 _tixati_tarfile()
 {
 	# Já instalado.
-	is_executable 'tixati' && _show_info 'PkgInstalled' 'tixati' && return 0
+	is_executable 'tixati' && print_info 'Pacote instalado' 'tixati' && return 0
 
 	# Baixar o html da página de download e filtrar pela ocorrência tixati.
 	local download_page='https://www.tixati.com/download/linux.html'
@@ -2025,15 +2025,15 @@ _tixati_tarfile()
 	unpack_archive "$TarFile" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d tixati*) tixati-amd64 
-	sudo chown -R root:root tixati-amd64
+	# chown -R root:root tixati-amd64
 	cd "$DirUnpack/tixati-amd64"
 
-	sudo mv tixati.desktop "${destinationFilesTixati[file_desktop]}" # .desktop
-	sudo mv tixati.png "${destinationFilesTixati[png]}"         # PNG.
-	sudo mv tixati "${destinationFilesTixati[bin]}"             # bin.
+	mv tixati.desktop "${destinationFilesTixati[file_desktop]}" # .desktop
+	mv tixati.png "${destinationFilesTixati[png]}"         # PNG.
+	mv tixati "${destinationFilesTixati[bin]}"             # bin.
 	
-	sudo chmod a+x "${destinationFilesTixati[file_desktop]}"
-	sudo chmod a+x "${destinationFilesTixati[bin]}"
+	chmod a+x "${destinationFilesTixati[file_desktop]}"
+	chmod a+x "${destinationFilesTixati[bin]}"
 
 	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
@@ -2047,20 +2047,62 @@ _tixati_tarfile()
 		gconftool-2 --set --type=string /desktop/gnome/url-handlers/magnet/need-terminal false
 	fi
 
-	is_executable gtk-update-icon-cache && sudo gtk-update-icon-cache
-
-	if is_executable 'tixati'; then
-		_show_info 'SuccessInstalation' 'tixati'
-		return 0
-	else
-		_show_info 'InstalationFailed' 'tixati'
-		return 1
-	fi
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 }
+
+function _tixati_debian()
+{
+	local download_page='https://www.tixati.com/download/linux.html'
+	local url_debian_file=$(get_html_page "$download_page" --find 'tixati.*64*.deb' | sed 's/deb.*/deb/g;s/.*="//g')
+	local url_signature_file="${url_debian_file}.asc"
+	local tixati_debian_file="$DirDownloads/$(basename $url_debian_file)"
+	local tixati_sig_file="${tixati_debian_file}.asc"
+
+	download "$url_debian_file" "$tixati_debian_file" || return 1
+	download "$url_signature_file" "$tixati_sig_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
+
+	gpg_import https://www.tixati.com/tixati.key || return 1
+	gpg_verify "$tixati_sig_file" "$tixati_debian_file" || return 1
+	_APT install "$tixati_debian_file"
+}
+
+
+function _tixati_rpm()
+{
+	local download_page='https://www.tixati.com/download/linux.html'
+	local url_rpm_file=$(get_html_page "$download_page" --find 'tixati.*64*.deb' | sed 's/deb.*/deb/g;s/.*="//g')
+	local url_signature_file="${url_rpm_file}.asc"
+	local tixati_rpm_file="$DirDownloads/$(basename $url_rpm_file)"
+	local tixati_sig_file="${tixati_rpm_file}.asc"
+
+	download "$url_rpm_file" "$tixati_rpm_file" || return 1
+	download "$url_signature_file" "$tixati_sig_file" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info "Somente download" && return 0 
+
+	gpg_import https://www.tixati.com/tixati.key || return 1
+	gpg_verify "$tixati_sig_file" "$tixati_rpm_file" || return 1
+	_DNF install "$tixati_rpm_file"
+}
+
 
 _tixati()
 {
-	_tixati_tarfile
+	case "$BASE_DISTRO" in
+		debian) _tixati_debian;;
+		fedora) _tixati_rpm;;
+		*) _tixati_tarfile;;
+	esac
+
+
+
+	if is_executable 'tixati'; then
+		print_info 'Tixati instalado com sucesso.'
+		return 0
+	else
+		print_erro 'Tixati não foi instalado.'
+		return 1
+	fi
 }
 
 _uget()
@@ -2078,7 +2120,7 @@ _youtube_dl()
 	# https://yt-dl.org/downloads/latest/youtube-dl
 
 	# Já instalado.
-	#is_executable "$DIR_BIN/youtube-dl" && _show_info 'PkgInstalled' "youtube-dl" && return 0
+	is_executable "$DIR_BIN/youtube-dl" && print_info 'PkgInstalled' "youtube-dl" && return 0
 
 	local URL_YOUTUBE_DL_LATEST='https://yt-dl.org/downloads/latest/youtube-dl'
 	local URL_YOUTUBE_DL_SIG='https://yt-dl.org/downloads/latest/youtube-dl.sig'
@@ -2442,18 +2484,18 @@ _bspwm_config()
 	# https://ricebr.github.io/Not-A-Blog//instalando-e-configurando-bspwm/
 	touch ~/.xinitrc
 
-	_print "Criando diretórios ... ~/.config/{bspwm,sxhkd}"
+	echo -e "Criando diretórios ... ~/.config/{bspwm,sxhkd}"
 	mkdir -p ~/.config/{bspwm,sxhkd}
 	cp -vr /usr/share/doc/bspwm/examples/bspwmrc ~/.config/bspwm
 	cp -vr /usr/share/doc/bspwm/examples/sxhkdrc ~/.config/sxhkd
 
 	grep 'xsetroot -cursor_name left_ptr &' ~/.config/bspwm/bspwmrc || {
-		_print "Configurando ... ~/.config/bspwm/bspwmrc"
+		echo -e "Configurando ... ~/.config/bspwm/bspwmrc"
 		echo 'xsetroot -cursor_name left_ptr &' >> ~/.config/bspwm/bspwmrc
 	} 
 
 	grep 'exec bspwm' ~/.xinitrc || {
-		_print "Configurando ... ~/.xinitrc"
+		echo -e "Configurando ... ~/.xinitrc"
 		echo 'exec bspwm' >> ~/.xinitrc
 	}
 
@@ -2523,7 +2565,7 @@ _cpux_appimage()
 	local URL_CPUX_APPIMAGE='https://github.com/X0rg/CPU-X/releases/download/v4.0.1/CPU-X-v4.0.1-x86_64.AppImage'
 	local path_cpux_appimage="$DirDownloads/$(basename $URL_CPUX_APPIMAGE)"
 	
-	is_executable cpux && _show_info 'PkgInstalled' 'cpux' && return 0
+	is_executable cpux && print_info 'Pacote instalado' 'cpux' && return 0
 	
 	download "$URL_CPUX_APPIMAGE" "$path_cpux_appimage" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
@@ -2540,7 +2582,7 @@ _cpux_appimage()
 	} > "${destinationFilesCpux[file_desktop]}"
 	
 	if is_executable cpux; then
-		_show_info 'PkgInstalled' 'cpu-x'
+		print_info 'Pacote instalado' 'cpu-x'
 		return 0
 	else
 		_show_info 'InstalationFailed' 'cpux'
@@ -2678,7 +2720,7 @@ _peazip()
 	# https://peazip.github.io/peazip-linux.html
 
 	# Já instalado
-	is_executable 'peazip' &&  _show_info 'PkgInstalled' 'peazip' && return 0
+	is_executable 'peazip' &&  print_info 'Pacote instalado' 'peazip' && return 0
 	local peazip_download_page='http://c3sl.dl.osdn.jp/peazip/71074/peazip_portable-6.8.0.LINUX.x86_64.GTK2.tar.gz'
 	local path_file="$DirDownloads/$(basename $peazip_download_page)"
 
@@ -2686,13 +2728,13 @@ _peazip()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar 
 	
 	unpack_archive "$path_file" "$DirUnpack" || return 1
-	_print "Entrando no diretório ... $DirUnpack"
+	echo -e "Entrando no diretório ... $DirUnpack"
 	cd "$DirUnpack"
 	mv -v $(ls -d peazip*) "peazip-amd64" 1> /dev/null || return 1
 	__sudo__ mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
 	__sudo__ chown -R root:root "${destinationFilesPeazip[dir]}"
 	__sudo__ chmod a+x "${destinationFilesPeazip[dir]}"/peazip
-	_print "Entrando no diretório ... ${destinationFilesPeazip[dir]}"
+	echo -e "Entrando no diretório ... ${destinationFilesPeazip[dir]}"
 	cd "${destinationFilesPeazip[dir]}" 
 	__sudo__ cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[png]}"     
 	# __sudo__ cp -u FreeDesktop_integration/peazip.desktop "${destinationFilesPeazip[file_desktop]}"
@@ -2754,7 +2796,7 @@ _refind_zip()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 
 	
 	# Já instalado.
-	is_executable 'refind-install' && _show_info 'PkgInstalled' 'refind-install' && return 0
+	is_executable 'refind-install' && print_info 'Pacote instalado' 'refind-install' && return 0
 	
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"
@@ -3150,7 +3192,7 @@ _virtualbox_linux_run()
 
 _virtualbox()
 {
-	is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
+	is_executable virtualbox && print_info 'Pacote instalado' 'virtualbox' && return 0
 	case "$OS_ID" in
 		debian) _virtualbox_debian;;
 		linuxmint|ubuntu) _virtualbox_ubuntu;;

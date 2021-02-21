@@ -15,13 +15,17 @@ __appname__='storecli'
 #   Testado nos seguintes sistemas: Debian 10 - GNOME, Fedora 31/32 - GNOME
 # Ubuntu 18.04/20.04 - GNOME, LinuxMint 19.3, ArchLinux - GNOME.
 #
+# Instalação via wget
+# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+#
+# Instalação via curl
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 #=============================================================#
 # GitHub
 #=============================================================#
 # https://github.com/Brunopvh/storecli
-
+#
 
 #=============================================================#
 # Verificar requisitos minimos do sistema.
@@ -164,22 +168,21 @@ readonly export dir_local_python="$dir_of_executable/python"
 #=============================================================#
 # Importar modulos externos - VER o arquivo ~/.shmrc
 #=============================================================#
-[[ $lib_config_path != 'True' ]] && source $config_path
-[[ $lib_print_text != 'True' ]] && source $print_text
-[[ $lib_os != 'True' ]] && source $os
-[[ $lib_platform != 'True' ]] && source $platform
-[[ $lib_pkgmanger != 'True' ]] && source $pkgmanager
-[[ $lib_files_programs != 'True' ]] && source $files_programs
-[[ $lib_crypto != 'True' ]] && source $crypto
-[[ $lib_requests != 'True' ]] && source $requests
+[[ $imported_config_path != 'True' ]] && source $config_path
+[[ $imported_print_text != 'True' ]] && source $print_text
+[[ $imported_os != 'True' ]] && source $os
+[[ $imported_platform != 'True' ]] && source $platform
+[[ $imported_pkgmanger != 'True' ]] && source $pkgmanager
+[[ $imported_files_programs != 'True' ]] && source $files_programs
+[[ $imported_crypto != 'True' ]] && source $crypto
+[[ $imported_requests != 'True' ]] && source $requests
 
 #=============================================================#
 # Importar Módulos locais
 #=============================================================#
 source "$path_local_libs/list_programs.sh"
-source "$path_local_libs/installer_utils.sh"
 source "$path_local_libs/requeriments.sh"
-source "$path_local_libs/UninstallPkgs.sh"
+source "$path_local_libs/uninstall_apps.sh"
 source "$path_local_libs/programs.sh"
 source "$path_local_libs/wineutils.sh"
 source "$path_local_libs/gui.sh"
@@ -258,6 +261,7 @@ function _resolution()
 
 _get_storecli_online_version()
 {
+	# Verificar a ultima versão deste programa disponível no github.
 	local URL_STORECLI_MASTER='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
 	local TEMP_DIR_UPDATE=$(mktemp --directory)
 	local FILE_UPDATE='storecli.update'
@@ -267,11 +271,9 @@ _get_storecli_online_version()
 	rm -rf "$TEMP_DIR_UPDATE" 1> /dev/null 2>&1
 }
 
-_update_storecli()
+check_storecli_update()
 {
 	[[ "$IgnoreCli" == 'True' ]] && return 0
-	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
-	# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	
 	local COLUMNS=$(tput cols)
 	local FileConfigUpdate="$DIR_CONFIG_USER/update.conf"                   	
@@ -316,6 +318,14 @@ _update_storecli()
 	echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	print_line
 	return 0
+}
+
+_clear_temp_dirs()
+{
+	# Limpar diretórios temporários.
+	cd "$DirTemp" && __rmdir__ $(ls)
+	cd "$DirUnpack" && __rmdir__ $(ls)
+	cd "$DirGitclone" && __rmdir__ $(ls)
 }
 
 _pkg_manager_storecli()
@@ -479,7 +489,7 @@ main()
 		check_requeriments_cli || return 1
 	fi
 
-	_update_storecli
+	check_storecli_update
 
 	# Se nenhum argumento for passado na linha de comando, será aberto o GUI gráfico com o zenity.
 	if [[ -z $1 ]]; then
@@ -506,6 +516,7 @@ main()
 main "${@}" && STATUS_OUTPUT=0
 
 # Remover diretórios e subdiretórios temporários ao encerrar o programa.
+export CONFIRM='True'
 __rmdir__ "$TemporaryDirectory" 1> /dev/null
 
 if [[ "$STATUS_OUTPUT" == 0 ]]; then

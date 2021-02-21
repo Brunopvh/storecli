@@ -44,15 +44,15 @@ _python37_windows32_portable()
 
 	download "$url_python37_portable" "$path_file_python37_portable" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	_print "(_python37_windows32_portable) - executando: winetricks atmlib dotnet45 cmd"
+	echo -e "(_python37_windows32_portable) - executando: winetricks atmlib dotnet45 cmd"
 	"$SCRIPT_WINETRICKS_LOCAL" atmlib dotnet45 cmd
 
 	unpack_archive "$path_file_python37_portable" || return 1
 	mkdir -p "$HOME"/.wine/drive_c/python37
 	cd "$DirUnpack"
-	_print "Copiando arquivos para ... $HOME/.wine/drive_c/python37/"
+	echo -e "Copiando arquivos para ... $HOME/.wine/drive_c/python37/"
 	cp -n * "$HOME"/.wine/drive_c/python37/
-	_print "(_python37_windows32_portable) - executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
+	echo -e "(_python37_windows32_portable) - executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
 	wine "$HOME"/.wine/drive_c/python37/python.exe -V
 }
 
@@ -72,7 +72,7 @@ _get_pip_windows()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 
 	cd "$HOME"/.wine/drive_c/python37/
-	_print "Executando: wine $path_python3_portable $path_file_getpip"
+	echo -e "Executando: wine $path_python3_portable $path_file_getpip"
 	wine "$path_python3_portable" "$path_file_getpip"
 }
 
@@ -121,7 +121,7 @@ _youtube_dlgui_windows()
 		_install_script_winetricks
 	fi
 	
-	_print "Entrando no diretório ... $DirDownloads"
+	echo -e "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
 	msg "Instalando ... atmlib"; winetricks atmlib
 	msg "Instalando: dotnet45"; winetricks dotnet45
@@ -287,9 +287,9 @@ _install_wine_fedora()
 
 _install_wine_archlinux()
 {
-	_print "Entrando no diretório ... $dir_of_executable/scripts"
+	echo -e "Entrando no diretório ... $dir_of_executable/scripts"
 	cd "$dir_of_executable/scripts"
-	_print "Executando ... sudo ./addrepo.py --repo arch"
+	echo -e "Executando ... sudo ./addrepo.py --repo arch"
 	# Adicionar suporte ao repositório multilib no archlinux.
 	sudo ./addrepo.py --repo arch
 	_PACMAN -Sy
@@ -329,7 +329,7 @@ _install_script_winetricks()
 	fi
 
 	download "$URL_WINETRICKS" "$PATH_FILE_WINETRICKS" || return 1
-	_print "Instalando winetricks em ... /usr/local/bin/winetricks"
+	echo -e "Instalando winetricks em ... /usr/local/bin/winetricks"
 	sudo cp -u "$PATH_FILE_WINETRICKS" "$SCRIPT_WINETRICKS"
 	sudo chown root:root "$SCRIPT_WINETRICKS"
 	sudo chmod a+x "$SCRIPT_WINETRICKS"
