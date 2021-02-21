@@ -18,7 +18,7 @@ _show_info()
 	esac
 }
 
-_install_storecli()
+_install_storecli_gui()
 {
 	local URL_STORECLI='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
 	is_executable storecli || "$SCRIPT_STORECLI_INSTALLER"
@@ -345,7 +345,7 @@ _android_studio_zip()
 	_white "Instalando android studio em ~/.local/bin"
 	cd "$DirUnpack" 
 	mv $(ls -d android-*) "${destinationFilesAndroidStudio[dir]}" 1> /dev/null # ~/.local/bin/androi-studio
-	cp -u "${destinationFilesAndroidStudio[dir]}"/bin/studio.png "${destinationFilesAndroidStudio[file_png]}" # .png
+	cp -u "${destinationFilesAndroidStudio[dir]}"/bin/studio.png "${destinationFilesAndroidStudio[png]}" # .png
 	chmod -R +x "${destinationFilesAndroidStudio[dir]}" # ~/.local/bin/androi-studio
 
 	# arquivo de configuração ".desktop"
@@ -559,7 +559,7 @@ _idea_ic()
 	printf 'OK\n'
 	echo -e "Entrando no diretório ... ${destinationFilesIdeaic[dir]}/bin"
 	cd "${destinationFilesIdeaic[dir]}/bin"
-	cp -vu idea.png "${destinationFilesIdeaic[file_png]}"
+	cp -vu idea.png "${destinationFilesIdeaic[png]}"
 
 	_print "Criando arquivo '.desktop'"
 	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
@@ -567,7 +567,7 @@ _idea_ic()
 		echo -e "Name=IntelliJ IDEA Ultimate Edition"
 		echo -e "Version=1.0"
 		echo -e "Comment=java"
-		echo -e "Icon=${destinationFilesIdeaic[file_png]}"
+		echo -e "Icon=${destinationFilesIdeaic[png]}"
 		echo -e "Exec=${destinationFilesIdeaic[dir]}/bin/idea.sh %f"
 		echo -e "Terminal=false"
 		echo -e "Categories=Development;IDE"
@@ -575,10 +575,10 @@ _idea_ic()
 	} >> "${destinationFilesIdeaic[file_desktop]}"
 
 	_print "Criando atalho para execução"
-	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[file_script]}"
-	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[file_script]}"
-	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[file_script]}"
-	chmod +x "${destinationFilesIdeaic[file_script]}"
+	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[script]}"
+	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[script]}"
+	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[script]}"
+	chmod +x "${destinationFilesIdeaic[script]}"
 
 	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
@@ -679,7 +679,7 @@ _pycharm()
 	cd "$DirUnpack"
 	printf "${CGreen}C${CReset}opiando arquivos ... " 
 	mv $(ls -d pycharm*) "${destinationFilesPycharm[dir]}" 1> /dev/null && printf "OK\n"
-	cp -u "${destinationFilesPycharm[dir]}"/bin/pycharm.png "${destinationFilesPycharm[file_png]}"
+	cp -u "${destinationFilesPycharm[dir]}"/bin/pycharm.png "${destinationFilesPycharm[png]}"
 
 	# Criar atalho para execução na linha de comando.
 	echo "#!/usr/bin/env bash" > "${destinationFilesPycharm[link]}"
@@ -691,7 +691,7 @@ _pycharm()
     {
         echo "Name=Pycharm Community"
         echo "Version=1.0"
-        echo "Icon=${destinationFilesPycharm[file_png]}"
+        echo "Icon=${destinationFilesPycharm[png]}"
         echo "Exec=pycharm"
         echo "Terminal=false"
         echo "Categories=Development;IDE;"
@@ -726,7 +726,7 @@ _sublime_text()
 	unpack_archive "$PATH_SUBLIME" || return 1
 
 	__sudo__ cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
-	sudo cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[file_png]}" 
+	sudo cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[png]}" 
 	sudo mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"
 	sudo ln -sf "${destinationFilesSublime[dir]}"/sublime_text "${destinationFilesSublime[link]}" 
 	
@@ -771,7 +771,7 @@ _vscode_tarfile()
 
 	cd "$DirUnpack"
 	mv $(ls -d VSCode*) "${destinationFilesVscode[dir]}" 
-	cp -u "${destinationFilesVscode[dir]}"/resources/app/resources/linux/code.png "${destinationFilesVscode[file_png]}"
+	cp -u "${destinationFilesVscode[dir]}"/resources/app/resources/linux/code.png "${destinationFilesVscode[png]}"
 
 	# Criar atalho para execução na linha de comando.
 	echo "#!/bin/sh" > "${destinationFilesVscode[link]}"
@@ -2029,11 +2029,11 @@ _tixati_tarfile()
 	cd "$DirUnpack/tixati-amd64"
 
 	sudo mv tixati.desktop "${destinationFilesTixati[file_desktop]}" # .desktop
-	sudo mv tixati.png "${destinationFilesTixati[file_png]}"         # PNG.
-	sudo mv tixati "${destinationFilesTixati[file_bin]}"             # bin.
+	sudo mv tixati.png "${destinationFilesTixati[png]}"         # PNG.
+	sudo mv tixati "${destinationFilesTixati[bin]}"             # bin.
 	
 	sudo chmod a+x "${destinationFilesTixati[file_desktop]}"
-	sudo chmod a+x "${destinationFilesTixati[file_bin]}"
+	sudo chmod a+x "${destinationFilesTixati[bin]}"
 
 	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesTixati[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
@@ -2229,23 +2229,23 @@ _youtube_dlgui_user_installer()
 	cd "$DirUnpack"/youtube-dl-gui-master
 	cp -R -u youtube_dl_gui "${destinationFilesYoutubeDlGuiUser[dir]}"
 	cd "${destinationFilesYoutubeDlGuiUser[dir]}"
-	cp -R -u data/icons/hicolor/128x128/apps/youtube-dl-gui.png "${destinationFilesYoutubeDlGuiUser[file_png]}"
+	cp -R -u data/icons/hicolor/128x128/apps/youtube-dl-gui.png "${destinationFilesYoutubeDlGuiUser[png]}"
 	cp -R -u data/pixmaps/. "${destinationFilesYoutubeDlGuiUser[pixmaps]}"/. 
 
 	# Criar script para execução via linha de comando
-	echo -e "#!/bin/sh" > "${destinationFilesYoutubeDlGuiUser[file_script]}"
-	echo -e "\ncd ${destinationFilesYoutubeDlGuiUser[dir]}" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+	echo -e "#!/bin/sh" > "${destinationFilesYoutubeDlGuiUser[script]}"
+	echo -e "\ncd ${destinationFilesYoutubeDlGuiUser[dir]}" >> "${destinationFilesYoutubeDlGuiUser[script]}"
 
 	if is_executable python2; then
-		echo -e "python2 __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+		echo -e "python2 __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
 	elif is_executable python; then
-		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[file_script]}"
+		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
 	else
 		red "Necessário ter o 'python 2' instalado em seu sistema."
 		return 1
 	fi
 
-	chmod +x "${destinationFilesYoutubeDlGuiUser[file_script]}" 
+	chmod +x "${destinationFilesYoutubeDlGuiUser[script]}" 
 	_youtube_dlgui_file_desktop_user
 	return 0
 }
@@ -2694,7 +2694,7 @@ _peazip()
 	__sudo__ chmod a+x "${destinationFilesPeazip[dir]}"/peazip
 	_print "Entrando no diretório ... ${destinationFilesPeazip[dir]}"
 	cd "${destinationFilesPeazip[dir]}" 
-	__sudo__ cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[file_png]}"     
+	__sudo__ cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[png]}"     
 	# __sudo__ cp -u FreeDesktop_integration/peazip.desktop "${destinationFilesPeazip[file_desktop]}"
 
 	yellow "Criando arquivo '.desktop'"
@@ -2706,7 +2706,7 @@ _peazip()
 		echo 'MimeType=application/x-gzip;application/x-tar;application/x-deb;bzip;application/x-rar'
 		echo 'GenericName=Archiving Tool'
 		echo 'Exec=peazip %F'
-		echo "Icon=${destinationFilesPeazip[file_png]}"
+		echo "Icon=${destinationFilesPeazip[png]}"
 		echo 'Type=Application'
 		echo 'Terminal=false'
 		echo 'X-KDE-HasTempFileOption=true'
@@ -2762,14 +2762,14 @@ _refind_zip()
 	sudo mv refind "${destinationFilesRefind[dir]}"
 	
 	# Criar script para execução
-	echo '#!/usr/bin/env bash' | sudo tee "${destinationFilesRefind[file_script]}" 
+	echo '#!/usr/bin/env bash' | sudo tee "${destinationFilesRefind[script]}" 
 	{
 		echo "cd ${destinationFilesRefind[dir]}"
 		echo "./refind-install \$@"
-	} | sudo tee -a "${destinationFilesRefind[file_script]}"
+	} | sudo tee -a "${destinationFilesRefind[script]}"
 	
 	sudo chmod -R +x "${destinationFilesRefind[dir]}"
-	sudo chmod a+x "${destinationFilesRefind[file_script]}"
+	sudo chmod a+x "${destinationFilesRefind[script]}"
 	
 }
 

@@ -164,15 +164,14 @@ readonly export dir_local_python="$dir_of_executable/python"
 #=============================================================#
 # Importar modulos externos - VER o arquivo ~/.shmrc
 #=============================================================#
-source $config_path
-source $print_text
-source $os
-source $print_text
-source $platform
-source $pkgmanager
-source $files_programs
-source $crypto
-source $requests
+[[ $lib_config_path != 'True' ]] && source $config_path
+[[ $lib_print_text != 'True' ]] && source $print_text
+[[ $lib_os != 'True' ]] && source $os
+[[ $lib_platform != 'True' ]] && source $platform
+[[ $lib_pkgmanger != 'True' ]] && source $pkgmanager
+[[ $lib_files_programs != 'True' ]] && source $files_programs
+[[ $lib_crypto != 'True' ]] && source $crypto
+[[ $lib_requests != 'True' ]] && source $requests
 
 #=============================================================#
 # Importar Módulos locais
