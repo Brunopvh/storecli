@@ -11,19 +11,19 @@ _python37_windows32()
 	local path_file_python37="$DirDownloads/$(basename $url_python37_windows32)"
 
 	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
+		red "Necessário ter o wine instalado para prosseguir"
 		_install_wine	
 	fi
 
 	if ! is_executable winetricks; then
-		__pkg__ winetricks
+		system_pkgmanager winetricks
 	fi
 
-	__download__ "$url_python37_windows32" "$path_file_python37" || return 1
+	download "$url_python37_windows32" "$path_file_python37" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
-	_msg "Executando: winetricks atmlib cmd"
+	msg "Executando: winetricks atmlib cmd"
 	"$SCRIPT_WINETRICKS_LOCAL" atmlib cmd
-	_msg "Instalando: python37" 
+	msg "Instalando: python37" 
 	wine "$path_file_python37"
 }
 
@@ -34,7 +34,7 @@ _python37_windows32_portable()
 	local path_file_python37_portable="$DirDownloads/$(basename $url_python37_portable)"
 
 	if ! is_executable wine; then
-		_sred "Necessário ter o wine instalado para prosseguir"
+		sred "Necessário ter o wine instalado para prosseguir"
 		_install_wine
 	fi
 
@@ -42,12 +42,12 @@ _python37_windows32_portable()
 		_install_script_winetricks
 	fi
 
-	__download__ "$url_python37_portable" "$path_file_python37_portable" || return 1
+	download "$url_python37_portable" "$path_file_python37_portable" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 	_print "(_python37_windows32_portable) - executando: winetricks atmlib dotnet45 cmd"
 	"$SCRIPT_WINETRICKS_LOCAL" atmlib dotnet45 cmd
 
-	_unpack "$path_file_python37_portable" || return 1
+	unpack_archive "$path_file_python37_portable" || return 1
 	mkdir -p "$HOME"/.wine/drive_c/python37
 	cd "$DirUnpack"
 	_print "Copiando arquivos para ... $HOME/.wine/drive_c/python37/"
@@ -64,11 +64,11 @@ _get_pip_windows()
 	local path_python3_portable="$HOME/.wine/drive_c/python37/python.exe"
 
 	if [[ ! -f "$path_python3_portable" ]]; then
-		_sred "(_get_pip_windows): python3 não encontrado em ... $path_python3_portable"
+		sred "(_get_pip_windows): python3 não encontrado em ... $path_python3_portable"
 		return 1
 	fi
 
-	__download__ "$url_get_pip" "$path_file_getpip" || return 1
+	download "$url_get_pip" "$path_file_getpip" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0 # Somente baixar
 
 	cd "$HOME"/.wine/drive_c/python37/
@@ -81,8 +81,8 @@ _install_wxpython_win32()
 	# https://wxpython.org/pages/downloads/
 	local url_wxpython_win32='https://sourceforge.net/projects/wxpython/files/wxPython/3.0.2.0/wxPython3.0-win32-3.0.2.0-py27.exe/download'
 	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
-	__download__ "$url_wxpython_win32" "$path_file_wxpython" || return 1
-	_msg "Instalando ... $path_file_wxpython"
+	download "$url_wxpython_win32" "$path_file_wxpython" || return 1
+	msg "Instalando ... $path_file_wxpython"
 	wine "$path_file_wxpython"
 	return 0
 }
@@ -107,13 +107,13 @@ _youtube_dlgui_windows()
 	local path_file_gnu_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
 	local path_file_python27="$DirDownloads/$(basename $url_python27)"
 	
-	__download__ "$url_youtube_dlgui_win" "$path_file_youtube_dlgui" || return 1
-	__download__ "$url_visual_c" "$path_file_visual_c" || return 1 
-	__download__ "$url_gnu_gettext" "$path_file_gnu_gettext" || return 1
+	download "$url_youtube_dlgui_win" "$path_file_youtube_dlgui" || return 1
+	download "$url_visual_c" "$path_file_visual_c" || return 1 
+	download "$url_gnu_gettext" "$path_file_gnu_gettext" || return 1
 	
 	if ! is_executable wine; then
-		_red "Necessário ter o wine instalado para prosseguir"
-		_YESNO "Gostaria de instalar o wine e winetricks agora" || return 1
+		red "Necessário ter o wine instalado para prosseguir"
+		question "Gostaria de instalar o wine e winetricks agora" || return 1
 		_install_wine || return 1	
 	fi
 
@@ -123,22 +123,22 @@ _youtube_dlgui_windows()
 	
 	_print "Entrando no diretório ... $DirDownloads"
 	cd "$DirDownloads"
-	_msg "Instalando ... atmlib"; winetricks atmlib
-	_msg "Instalando: dotnet45"; winetricks dotnet45
-	_msg "Instalando: visual C"; wine "$path_file_visual_c"
-	_msg "Instalando: GNU gettext"
+	msg "Instalando ... atmlib"; winetricks atmlib
+	msg "Instalando: dotnet45"; winetricks dotnet45
+	msg "Instalando: visual C"; wine "$path_file_visual_c"
+	msg "Instalando: GNU gettext"
 	wine "$path_file_gnu_gettext"
-	_msg "Instalando: python2.7"
+	msg "Instalando: python2.7"
 	winetricks python27
 	_python37_windows32_portable
 	_get_pip_windows  
 	_install_wxpython_win32
 	
-	_unpack "$path_file_youtube_dlgui" || return 1
+	unpack_archive "$path_file_youtube_dlgui" || return 1
 	cd "$DirUnpack"
-	_msg "Executando: wine pip.exe install twodict"
+	msg "Executando: wine pip.exe install twodict"
 	wine pip.exe install twodict
-	_msg "Instalando: youtubedlg-0.4.exe" 
+	msg "Instalando: youtubedlg-0.4.exe" 
 	wine youtubedlg-0.4.exe
 }
 
@@ -166,13 +166,13 @@ _epsxe_windows()
 	mkdir -p "${destinationFilesEpsxeWin32[dir]}"
 	_clear_temp_dirs
 
-	__download__ "$URL_EPSXE_WIN" "$PATH_FILE_EPSXE" || return 1
+	download "$URL_EPSXE_WIN" "$PATH_FILE_EPSXE" || return 1
 	__shasum__ "$PATH_FILE_EPSXE" "$HASH_FILE_ZIP" || return 1
-	_unpack "$PATH_FILE_EPSXE" || return 1
+	unpack_archive "$PATH_FILE_EPSXE" || return 1
 	cd "$DirUnpack"
 	cp -R -n * "${destinationFilesEpsxeWin32[dir]}"/
 
-	_yellow "Criando script para execução do ePSXe"
+	yellow "Criando script para execução do ePSXe"
 	echo '#!/bin/sh' > "${destinationFilesEpsxeWin32[file_script]}"
 	echo -e "\nWINEPREFIX=$HOME/.wine"  >> "${destinationFilesEpsxeWin32[file_script]}"
 	echo -e "\ncd ${destinationFilesEpsxeWin32[dir]}" >> "${destinationFilesEpsxeWin32[file_script]}"
@@ -193,16 +193,16 @@ _epsxe_windows()
 	chmod +rwx "${destinationFilesEpsxeWin32[file_desktop]}"
 
 	if ! is_executable wine; then
-		_sred "Necessário ter o wine instalado para prosseguir"
+		sred "Necessário ter o wine instalado para prosseguir"
 		_install_wine
 	fi
 
 	if ! is_executable winetricks; then
-		_sred "Necessário ter o winetricks instalado para prosseguir"
+		sred "Necessário ter o winetricks instalado para prosseguir"
 		_install_script_winetricks 
 	fi
 	
-	_yellow "Instalado: directx9 atmlib"
+	yellow "Instalado: directx9 atmlib"
 	winetricks directx9 atmlib
 	"${destinationFilesEpsxeWin32[file_script]}"
 }
@@ -214,27 +214,27 @@ _install_wine_ubuntu()
 	cd "$DirTemp"
 	_clear_temp_dirs
 
-	case "$os_codename" in
+	case "$VERSION_CODENAME" in
 		tricia|bionic) 
 			repo_wine_stable='deb https://dl.winehq.org/wine-builds/ubuntu/ bionic main'
 			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/ ./'
 			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/xUbuntu_18.04/Release.key'
 			;;
 		focal|ulyana)
-			__pkg__ 'wine' || return 1
+			system_pkgmanager 'wine' || return 1
 			return 0 
 			;;
-		*) _red "Intale o wine manualmente usado o 'apt'" 
+		*) red "Intale o wine manualmente usado o 'apt'" 
 			return 1
 			;;
 	esac
 	# Adicionar suporte a ARCH i386.
 	_DPKG --add-architecture i386
-	_apt_key_add 'https://dl.winehq.org/wine-builds/winehq.key'
-	_apt_key_add "$url_key_libfaudio"
-	_addrepo_in_sources_list "$repo_wine_stable" /etc/apt/sources.list.d/wine-stable.list
-	_addrepo_in_sources_list "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
-	__pkg__ 'libfaudio0:i386' || return 1
+	apt_key_add 'https://dl.winehq.org/wine-builds/winehq.key'
+	apt_key_add "$url_key_libfaudio"
+	add_repo_apt "$repo_wine_stable" /etc/apt/sources.list.d/wine-stable.list
+	add_repo_apt "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
+	system_pkgmanager 'libfaudio0:i386' || return 1
 
 	requeriments_wine_debian=(
 		'wine-stable-i386' 
@@ -244,7 +244,7 @@ _install_wine_ubuntu()
 		)
 
 	for APP in "${requeriments_wine_debian[@]}"; do
-		__pkg__ "$APP" || break
+		system_pkgmanager "$APP" || break
 	done
 }
 
@@ -254,35 +254,35 @@ _install_wine_debian()
 	cd "$DirTemp"
 	_clear_temp_dirs
 
-	case "$os_codename" in
+	case "$VERSION_CODENAME" in
 		buster) 
 			url_key_wine_stable='https://dl.winehq.org/wine-builds/winehq.key'
 			repo_wine_stable='deb https://dl.winehq.org/wine-builds/debian/ buster main'
 			repo_libfaudio='deb https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10 ./'
 			url_key_libfaudio='https://download.opensuse.org/repositories/Emulators:/Wine:/Debian/Debian_10/Release.key'
 			;;
-		*) _red "Intale o wine manualmente usado o 'apt'"
+		*) red "Intale o wine manualmente usado o 'apt'"
 			return 1
 			;;
 	esac
 	# Adicionar suporte a ARCH i386.
 	_DPKG --add-architecture i386
-	_apt_key_add "$url_key_wine_stable" || return 1
-	_apt_key_add "$url_key_libfaudio" || return 1
-	_addrepo_in_sources_list "$repo_wine_stable" /etc/apt/sources.list.d/wine.list
-	_addrepo_in_sources_list "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
+	apt_key_add "$url_key_wine_stable" || return 1
+	apt_key_add "$url_key_libfaudio" || return 1
+	add_repo_apt "$repo_wine_stable" /etc/apt/sources.list.d/wine.list
+	add_repo_apt "$repo_libfaudio" /etc/apt/sources.list.d/libfaudio.list
 	_APT update || return 1
-	__pkg__ 'libfaudio0:i386' || return 1
+	system_pkgmanager 'libfaudio0:i386' || return 1
 
 	requeriments_wine_debian=('wine-stable-i386' 'wine-stable-amd64' 'wine-stable' 'winehq-stable')
 	for APP in "${requeriments_wine_debian[@]}"; do
-		__pkg__ "$APP" || break
+		system_pkgmanager "$APP" || break
 	done
 }
 
 _install_wine_fedora()
 {
-	__pkg__ "wine"
+	system_pkgmanager "wine"
 }
 
 _install_wine_archlinux()
@@ -293,13 +293,13 @@ _install_wine_archlinux()
 	# Adicionar suporte ao repositório multilib no archlinux.
 	sudo ./addrepo.py --repo arch
 	_PACMAN -Sy
-	__pkg__ wine 'wine-mono' 'wine-gecko'
+	system_pkgmanager wine 'wine-mono' 'wine-gecko'
 }
 
 _install_script_winetricks()
 {
 	if ! is_executable wine; then
-		_red "(_install_script_winetricks): necessário instalar o 'wine' antes de prosseguir."
+		red "(_install_script_winetricks): necessário instalar o 'wine' antes de prosseguir."
 		return 1
 	fi
 
@@ -314,37 +314,37 @@ _install_script_winetricks()
 	requeriments_winetricks_suse=(binutils fuseiso p7zip polkit xdg-utils xz)
 
 	# Instalar as dependências de acordo com cada distro.
-	__pkg__ "${requeriments_winetricks[@]}"
+	system_pkgmanager "${requeriments_winetricks[@]}"
 
 	if [[ -f '/etc/debian_version' ]]; then # Sistemas baseados em debian.
-		__pkg__ "${requeriments_winetricks_debian[@]}"
-	elif [[ "$os_id" == 'fedora' ]]; then
-		__pkg__ "${requeriments_winetricks_suse[@]}"
-	elif [[ "$os_id" == 'arch' ]]; then
-		__pkg__ "${requeriments_winetricks[@]}"
+		system_pkgmanager "${requeriments_winetricks_debian[@]}"
+	elif [[ "$OS_ID" == 'fedora' ]]; then
+		system_pkgmanager "${requeriments_winetricks_suse[@]}"
+	elif [[ "$OS_ID" == 'arch' ]]; then
+		system_pkgmanager "${requeriments_winetricks[@]}"
 
 	else
-		_red "Seu sistema não tem suporte a instalação do winetricks apartir deste programa."
+		red "Seu sistema não tem suporte a instalação do winetricks apartir deste programa."
 		return 1
 	fi
 
-	__download__ "$URL_WINETRICKS" "$PATH_FILE_WINETRICKS" || return 1
+	download "$URL_WINETRICKS" "$PATH_FILE_WINETRICKS" || return 1
 	_print "Instalando winetricks em ... /usr/local/bin/winetricks"
 	sudo cp -u "$PATH_FILE_WINETRICKS" "$SCRIPT_WINETRICKS"
 	sudo chown root:root "$SCRIPT_WINETRICKS"
 	sudo chmod a+x "$SCRIPT_WINETRICKS"
 	if is_executable winetricks; then
-		_yellow "Winetricks instalado com sucesso"
+		yellow "Winetricks instalado com sucesso"
 		return 0
 	else
-		_red "(_install_script_winetricks): falha na instalação de winetricks"
+		red "(_install_script_winetricks): falha na instalação de winetricks"
 		return 1
 	fi
 }
 
 _install_wine()
 {
-	case "$os_id" in
+	case "$OS_ID" in
 		debian) _install_wine_debian;;
 		ubuntu|linuxmint) _install_wine_ubuntu;;
 		fedora) _install_wine_fedora;;

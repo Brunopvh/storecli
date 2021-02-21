@@ -18,7 +18,7 @@ _zenity_dialog_list()
 	# o primeiro argumento dessa função ("$1") que será passado como 
 	# ultimo parâmetro para o zenity ("$@").
 	if [[ -z $1 ]]; then
-		_red "Parametros incorretos detectados na função [_zenity_dialog_list]"
+		red "Parametros incorretos detectados na função [_zenity_dialog_list]"
 		return 1
 	fi
 
@@ -173,12 +173,12 @@ menu_acessory(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			etcher) main install -y etcher;;
 			'gnome-disk') main install -y gnome-disk;;
 			veracrypt) main install -y veracrypt;;
@@ -197,12 +197,12 @@ menu_dev(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			android-studio) main install -y android-studio;;
 			codeblocks) main install -y codeblocks;;
 			idea) main install -y idea;;
@@ -224,12 +224,12 @@ menu_office(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			atril) main install -y atril;;
 			fontes-ms) main install -y fontes-ms;;
 			libreoffice) main install -y libreoffice;;
@@ -249,12 +249,12 @@ menu_navegadores(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			chromium) main install -y chromium;;
 			edge) main install -y edge;;
 			firefox) main install -y firefox;;
@@ -275,12 +275,12 @@ menu_internet(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			megasync) main install -y megasync;;
 			proxychains) main install -y proxychains;;
 			qbittorrent) main install -y qbittorrent;;
@@ -306,12 +306,12 @@ menu_midia(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			celluloid) main install -y celluloid;;
 			codecs) main install -y codecs;;
 			spotify) main install -y spotify;;
@@ -334,12 +334,12 @@ menu_system(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			bluetooth) main install -y bluetooth;;
 			compactadores) main install -y compactadores;;
 			cpu-x) main install -y cpu-x;;
@@ -368,12 +368,12 @@ menu_preferences(){
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			papirus) main install -y papirus;;
 			ohmybash) main install -y ohmybash;;
 			ohmyzsh) main install -y ohmyzsh;;
@@ -392,12 +392,12 @@ menu_gnomeshell()
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			dash-to-dock) main install -y dash-to-dock;;
 			drive-menu) main install -y drive-menu;;
 			gnome-backgrounds) storecli install -y gnome-backgrounds;;
@@ -418,12 +418,12 @@ menu_tools()
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$option" in
-			Voltar) _yellow "Voltando..."; break;;
+			Voltar) yellow "Voltando..."; break;;
 			Atualizar_este_script) "$SCRIPT_STORECLI_INSTALLER";;
 			Remover_pacotes_quebrados) _BROKE;;
 			Instalar_dependencias) _install_requeriments;;
@@ -435,24 +435,24 @@ menu_tools()
 main_menu(){
 	
 	if ! is_executable storecli; then
-		_yellow "Instalando o script storecli"
+		yellow "Instalando o script storecli"
 		sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	fi
 
 	print_line
-	_yellow "Menu Principal"
+	yellow "Menu Principal"
 	
 	while true; do
 		category=$(_zenity_dialog_list "${list_main_menu[*]}")
 
 		# O usuário CANCELOU.
 		if [[ "$?" != '0' ]]; then
-			_red "Abortando"
+			red "Abortando"
 			return 1
 		fi 
 
 		case "$category" in
-			Sair) _yellow "Saindo..."; break;;
+			Sair) yellow "Saindo..."; break;;
 			Acessorios) menu_acessory;;
 			Desenvolvimento) menu_dev;;
 			Escritorio) menu_office;;
@@ -464,7 +464,7 @@ main_menu(){
 			Ferramentas) menu_tools;;
 			GnomeShell) menu_gnomeshell;;
 		esac
-		_yellow "Menu Principal"
+		yellow "Menu Principal"
 	done
 }
 

@@ -262,7 +262,7 @@ _list_applications()
 					;;
 			*)
 				printf "\n"
-				_red "(_list_applications) categoria inválida: $arg"
+				red "(_list_applications) categoria inválida: $arg"
 				printf "\n"
 					;;
 		esac

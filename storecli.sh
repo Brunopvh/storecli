@@ -35,7 +35,7 @@ fi
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
-	exit 1
+	#exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
@@ -45,7 +45,7 @@ if [[ ! -x $(command -v sudo) ]]; then
 fi
 
 # Verificar se a arquitetura do Sistema e 64 bits
-if ! uname -m | grep '64' 1> /dev/null; then
+if ! uname -m | grep -q "64$"; then
 	printf "\033[0;31m Seu sistema não é 64 bits saindo.\033[m\n"
 	exit 1
 fi
@@ -80,23 +80,24 @@ function show_import_erro()
 	echo
 }
 
-function check_local_modules()
+function check_external_modules()
 {
 	#
-	[[ -z $config_path ]] && return 1
-	[[ -z $crypto ]] && return 1
-	[[ -z $file_programs ]] && return 1
-	[[ -z $os ]] && return 1
-	[[ -z $requests ]] && return 1
-	[[ -z $utils ]] && return 1
-	[[ -z $pkgmanager ]] && return 1
-	[[ -z $print_text ]] && return 1
-	[[ -z $platform ]] && return 1
-	return 1
+	[[ -z $config_path ]] && show_import_erro "módulo config_path não encontrado" && return 1
+	[[ -z $crypto ]] && show_import_erro "módulo crypto não encontrado" && return 1
+	[[ -z $files_programs ]] && show_import_erro "módulo files_programs não encontrado" && return 1
+	[[ -z $os ]] && show_import_erro "módulo os não encontrado" && return 1
+	[[ -z $requests ]] && show_import_erro "módulo requests não encontrado" && return 1
+	[[ -z $utils ]] && show_import_erro "módulo utils não encontrado" && return 1
+	[[ -z $pkgmanager ]] && show_import_erro "módulo pkgmanager não encontrado" && return 1
+	[[ -z $print_text ]]&& show_import_erro "módulo print_text não encontrado" && return 1
+	[[ -z $platform ]] && show_import_erro "módulo platform não encontrado" && return 1
+	return 0
 }
 
-check_local_modules || {
-	show_import_erro "Necessário instalar alguns módulos externos."
+check_external_modules || {
+	# Verificar se os módulos externos estão instalados no sistema.
+
 	TempSetupFile=$(mktemp)
 	if [[ -x $(command -v wget) ]]; then
 		wget -q -O "$TempSetupFile" https://raw.github.com/Brunopvh/bash-libs/main/setup.sh || exit 1
@@ -109,6 +110,8 @@ check_local_modules || {
 
 	chmod +x "$TempSetupFile"
 	"$TempSetupFile"
+	rm -rf "$TempSetupFile"
+	shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
 	exit 1
 }
 
@@ -121,9 +124,13 @@ export readonly TemporaryDirectory="$(mktemp -u)-$__appname__"; mkdir "$Temporar
 export readonly DirTemp="$TemporaryDirectory/temp"
 export readonly DirGitclone="$TemporaryDirectory/gitclone"
 export readonly DirUnpack="$TemporaryDirectory/unpack"
-export readonly DirDownloads="$HOME/.cache/$__appname__/downloads"
-export readonly HtmlTemporaryFile="$DirTemp/Temp.html"
 export readonly DIR_CONFIG_USER=~/.config/"$__appname__"
+
+if [[ $(id -u) == 0 ]]; then
+	export readonly DirDownloads="/var/cache/$__appname__/downloads"
+else
+	export readonly DirDownloads="$HOME/.cache/$__appname__/downloads"
+fi
 
 mkdir -p "$DirTemp"
 mkdir -p "$DirGitclone"
@@ -134,46 +141,15 @@ mkdir -p "$DIR_CONFIG_USER"
 #=============================================================#
 # Arquivos de configuração e Log.
 #=============================================================#
-export configFILE="$DIR_CONFIG_USER/requeriments.conf"
+export ConfigFile="$DIR_CONFIG_USER/requeriments.conf"
 export LogFile="$HOME/.cache/$__appname__/storecli.log"
 export LogErro="$HOME/.cache/$__appname__/storecli.err"
 export OutputDevice="$HOME/.cache/$__appname__/storecli-output.log"
 
 echo '' > "$OutputDevice"
-touch "$configFILE"
+touch "$ConfigFile"
 touch "$LogFile"
 touch "$LogErro"
-
-#=============================================================#
-# Diretórios do root
-#=============================================================#
-DIR_BIN_ROOT='/usr/local/bin'
-DIR_ICON_ROOT='/usr/share/icons/hicolor'
-DIR_THEME_ROOT='/usr/share/themes/'
-DIR_DESKTOP_ROOT='/usr/share/applications'
-
-if [[ ! -d "$DIR_BIN_ROOT" ]]; then
-	echo -e "Criando o diretório: $DIR_BIN_ROOT"
-	sudo mkdir "$DIR_BIN_ROOT"
-fi
-
-
-if [[ ! -d "$DIR_ICON_ROOT" ]]; then
-	echo -e "Criando o diretório: $DIR_ICON_ROOT"
-	sudo mkdir "$DIR_ICON_ROOT"
-fi
-
-
-if [[ ! -d "$DIR_THEME_ROOT" ]]; then
-	echo -e "Criando o diretório: $DIR_THEME_ROOT"
-	sudo mkdir "$DIR_THEME_ROOT"
-fi
-
-
-if [[ ! -d "$DIR_DESKTOP_ROOT" ]]; then
-	echo -e "Criando o diretório: $DIR_DESKTOP_ROOT"
-	sudo mkdir "$DIR_DESKTOP_ROOT"
-fi
 
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
@@ -181,33 +157,41 @@ export STATUS_OUTPUT='0'
 # Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
 readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
-readonly export path_bash_libs="$dir_of_executable/lib"
+readonly export path_local_libs="$dir_of_executable/lib"
 readonly export dir_local_scripts="$dir_of_executable/scripts"
 readonly export dir_local_python="$dir_of_executable/python"
 
 #=============================================================#
-# Importar Libs
+# Importar modulos externos - VER o arquivo ~/.shmrc
 #=============================================================#
-source "$path_bash_libs/destination_programs.sh"
-source "$path_bash_libs/list_programs.sh"
-source "$path_bash_libs/utils.sh"
-source "$path_bash_libs/installer_utils.sh"
-source "$path_bash_libs/requeriments.sh"
-source "$path_bash_libs/UninstallPkgs.sh"
-source "$path_bash_libs/programs.sh"
-source "$path_bash_libs/wineutils.sh"
-source "$path_bash_libs/gui.sh"
+source $config_path
+source $print_text
+source $os
+
+#=============================================================#
+# Importar Módulos locais
+#=============================================================#
+source "$path_local_libs/list_programs.sh"
+source "$path_local_libs/installer_utils.sh"
+source "$path_local_libs/requeriments.sh"
+source "$path_local_libs/UninstallPkgs.sh"
+source "$path_local_libs/programs.sh"
+source "$path_local_libs/wineutils.sh"
+source "$path_local_libs/gui.sh"
+
+
+# Sempre verificar a configuração do PATH do usuário ao iniciar.
+if [[ $(id -u) != 0 ]]; then
+	config_bashrc
+	config_zshrc
+fi
 
 # Definir os scripts locais.
-SCRIPT_CONFIG_PATH="$dir_local_scripts/conf-path.sh"
 SCRIPT_ADD_REPO="$dir_local_scripts/addrepo.py"
 SCRIPT_TORBROWSER_INSTALLER="$DIR_BIN/tor-installer"
 SCRIPT_STORECLI_INSTALLER="$dir_of_executable/setup.sh"
 SCRIPT_OHMYBASH_INSTALLER="$dir_local_scripts/ohmybash.run"
 SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"
-
-# Sempre verificar a configuração do PATH do usuário ao iniciar.
-"$SCRIPT_CONFIG_PATH"
 
 usage()
 {
@@ -267,6 +251,197 @@ function _resolution()
 	SetGeometry="${SetResolutionX}x${SetResolutionY}"
 }
 
+
+
+_get_storecli_online_version()
+{
+	local URL_STORECLI_MASTER='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
+	local TEMP_DIR_UPDATE=$(mktemp --directory)
+	local FILE_UPDATE='storecli.update'
+	download "$URL_STORECLI_MASTER" "$TEMP_DIR_UPDATE/$FILE_UPDATE" 1> /dev/null || return 1
+	local OnlineVersion=$(grep -m 1 '^__version__=' "$TEMP_DIR_UPDATE/$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
+	echo -e "$OnlineVersion"
+	rm -rf "$TEMP_DIR_UPDATE" 1> /dev/null 2>&1
+}
+
+_update_storecli()
+{
+	[[ "$IgnoreCli" == 'True' ]] && return 0
+	# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+	# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+	
+	local COLUMNS=$(tput cols)
+	local FileConfigUpdate="$DIR_CONFIG_USER/update.conf"                   	
+	local nowDate=$(date +%Y_%m_%d) # Data atual /ano/mês/dia. 
+	touch "$FileConfigUpdate"
+	
+	# Data de execução da última busca por atualizações.
+	local oldDateUpdate=$(grep -m 1 "date_update" "$FileConfigUpdate" | cut -d ' ' -f 2 2> /dev/null) 
+	
+	if [[ "$nowDate" == "$oldDateUpdate" ]]; then
+		# Atualização já foi executada no dia atual.
+		return 0
+	else
+		# Atualização ainda não foi executada no dia atual, gravar a data atual
+		# no arquivo de configuração de atualizações e prosseguir.
+		echo -e "date_update $nowDate" > "$FileConfigUpdate"
+	fi
+	
+	print_line
+	[[ ! -z "$oldDateUpdate" ]] && printf "Data da última busca por atualizações ... $oldDateUpdate\n"
+	
+	__ping__ || return 1
+	printf "Verificando atualização no github aguarde\n"	
+	OnlineVersion=$(_get_storecli_online_version)
+	printf "%-17s%-10s\n" "Versão local" "$__version__" 
+	printf "%-17s%-10s\n" "Versão online" "$OnlineVersion"
+	
+	if [[ "$OnlineVersion" == "$__version__" ]]; then
+		printf "Você está usando a ultima versão deste programa\n"
+		echo -e "date_update $nowDate" > "$FileConfigUpdate"
+		return 0
+	fi
+	
+	printf "%-25s%-10s\n" "Atualizando para versão" "$OnlineVersion"
+	
+	cd "$dir_of_executable"
+	if ! ./setup.sh; then
+	    sred "FALHA na execução do script setup.sh"
+	    return 1
+	fi
+	
+	echo -e "date_update $nowDate" > "$FileConfigUpdate"
+	print_line
+	return 0
+}
+
+_pkg_manager_storecli()
+{
+	# Instalação dos programas, esta função recebe como parâmetro os pacotes a serem instalados
+	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
+	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
+	if [[ -z $1 ]]; then
+		_list_applications
+		return 1
+	fi
+
+	echo -e ".... $(date +%H:%M:%S) $__app_name__ V$__version__ ...."
+	_clear_temp_dirs
+
+	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
+	case "$VERSION_CODENAME" in
+		tina|tricia) export VERSION_CODENAME='bionic';;
+	esac
+
+	while [[ $1 ]]; do
+		[[ -z $1 ]] && return 0 
+		case "$1" in 
+			Acessorios) _Acessory_All;;
+			etcher) _etcher;;
+			gnome-disk) _gnome_disk;;
+			microsoft-teams) _microsoft_teams;;
+			plank) _plank;;
+			storecli-gui) _install_storecli;;
+			veracrypt) _veracrypt;;
+			woeusb) _woeusb;;
+
+			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
+			'android-studio') _android_studio;;
+			codeblocks) _codeblocks;;
+			java) _java;;
+			idea) _idea_ic;;
+			nodejs) _nodejs_lts;;
+			pycharm) _pycharm;;
+			sublime-text) _sublime_text;;
+			vim) _vim;;
+			vscode) _vscode;;
+
+			Escritorio) _Office_All;;
+			atril) _atril;;
+			'fontes-ms') _fontes_microsoft;;
+			libreoffice) _libreoffice;;
+			libreoffice-appimage) _libreoffice_appimage;;
+
+			Navegadores) _Browser_All;;
+			chromium) _chromium;;
+			edge) _edge;;
+			firefox) _firefox;;
+			'google-chrome') _google_chrome;;
+			'opera-stable') _opera_stable;;
+			torbrowser) _torbrowser;;
+
+			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
+			clipgrab) _clipgrab_appimage;;
+			megasync) _megasync;;
+			proxychains) _proxychains;;
+			qbittorrent) _qbittorrent;;
+			skype) _skype;;
+			teamviewer) _teamviewer;;
+			telegram) _telegram;;
+			tixati) _tixati;;
+			uget) _uget;;
+			youtube-dl) _youtube_dl;;
+			youtube-dl-gui) _youtube_dlgui;;
+		
+			Midia) _Midia_All;;
+			blender) _blender;;
+			celluloid) _celluloid;;
+			cinema) _cinema;;
+			codecs) _codecs;;
+			'gnome-mpv') _gnome_mpv;;
+			smplayer) _smplayer;;
+			spotify) _spotify;;
+			parole) _parole;;
+			totem) _totem;;
+			vlc) _vlc;;
+
+			Sistema) _System_All;;
+			archlinux-installer) _archlinux_installer;;
+			bluetooth) _bluetooth;;
+			bspwm) _bspwm;;
+			cpu-x) _cpux;;
+			compactadores) _compactadores;;
+			genymotion) _genymotion;;
+			google-earth) _google_earth;;
+			gparted) _gparted;;
+			peazip) _peazip;;
+			refind) _refind;;
+			stacer) _stacer;;
+			shm) _shm;;
+			timeshift) _timeshift;;
+			virtualbox) _virtualbox;;
+			virtualbox-additions) _virtualbox_additions;;
+			virtualbox-extensionpack) _virtualbox_extension_pack;; 
+
+			ohmybash) _ohmybash;;			
+			ohmyzsh) _ohmyzsh;;
+			papirus) _papirus;;
+			sierra) _sierra;;
+		
+			'dash-to-dock') _dashtodock;;
+			'drive-menu') _drive_menu;;
+			'gnome-backgrounds') _gnome_backgrounds;;
+			'gnome-tweaks') _gnome_tweaks;;
+			'topicons-plus') _topicons_plus;;
+			
+			Wine) _Wine_All;;
+			wine) _install_wine;;
+			winetricks) _install_script_winetricks;;
+			epsxe-win) _epsxe_windows;;
+			python37-windows-portable) _python37_windows32_portable;;
+			python37-windows) _python37_windows32;;
+			youtube-dl-gui-windows) _youtube_dlgui_windows;;
+			install) ;;
+			-y|--yes) ;;
+			-d|--downloadonly) ;;
+			-I|--ignore-cli) ;;
+			*) red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
+		esac
+		shift
+	done
+	return "$?"
+}
+
 main()
 {	
 	for ARG in "$@"; do
@@ -286,7 +461,7 @@ main()
 	# ou seja, se o GREP abaixo retornar status diferente de '0' a 
 	# função de configuração será invocada.
 	if [[ "$IgnoreCli" != 'True' ]]; then
-		if ! grep -q 'requeriments OK' "$configFILE"; then
+		if ! grep -q 'requeriments OK' "$ConfigFile"; then
 			_install_requeriments || return 1
 		fi
 	fi
@@ -318,7 +493,7 @@ main()
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			*) _red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
+			*) red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
 		esac
 		shift
 	done

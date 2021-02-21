@@ -8,7 +8,7 @@
 #=============================================================#
 _uninstall_etcher()
 {
-	case "$os_id" in
+	case "$OS_ID" in
 		debian|ubuntu|linuxmint) 
 						_APT remove 'balena-etcher-electron'
 						__rmdir__ '/etc/apt/sources.list.d/balena-etcher.list'
@@ -19,7 +19,7 @@ _uninstall_etcher()
 
 _uninstall_nodejs_lts()
 {
-	if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'ubuntu' ]]; then
+	if [[ "$OS_ID" == 'debian' ]] || [[ "$OS_ID" == 'ubuntu' ]]; then
 		_APT remove nodejs
 	else
 		__rmdir__ "${destinationFilesNodejs[@]}"
@@ -37,7 +37,7 @@ _uninstall_vscode()
 
 _uninstall_teamviewer()
 {	
-	case "$os_id" in
+	case "$OS_ID" in
 		debian|ubuntu|linuxmint) _APT remove teamviewer;;
 		fedora) _DNF remove teamviewer;;
 		*) __rmdir__ "${destinationFilesTeamviewer[@]}";;
@@ -52,7 +52,7 @@ _uninstall_edge()
 	elif [[ -f /etc/fedora-release ]]; then
 		_DNF remove microsoft-edge-dev
 	else
-		_sred "Seu sistema não tem suporte para executar esta ação."
+		sred "Seu sistema não tem suporte para executar esta ação."
 		sleep 0.5
 		return 1
 	fi
@@ -63,7 +63,7 @@ _uninstall_torbrowser()
 	local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
 
 	is_executable tor-installer || {
-		__download__ "$url_script_torbrowser_installer" "$SCRIPT_TORBROWSER_INSTALLER" || return 1
+		download "$url_script_torbrowser_installer" "$SCRIPT_TORBROWSER_INSTALLER" || return 1
 		chmod +x "$SCRIPT_TORBROWSER_INSTALLER"
 	}
 	
@@ -92,10 +92,10 @@ _uninstall_stacer()
 
 _uninstall_virtualbox()
 {
-	if [[ "$os_codename" == 'buster' ]]; then
+	if [[ "$VERSION_CODENAME" == 'buster' ]]; then
 		sudo apt remove virtualbox-5.2
 	else
-		_red "Não foi possível remover: $1"
+		red "Não foi possível remover: $1"
 	fi
 }
 
@@ -131,7 +131,7 @@ _uninstall_packages()
 
 			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;
-			*) _red "Não foi possível remover: $1"; return 1; break;;
+			*) red "Não foi possível remover: $1"; return 1; break;;
 		esac
 		shift
 	done
