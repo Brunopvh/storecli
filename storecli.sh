@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2021_02_21'
+__version__='2021_02_22'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 #
@@ -323,8 +323,7 @@ check_storecli_update()
 	__ping__ || return 1
 	printf "Verificando atualização no github aguarde\n"	
 	OnlineVersion=$(_get_storecli_online_version)
-	printf "%-17s%-10s\n" "Versão local" "$__version__" 
-	printf "%-17s%-10s\n" "Versão online" "$OnlineVersion"
+	echo -e "Versão local / Versão online ... $__version__ / $OnlineVersion"
 	
 	if [[ "$OnlineVersion" == "$__version__" ]]; then
 		printf "Você está usando a ultima versão deste programa\n"
@@ -332,7 +331,7 @@ check_storecli_update()
 		return 0
 	fi
 	
-	printf "%-25s%-10s\n" "Atualizando para versão" "$OnlineVersion"
+	echo -e "Atualizando para versão ... $OnlineVersion"
 	
 	cd "$dir_of_executable"
 	if ! ./setup.sh; then

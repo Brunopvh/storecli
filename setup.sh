@@ -1,17 +1,26 @@
 #!/bin/sh
 #
 # Este script automatiza a instalação do script storecli em sistemas linux.
+# Instala módulos locais para o programa storecli e módulos externos de uso 
+# geral em scripts bash.
+# Os módulos externos são desenvolvidos no seguinte repositório:
+#  https://github.com/Brunopvh/bash-libs
 #
-__version__='2021-01-30'
 #
+# Repositório:
 # https://github.com/Brunopvh/storecli.git
-# https://github.com/Brunopvh/storecli/archive/master.zip
+# 
+# Pacote tar para instalação manual.
 # https://github.com/Brunopvh/storecli/archive/master.tar.gz
 #
+# Script para automatizar a instalação.
 # sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
+# OBS: seu computador precisa estar conectado a internet para executar este instalador.
+# 
 
 __script__=$(readlink -f "$0")
+__version__='2021-02-22'
 
 case "$1" in
 	-h|--help)
@@ -22,9 +31,13 @@ case "$1" in
 esac
 
 URL_STORECLI_MASTER='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
-TEMP_DIR="$(mktemp --directory)-installer-storecli"
+URL_SETUP_BASH_LIBS='https://raw.github.com/Brunopvh/bash-libs/main/setup.sh'
+TEMP_DIR=$(mktemp --directory)
 UNPACK_DIR="$TEMP_DIR/unpack"
+DOWNLOAD_DIR="$TEMP_DIR/download"
+
 mkdir -p "$UNPACK_DIR"
+mkdir -p "$DOWNLOAD_DIR"
 
 if [ `id -u` -eq 0 ]; then
 	INSTALATION_DIR='/opt/storecli-amd64'
@@ -39,19 +52,27 @@ is_executable()
 	command -v "$@" >/dev/null 2>&1
 }
 
+# Verificar gerenciador de downloads do sistema.
+if is_executable aria2c; then
+	clienteDownloader='aria2'
+elif is_executable wget; then
+	clienteDownloader='wget'
+elif is_executable curl; then
+	clienteDownloader='curl'
+else
+	printf "ERRO: Instale uma ferramenta para gerenciar downloads curl|aria2c|wget\n"
+	exit 1
+fi
+
+
 _download_storecli()
 {
 	printf "Conectando ... $URL_STORECLI_MASTER "
-	if is_executable aria2c; then
-		aria2c "$URL_STORECLI_MASTER" -d "$TEMP_DIR" -o storecli.tar.gz 1> /dev/null
-	elif is_executable wget; then
-		wget -q "$URL_STORECLI_MASTER" -O "$TEMP_DIR"/storecli.tar.gz
-	elif is_executable curl; then
-		curl -sSL -o "$TEMP_DIR"/storecli.tar.gz "$URL_STORECLI_MASTER"
-	else
-		printf "ERRO: Instale uma ferramenta para gerenciar downloads curl|aria2c|wget\n"
-		return 1
-	fi
+	case "$clienteDownloader" in
+		aria2) aria2c "$URL_STORECLI_MASTER" -d "$DOWNLOAD_DIR" -o storecli.tar.gz 1> /dev/null;;
+		wget) wget -q "$URL_STORECLI_MASTER" -O "$DOWNLOAD_DIR"/storecli.tar.gz;;
+		curl) curl -sSL -o "$DOWNLOAD_DIR"/storecli.tar.gz "$URL_STORECLI_MASTER";;
+	esac
 	
 	[ $? -eq 0 ] && {
 		printf "OK\n"
@@ -63,12 +84,11 @@ _download_storecli()
 
 _copy_files()
 {
-	printf "Copiando $1 ==> $2 "
-	if cp -R -u "$1" "$2"; then
-		printf "OK\n"
+	if cp -R -u "$1" "$2" 1> /dev/null; then
 		return 0
 	else
-		printf "ERRO\n"
+		echo "ERRO _copy_files ... falha ao tentar copiar o arquivo $1"
+		sleep 1
 		return 1
 	fi
 }
@@ -77,13 +97,12 @@ _install_storecli()
 {
 	_download_storecli || return 1
 	
-	printf "Entrando no diretório ... $TEMP_DIR\n"
-	cd "$TEMP_DIR"
+	cd "$DOWNLOAD_DIR"
 	printf "Descomprimindo ... storecli.tar.gz "
 	if tar -zxvf storecli.tar.gz -C $UNPACK_DIR 1> /dev/null; then
 		printf "OK\n"
 	else
-		printf "ERRO: Falha na descompressão\n"
+		printf "ERRO\n"
 		return 1
 	fi
 
@@ -94,24 +113,44 @@ _install_storecli()
 		return 1
 	}
 
+	echo "Instalando storecli em $INSTALATION_DIR"
 	mkdir -p $INSTALATION_DIR
 	_copy_files "lib" "$INSTALATION_DIR" 
 	_copy_files "scripts" "$INSTALATION_DIR" 
-	_copy_files "stable" "$INSTALATION_DIR"
-	_copy_files "python" "$INSTALATION_DIR" 
 	_copy_files "setup.sh" "$INSTALATION_DIR" 
 	_copy_files "storecli.sh" "$INSTALATION_DIR"
 
-	printf "Configurando permissões para execução\n"; chmod -R a+x $INSTALATION_DIR
-	printf "Criando link para execução\n"; ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK
+	chmod -R a+x $INSTALATION_DIR
+	ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK
 
 	if [ -x $DESTINATION_LINK ]; then
-		printf "\033[0;33mstorecli instalado com sucesso!\033[m\n"
+		printf "storecli instalado com sucesso!\n"
 		return 0
 	else
-		printf "ERRO: Falha na instalação, tente novamente."
+		printf "ERRO: Falha na instalação, tente novamente.\n"
 		return 1
 	fi
+}
+
+_install_external_modules()
+{
+	# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
+	printf "Conectando ... $URL_SETUP_BASH_LIBS "
+	case "$clienteDownloader" in
+		aria2) aria2c "$URL_SETUP_BASH_LIBS" -d "$DOWNLOAD_DIR" -o setup_bash_libs.sh 1> /dev/null;;
+		wget) wget -q "$URL_SETUP_BASH_LIBS" -O "$DOWNLOAD_DIR"/setup_bash_libs.sh;;
+		curl) curl -sSL -o "$DOWNLOAD_DIR"/setup_bash_libs.sh "$URL_SETUP_BASH_LIBS";;
+	esac
+	
+	[ $? -eq 0 ] || {
+		printf "ERRO: Falha no download\n"
+		return 1
+	}
+	printf "OK\n"
+	cd $DOWNLOAD_DIR
+	chmod +x setup_bash_libs.sh
+	./setup_bash_libs.sh || return 1
+	return 0
 }
 
 main()
@@ -123,13 +162,15 @@ main()
 				rm -rf $INSTALATION_DIR
 				rm -rf $DESTINATION_LINK
 				printf "OK\n"
-				return
+				return 0
 				;;
 	esac			
+	_install_external_modules || return 1
 	_install_storecli || return 1
 	printf "Limpando arquivos temporários "
 	rm -rf "$TEMP_DIR"
 	printf "OK\n"
+	return 0
 }
 
 main "$@" || exit 1

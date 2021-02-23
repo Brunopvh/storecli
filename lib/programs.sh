@@ -256,7 +256,7 @@ _veracrypt()
 		print_info 'Pacote instalado com sucesso' 'veracrypt'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'veracrypt'
+		print_erro 'falha na instalação' 'veracrypt'
 		return 1
 	fi
 }
@@ -326,7 +326,7 @@ _woeusb()
 		print_info 'Pacote instalado com sucesso' 'woeusb'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'woeusb'
+		print_erro 'falha na instalação' 'woeusb'
 		return 1
 	fi
 }
@@ -511,7 +511,7 @@ _android_studio()
 		print_info 'Pacote instalado com sucesso' 'android-studio'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'android-studio'
+		print_erro 'falha na instalação' 'android-studio'
 		return 1
 	fi
 }
@@ -592,7 +592,7 @@ _idea_ic()
 		print_info 'Pacote instalado com sucesso' 'ideaic'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'ideaic'
+		print_erro 'falha na instalação' 'ideaic'
 		return 1
 	fi
 }
@@ -710,7 +710,7 @@ _pycharm()
 		print_info 'Pacote instalado com sucesso' 'pycharm'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'pycharm'
+		print_erro 'falha na instalação' 'pycharm'
 		return 1
 	fi
 }
@@ -741,7 +741,7 @@ _sublime_text()
 		sublime &
 		return 0
 	else
-		_show_info 'InstalationFailed' 'sublime'
+		print_erro 'falha na instalação' 'sublime'
 		return 1
 	fi
 }
@@ -752,26 +752,28 @@ _vim()
 	system_pkgmanager vim
 }
 
-
-_vscode_package_deb()
+_vscode_debian_file()
 {
-	#local url_code_debian='https://go.microsoft.com/fwlink/?LinkID=760868'
 	local url_code_debian='https://update.code.visualstudio.com/latest/linux-deb-x64/stable'
-	local path_file="$DirDownloads/vscode-amd64.deb"
-	download "$url_code_debian" "$path_file" || return 1
+	local path_code_debian_file="$DirDownloads/vscode-amd64.deb"
+	download "$url_code_debian" "$path_code_debian_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
-	_APT install "$path_file" -y || _BROKE
+	_APT install "$path_code_debian_file" -y || _BROKE
 }
 
 _vscode_tarfile()
 {
-	#local url_vscode_tar='https://go.microsoft.com/fwlink/?LinkID=620884'
 	local url_vscode_tar='https://update.code.visualstudio.com/latest/linux-x64/stable'
-	local path_file="$DirDownloads/vscode.tar.gz"
+	local path_tar_file="$DirDownloads/vscode.tar.gz"
 
-	download "$url_vscode_tar" "$path_file"
+	[[ $(id -u) == 0 ]] && {
+		print_erro "Você não pode ser o 'root' para instalar este programa."
+		return 1
+	}
+
+	download "$url_vscode_tar" "$path_tar_file"
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_tar_file" || return 1
 
 	cd "$DirUnpack"
 	mv $(ls -d VSCode*) "${destinationFilesVscode[dir]}" 
@@ -783,7 +785,7 @@ _vscode_tarfile()
 	chmod +x "${destinationFilesVscode[link]}"
 
 	# Criar entrada no menu do sistema.
-	_show_info "AddFileDesktop"
+	print_info "Criando arquivo .desktop"
 	echo "[Desktop Entry]" > "${destinationFilesVscode[file_desktop]}" 
 	{
 		echo "Name=Code"
@@ -805,8 +807,8 @@ _vscode()
 	# Já instalado.
 	is_executable 'code' && print_info 'Pacote instalado' 'code' && return 0
 
-	case "$OS_ID" in
-		debian|ubuntu|linuxmint) _vscode_package_deb;;
+	case "$BASE_DISTRO" in
+		debian) _vscode_debian_file;;
 		*) _vscode_tarfile;;
 	esac
 	
@@ -814,7 +816,7 @@ _vscode()
 		print_info 'Pacote instalado com sucesso' 'code'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'code'
+		print_erro 'falha na instalação' 'code'
 		return 1
 	fi
 }
@@ -1185,7 +1187,7 @@ _vlc()
 	if is_executable 'vlc'; then
 		print_info 'Pacote instalado com sucesso' 'vlc'
 	else
-		_show_info 'InstalationFailed' 'vlc'
+		print_erro 'falha na instalação' 'vlc'
 	fi
 }
 
@@ -1238,7 +1240,7 @@ _libreoffice_appimage()
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
-	_show_info "AddFileDesktop"
+	print_info "Criando arquivo .desktop"
 	echo '[Desktop Entry]' | tee "${destinationFilesLibreofficeAppimage[file_desktop]}" 1> /dev/null
 	{
 		echo "Encoding=UTF-8"
@@ -1265,7 +1267,7 @@ _libreoffice_appimage()
 		print_info 'Pacote instalado com sucesso' 'libreoffice-appimage'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'libreoffice-appimage'
+		print_erro 'falha na instalação' 'libreoffice-appimage'
 		return 1
 	fi
 }
@@ -1477,7 +1479,7 @@ _google_chrome()
 		print_info 'Pacote instalado com sucesso' 'google-chrome'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'google-chrome'
+		print_erro 'falha na instalação' 'google-chrome'
 		return 1
 	fi
 }
@@ -1547,7 +1549,7 @@ esac
 	if [[ $? == '0' ]]; then 
 		print_info 'Pacote instalado com sucesso' 'opera'
 	else
-		_show_info 'InstalationFailed' 'opera'
+		print_erro 'falha na instalação' 'opera'
 		return 1
 	fi
 }
@@ -1589,7 +1591,7 @@ _clipgrab_appimage()
 		print_info 'Pacote instalado com sucesso' 'clipgrab'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'clipgrab'
+		print_erro 'falha na instalação' 'clipgrab'
 		return 1
 	fi
 }
@@ -1758,7 +1760,7 @@ _megasync()
 		print_info 'Pacote instalado com sucesso' 'megasync'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'megasync'
+		print_erro 'falha na instalação' 'megasync'
 		return 1
 	fi
 }
@@ -1955,7 +1957,7 @@ _teamviewer()
 		print_info 'Pacote instalado com sucesso' 'teamviewer'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'teamviewer'
+		print_erro 'falha na instalação' 'teamviewer'
 		return 1
 	fi
 }
@@ -1994,7 +1996,7 @@ _telegram()
 		print_info 'Pacote instalado com sucesso' 'telegram'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'telegram'
+		print_erro 'falha na instalação' 'telegram'
 		return 1
 	fi
 }
@@ -2152,7 +2154,7 @@ _youtube_dl()
 		print_info 'Pacote instalado com sucesso' 'youtube-dl'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'youtube-dl'
+		print_erro 'falha na instalação' 'youtube-dl'
 		return 1
 	fi
 }
@@ -2177,7 +2179,7 @@ _python_twodict_github()
 		print_info 'Pacote instalado com sucesso' 'python twodict'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'python twodict'
+		print_erro 'falha na instalação' 'python twodict'
 		return 1
 	fi
 }
@@ -2185,7 +2187,7 @@ _python_twodict_github()
 _youtube_dlgui_file_desktop_user()
 {
 	# Criar arquivo .desktop na HOME para o usuario atual.
-	_show_info "AddFileDesktop"
+	print_info "Criando arquivo .desktop"
 
 	echo '[Desktop Entry]' > "${destinationFilesYoutubeDlGuiUser[file_desktop]}"
 	{
@@ -2211,7 +2213,7 @@ _youtube_dlgui_file_desktop_root()
 	# Criar arquivo desktop para todos os usuarios.
 	local file_desktop_youtube_dl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 
-	_show_info "AddFileDesktop"
+	print_info "Criando arquivo .desktop"
 	{
 		echo '[Desktop Entry]'
 		echo "Encoding=UTF-8"
@@ -2419,7 +2421,7 @@ _youtube_dlgui()
 		print_info 'Pacote instalado com sucesso' 'youtube-dl-gui'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'youtube-dl-gui'
+		print_erro 'falha na instalação' 'youtube-dl-gui'
 		return 1
 	fi
 }
@@ -2589,7 +2591,7 @@ _cpux_appimage()
 		print_info 'Pacote instalado' 'cpu-x'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'cpux'
+		print_erro 'falha na instalação' 'cpux'
 		return 1
 	fi
 }
@@ -2778,7 +2780,7 @@ _peazip()
 		print_info 'Pacote instalado com sucesso' 'peazip'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'peazip'
+		print_erro 'falha na instalação' 'peazip'
 		return 1
 	fi
 }
@@ -2830,7 +2832,7 @@ _refind()
 		print_info 'Pacote instalado com sucesso' 'refind-install'
 		return 0
 	else
-		_show_info 'InstalationFailed' 'refind-install'
+		print_erro 'falha na instalação' 'refind-install'
 		return 1
 	fi
 }
@@ -2870,7 +2872,7 @@ _stacer_appimage()
 	
 	cp -u "$path_file" "${destinationFilesStacer[file_appimage]}"
 	
-	_show_info "AddFileDesktop"
+	print_info "Criando arquivo .desktop"
 	echo '[Desktop Entry]' | tee "${destinationFilesStacer[file_desktop]}" 1> /dev/null
 	{
 		echo "Encoding=UTF-8"
@@ -2898,7 +2900,7 @@ _stacer_appimage()
 	if is_executable 'stacer'; then
 		print_info 'Pacote instalado com sucesso' 'Stacer'
 	else
-		_show_info 'InstalationFailed' 'stacer'
+		print_erro 'falha na instalação' 'stacer'
 	fi
 }
 
