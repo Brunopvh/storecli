@@ -16,6 +16,15 @@ _uninstall_etcher()
 	fi
 }
 
+_uninstall_msteams()
+{
+	case "$BASE_DISTRO" in
+		fedora) _DNF remove teams;;
+		debian) _APT remove teams;;
+		*) red "Não foi possível remover microsoft-teams."; return 1;;
+	esac
+}
+
 _uninstall_nodejs_lts()
 {
 	if [[ "$OS_ID" == 'debian' ]] || [[ "$OS_ID" == 'ubuntu' ]]; then

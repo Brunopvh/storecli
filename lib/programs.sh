@@ -412,10 +412,7 @@ _android_studio_debian()
 
 	_APT update
 	system_pkgmanager 'openjdk-11-jdk'
-
-	for c in "${debianBusterRequeriments[@]}"; do
-		system_pkgmanager "$c"
-	done
+	system_pkgmanager "${debianBusterRequeriments[@]}"
 	
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu" 
 	__sudo__ adduser "$USER" libvirt
@@ -427,7 +424,8 @@ _android_studio_debian()
 _android_studio_ubuntu()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
-	if [[ ! -f /etc/debian_version ]]; then
+	if [[ "$BASE_DISTRO" != 'debian' ]]; then
+		print_erro "_android_studio_ubuntu"
 		return 1
 	fi
 
@@ -446,10 +444,7 @@ _android_studio_ubuntu()
 
 	#_APT update
 	system_pkgmanager 'openjdk-8-jdk'
-
-	for c in "${ubuntuBionicRequeriments[@]}"; do
-		system_pkgmanager "$c"
-	done
+	system_pkgmanager "${ubuntuBionicRequeriments[@]}"
 	
 	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
 	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
@@ -560,14 +555,14 @@ _idea_ic()
 	
 	cd "$DirUnpack" 
 	mv $(ls -d idea-*) idea-IC
-	echo -e "Movendo ... idea-IC => ${destinationFilesIdeaic[dir]} "
+	echo -ne "Movendo ... ${destinationFilesIdeaic[dir]} "
 	mv idea-IC "${destinationFilesIdeaic[dir]}" || return 1
 	printf 'OK\n'
 	echo -e "Entrando no diretório ... ${destinationFilesIdeaic[dir]}/bin"
 	cd "${destinationFilesIdeaic[dir]}/bin"
-	cp -vu idea.png "${destinationFilesIdeaic[png]}"
+	cp -vu idea.png "${destinationFilesIdeaic[png]}" 1> /dev/null
 
-	echo -e "Criando arquivo '.desktop'"
+	print_info "Criando arquivo '.desktop'"
 	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
 	{
 		echo -e "Name=IntelliJ IDEA Ultimate Edition"
@@ -580,7 +575,10 @@ _idea_ic()
 		echo -e "Type=Application"
 	} >> "${destinationFilesIdeaic[file_desktop]}"
 
-	echo -e "Criando atalho para execução"
+	chmod +x "${destinationFilesIdeaic[file_desktop]}"
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
+
+	print_info "Criando atalho para execução"
 	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[script]}"
 	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[script]}"
 	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[script]}"
@@ -630,7 +628,7 @@ _nodejs_lts_tar()
 	ln -sf "${destinationFilesNodejs[dir]}"/lib/node_modules/npm/bin/npx-cli.js "${destinationFilesNodejs[npx_link]}"
 }
 
-_nodejs_lts_deb()
+_nodejs_lts_debian_online_repo()
 {
 	# https://github.com/nodesource/distributions/blob/master/README.md#debmanual
 	# https://github.com/nodesource/distributions/blob/master/README.md
@@ -660,7 +658,7 @@ _nodejs_lts_deb()
 _nodejs_lts()
 {
 	if [[ "$OS_ID" == 'debian' ]]; then
-		_nodejs_lts_deb
+		_nodejs_lts_debian_online_repo
 	else
 		_nodejs_lts_tar
 	fi
@@ -902,18 +900,18 @@ _codecs_debian()
 	# sudo apt install install alsa-utils
 	#
 	
-	local deb_multimidia='http://www.deb-multimedia.org'
-	local url_wcodecs="$deb_multimidia/pool/non-free/w/w64codecs/w64codecs_20071007-dmo2_amd64.deb"
+	local url_deb_multimidia='http://www.deb-multimedia.org'
+	local url_wcodecs="$url_deb_multimidia/pool/non-free/w/w64codecs/w64codecs_20071007-dmo2_amd64.deb"
 	local hash_wcodecs="cc36b9ff0dce8d4f89031756163d54acdd4e800d6106f07db2031fdf77e90392"
-	local path_file="$DirDownloads/$(basename $url_wcodecs)"
+	local path_wcodecs="$DirDownloads/$(basename $url_wcodecs)"
 
 	system_pkgmanager --install-recommends ffmpeg ffmpegthumbnailer
 	system_pkgmanager lame
 
-	download "$url_wcodecs" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0 
-	__shasum__ "$path_file" "$hash_wcodecs" || return 1
-	_APT install "$path_file" -y || _BROKE
+	download "$url_wcodecs" "$path_wcodecs" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
+	__shasum__ "$path_wcodecs" "$hash_wcodecs" || return 1
+	_APT install "$path_wcodecs" -y || _BROKE
 }
 
 _codecs_fedora()
@@ -1003,13 +1001,11 @@ _codecs_arch()
 		)
 
 	for x in "${list_codecs_arch[@]}"; do 
-		msg "Instalando" "$x"
 		system_pkgmanager "$x"
 	done
 
 	
 	for x in "${list_codecs_parole[@]}"; do 
-		msg "Instalando" "$x"
 		system_pkgmanager "$x"
 	done
 	
@@ -1017,17 +1013,17 @@ _codecs_arch()
 
 _codecs()
 {
-case "$OS_ID" in
-	freebsd12.0-release) system_pkgmanager ffmpeg ffmpegthumbnailer 'gstreamer-ffmpeg';;
-	debian) _codecs_debian;;
-	linuxmint|ubuntu) _codecs_ubuntu;;
-	fedora) _codecs_fedora;;
-	'opensuse-tumbleweed') _codecs_tumbleweed;;
-	'opensuse-leap') _codecs_opensuse_leap;;
-	arch) _codecs_arch;;
-	*) _show_info 'ProgramNotFound' 'codecs'; return 1;;
+	case "$OS_ID" in
+		freebsd12.0-release) system_pkgmanager ffmpeg ffmpegthumbnailer 'gstreamer-ffmpeg';;
+		debian) _codecs_debian;;
+		linuxmint|ubuntu) _codecs_ubuntu;;
+		fedora) _codecs_fedora;;
+		'opensuse-tumbleweed') _codecs_tumbleweed;;
+		'opensuse-leap') _codecs_opensuse_leap;;
+		arch) _codecs_arch;;
+		*) _show_info 'ProgramNotFound' 'codecs'; return 1;;
 
-esac
+	esac
 }
 
 _celluloid()
@@ -1068,7 +1064,7 @@ _spotify_debian()
 	# sudo apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 4773BD5E130D1D45 || return 1
 	is_admin || return 1
 	if ! apt_key_add 'https://download.spotify.com/debian/pubkey_0D811D58.gpg'; then
-		echo -e "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
+		print_info "Visite 'https://www.spotify.com/br/download/linux/' para instalar spotify manualmente."
 		return 1
 	fi
 
@@ -1110,7 +1106,7 @@ _spotify_archlinux()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"
-	_white "Descomprimindo arquivo data.tar.gz"
+	echo -e "Descomprimindo arquivo data.tar.gz"
 	sudo tar -zxpvf data.tar.gz -C / 1> /dev/null
 	sudo install -Dm644 /usr/share/spotify/spotify.desktop /usr/share/applications/spotify.desktop
 	sudo install -Dm644 /usr/share/spotify/icons/spotify-linux-512.png /usr/share/pixmaps/spotify-client.png
@@ -1132,7 +1128,7 @@ _spotify_fedora()
 	if flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo; then
 		syellow "OK"
 	else
-		sred "FALHA"
+		print_erro ""
 	fi
 
 	_FLATPAK install flathub com.spotify.Client || return 1
@@ -1204,12 +1200,10 @@ _ubuntu_msttcorefonts()
 	local path_file="$DirDownloads/$(basename $url_msttcorefonts)"
 
 	download "$url_msttcorefonts" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0
 	 
 	system_pkgmanager cabextract || return 1
-	_DPKG --install "$path_file" || return 1
+	_APT "$path_file" || return 1
 	return 0
 
 }
@@ -1238,8 +1232,6 @@ _libreoffice_appimage()
 	local hash_libreoffice='4dc846ccf77114594b9f3fd1ffb398f784adfcce75371f22551612e83c3ef1e6'
 
 	download "$url" "$path_file" || return 1
-	
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	print_info "Criando arquivo .desktop"
