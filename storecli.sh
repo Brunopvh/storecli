@@ -1,11 +1,6 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2021_02_22'
-__author__='Bruno Chaves'
-__appname__='storecli'	
-#
-#
 #=============================================================#
 # USO
 #=============================================================#
@@ -14,8 +9,6 @@ __appname__='storecli'
 # ./storecli.sh remove <app>
 # ./storecli.sh --configure
 # ./storecli.sh --list
-#
-#
 #
 #
 #
@@ -39,10 +32,10 @@ __appname__='storecli'
 # Instalação 
 #=============================================================#
 # Gnu wget
-# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+# bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 # cURL
-# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+# bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 #=============================================================#
 # GitHub
@@ -82,13 +75,28 @@ fi
 #=============================================================#
 # Diretórios do usuário
 #=============================================================#
-[[ -f ~/.bashrc ]] && source ~/.bashrc 2> /dev/null
-[[ -f ~/.shmrc ]] && source ~/.shmrc
+source ~/.bashrc 1> /dev/null 2>&1
+source ~/.shmrc 1> /dev/null 2>&1
+
 [[ ! -d $HOME ]] && HOME=~/
 [[ ! -w $HOME ]] && {
 	printf "\033[0;31mVocê não tem permissão de escrita [-w] em ... $HOME\033[m\n"
 	exit 1
 }
+
+__version__='2021_02_26'
+__author__='Bruno Chaves'
+__appname__='storecli'	
+
+# Controle do status de saida ao longo do script.
+export STATUS_OUTPUT='0'
+
+# Configuração de diretórios usados por este programa
+readonly export __script__=$(readlink -f "$0") # Este arquivo.
+readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
+readonly export path_local_libs="$dir_of_executable/lib"
+readonly export dir_local_scripts="$dir_of_executable/scripts"
+readonly export dir_local_python="$dir_of_executable/python"
 
 #=============================================================#
 # Importação de módulos externos.
@@ -97,49 +105,78 @@ fi
 # https://github.com/Brunopvh/bash-libs
 #
 # Instalação do gerenciador de pacotes para módulos externos.
-# sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
-# sudo sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)"
-#
-#
+# sudo bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
+# sudo bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)"
 
 function show_import_erro()
 {
-	echo "ERRO: $@"
-	read -p 'Pressione enter para continuar... ' -t 3 Input
-	echo
+	echo "ERRO módulo não encontrado ... $@"
+	if [[ -x $(command -v wget) ]]; then
+		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
+	elif [[ -x $(command -v curl) ]]; then
+		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
+	fi
+	sleep 1
+	return 1
 }
 
 function check_external_modules()
 {
-	#
-	[[ -z $config_path ]] && show_import_erro "módulo config_path não encontrado" && return 1
-	[[ -z $crypto ]] && show_import_erro "módulo crypto não encontrado" && return 1
-	[[ -z $files_programs ]] && show_import_erro "módulo files_programs não encontrado" && return 1
-	[[ -z $os ]] && show_import_erro "módulo os não encontrado" && return 1
-	[[ -z $requests ]] && show_import_erro "módulo requests não encontrado" && return 1
-	[[ -z $utils ]] && show_import_erro "módulo utils não encontrado" && return 1
-	[[ -z $pkgmanager ]] && show_import_erro "módulo pkgmanager não encontrado" && return 1
-	[[ -z $print_text ]]&& show_import_erro "módulo print_text não encontrado" && return 1
-	[[ -z $platform ]] && show_import_erro "módulo platform não encontrado" && return 1
+	# Verificar se todos os módulos externos necessários estão disponíveis para serem importados.
+	[[ ! -f $config_path ]] && { 
+		show_import_erro "config_path"; return 1
+	}
+
+	[[ ! -f $crypto ]] && {
+		show_import_erro "crypto"; return 1
+	}
+
+	[[ ! -f $files_programs ]] && { 
+		show_import_erro "files_programs"; return 1
+	}
+
+	[[ ! -f $os ]] && { 
+		show_import_erro "os"; return 1 
+	}
+
+	[[ ! -f $requests ]] && { 
+		show_import_erro "requests"; return 1
+	}
+
+	[[ ! -f $utils ]] && { 
+		show_import_erro "utils"; return 1 
+	}
+	
+	[[ ! -f $pkgmanager ]] && { 
+		show_import_erro "pkgmanager"; return 1 
+	}
+	
+	[[ ! -f $print_text ]]&& {
+		show_import_erro "print_text"; return 1
+	}
+	
+	[[ ! -f $platform ]] && {
+		show_import_erro "platform"; return 1
+	}
+
 	return 0
 }
 
 check_external_modules || {
 	# Verificar se os módulos externos estão instalados no sistema.
-
-	TempSetupFile=$(mktemp)
-	if [[ -x $(command -v wget) ]]; then
-		wget -q -O "$TempSetupFile" https://raw.github.com/Brunopvh/bash-libs/main/setup.sh || exit 1
+	cd "$dir_of_executable"
+	if [[ ! -f setup.sh ]]; then
+		chmod +x ./setup.sh
+		./setup.sh
+	elif [[ -x $(command -v wget) ]]; then
+		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	elif [[ -x $(command -v curl) ]]; then
-		curl -fsSL -o "$TempSetupFile" https://raw.github.com/Brunopvh/bash-libs/main/setup.sh || exit 1
+		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	else
-		echo "Instale curl ou wget para prosseguir"
+		echo "Instale curl ou wget"
 		exit 1
 	fi
-
-	chmod +x "$TempSetupFile"
-	"$TempSetupFile"
-	rm -rf "$TempSetupFile"
+	shm update
 	shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
 	exit 1
 }
@@ -149,7 +186,7 @@ check_external_modules || {
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
 #readonly export TemporaryDirectory="/tmp/storecli_$USER"
-export readonly TemporaryDirectory="$(mktemp -u)-$__appname__"; mkdir "$TemporaryDirectory"
+export readonly TemporaryDirectory="$(mktemp -u)-$__appname__" 
 export readonly DirTemp="$TemporaryDirectory/temp"
 export readonly DirGitclone="$TemporaryDirectory/gitclone"
 export readonly DirUnpack="$TemporaryDirectory/unpack"
@@ -161,6 +198,7 @@ else
 	export readonly DirDownloads="$HOME/.cache/$__appname__/downloads"
 fi
 
+mkdir -p "$TemporaryDirectory"
 mkdir -p "$DirTemp"
 mkdir -p "$DirGitclone"
 mkdir -p "$DirUnpack"
@@ -180,15 +218,6 @@ touch "$ConfigFile"
 touch "$LogFile"
 touch "$LogErro"
 
-# Controle do status de saida ao longo do script.
-export STATUS_OUTPUT='0'
-
-# Configuração de diretórios usados por este programa
-readonly export __script__=$(readlink -f "$0") # Este arquivo.
-readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
-readonly export path_local_libs="$dir_of_executable/lib"
-readonly export dir_local_scripts="$dir_of_executable/scripts"
-readonly export dir_local_python="$dir_of_executable/python"
 
 #=============================================================#
 # Importar modulos externos - VER o arquivo ~/.shmrc
@@ -352,7 +381,7 @@ _clear_temp_dirs()
 	cd "$DirGitclone" && __rmdir__ $(ls)
 }
 
-_pkg_manager_storecli()
+storecli_apps_installer()
 {
 	# Instalação dos programas, esta função recebe como parâmetro os pacotes a serem instalados
 	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
@@ -472,7 +501,7 @@ _pkg_manager_storecli()
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
-			*) red "(_pkg_manager_storecli) programa não encontrado: $1"; return 1; break;;
+			*) red "(storecli_apps_installer) programa não encontrado: $1"; return 1; break;;
 		esac
 		shift
 	done
@@ -525,11 +554,11 @@ main()
 		case "$1" in
 			-b|--broke) _BROKE;;
 			-c|--configure) _install_requeriments;;
-			install) shift; _pkg_manager_storecli "$@" || STATUS_OUTPUT=1; break;;
-			remove)  shift; _uninstall_packages "$@" || STATUS_OUTPUT=1; break;;
 			-y|--yes) ;;
 			-d|--downloadonly) ;;
 			-I|--ignore-cli) ;;
+			install) shift; storecli_apps_installer "$@" || STATUS_OUTPUT=1; break;;
+			remove)  shift; _uninstall_packages "$@" || STATUS_OUTPUT=1; break;;
 			*) red "(main) argumento inválido: $ARG"; STATUS_OUTPUT='1'; break;;
 		esac
 		shift
@@ -540,7 +569,7 @@ main()
 main "${@}" && STATUS_OUTPUT=0
 
 # Remover diretórios e subdiretórios temporários ao encerrar o programa.
-export CONFIRM='True'
+export AssumeYes='True'
 __rmdir__ "$TemporaryDirectory" 1> /dev/null
 
 if [[ "$STATUS_OUTPUT" == 0 ]]; then

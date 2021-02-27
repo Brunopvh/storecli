@@ -180,10 +180,10 @@ _gnome_disk()
 
 _plank()
 {
-	if [[ "$OS_ID" == 'fedora' ]]; then # Fedora
+	if [[ "$OS_ID" == 'fedora' ]]; then 
 		# https://diolinux.com.br/2020/02/como-utilizar-plank-com-zoom-nos-icones-no-fedora.html
-		yellow "Plank será instalado apartir de um repositório ${CSYellow}externo${CReset} ... copr:copr.fedorainfracloud.org:gqman69:plank"
-		yellow "Versões de outros repositórios serão removidas"
+		print_info "Plank será instalado apartir de um repositório ${CSYellow}externo${CReset} ... copr:copr.fedorainfracloud.org:gqman69:plank"
+		print_info "Versões de outros repositórios serão removidas"
 		question "Deseja prosseguir com a instalação" || return 1
 		_DNF copr enable 'gqman69/plank'
 		is_executable plank && {
@@ -217,7 +217,7 @@ _veracrypt()
 
 	# Necessário sessão gráfica para instalar esse programa.
 	if [[ -z "$DISPLAY" ]]; then
-		red "Necessário sessão gráfica (Xorg) para instalar esse pacote"
+		red "Necessário sessão gráfica (Xorg) para instalar veracrypt"
 		return 1
 	fi
 
@@ -263,12 +263,15 @@ _veracrypt()
 
 _microsoft_teams()
 {
-	if [[ -f /etc/debian_version ]]; then
+	if [[ "$BASE_DISTRO" == 'debian' ]]; then
 		local URL_MICROSOFT_TEAMS='https://go.microsoft.com/fwlink/p/?LinkID=2112886&clcid=0x416&culture=pt-br&country=BR'
 		local PATH_MICROSOFT_TEAMS="$DirDownloads/teams-amd64.deb"
-	elif [[ -f /etc/fedora-release ]]; then
+	elif [[ "$BASE_DISTRO" == 'fedora' ]]; then
 		local URL_MICROSOFT_TEAMS='https://go.microsoft.com/fwlink/p/?LinkID=2112907&clcid=0x416&culture=pt-br&country=BR'
 		local PATH_MICROSOFT_TEAMS="$DirDownloads/teams-x86_64.rpm"
+	else
+		red "Programa indisponível para o seu sistema."
+		return 1
 	fi
 
 	download "$URL_MICROSOFT_TEAMS" "$PATH_MICROSOFT_TEAMS" || return 1
@@ -334,21 +337,21 @@ _woeusb()
 _android_studio_zip()
 {
 	# https://developer.android.com/studio
-	local url='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
+	local url_studio_ide='https://redirector.gvt1.com/edgedl/android/studio/ide-zips/3.6.1.0/android-studio-ide-192.6241897-linux.tar.gz'
 	local hash_android_studio='e754dc9db31a5c222f230683e3898dcab122dfe7bdb1c4174474112150989fd7'
-	local path_file="$DirDownloads/$(basename $url)"
+	local path_studio_zip_file="$DirDownloads/$(basename $url_studio_ide)"
 
-	download "$url" "$path_file" || return 1
+	download "$url_studio_ide" "$path_studio_zip_file" || return 1
 	
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	
-	__shasum__ "$path_file" "$hash_android_studio" || return 1
-	unpack_archive "$path_file" || return 1
+	__shasum__ "$path_studio_zip_file" "$hash_android_studio" || return 1
+	unpack_archive "$path_studio_zip_file" || return 1
 
-	_white "Instalando android studio em ~/.local/bin"
+	echo "Instalando android studio em ~/.local/bin"
 	cd "$DirUnpack" 
-	mv $(ls -d android-*) "${destinationFilesAndroidStudio[dir]}" 1> /dev/null # ~/.local/bin/androi-studio
+	mv $(ls -d android-*) "${destinationFilesAndroidStudio[dir]}" 1> /dev/null # ~/.local/bin/android-studio
 	cp -u "${destinationFilesAndroidStudio[dir]}"/bin/studio.png "${destinationFilesAndroidStudio[png]}" # .png
 	chmod -R +x "${destinationFilesAndroidStudio[dir]}" # ~/.local/bin/androi-studio
 
@@ -360,7 +363,7 @@ _android_studio_zip()
 		echo "Type=Application"
 		echo "Name=Android Studio"
 		echo "Icon=studio.png"
-		echo "Exec=sh -c 'cd ${destinationFilesAndroidStudio[dir]}/bin && ./studio.sh'"
+		echo "Exec=bash -c 'cd ${destinationFilesAndroidStudio[dir]}/bin && ./studio.sh'"
 		echo "Comment=The Drive to Develop"
 		echo "Categories=Development;IDE;"
 		echo "Terminal=false"
@@ -385,10 +388,15 @@ _android_studio_zip()
 _android_studio_debian()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
-	if [[ ! -f /etc/debian_version ]]; then
+	if [[ "$BASE_DISTRO" != 'debian' ]]; then
 		red "Seu sistema não é baseado em Debian."
 		return 1
 	fi
+
+	[[ "$VERSION_CODENAME" == 'buster' ]] || {
+		print_erro "Seu sistema não é Debian Buster"
+		return 1
+	}
 
 	local debianBusterRequeriments=(
 		qemu-kvm
@@ -409,20 +417,12 @@ _android_studio_debian()
 		system_pkgmanager "$c"
 	done
 	
-	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
+	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu" 
 	__sudo__ adduser "$USER" libvirt
 	__sudo__ adduser "$USER" 'libvirt-qemu'
 
 	_android_studio_zip || return 1
 }
-
-
-_android_archlinux()
-{
-	_android_studio_zip
-}
-
 
 _android_studio_ubuntu()
 {
@@ -459,6 +459,10 @@ _android_studio_ubuntu()
 	_android_studio_zip || return 1
 }
 
+_android_archlinux()
+{
+	_android_studio_zip
+}
 
 _android_studio_fedora()
 {
@@ -469,7 +473,6 @@ _android_studio_fedora()
 			)
 
 	system_pkgmanager "${array_libs_fedora[@]}"
-
 	_android_studio_zip || return 1
 }
 
@@ -487,7 +490,6 @@ _android_studio_opensuseleap()
 	system_pkgmanager "${requerimentsOpenSuse[@]}"
 	_android_studio_zip
 }
-
 
 _android_studio()
 {
@@ -1788,7 +1790,7 @@ _tor_debian()
 	fi
 	
 	echo -ne "Executando ... gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - "
-	if ! sudo sh -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'; then
+	if ! sudo bash -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'; then
 		sred "FALHA"
 		return 1
 	fi
@@ -2301,7 +2303,7 @@ _youtube_dlgui_user_installer()
 _youtube_dlgui_pip() 
 {
 	# ppa ubuntu.
-	# sudo sh -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
+	# sudo bash -c 'add-apt-repository ppa:nilarimogard/webupd8; apt update'
 	# sudo apt install youtube-dlg --yes
 	system_pkgmanager 'python-wxgtk3.0' gettext 'python-pip' 'python-twodict' || return 1
 	pip install wheel --user
@@ -3034,8 +3036,8 @@ _virtualbox_fedora()
 	
 	# Módulos
 	msg "Configurando módulos"
-	sudo sh -c '/usr/lib/virtualbox/vboxdrv.sh setup'
-	sudo sh -c '/sbin/vboxconfig'
+	sudo bash -c '/usr/lib/virtualbox/vboxdrv.sh setup'
+	sudo bash -c '/sbin/vboxconfig'
 
 	# Instalar o pacote ExtensionPack.
 	_virtualbox_extension_pack 
@@ -3221,7 +3223,7 @@ _ohmybash()
 	# cd home
 	# mkdir -p .bash/themes/agnoster-bash
 	# git clone https://github.com/speedenator/agnoster-bash.git .bash/themes/agnoster-bash
-	# sh -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
+	# bash -c "$(wget -q -O- https://raw.githubusercontent.com/ohmybash/oh-my-bash/master/tools/install.sh)"
 	
 	local ohmybash_master='https://github.com/ohmybash/oh-my-bash/archive/master.zip'
 	local ohmybashZipFile="$DirDownloads/ohmybash.zip"
@@ -3306,7 +3308,7 @@ _install_zsh_powerline()
 
 _ohmyzsh()
 {
-	# sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
+	# bash -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
 	# https://github.com/ohmyzsh/ohmyzsh
 	#
 	local URL_INSTALLER_ZSH='https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh'

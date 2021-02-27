@@ -436,7 +436,7 @@ main_menu(){
 	
 	if ! is_executable storecli; then
 		yellow "Instalando o script storecli"
-		sudo sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		sudo bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	fi
 
 	print_line

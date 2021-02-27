@@ -169,7 +169,7 @@ _install_requeriments()
 
 	# Gravar informação de sucesso em $ConfigFile.
 	if ! grep -q 'requeriments OK' "$ConfigFile"; then
-		print_info "Gravando log em ($ConfigFile)"
+		print_info "Gravando log em ... $ConfigFile"
 		echo 'requeriments OK' >> "$ConfigFile"
 	fi
 	return 0
@@ -182,7 +182,7 @@ check_requeriments_cli()
 	LIST_REQUERIMENTS_UNIX=(sudo awk zenity find curl python3)
 	for R in "${LIST_REQUERIMENTS_UNIX[@]}"; do
 		if ! is_executable "$R"; then
-			red "Dependência não encontrada ... $R"
+			print_erro "dependência não encontrada ... $R"
 			sred "Execute ... $__script__ --configure"
 			return 1
 			break

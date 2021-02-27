@@ -14,7 +14,7 @@
 # https://github.com/Brunopvh/storecli/archive/master.tar.gz
 #
 # Script para automatizar a instalação.
-# sh -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+# bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 #
 # OBS: seu computador precisa estar conectado a internet para executar este instalador.
 # 
@@ -134,7 +134,7 @@ _install_storecli()
 
 _install_external_modules()
 {
-	# sh -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
+	# bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
 	printf "Conectando ... $URL_SETUP_BASH_LIBS "
 	case "$clienteDownloader" in
 		aria2) aria2c "$URL_SETUP_BASH_LIBS" -d "$DOWNLOAD_DIR" -o setup_bash_libs.sh 1> /dev/null;;
