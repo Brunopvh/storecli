@@ -3,6 +3,20 @@
 
 github='https://github.com'
 
+function check_python_version2()
+{
+	# Verificar se o python versão 2 está instalado.
+	if is_executable python2; then
+		export PYTHON_VERSION2='True'
+	elif python -c "import platform; print(platform.python_version()[0:3])" | grep -q '^2.7$' 2> /dev/null; then
+		export PYTHON_VERSION2='True'
+	else
+		export PYTHON_VERSION2='False'
+		return 1
+	fi
+	return 0
+}
+
 _show_info()
 {
 	# Função para exibir mensagens padrão, como por exemplo erros comuns 
@@ -501,7 +515,7 @@ _android_studio()
 		'opensuse-leap') _android_studio_opensuseleap;;
 		fedora) _android_studio_fedora;;
 		arch) _android_archlinux;;
-		*) _show_info 'ProgramNotFound' 'android-studio'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'android-studio'; return 1;;
 	esac
 
 	if is_executable 'studio'; then
@@ -537,7 +551,7 @@ _codeblocks()
 		debian|ubuntu) system_pkgmanager codeblocks 'codeblocks-common' 'codeblocks-contrib' || return 1;;
 		fedora) _codeblocks_fedora;;
 		archlinux) _codeblocks_archlinux;;
-		*) _show_info 'ProgramNotFound' 'codeblocks'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'codeblocks'; return 1;;
 	esac
 }
 
@@ -1021,7 +1035,7 @@ _codecs()
 		'opensuse-tumbleweed') _codecs_tumbleweed;;
 		'opensuse-leap') _codecs_opensuse_leap;;
 		arch) _codecs_arch;;
-		*) _show_info 'ProgramNotFound' 'codecs'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'codecs'; return 1;;
 
 	esac
 }
@@ -1146,7 +1160,7 @@ _spotify()
 	elif [[ "$OS_ID" == 'fedora' ]]; then
 		_spotify_fedora
 	else
-		_show_info 'ProgramNotFound' 'spotify'; return 1
+		print_erro 'Programa indisponível para o seu sistema' 'spotify'; return 1
 	fi
 	
 }
@@ -1215,7 +1229,7 @@ _fontes_microsoft()
 		debian) system_pkgmanager msttcorefonts 'ttf-mscorefonts-installer';;
 		fedora) system_pkgmanager 'mscore-fonts';;
 		'opensuse-tumbleweed'|'opensuse-leap') system_pkgmanager fetchmsttfonts;;
-		*) _show_info 'ProgramNotFound' 'fontes-ms'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'fontes-ms'; return 1;;
 	esac
 }
 
@@ -1327,7 +1341,7 @@ _chromium()
 		arch) system_pkgmanager chromium;;
 		'opensuse-tumbleweed'|'opensuse-leap') system_pkgmanager chromium;; 
 		freebsd12) system_pkgmanager chromium;;
-		*) _show_info 'ProgramNotFound' 'chromium'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'chromium'; return 1;;
 	esac
 
 	_chromium_lang # Instalar pacote de idioma ptbr.
@@ -1350,7 +1364,7 @@ _edge()
 		_APT update || return 1
 		system_pkgmanager microsoft-edge-dev
 	else
-		_show_info 'ProgramNotFound' 'edge' 
+		print_erro 'Programa indisponível para o seu sistema' 'edge' 
 		return 1
 	fi
 	
@@ -1383,7 +1397,7 @@ _firefox()
 		ubuntu|linuxmint) system_pkgmanager firefox;;
 		fedora) system_pkgmanager 'firefox.x86_64' 'mozilla-ublock-origin.noarch';;
 		'opensuse-leap') system_pkgmanager MozillaFirefox;;
-		*) _show_info 'ProgramNotFound' 'firefox'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'firefox'; return 1;;
 	esac
 
 	_firefox_lang
@@ -1466,7 +1480,7 @@ _google_chrome()
 		opensuse-tumbleweed|opensuse-leap) _google_chrome_opensuse;;
 		fedora) _google_chrome_fedora;;
 		arch) _google_chrome_archlinux;;
-		*) _show_info 'ProgramNotFound' 'google-chrome'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'google-chrome'; return 1;;
 	esac	
 
 	if is_executable 'google-chrome'|| is_executable 'google-chrome-stable'; then
@@ -1537,7 +1551,7 @@ case "$OS_ID" in
 	debian|linuxmint|ubuntu) _opera_stable_debian;;
 	fedora) _opera_stable_fedora;;
 	'opensuse-tumbleweed'|'opensuse-leap') _opera_stable_suse;;
-	*) _show_info 'ProgramNotFound' 'opera'; return 1;;
+	*) print_erro 'Programa indisponível para o seu sistema' 'opera'; return 1;;
 esac	
 
 	if [[ $? == '0' ]]; then 
@@ -1626,7 +1640,7 @@ _megasync_ubuntu()
 	
 	local url_ubuntu_main='http://archive.ubuntu.com/ubuntu/pool/main'
 	local url_libraw16="$url_ubuntu_main/libr/libraw/libraw16_0.18.8-1ubuntu0.3_amd64.deb"
-	path_libraw="$DirDownloads/$(basename $url_libraw16)" # Requerido para ubutnu 19.10
+	path_libraw="$DirDownloads/$(basename $url_libraw16)" # Requerido para ubuntu 19.10
 
 	case "$VERSION_CODENAME" in
 		bionic|tricia) 
@@ -1637,15 +1651,14 @@ _megasync_ubuntu()
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_18.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_19.10/Release.key'
 			download "$url_libraw16" "$path_libraw" || return 1 
-			msg "Instalando: $path_libraw"
-			_APT install "$path_libraw" -y || _BROKE
+			_APT install "$path_libraw" || _BROKE
 			;;
 		focal|ulyana)
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_20.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_20.04/Release.key'
 			;;
 		*)
-			_show_info 'ProgramNotFound' 'megasync' 
+			print_erro 'Programa indisponível para o seu sistema' 'megasync' 
 			return 1
 			;;
 	esac
@@ -1658,7 +1671,7 @@ _megasync_ubuntu()
 
 _megasync_fedora()
 {
-	_white "Importando key [https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key]"
+	_white "Importando key ... https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"
 	sudo rpm --import 'https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key'
 
 	echo '[MEGAsync]' | sudo tee /etc/yum.repos.d/megasync.repo 1> /dev/null
@@ -1722,8 +1735,7 @@ _megasync_archlinux()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	# Verificar integridade do pacote baixado.
-	echo -e "Conectando ... $URL_MEGA_SIGNATURE_FILE"
-	curl -sSL "$URL_MEGA_SIGNATURE_FILE" -o "$PATH_MEGA_SIGNATURE_FILE" || return 1
+	download "$URL_MEGA_SIGNATURE_FILE" "$PATH_MEGA_SIGNATURE_FILE" || return 1
 	gpg_verify "$PATH_MEGA_SIGNATURE_FILE" "$PATH_MEGA_TARFILE" || return 1
 	rm -rf "$PATH_MEGA_SIGNATURE_FILE" 2> /dev/null
 
@@ -1733,7 +1745,6 @@ _megasync_archlinux()
 	cd "$DirTemp"
 	_PACMAN -U megasync-x86_64.pkg.tar.xz.zst
 	_PACMAN -Sy
-
 }
 
 _megasync()
@@ -1747,7 +1758,7 @@ _megasync()
 		linuxmint|ubuntu) _megasync_ubuntu;;
 		fedora) _megasync_fedora;;
 		arch) _megasync_archlinux;;
-		*) _show_info 'ProgramNotFound' 'megasync'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'megasync'; return 1;;
 	esac
 
 	if is_executable 'megasync'; then
@@ -1769,32 +1780,29 @@ _tor_debian()
 	elif [[ "$VERSION_CODENAME" == 'buster' ]]; then                                  # Debian buster
 		TOR_REPO_MAIN='deb https://deb.torproject.org/torproject.org buster main'
 	else
-		_show_info 'ProgramNotFound' 'tor'
-		return
-	fi
-
-	echo -ne "Executando ... curl -sSL $URL_TOR_ASC | sudo gpg --import "
-	if curl -sSL "$URL_TOR_ASC" | sudo gpg --import 1> /dev/null 2>&1; then
-		echo "OK"
-	else
-		sred "FALHA"
+		print_erro 'Programa indisponível para o seu sistema' 'tor'
 		return 1
 	fi
-	
+
+	# http_request é uma função da lib requests.sh ver o arquivo ~/.shmrc
+	echo -ne "Importando key ... "
+	http_request "$URL_TOR_ASC" | sudo gpg --import 1> /dev/null 2>&1
+	if [[ $? == 0 ]]; then
+		echo 'OK'
+	else
+		print_erro "http_request"
+		return 1
+	fi
+
 	echo -ne "Executando ... gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add - "
 	if ! sudo bash -c 'gpg --export A3C4F0F979CAA22CDBA8F512EE8CBC9E886DDD89 | apt-key add -'; then
-		sred "FALHA"
+		print_erro ""
 		return 1
 	fi
 
 	# Verificar se o repositório já exite no diretório ou subdiretório /etc/apt.
-	find /etc/apt -name *.list | xargs grep '^deb https.*deb.torproject.org/torproject.org buster main'
-	if [[ $? == '0' ]]; then
-		yellow "Repositório encontrado pulando..."
-	else
-		echo -ne "Adicionando repositório "
-		echo "$TOR_REPO_MAIN" | sudo tee "$TOR_FILE_SOURCE_LIST" 
-	fi
+	# find /etc/apt -name *.list | xargs grep '^deb https.*deb.torproject.org/torproject.org buster main'
+	add_repo_apt "$TOR_REPO_MAIN" '/etc/apt/sources.list.d/torproject.list'
 	_APT update
 	system_pkgmanager tor deb.torproject.org-keyring
 	system_pkgmanager proxychains || return 1
@@ -1804,7 +1812,7 @@ _tor_fedora()
 {
 	case "$VERSION_ID" in
 		32) system_pkgmanager tor;;
-		*) _show_info 'ProgramNotFound' 'tor';;
+		*) print_erro 'Programa indisponível para o seu sistema' 'tor';;
 	esac
 
 	system_pkgmanager proxychains || return 1
@@ -1816,7 +1824,7 @@ _proxychains()
 		debian|ubuntu|linuxmint) _tor_debian;;
 		arch) system_pkgmanager 'proxychains-ng' 'tor';;
 		fedora) _tor_fedora;;
-		*) _show_info 'ProgramNotFound' 'proxychains tor';;
+		*) print_erro 'Programa indisponível para o seu sistema' 'proxychains tor';;
 	esac
 }
 
@@ -1831,7 +1839,6 @@ _skype_debian()
 	local path_file="$DirDownloads/$(basename $skype_url)"
 
 	download "$skype_url" "$path_file" || return 1
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	_APT install "$path_file" || return 1
 }
@@ -1840,7 +1847,7 @@ _skype()
 {
 	case "$OS_ID" in
 		debian|ubuntu|linuxmint) _skype_debian;;
-		*) _show_info 'ProgramNotFound' 'skype';;
+		*) print_erro 'Programa indisponível para o seu sistema' 'skype';;
 	esac
 }
 
@@ -1853,12 +1860,12 @@ _install_teamviewer_debian()
 	# sudo apt update; sudo apt install teamviewer
 	#
 	local tw_pag='https://www.teamviewer.com/en/download/linux/'      # Página de download.
-	local tw_html=$(wget -q -O- "$tw_pag" | grep "download.*linux.*64")
-	local url_deb=$(echo "$tw_html" | grep -m 1 'amd64.deb' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
+	local tw_html=$(get_html_page "$tw_pag" --find "http.*download.*linux.*amd64")
+	local url_tw_deb=$(echo "$tw_html" | grep -m 1 'amd64.deb' | awk '{print $2}' | sed 's/.*="//g;s/\".*//g')
 	local path_file="$DirDownloads/teamviewer_amd64.deb"
 
 	# Requeriments teamviewer Debian/Ubuntu/Mint
-	array_tw_debian=(
+	requeriments_tw_debian=(
 		'libdbus-1-3' 
 		'libqt5gui5' 
 		'libqt5widgets5' 
@@ -1873,15 +1880,14 @@ _install_teamviewer_debian()
 		'qml-module-qtquick-layouts' 
 		)
 	
-	download "$url_deb" "$path_file" || return 1
-
-	# Somente baixar
+	download "$url_tw_deb" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 
-	for i in "${array_tw_debian[@]}"; do
+	for i in "${requeriments_tw_debian[@]}"; do
 		system_pkgmanager "$i" 
 	done
-	_DPKG --install "$path_file" || _BROKE # Remover pacotes quebrados.
+	system_pkgmanager "$path_file" || _BROKE # Remover pacotes quebrados.
+	return 0
 }
 
 _install_teamviewer_fedora()
@@ -1892,7 +1898,7 @@ _install_teamviewer_fedora()
 	local path_file="$DirDownloads/teamviewer_x86_64.rpm"
 
 	# Requeriments teamviewer Fedora
-	local array_tw_fedora=(
+	local requeriments_tw_fedora=(
 		'libdbus-1.so.3()(64bit)' 
 		'libQt5Gui.so.5()(64bit)' 
 		'libQt5Widgets.so.5()(64bit)' 
@@ -1909,11 +1915,8 @@ _install_teamviewer_fedora()
 	
 	download "$url_rpm" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar
-
-
-	# Instalar dependências
 	system_pkgmanager 'qt5-qtquickcontrols'
-	_RPM --install "$path_file" || return 1
+	system_pkgmanager "$path_file" || return 1
 }
 
 
@@ -1925,8 +1928,6 @@ _teamviewer_tar()
 	local path_file="$DirDownloads/teamviewer_amd64.tar.xz"
 	
 	download "$url_tar" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	
 	unpack_archive "$path_file" || return 1
@@ -1962,24 +1963,21 @@ _telegram()
 	# https://desktop.telegram.org/
 	# https://updates.tdesktop.com/tlinux/tsetup.1.8.15.tar.xz
 	local url_telegram='https://telegram.org/dl/desktop/linux'
-	local path_file="$DirDownloads/telegramsetup.tar.xz"
+	local path_telegram="$DirDownloads/telegramsetup.tar.xz"
 
-	download "$url_telegram" "$path_file" || return 1
+	# Já instalado.
+	is_executable 'telegram' && print_info 'Pacote instalado' 'telegram' && return 0
 
+	download "$url_telegram" "$path_telegram" || return 1
 	# Instalar gconf2.
 	case "$OS_ID" in
 		'opensuse-tumbleweed'|'opensuse-leap') system_pkgmanager gconf2;;
 		ubuntu|linuxmint|debian) system_pkgmanager gconf2;;
 		fedora) system_pkgmanager GConf2;;
 	esac
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	
-	# Já instalado.
-	is_executable 'telegram' && print_info 'Pacote instalado' 'telegram' && return 0
-	
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_telegram" || return 1
 	cd "$DirUnpack" 
 	mv -v $(ls -d Telegra*) "${destinationFilesTelegram[dir]}" 1> /dev/null
 	chmod -R 755 "${destinationFilesTelegram[dir]}"
@@ -2025,7 +2023,6 @@ _tixati_tarfile()
 	unpack_archive "$TarFile" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d tixati*) tixati-amd64 
-	# chown -R root:root tixati-amd64
 	cd "$DirUnpack/tixati-amd64"
 
 	mv tixati.desktop "${destinationFilesTixati[file_desktop]}" # .desktop
@@ -2064,7 +2061,7 @@ function _tixati_debian()
 
 	gpg_import https://www.tixati.com/tixati.key || return 1
 	gpg_verify "$tixati_sig_file" "$tixati_debian_file" || return 1
-	_APT install "$tixati_debian_file"
+	system_pkgmanager "$tixati_debian_file"
 }
 
 
@@ -2082,7 +2079,7 @@ function _tixati_rpm()
 
 	gpg_import https://www.tixati.com/tixati.key || return 1
 	gpg_verify "$tixati_sig_file" "$tixati_rpm_file" || return 1
-	_DNF install "$tixati_rpm_file"
+	system_pkgmanager "$tixati_rpm_file"
 }
 
 
@@ -2125,22 +2122,18 @@ _youtube_dl()
 	local URL_YOUTUBE_DL_LATEST='https://yt-dl.org/downloads/latest/youtube-dl'
 	local URL_YOUTUBE_DL_SIG='https://yt-dl.org/downloads/latest/youtube-dl.sig'
 	local URL_ASC_SERGEY='https://dstftw.github.io/keys/18A9236D.asc'
-
 	local PATH_SIGNATURE_FILE="$DirDownloads/youtube-dl.sig"
 	local PATH_YTDL="$DirDownloads/youtube-dl"   
 	local hash_sig='04d2edc85b80b59ffe46fdda3937b0074dfe10ede49fec6c36c609cd87841fcb' # sha256sum - .sig
 	
 	download "$URL_YOUTUBE_DL_LATEST" "$PATH_YTDL" || return 1 
 	download "$URL_YOUTUBE_DL_SIG" "$PATH_SIGNATURE_FILE" || return 1 
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$PATH_YTDL" && return 0
 
-	gpg_import 'https://dstftw.github.io/keys/18A9236D.asc' || return 1
-	
 	# Verificar integridade do script youtube-dl.
+	gpg_import 'https://dstftw.github.io/keys/18A9236D.asc' || return 1
 	gpg_verify "$PATH_SIGNATURE_FILE" "$PATH_YTDL" || return 1
-	
-	msg "Instalando youtube-dl em ~/.local/bin"
+	print_info "Instalando youtube-dl em ~/.local/bin"
 	cp -u "$PATH_YTDL" "$DIR_BIN"/youtube-dl
 	chmod a+x "$DIR_BIN"/youtube-dl
 
@@ -2149,31 +2142,6 @@ _youtube_dl()
 		return 0
 	else
 		print_erro 'falha na instalação' 'youtube-dl'
-		return 1
-	fi
-}
-
-_python_twodict_github()
-{
-	# Instalar python twodict direto do github.
-	gitclone 'https://github.com/MrS0m30n3/twodict.git' || return 1
-	_white "Executando: python2 setup.py"
-
-	cd "$DirGitclone/twodict"
-	if is_executable 'python2'; then
-		sudo python2 setup.py install 1>> "$LogFile"
-	elif is_executable 'python2.7'; then
-		sudo python2.7 setup.py install 1>> "$LogFile"
-	else
-		red "Falha: Instale o python2"
-		return 1
-	fi
-
-	if [[ "$?" == '0' ]]; then 
-		print_info 'Pacote instalado com sucesso' 'python twodict'
-		return 0
-	else
-		print_erro 'falha na instalação' 'python twodict'
 		return 1
 	fi
 }
@@ -2218,13 +2186,86 @@ _youtube_dlgui_file_desktop_root()
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | sudo tee "$file_desktop_youtube_dl_gui" 
+	} | sudo tee "$file_desktop_youtube_dl_gui" 1> /dev/null
 
-	yellow "Criando atalho na Área de Trabalho"
+	print_info "Criando atalho na Área de Trabalho"
 	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$file_desktop_youtube_dl_gui" ~/Desktop/ 2> /dev/null
 	is_executable gtk-update-icon-cache && __sudo__ gtk-update-icon-cache
+}
+
+
+_python_twodict_github()
+{
+	# Instalar python twodict (python versão 2).
+
+	gitclone 'https://github.com/MrS0m30n3/twodict.git' || return 1
+	echo -ne "Executando ... "
+	cd "$DirGitclone/twodict"
+
+	# Instalação para o usuário root.
+	if [[ $(id -u) == 0 ]]; then
+		if is_executable 'python2'; then
+			echo -e "python2 setup.py install"
+			python2 setup.py install 1>> "$LogFile"
+		elif is_executable 'python2.7'; then
+			echo -e "python2.7 setup.py install"
+			python2.7 setup.py install 1>> "$LogFile"
+		elif is_executable 'python'; then
+			echo -e "python setup.py install"
+			python setup.py install 1>> "$LogFile"
+		fi
+	else
+		# Instalação para o usuário
+		if is_executable 'python2'; then
+			echo -e "python2 setup.py install --user"
+			python2 setup.py install --user 1>> "$LogFile"
+		elif is_executable 'python2.7'; then
+			echo -e "python2.7 setup.py install --user"
+			python2.7 setup.py install --user 1>> "$LogFile"
+		elif is_executable 'python'; then
+			echo -e "python setup.py install --user"
+			python setup.py install --user 1>> "$LogFile"
+		fi
+	fi
+
+
+	if [[ "$?" == '0' ]]; then 
+		print_info 'Pacote instalado com sucesso' 'python twodict'
+		return 0
+	else
+		print_erro 'falha na instalação' 'python twodict'
+		return 1
+	fi
+}
+
+_install_wxpython2()
+{
+	# Instalar wxpython para python versão 2.
+
+	if [[ "$BASE_DISTRO" == 'debian' ]]; then
+		system_pkgmanager 'python-wxgtk3.0'
+	elif [[ "$BASE_DISTRO" == 'fedora' ]]; then
+		local archive_fedora='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases'
+		local pkg_wxpython='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
+		local url_wxpython="$archive_fedora/31/Everything/x86_64/os/Packages/p/$pkg_name"
+		local path_wxpython_rpm="$DirDownloads/$pkg_wxpython"
+		
+		download "$url_wxpython" "$path_wxpython_rpm" || return 1 
+		[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
+		# Instalar pacote rpm para fedora 32/33.
+		if [[ "$VERSION_ID" == '32' ]] || [[ "$VERSION_ID" == '33' ]]; then
+			system_pkgmanager "$path_wxpython_rpm" || return 1
+		else
+			print_erro 'Seu sistema não é Fedora 32/33 saindo ...'
+			sleep 1
+			return 1
+		fi
+	else
+		print_erro 'Programa indisponível para o seu sistema' 'wxpython2'
+		return 1
+	fi
 }
 
 _youtube_dlgui_compile()
@@ -2235,25 +2276,39 @@ _youtube_dlgui_compile()
 	local path_file="$DirDownloads/youtube-dl-gui.zip"
 
 	download "$url_youtube_dl_gui_master" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
 	unpack_archive "$path_file" || return 1
 	cd "$DirUnpack"/youtube-dl-gui-master || return 1
-	msg "Compilando youtube-dl-gui"
+	print_info "Compilando youtube-dl-gui"
 	
-	if is_executable python2; then
-		sudo python2 setup.py install 1> /dev/null || return 1
-	elif is_executable python2.7; then
-		sudo python2.7 setup.py install 1> /dev/null || return 1
-	elif is_executable python27; then
-		sudo python27 setup.py install 1> /dev/null || return 1
+	# Instalação para o usuário root.
+	if [[ $(id -u) == 0 ]]; then
+		if is_executable python2; then
+			python2 setup.py install 1> /dev/null || return 1
+		elif is_executable python2.7; then
+			python2.7 setup.py install 1> /dev/null || return 1
+		elif is_executable python27; then
+			python27 setup.py install 1> /dev/null || return 1
+		elif is_executable python; then
+			python setup.py install 1> /dev/null || return 1
+		fi
+		_youtube_dlgui_file_desktop_root
+
+	else
+		# Instalação para o usuário
+		if is_executable python2; then
+			python2 setup.py install --user 1> /dev/null || return 1
+		elif is_executable python2.7; then
+			python2.7 setup.py install --user 1> /dev/null || return 1
+		elif is_executable python27; then
+			python27 setup.py install --user 1> /dev/null || return 1
+		elif is_executable python; then
+			python setup.py install --user 1> /dev/null || return 1
+		fi
+		_youtube_dlgui_file_desktop_user
+
 	fi
-		
-	# Criar o arquivo ".desktop" após compilar o programa.
-	_youtube_dlgui_file_desktop_root
-	_youtube_dlgui_file_desktop_user
 	return 0
 }
 
@@ -2266,7 +2321,6 @@ _youtube_dlgui_user_installer()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar
 	unpack_archive "$path_file" || return 1
 
-	yellow "Copiando arquivos"
 	mkdir -p "${destinationFilesYoutubeDlGuiUser[pixmaps]}"
 	cd "$DirUnpack"/youtube-dl-gui-master
 	cp -R -u youtube_dl_gui "${destinationFilesYoutubeDlGuiUser[dir]}"
@@ -2283,7 +2337,7 @@ _youtube_dlgui_user_installer()
 	elif is_executable python; then
 		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
 	else
-		red "Necessário ter o 'python 2' instalado em seu sistema."
+		print_erro "Necessário ter o 'python 2' instalado em seu sistema."
 		return 1
 	fi
 
@@ -2317,7 +2371,7 @@ _youtube_dlgui_ubuntu()
 			_youtube_dlgui_compile || return 1
 			;;
 		*)
-			_show_info 'ProgramNotFound' 'youtube-dl-gui'	
+			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'	
 			return 1
 			;;
 	esac
@@ -2335,20 +2389,15 @@ _youtube_dlgui_fedora()
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
 	# Fedora 31 e instalar usando o comando "rpm --install" ou "dnf install".
 	#
+	# sudo dnf install wxGTK3 wxGTK3-gl wxGTK3-media python2
 	
-	local archive_fedora='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases'
-	local pkg_name='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
-	local url_wxpython="$archive_fedora/31/Everything/x86_64/os/Packages/p/$pkg_name"
-	local path_file="$DirDownloads/$pkg_name"
+	_install_wxpython2 || return 1
 	
 	# Instalar dependências.
 	if [[ "$VERSION_ID" == '32' ]] || [[ "$VERSION_ID" == '33' ]]; then
-		system_pkgmanager 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
-		download "$url_wxpython" "$path_file" || return 1 
-		#_RPM --install "$path_file" 
-		_DNF install "$path_file"
+		system_pkgmanager 'wxGTK3' 'python2' || return 1
 	else
-		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
+		print_erro 'Seu sistema não é Fedora 32/33'
 		return 1
 	fi
 	
@@ -2362,9 +2411,8 @@ _youtube_dlgui_debian()
 	# Testado apenas no debian 10.
 	if [[ "$VERSION_CODENAME" == 'buster' ]]; then
 		system_pkgmanager python python-pip python-setuptools python-wxgtk3.0 python-twodict gettext || return 1
-		
 	else
-		_show_info 'ProgramNotFound' 'youtube-dlg-gui'
+		print_erro 'Programa indisponível para o seu sistema' 'youtube-dlg-gui'
 		return 1
 	fi
 
@@ -2375,7 +2423,6 @@ _youtube_dlgui_debian()
 
 _youtube_dlgui_archlinux()
 {
-	msg "Instalando: python2 python2-pip python2-setuptools python2-wxpython3"
 	system_pkgmanager python2 python2-pip python2-setuptools python2-wxpython3 || return 1
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
@@ -2397,6 +2444,13 @@ _youtube_dlgui_freebsd()
 
 _youtube_dlgui()
 {
+	# Verificar se o python versão 2 está instalado.
+	check_python_version2 || {
+		print_erro "python2 não está instalado em seu sistema"
+		question 'Deseja instalar python2 para prosseguir' || return 1
+		system_pkgmanager python2
+	}
+
 	if [[ -f /etc/debian_version ]]; then
 		if [[ "$VERSION_CODENAME" == 'buster' ]]; then
 			_youtube_dlgui_debian || return 1
@@ -2408,7 +2462,7 @@ _youtube_dlgui()
 	elif [[ "$OS_ID" == 'arch' ]]; then
 		_youtube_dlgui_archlinux || return 1
 	else
-		_show_info 'ProgramNotFound' 'youtube-dl-gui'; return 1
+		print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'; return 1
 	fi
 	
 	if is_executable 'youtube-dl-gui'; then
@@ -2540,7 +2594,7 @@ _compactadores()
 	elif is_executable 'pacman'; then
 		system_pkgmanager "${compactadores_arch[@]}"
 	else
-		_show_info 'ProgramNotFound' 'compactadores'
+		print_erro 'Programa indisponível para o seu sistema' 'compactadores'
 		return 1
 	fi
 }
@@ -2703,7 +2757,7 @@ _google_earth()
 	elif [[ -f /etc/fedora-release ]]; then
 		_google_earth_fedora
 	else
-		_show_info 'ProgramNotFound' 'google-earth'
+		print_erro 'Programa indisponível para o seu sistema' 'google-earth'
 		return 1 
 	fi
 }
@@ -3201,7 +3255,7 @@ _virtualbox()
 			_virtualbox_linux_run
 			_virtualbox_additions 
 			;;	
-		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	
+		*) print_erro 'Programa indisponível para o seu sistema' 'virtualbox'; return 1;;	
 	esac
 }
 
@@ -3451,7 +3505,7 @@ _drive_menu()
 {
 	case "$OS_ID" in
 		fedora) system_pkgmanager 'gnome-shell-extension-drive-menu';;
-		*) _show_info 'ProgramNotFound' 'drive-menu'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'drive-menu'; return 1;;
 	esac
 }
 
@@ -3460,7 +3514,7 @@ _gnome_backgrounds()
 	case "$OS_ID" in 
 		arch) system_pkgmanager 'gnome-backgrounds';;
 		fedora) system_pkgmanager 'gnome-backgrounds-extras' 'verne-backgrounds-gnome';;
-		*) _show_info 'ProgramNotFound' 'gnome-backgrounds'; return 1;;
+		*) print_erro 'Programa indisponível para o seu sistema' 'gnome-backgrounds'; return 1;;
 	esac
 }
 

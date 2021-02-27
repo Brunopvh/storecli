@@ -57,7 +57,7 @@ fi
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
-	exit 1
+	#exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
@@ -222,14 +222,13 @@ touch "$LogErro"
 #=============================================================#
 # Importar modulos externos - VER o arquivo ~/.shmrc
 #=============================================================#
-[[ $imported_config_path != 'True' ]] && source $config_path
-[[ $imported_print_text != 'True' ]] && source $print_text
-[[ $imported_os != 'True' ]] && source $os
-[[ $imported_platform != 'True' ]] && source $platform
-[[ $imported_pkgmanger != 'True' ]] && source $pkgmanager
-[[ $imported_files_programs != 'True' ]] && source $files_programs
-[[ $imported_crypto != 'True' ]] && source $crypto
-[[ $imported_requests != 'True' ]] && source $requests
+source $config_path
+source $print_text
+source $os
+source $pkgmanager
+source $files_programs
+source $requests
+source $utils
 
 #=============================================================#
 # Importar Módulos locais
