@@ -57,7 +57,7 @@ fi
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
-	#exit 1
+	exit 1
 fi
 
 # Necessário ter o "sudo" intalado.

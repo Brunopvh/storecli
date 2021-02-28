@@ -3001,7 +3001,7 @@ _virtualbox_extension_pack()
 	#
 
 	is_executable virtualbox || {
-		sred "Instale o virtualbox para prosseguir."
+		print_erro "Instale o virtualbox para prosseguir."
 		return 1
 	}
 	
@@ -3042,11 +3042,8 @@ _virtualbox_additions()
 	print_line
 }
 
-_virtualbox_fedora()
+_install_requeriments_virtualbox()
 {
-	# https://www.if-not-true-then-false.com/2010/install-virtualbox-guest-additions-on-fedora-centos-red-hat-rhel/
-	# sudo dnf install make automake gcc gcc-c++ kernel-devel
-	#    
 	local requeriments_virtualbox_fedora=(
 		bzip2
 		perl 
@@ -3066,7 +3063,35 @@ _virtualbox_fedora()
 		patch
 	)
 
-	system_pkgmanager "${requeriments_virtualbox_fedora[@]}"
+	local requeriments_virtualbox_debian=(
+		module-assistant build-essential libsdl-ttf2.0-0 dkms
+		)
+
+	local requeriments_virtualbox_archlinux=(
+		'virtualbox' 'virtualbox-host-modules-arch' 'linux-headers'
+	)
+
+	if [[ "$BASE_DISTRO" == 'fedora' ]]; then
+		system_pkgmanager "${requeriments_virtualbox_fedora[@]}"
+	elif [[ "$BASE_DISTRO" == 'debian' ]]; then # Debian/Ubuntu.
+		system_pkgmanager "${requeriments_virtualbox_debian[@]}" 
+		system_pkgmanager linux-headers-$(uname -r)
+	elif [[ "$BASE_DISTRO" == 'archlinux' ]]; then
+		system_pkgmanager "${requeriments_virtualbox_archlinux[@]}"
+	else
+		print_erro "(_install_requeriments_virtualbox)"
+		return 1
+	fi
+	return 0
+}
+
+_virtualbox_fedora()
+{
+	# https://www.if-not-true-then-false.com/2010/install-virtualbox-guest-additions-on-fedora-centos-red-hat-rhel/
+	# sudo dnf install make automake gcc gcc-c++ kernel-devel
+	#    
+	
+	_install_requeriments_virtualbox
 	system_pkgmanager $(rpm -qa kernel | sort -V | tail -n 1) 
 	system_pkgmanager kernel-devel-$(uname -r)
 
@@ -3078,6 +3103,7 @@ _virtualbox_fedora()
 	case "$VERSION_ID" in
 		31) system_pkgmanager 'VirtualBox-6.0' || return 1;;
 		32) system_pkgmanager 'VirtualBox-6.1' || return 1;;
+		*) print_erro "(_virtualbox_fedora)"; return 1;;
 	esac
 	
 	# Módulos
@@ -3096,11 +3122,16 @@ _virtualbox_package_deb()
 	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
 	local VIRTUALBOX_PKG_DEB="$DirDownloads/virtualbox-6.1-buster-amd64.deb"
 
-	[[ "$VERSION_CODENAME" != 'buster' ]] && return 1
+	if [[ "$VERSION_CODENAME" != 'buster' ]]; then 
+		print_erro "(_virtualbox_package_deb)"
+		return 1
+	fi
+
+	_install_requeriments_virtualbox
 	html_vbox_deb_buster=$(get_html_page "$URL_VIRTUALBOX_DOW_PAGE" --find 'buster.*.deb')
 	url_vbox_deb_buster=$(echo -e "$html_vbox_deb_buster" | sed 's/.*href="//g;s/">.*//g')
 	download "$url_vbox_deb_buster" "$VIRTUALBOX_PKG_DEB" || return 1
-	_APT install "$VIRTUALBOX_PKG_DEB" || _BROKE
+	system_pkgmanager "$VIRTUALBOX_PKG_DEB" || _BROKE
 }
 
 _virtualbox_debian()
@@ -3108,9 +3139,6 @@ _virtualbox_debian()
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
 	local path_libvpx="$DirDownloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
-	
-	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox_2016.asc' || return 1
-	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
 
 	if [[ "$VERSION_CODENAME" == 'buster' ]]; then
 		virtualbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian buster contrib"
@@ -3119,20 +3147,18 @@ _virtualbox_debian()
 		return 1
 	fi
 
+	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox_2016.asc' || return 1
+	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
 	add_repo_apt "$virtualbox_repo" /etc/apt/sources.list.d/virtualbox.list
 	_APT update 
 	print_line 
-	system_pkgmanager 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
-	system_pkgmanager linux-headers-$(uname -r)
+	_install_requeriments_virtualbox
 	system_pkgmanager 'virtualbox-6.1' || return 1
 	_virtualbox_extension_pack
 }
 
 _virtualbox_ubuntu()
 {
-	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox_2016.asc' || return 1
-	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
-
 	case "$VERSION_CODENAME" in
 		focal|ulyana) 
 				vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib"
@@ -3146,11 +3172,12 @@ _virtualbox_ubuntu()
 			;;
 	esac
 
+	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox_2016.asc' || return 1
+	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox.asc' || return 1
 	add_repo_apt "$vbox_repo" /etc/apt/sources.list.d/virtualbox.list
 	
-	# system_pkgmanager libvpx6 
-	system_pkgmanager 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
-	system_pkgmanager linux-headers-$(uname -r)
+	system_pkgmanager libvpx6 
+	_install_requeriments_virtualbox
 	print_line
 	system_pkgmanager 'virtualbox-6.1' || return 1
 	_virtualbox_extension_pack
@@ -3167,13 +3194,7 @@ _virtualbox_archlinux()
 	# systemd-modules-load.service -> (carregar módulos no boot)
 	# /usr/lib/modules-load.d/virtualbox-host-modules-arch.conf -> Arquivo de configuração
 	
-	local array_vb_archlinux=(
-		'virtualbox' 'virtualbox-host-modules-arch' 'linux-headers'
-	)
-
-	for c in "${array_vb_archlinux[@]}"; do
-		system_pkgmanager "$c" || red "Falha: $c"
-	done
+	_install_requeriments_virtualbox
 
 	# /etc/modules-load.d/virtualbox.conf
 	# sudo depmod -a
@@ -3203,7 +3224,7 @@ _virtualbox_linux_run()
 	# sudo /etc/init.d/vboxdrv setup
 	# sudo /sbin/vboxconfig
 	# sudo /sbin/rcvboxdrv setup
-	local HtmlTemporaryFile=$(mktemp)
+	local HtmlTemporaryFile=$(mktemp -u)
 
 	# Pagina de download do virtualbox
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
@@ -3280,17 +3301,11 @@ _ohmybash()
 		"$SCRIPT_OHMYBASH_INSTALLER"
 	else 
 		download "$url_installer_ohmybash" "$ohmybash_installer" || return 1
-		 [[ "$DownloadOnly" == 'True' ]] && {
-			printf "${CGreen}F${CReset}eito somente download.\n"
-			return 0
-		}
+		 [[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 	fi
 
 	download "$ohmybash_master" "$ohmybashZipFile" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && {
-			printf "${CGreen}F${CReset}eito somente download.\n"
-			return 0
-		}
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 
 	unpack_archive "$ohmybashZipFile" || return 1
 	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
@@ -3337,10 +3352,7 @@ _install_zsh_powerline()
 	local PATH_POWERLINE_FILE="$DirDownloads/powerline.zip"
 
 	download "$URL_POWERLINE_REPO" "$PATH_POWERLINE_FILE" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && {
-		printf "${CGreen}F${CReset}eito somente download.\n"
-		return 0
-	}
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 
 	unpack_archive "$PATH_POWERLINE_FILE" || return 1
 	cd "$DirUnpack"/fonts-master
@@ -3366,10 +3378,7 @@ _ohmyzsh()
 	fi
 	
 	download "$URL_INSTALLER_ZSH" "$PATH_ZSH_INSTALLER" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && {
-		printf "${CGreen}F${CReset}eito somente download.\n"
-		return 0
-	}
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 
 	sh "$PATH_ZSH_INSTALLER"
 	rm -rf "$PATH_ZSH_INSTALLER" 2> /dev/null
@@ -3402,16 +3411,16 @@ _papirus_github()
 	cd papirus
 	
 	printf "%s" "[>] Instalando Papirus-Dark "
-	cp -R -u Papirus-Dark "${destinationFilesPapirus[papirus_dark]}" && syellow "OK"
+	cp -R -u Papirus-Dark "${destinationFilesPapirus[papirus_dark]}" && echo "OK"
 
 	printf "%s" "[>] Instalando Papirus "
-	cp -R -u Papirus "${destinationFilesPapirus[papirus]}" && syellow "OK"
+	cp -R -u Papirus "${destinationFilesPapirus[papirus]}" && echo "OK"
 	
 	printf "%s" "[>] Instalando Papirus-Light " 
-	cp -R -u Papirus-Light "${destinationFilesPapirus[papirus_light]}" && syellow "OK"
+	cp -R -u Papirus-Light "${destinationFilesPapirus[papirus_light]}" && echo "OK"
 
 	printf "%s" "[>] Instalando ePapirus "
-	cp -R -u ePapirus "${destinationFilesPapirus[epapirus]}" && syellow "OK"
+	cp -R -u ePapirus "${destinationFilesPapirus[epapirus]}" && echo "OK"
 	
 }
 
@@ -3641,9 +3650,7 @@ _Internet_All()
 #=============================================================#
 _Browser_All()
 {
-	
 	question "Instalar todos os pacotes da categória 'Navegadores'" || return 1
-
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
@@ -3679,9 +3686,7 @@ _Office_All()
 #=============================================================#
 _Midia_All()
 {
-	
 	question "Instalar todos os pacotes da categória 'Midia'" || return 1
-	
 
 	if [[ "$AssumeYes" == 'True' ]]; then
 		if [[ "$DownloadOnly" == 'True' ]]; then
