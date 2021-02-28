@@ -84,7 +84,7 @@ source ~/.shmrc 1> /dev/null 2>&1
 	exit 1
 }
 
-__version__='2021_02_27'
+__version__='2021_02_28'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 
