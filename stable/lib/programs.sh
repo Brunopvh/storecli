@@ -3,7 +3,6 @@
 
 github='https://github.com'
 
-
 _show_info()
 {
 	# Função para exibir mensagens padrão, como por exemplo erros comuns 
@@ -577,8 +576,8 @@ _idea_ic()
 
 	_print "Criando atalho para execução"
 	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[file_script]}"
-	echo -e "cd ${destinationFilesIdeaic[file_desktop]}/bin" >> "${destinationFilesIdeaic[file_script]}"
-	echo -e "./idea.sh \$\@" >> "${destinationFilesIdeaic[file_script]}"
+	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[file_script]}"
+	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[file_script]}"
 	chmod +x "${destinationFilesIdeaic[file_script]}"
 
 	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
@@ -594,6 +593,72 @@ _idea_ic()
 	fi
 }
 
+_nodejs_lts_tar()
+{
+	# https://nodejs.org/en/
+	local URL_NODEJS_TARFILE='https://nodejs.org/dist/v14.15.3/node-v14.15.3-linux-x64.tar.xz'
+	local PATH_NODEJS_TARFILE="$DirDownloads/$(basename $URL_NODEJS_TARFILE)"
+
+	if [[ -d "${destinationFilesNodejs[dir]}" ]]; then
+		_red "Desinstale a versão anterior para prosseguir."
+		return 1
+	fi
+
+	__download__ "$URL_NODEJS_TARFILE" "$PATH_NODEJS_TARFILE" || return 1
+	_unpack "$PATH_NODEJS_TARFILE" || return 1
+	cd $DirUnpack
+	mv $(ls -d node-*) nodejs
+	echo -e "Instalando em ... ${destinationFilesNodejs[dir]}"
+	mv nodejs "${destinationFilesNodejs[dir]}"
+	
+	echo -e "Criando link para node em ... ${destinationFilesNodejs[script]}"
+	
+	echo '#!/bin/sh' > "${destinationFilesNodejs[script]}"
+	echo -e "\ncd ${destinationFilesNodejs[dir]}/bin" >> "${destinationFilesNodejs[script]}"
+	echo './node' >> "${destinationFilesNodejs[script]}"
+	chmod +x "${destinationFilesNodejs[script]}"
+
+	printf "Criando link para npm em ... ${destinationFilesNodejs[npm_link]}\n"
+	ln -sf "${destinationFilesNodejs[dir]}"/lib/node_modules/npm/bin/npm-cli.js "${destinationFilesNodejs[npm_link]}"
+	printf "Criando link para npx em ... ${destinationFilesNodejs[npx_link]}\n"
+	ln -sf "${destinationFilesNodejs[dir]}"/lib/node_modules/npm/bin/npx-cli.js "${destinationFilesNodejs[npx_link]}"
+}
+
+_nodejs_lts_deb()
+{
+	# https://github.com/nodesource/distributions/blob/master/README.md#debmanual
+	# https://github.com/nodesource/distributions/blob/master/README.md
+	# 
+	# deb https://deb.nodesource.com/node_14.x buster main
+	# curl -sSL https://deb.nodesource.com/gpgkey/nodesource.gpg.key | sudo apt-key add -
+	# 
+	# To install the Yarn package manager, run:
+    # curl -sL https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
+    # echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
+    # sudo apt-get update && sudo apt-get install yarn
+
+	[[ ! -f /etc/debian_version ]] && return 1
+
+	case "$os_codename" in
+		buster) NODEJS_REPO='deb https://deb.nodesource.com/node_14.x buster main';;
+		bionic) NODEJS_REPO='deb https://deb.nodesource.com/node_14.x bionic main';;
+		*) _red "Programa indisponível para o seu sistema."; return 1;;
+	esac
+
+	_isroot || return 1
+	_apt_key_add 'https://deb.nodesource.com/gpgkey/nodesource.gpg.key' || return 1
+	_addrepo_in_sources_list "$NODEJS_REPO" /etc/apt/sources.list.d/nodesource.list
+	__pkg__ nodejs
+}
+
+_nodejs_lts()
+{
+	if [[ "$os_id" == 'debian' ]]; then
+		_nodejs_lts_deb
+	else
+		_nodejs_lts_tar
+	fi
+}
 
 _pycharm()
 {
@@ -649,7 +714,7 @@ _pycharm()
 _sublime_text()
 {
 	# Já instalado.
-	#is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
+	is_executable 'sublime' && _show_info 'PkgInstalled' 'sublime-text' && return 0
 
 	local SUBLIME_DOWN_PAGE='https://www.sublimetext.com/3'
 	local SUBLIME_HTML=$(_get_html_page "$SUBLIME_DOWN_PAGE" --find sublime.*x64.tar.bz2)
@@ -890,8 +955,9 @@ _codecs_fedora()
 		'xvidcore' 
 	)
 
-	__pkg__ "${array_codecs_fedora[@]}"
-	__pkg__ "${array_gstreamer_fedora[@]}"
+	for PKG in "${array_codecs_fedora[@]}"; do __pkg__ "$PKG"; done
+	for PKG in "${array_gstreamer_fedora[@]}"; do __pkg__ "$PKG"; done
+
 }
 
 _codecs_arch()
@@ -1484,12 +1550,16 @@ esac
 
 _torbrowser()
 {
-	# local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+	local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+
+	is_executable tor-installer || {
+		__download__ "$url_script_torbrowser_installer" "$SCRIPT_TORBROWSER_INSTALLER" || return 1
+		chmod +x "$SCRIPT_TORBROWSER_INSTALLER"
+	}
+
 	if [[ "$DownloadOnly" == 'True' ]]; then
-		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install --downloadonly"
-		"$SCRIPT_TORBROWSER_INSTALLER" --install --downloadonly
+		"$SCRIPT_TORBROWSER_INSTALLER" --downloadonly --install
 	else
-		_print "Executando $SCRIPT_TORBROWSER_INSTALLER --install"
 		"$SCRIPT_TORBROWSER_INSTALLER" --install
 	fi
 }
@@ -2225,15 +2295,16 @@ _youtube_dlgui_fedora()
 	# disponível no repositório, sendo necessário baixar o pacote do repositório
 	# Fedora 31 e instalar usando o comando "rpm --install" ou "dnf install".
 	#
-	local f_packages='https://download-ib01.fedoraproject.org/pub/fedora/linux/releases/31/Everything/x86_64/os/Packages/p'
-	local wxpython_rpm='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
-	local url="$f_packages/$wxpython_rpm"
-	local path_file="$DirDownloads/$wxpython_rpm"
+	
+	local archive_fedora='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases'
+	local pkg_name='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
+	local url_wxpython="$archive_fedora/31/Everything/x86_64/os/Packages/p/$pkg_name"
+	local path_file="$DirDownloads/$pkg_name"
 	
 	# Instalar dependências.
 	if [[ "$os_version" == '32' ]] || [[ "$os_version" == '33' ]]; then
 		__pkg__ 'wxGTK3' 'wxGTK3-gl' 'wxGTK3-media' 'python2' || return 1
-		__download__ "$url" "$path_file" || return 1 
+		__download__ "$url_wxpython" "$path_file" || return 1 
 		#_RPM --install "$path_file" 
 		_DNF install "$path_file"
 	else
@@ -2305,6 +2376,27 @@ _youtube_dlgui()
 		return 0
 	else
 		_show_info 'InstalationFailed' 'youtube-dl-gui'
+		return 1
+	fi
+}
+
+_archlinux_installer()
+{
+	local URL_ARCHLINUX_INSTALLER='https://raw.github.com/Brunopvh/storecli/master/scripts/archlinux-installer.sh'
+	local DESTINATION_ARCHLINUX_INSTALLER="$DirDownloads/archlinux-installer"
+	if [[ -z $dir_local_scripts ]]; then
+		__download__ "$URL_ARCHLINUX_INSTALLER" "$DESTINATION_ARCHLINUX_INSTALLER" || return 1
+		__sudo__ cp "$DESTINATION_ARCHLINUX_INSTALLER" "${destinationFilesArchlinuxInstaller[script]}" 
+	else
+		__sudo__ cp "$dir_local_scripts/archlinux-installer.sh" "${destinationFilesArchlinuxInstaller[script]}"
+	fi
+	__sudo__ chmod a+x "${destinationFilesArchlinuxInstaller[script]}"
+
+	if is_executable archlinux-installer; then
+		_green 'archlinux-installer instalado com sucesso.'
+		return 0
+	else
+		_red 'Falha ao tentar instalar archlinux-installer'
 		return 1
 	fi
 }
@@ -2779,6 +2871,17 @@ _stacer()
 	esac
 }
 
+_shm()
+{
+	local URL_SHM_INSTALLER='https://raw.github.com/Brunopvh/bash-libs/main/setup.sh'
+	local SHM_TMP_SCRIPT=$(mktemp); rm -rf "$SHM_TMP_SCRIPT"
+	__download__ "$URL_SHM_INSTALLER" "$SHM_TMP_SCRIPT" || return 1
+	chmod +x "$SHM_TMP_SCRIPT"
+	"$SHM_TMP_SCRIPT"
+	rm -rf "$SHM_TMP_SCRIPT"
+	shm --configure
+}
+
 _timeshift_debian()
 {
 	local URL_TIME_SHIFT='https://github.com/teejee2008/timeshift/releases/download/v20.11.1/timeshift_20.11.1_amd64.deb'
@@ -2816,9 +2919,7 @@ _virtualbox_extension_pack()
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' && return 0
 
 	__sudo__ VBoxManage extpack install --replace "$PATH_EXTENSION_PACK"
-	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1
-	
-	# sudo gpasswd -a "$USER" vboxusers  
+	_YESNO "Deseja adicionar $USER ao grupo ${CGreen}vboxusers${CReset}" || return 1 
 	__sudo__ usermod -a -G vboxusers $USER	
 }
 
@@ -2840,6 +2941,9 @@ _virtualbox_additions()
 		_DNF install -y $(rpm -qa kernel | sort -V | tail -n 1)
 		_DNF install -y kernel-devel-$(uname -r)
 		_DNF install -y virtualbox-guest-additions
+	elif [[ "$os_id" == 'arch' ]]; then
+		__pkg__ virtualbox-guest-iso 
+		__pkg__ virtualbox-guest-dkms
 	fi
 	print_line
 }
@@ -2891,6 +2995,20 @@ _virtualbox_fedora()
 	_virtualbox_extension_pack 
 }
 
+_virtualbox_package_deb()
+{
+	# Instalação do virtualbox 5.2 no Debian Buster.
+	# https://www.virtualbox.org/wiki/Downloads
+	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
+	local VIRTUALBOX_PKG_DEB="$DirDownloads/virtualbox-6.1-buster-amd64.deb"
+
+	[[ "$os_codename" != 'buster' ]] && return 1
+	html_vbox_deb_buster=$(_get_html_page "$URL_VIRTUALBOX_DOW_PAGE" --find 'buster.*.deb')
+	url_vbox_deb_buster=$(echo -e "$html_vbox_deb_buster" | sed 's/.*href="//g;s/">.*//g')
+	__download__ "$url_vbox_deb_buster" "$VIRTUALBOX_PKG_DEB" || return 1
+	_APT install "$VIRTUALBOX_PKG_DEB" || _BROKE
+}
+
 _virtualbox_debian()
 {
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
@@ -2908,7 +3026,6 @@ _virtualbox_debian()
 	fi
 
 	_addrepo_in_sources_list "$virtualbox_repo" /etc/apt/sources.list.d/virtualbox.list
-	
 	_APT update 
 	print_line 
 	__pkg__ 'module-assistant' 'build-essential' 'libsdl-ttf2.0-0' dkms
@@ -2974,7 +3091,7 @@ _virtualbox_archlinux()
 	# sudo echo vboxdrv >> /etc/modules-load.d/virtualbox.conf
 
 	# Instalar o pacote ExtensionPack.
-	#_virtualbox_extension_pack 
+	_virtualbox_extension_pack 
 }
 
 _virtualbox_linux_run()
@@ -3033,12 +3150,15 @@ _virtualbox_linux_run()
 
 _virtualbox()
 {
-	#is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
+	is_executable virtualbox && _show_info 'PkgInstalled' 'virtualbox' && return 0
 	case "$os_id" in
 		debian) _virtualbox_debian;;
 		linuxmint|ubuntu) _virtualbox_ubuntu;;
 		fedora) _virtualbox_fedora;;
-		arch) _virtualbox_linux_run;;	
+		arch) 
+			_virtualbox_linux_run
+			_virtualbox_additions 
+			;;	
 		*) _show_info 'ProgramNotFound' 'virtualbox'; return 1;;	
 	esac
 }
@@ -3314,9 +3434,8 @@ _topicons_plus_github()
 	__download__ "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && _show_info 'DownloadOnly' "$path_file" && return 0 
 
-	_unpack "$path_file" || return 1
 	__pkg__ make
-
+	_unpack "$path_file" || return 1
 	cd "$DirUnpack"
 	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
 	cd topicons_plus
@@ -3335,7 +3454,7 @@ _topicons_plus()
 {
 	case "$os_id" in
 		fedora) __pkg__ 'gnome-shell-extension-topicons-plus';;
-		debian) __pkg__ 'gnome-shell-extension-top-icons-plus';;
+		debian) _topicons_plus_github;; # __pkg__ 'gnome-shell-extension-top-icons-plus'
 		*) _topicons_plus_github;;
 	esac
 }

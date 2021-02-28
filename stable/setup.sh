@@ -2,8 +2,7 @@
 #
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
-#
-__version__='2020-12-19'
+__version__='2021-01-30'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -48,7 +47,7 @@ _download_storecli()
 	elif is_executable wget; then
 		wget -q "$URL_STORECLI_MASTER" -O "$TEMP_DIR"/storecli.tar.gz
 	elif is_executable curl; then
-		curl -sSL -o "$TEMP_DIR"/storecli.tar.gz
+		curl -sSL -o "$TEMP_DIR"/storecli.tar.gz "$URL_STORECLI_MASTER"
 	else
 		printf "ERRO: Instale uma ferramenta para gerenciar downloads curl|aria2c|wget\n"
 		return 1
@@ -64,7 +63,7 @@ _download_storecli()
 
 _copy_files()
 {
-	printf "Copiando $1 >> $2 "
+	printf "Copiando $1 ==> $2 "
 	if cp -R -u "$1" "$2"; then
 		printf "OK\n"
 		return 0
@@ -96,17 +95,15 @@ _install_storecli()
 	}
 
 	mkdir -p $INSTALATION_DIR
-	_copy_files "lib" "$INSTALATION_DIR" || return 1
-	_copy_files "scripts" "$INSTALATION_DIR" || return 1
-	_copy_files "stable" "$INSTALATION_DIR" || return 1
-	_copy_files "python" "$INSTALATION_DIR" || return 1
-	_copy_files "setup.sh" "$INSTALATION_DIR" || return 1
-	_copy_files "storecli.sh" "$INSTALATION_DIR" || return 1
+	_copy_files "lib" "$INSTALATION_DIR" 
+	_copy_files "scripts" "$INSTALATION_DIR" 
+	_copy_files "stable" "$INSTALATION_DIR"
+	_copy_files "python" "$INSTALATION_DIR" 
+	_copy_files "setup.sh" "$INSTALATION_DIR" 
+	_copy_files "storecli.sh" "$INSTALATION_DIR"
 
 	printf "Configurando permissões para execução\n"; chmod -R a+x $INSTALATION_DIR
-
 	printf "Criando link para execução\n"; ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK
-
 
 	if [ -x $DESTINATION_LINK ]; then
 		printf "\033[0;33mstorecli instalado com sucesso!\033[m\n"
@@ -116,7 +113,6 @@ _install_storecli()
 		return 1
 	fi
 }
-
 
 main()
 {

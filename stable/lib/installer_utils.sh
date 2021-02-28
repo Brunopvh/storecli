@@ -1,15 +1,157 @@
 #!/usr/bin/env bash
 #
 
-[[ ! -d "$DirTemp" ]] && DirTemp=$(mktemp --directory)
-[[ ! -d "$path_libs" ]] && path_libs=$(pwd)
-[[ -z "$columns" ]] && {
-	source "$path_libs"/print_text.sh || {
-		printf "lib ... print_text.sh não encontrada, saindo "
-		sleep 2
-		exit 1
-	}
+
+#=============================================================#
+# Cores.
+#=============================================================#
+# Regular Text
+CRed="\033[0;31m"
+CGreen="\033[0;32m"
+CYellow="\033[0;33m"
+CBlue="\033[0;34m"
+CPrurple="\033[0;35m"
+CCyan="\033[0;36m"
+CGray="\033[0;37m"
+CWhite="\033[0;37m"
+CReset="\033[0m"
+
+# [S] - Strong text (bold)
+CSRed="\033[1;31m"
+CSGreen="\033[1;32m"
+CSYellow="\033[1;33m"
+CSBlue="\033[1;34m"
+CSPurple="\033[1;35m"
+CSCyan="\033[1;36m"
+CSGray="\033[1;37m"
+CSWhite="\033[1;37m"
+
+# [D] - Dark text
+CDRed="\033[2;31m"
+CDGreen="\033[2;32m"
+CDYellow="\033[2;33m"
+CDBlue="\033[2;34m"
+CDPurple="\033[2;35m"
+CDCyan="\033[2;36m"
+CDGray="\033[2;37m"
+CDWhite="\033[2;37m"
+
+# [I] Italicized text
+CIRed="\033[3;31m"
+CIGreen="\033[3;32m"
+CIYellow="\033[3;33m"
+CIBlue="\033[3;34m"
+CIPurple="\033[3;35m"
+CICyan="\033[3;36m"
+CIGray="\033[3;37m"
+CIWhite="\033[3;37m"
+
+# [U] - Underlined text
+CURed="\033[4;31m"
+CUGreen="\033[4;32m"
+CUYellow="\033[4;33m"
+CUBlue="\033[4;34m"
+CUPurple="\033[4;35m"
+CUCyan="\033[4;36m"
+CUGray="\033[4;37m"
+CUWhite="\033[4;37m"
+
+# [B] - Blinking text
+CBRed="\033[5;31m"
+CBGreen="\033[5;32m"
+CBYellow="\033[5;33m"
+CBBlue="\033[5;34m"
+CBPurple="\033[5;35m"
+CBCyan="\033[5;36m"
+CBGray="\033[5;37m"
+CBWhite="\033[5;37m"
+
+
+#=============================================================#
+# Imprimir textos com formatação e cores.
+#=============================================================#
+
+# Calcular os pixel da janela de terminal.
+if [[ -x $(command -v tput 2> /dev/null) ]]; then
+	COLUMNS=$(tput cols)
+else
+	COLUMNS='40'
+fi
+
+print_line()
+{
+    if [[ -z $1 ]]; then
+	    printf "%$(tput cols)s\n" | tr ' ' '-'
+	else
+	    printf "%$(tput cols)s\n" | tr ' ' "$1"
+	fi
 }
+
+_println()
+{
+	# Imprimir mensagens sem quebrar linhas.
+	echo -ne " + $@"
+}
+
+_print()
+{
+	echo -e " + $@"
+}
+
+_msg()
+{
+	print_line
+	echo -e " $@"
+	print_line
+}
+
+_red()
+{
+	echo -e "${CRed} ! ${CReset}$@"
+}
+
+_green()
+{
+	echo -e "${CGreen} + ${CReset}$@"
+}
+
+_yellow()
+{
+	echo -e "${CYellow} + ${CReset}$@"
+}
+
+_blue()
+{
+	echo -e "${CBlue} + ${CReset}$@"
+}
+
+_white()
+{
+	echo -e "${CWhite} + ${CReset}$@"
+}
+
+_sred()
+{
+	echo -e "${CSRed}$@${CReset}"
+}
+
+_sgreen()
+{
+	echo -e "${CSGreen}$@${CReset}"
+}
+
+_syellow()
+{
+	echo -e "${CSYellow}$@${CReset}"
+}
+
+_sblue()
+{
+	echo -e "${CSBlue}$@${CReset}"
+}
+
+[[ ! -d "$DirTemp" ]] && export DirTemp=$(mktemp --directory)
+[[ ! -d "$path_bash_libs" ]] && export path_bash_libs=$(pwd)
 
 os_type=''
 os_id=''
@@ -128,7 +270,6 @@ is_admin(){
 		return 1
 	fi
 }
-
 
 _GDEBI()
 {
@@ -388,7 +529,6 @@ _rpm_key_add()
 	fi
 }
 
-
 _addrepo_in_fedora()
 {
 	# $1 = url do repositório.
@@ -559,6 +699,18 @@ __sudo__()
 	fi
 }
 
+get_extension_file()
+{
+	# Usar o comando "file" para saber qual o cabeçalho de um arquivo qualquer.
+	[[ -z $1 ]] && return 1
+	is_executable file || {
+		echo 'None'
+		return 1
+	}
+
+	file "$1" | cut -d ' ' -f 2
+}
+
 __rmdir__()
 {
 	# Função para remover diretórios e arquivos, inclusive os arquivos é diretórios
@@ -652,35 +804,17 @@ gpg_import()
 	fi
 }
 
-get_html()
-{
-	# Verificar se $1 e do tipo url.
-	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
-		_red "(get_html): url inválida"
-		return 1
-	fi
-
-	rm -rf "$HtmlTemporaryFile"
-	cd "$DirTemp"
-	printf "Conectando ... $1 "
-	__download__ "$1" "$HtmlTemporaryFile" 1> /dev/null || return 1
-
-	if [[ $? == '0' ]]; then
-		printf 'OK\n'
-		return 0
-	else
-		_sred "FALHA"
-		return 1
-	fi
-}
-
 _get_html_page()
 {
-	# $1 = url
-	# $2 = filtro a ser aplicado no contéudo html.
+	# Baixa uma página da web e retorna o contéudo na saida padrão 'stdout'
+	#
+	# $1 = url - obrigatório.
+	# $2 = filtro a ser aplicado no contéudo html - opcional.
 	# 
-	# EX: _get_html_page URL --find 'name-file.tar.gz'
-	#     _get_html_page URL
+	# EX: _get_html_page URL --find 'name-file.tar.gz' -> filtra a string 'name-file.tar.gz'
+	#                                                     no contéudo html.
+	#
+	#     _get_html_page URL -> retorna o contéudo completo na saida padrão.
 
 	# Verificar se $1 e do tipo url.
 	! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/' && {
@@ -695,10 +829,35 @@ _get_html_page()
 		shift 2
 		Find="$1"
 		grep -m 1 "$Find" "$temp_file_html"
+	elif [[ "$2" == '--find-all' ]]; then
+		grep "$Find" "$temp_file_html"
 	else
 		cat "$temp_file_html"
 	fi
 	rm -rf "$temp_file_html" 2> /dev/null
+}
+
+get_html()
+{
+	# Salava uma página html em um arquivo definido na variável HtmlTemporaryFile.
+	
+	# Verificar se $1 e do tipo url.
+	if ! echo "$1" | egrep '(http:|ftp:|https:)' | grep -q '/'; then
+		_red "(get_html): url inválida"
+		return 1
+	fi
+
+	rm -rf "$HtmlTemporaryFile" 2> /dev/null
+	cd "$DirTemp"
+	__download__ "$1" "$HtmlTemporaryFile" 1> /dev/null || return 1
+
+	if [[ $? == '0' ]]; then
+		printf 'OK\n'
+		return 0
+	else
+		_sred "FALHA"
+		return 1
+	fi
 }
 
 __shasum__()
@@ -738,24 +897,23 @@ __shasum__()
 
 __download__()
 {
-	if [[ -z $2 ]]; then
+	[[ -z $2 ]] && {
 		_red "Necessário informar um arquivo de destino."
 		return 1
-	fi
+	}
 
-	if [[ -f "$2" ]]; then
-		_blue "Arquivo encontrado: $2"
+	[[ -f "$2" ]] && {
+		_blue "Arquivo encontrado ...$2"
 		return 0
-	fi
+	}
 
 	local url="$1"
 	local path_file="$2"
 	local count=3
 	
 	cd "$DirDownloads"
-	[[ ! -z $path_file ]] && _blue "Salvando em ... $path_file"
+	_blue "Salvando ... $path_file"
 	_blue "Conectando ... $1"
-
 	while true; do
 		if [[ ! -z $path_file ]]; then
 			if is_executable aria2c; then
@@ -887,50 +1045,49 @@ _unpack()
 	__rmdir__ $(ls)
 	path_file="$1"
 
-	# Detectar a extensão do arquivo.
-	if [[ "${path_file: -6}" == 'tar.gz' ]]; then    # tar.gz - 6 ultimos caracteres.
-		type_file='TarGz'
-	elif [[ "${path_file: -7}" == 'tar.bz2' ]]; then # tar.bz2 - 7 ultimos carcteres.
-		type_file='TarBz2'
-	elif [[ "${path_file: -6}" == 'tar.xz' ]]; then  # tar.xz
-		type_file='TarXz'
-	elif [[ "${path_file: -4}" == '.zip' ]]; then    # .zip
-		type_file='Zip'
-	elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
-		type_file='DebPkg'
+	if [[ -x $(command -v file) ]]; then
+		# Detectar o tipo de arquivo com o comando file.
+		extension_file=$(get_extension_file "$path_file")
 	else
-		printf "\033[0;31m(_unpack): FALHA arquivo não suportado ... $path_file\033[m\n"
-		return 1
+		# Detectar o tipo de arquivo apartir da extensão.
+		if [[ "${path_file: -6}" == 'tar.gz' ]]; then    # tar.gz - 6 ultimos caracteres.
+			extension_file='gzip'
+		elif [[ "${path_file: -7}" == 'tar.bz2' ]]; then # tar.bz2 - 7 ultimos carcteres.
+			extension_file='bzip2'
+		elif [[ "${path_file: -6}" == 'tar.xz' ]]; then  # tar.xz
+			extension_file='XZ'
+		elif [[ "${path_file: -4}" == '.zip' ]]; then    # .zip
+			extension_file='Zip'
+		elif [[ "${path_file: -4}" == '.deb' ]]; then    # .deb
+			extension_file='Debian'
+		else
+			printf "${CRed}(_unpack): Arquivo não suportado ... $path_file${CReset}\n"
+			return 1
+		fi
 	fi
 
 	# Calcular o tamanho do arquivo
 	local len_file=$(du -hs $path_file | awk '{print $1}')
 	
 	# Descomprimir de acordo com cada extensão de arquivo.	
-	if [[ "$type_file" == 'TarGz' ]]; then
+	if [[ "$extension_file" == 'gzip' ]]; then
 		tar -zxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
-	elif [[ "$type_file" == 'TarBz2' ]]; then
+	elif [[ "$extension_file" == 'bzip2' ]]; then
 		tar -jxvf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
-	elif [[ "$type_file" == 'TarXz' ]]; then
+	elif [[ "$extension_file" == 'XZ' ]]; then
 		tar -Jxf "$path_file" -C "$DirUnpack" 1> /dev/null 2>&1 &
-	elif [[ "$type_file" == 'Zip' ]]; then
+	elif [[ "$extension_file" == 'Zip' ]]; then
 		unzip "$path_file" -d "$DirUnpack" 1> /dev/null 2>&1 &
-	elif [[ "$type_file" == 'DebPkg' ]]; then
+	elif [[ "$extension_file" == 'Debian' ]]; then
 		
 		if [[ -f /etc/debian_version ]]; then    # Descompressão em sistemas DEBIAN
 			ar -x "$path_file" 1> /dev/null 2>&1  &
 		else                                     # Descompressão em outros sistemas.
 			ar -x "$path_file" --output="$DirUnpack" 1> /dev/null 2>&1 &
 		fi
-	fi	
+	fi
 
 	# echo -e "$(date +%H:%M:%S)"
-	_show_loop_procs "$!" "Descompactando ... $(basename $path_file) em ... $DirUnpack"
-
-	# Verificar se a extração foi concluida com sucesso.
-	if [[ "$?" != '0' ]]; then
-		printf "\033[0;31m(_unpack): FALHA na descompressão do arquivo $path_file\033[m\n"
-		__rmdir__ "$path_file"
-		return 1
-	fi
+	_show_loop_procs "$!" "Descompactando ... [$extension_file] ... $(basename $path_file) em ... $DirUnpack"
+	return 0
 }

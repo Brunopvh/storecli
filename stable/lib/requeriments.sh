@@ -48,8 +48,8 @@ _config_python3()
 }
 
 #=============================================================#
-
 # FreeBSD
+#=============================================================#
 _config_requeriments_freebsd()
 {
 	# Instalar ferramentas de linha de comando.
@@ -63,8 +63,8 @@ _config_requeriments_freebsd()
 
 
 #=============================================================#
-
-# Fedora e derivados
+# Fedora
+#=============================================================#
 _config_requeriments_fedora()
 {
 	# Instalar ferramentas de linha de comando.
@@ -88,7 +88,9 @@ _config_requeriments_opensuseleap()
 	return 0
 }
 
+#=============================================================#
 # Debian
+#=============================================================#
 check_debian_nonfree_repo()
 {
 	local os_id=$(grep '^ID=' /etc/os-release | sed 's/ID=//g')
@@ -135,11 +137,26 @@ _config_requeriments_debian()
 
 _config_requeriments_archlinux()
 {
-	__pkg__ "${requeriments_cli_linux[@]}" || return 1
-	__pkg__ python3 python-pip python-setuptools python-pmw || return 1
+	# Instalar dependências no archlinux
+	local requeriments_python3_archlinux=(python3 python-pip python-setuptools)
+	
+	for APP in "${requeriments_cli_linux[@]}"; do 
+		__pkg__ "$APP" || {
+			return 1
+			break
+		}
+	done
+	
+	for APP in "${requeriments_python3_archlinux[@]}"; do
+		__pkg__ "$APP" || {
+			return 1
+			break
+		}
+	done
+
 	__pkg__ binutils || return 1
 	return 0
-	# xdpinfo
+	
 	# __pkg__ 'xorg-xdpyinfo'
 }
 

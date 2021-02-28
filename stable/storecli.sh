@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 #
-__version__='2020_12_19'
+__version__='2021_02_14'
 __author__='Bruno Chaves'
 __app_name__='storecli'
 #
@@ -54,7 +54,7 @@ fi
 # Diretórios do usuário
 #=============================================================#
 if [ -f ~/.bashrc ]; then
-	. ~/.bashrc
+	. ~/.bashrc 2> /dev/null
 fi
 
 [[ ! -d $HOME ]] && HOME=~/
@@ -64,6 +64,7 @@ fi
 }
 
 DIR_BIN_USER="$HOME/.local/bin"
+DIR_SHARE_USER="$HOME/.local/share"
 DIR_ICON_USER="$HOME/.local/share/icons"
 DIR_THEMES_USER="$HOME/.themes"
 DIR_DESKTOP_USER="$HOME/.local/share/applications"
@@ -79,7 +80,7 @@ mkdir -p "$DIR_CONFIG_USER"
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
-#export TemporaryDirectory="/tmp/storecli_$USER"
+#readonly export TemporaryDirectory="/tmp/storecli_$USER"
 readonly export TemporaryDirectory=$(mktemp --directory)
 export DirTemp="$TemporaryDirectory/temp"
 export DirGitclone="$TemporaryDirectory/gitclone"
@@ -97,9 +98,9 @@ mkdir -p "$DirDownloads"
 # Arquivos de configuração e Log.
 #=============================================================#
 export configFILE="$DIR_CONFIG_USER/requeriments.conf"
-export LogFile="$HOME/.cache/storecli/storecli.log"
-export LogErro="$HOME/.cache/storecli/storecli.err"
-export OutputDevice="$HOME/.cache/storecli/storecli-output.log"
+export LogFile="$HOME/.cache/$__app_name__/storecli.log"
+export LogErro="$HOME/.cache/$__app_name__/storecli.err"
+export OutputDevice="$HOME/.cache/$__app_name__/storecli-output.log"
 
 echo '' > "$OutputDevice"
 touch "$configFILE"
@@ -150,33 +151,31 @@ is_executable()
 	fi
 }
 
-#=============================================================#
-# Configuração de diretórios usados por este programa para ler
-# libs e executar scripts.
-#=============================================================#
+
+# Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
 readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
-readonly export path_libs="$dir_of_executable/lib"
+readonly export path_bash_libs="$dir_of_executable/lib"
 readonly export dir_local_scripts="$dir_of_executable/scripts"
 readonly export dir_local_python="$dir_of_executable/python"
 
 #=============================================================#
 # Importar Libs
 #=============================================================#
-source "$path_libs/print_text.sh"
-source "$path_libs/ArrayUtils.sh"
-source "$path_libs/utils.sh"
-source "$path_libs/lib_storecli.sh"
-source "$path_libs/requeriments.sh"
-source "$path_libs/UninstallPkgs.sh"
-source "$path_libs/programs.sh"
-source "$path_libs/wineutils.sh"
-source "$path_libs/gui.sh"
+source "$path_bash_libs/destination_programs.sh"
+source "$path_bash_libs/list_programs.sh"
+source "$path_bash_libs/utils.sh"
+source "$path_bash_libs/installer_utils.sh"
+source "$path_bash_libs/requeriments.sh"
+source "$path_bash_libs/UninstallPkgs.sh"
+source "$path_bash_libs/programs.sh"
+source "$path_bash_libs/wineutils.sh"
+source "$path_bash_libs/gui.sh"
 
 # Definir os scripts locais.
 SCRIPT_CONFIG_PATH="$dir_local_scripts/conf-path.sh"
 SCRIPT_ADD_REPO="$dir_local_scripts/addrepo.py"
-SCRIPT_TORBROWSER_INSTALLER="$dir_local_scripts/tor.sh"
+SCRIPT_TORBROWSER_INSTALLER="$DIR_BIN_USER/tor-installer"
 SCRIPT_STORECLI_INSTALLER="$dir_of_executable/setup.sh"
 SCRIPT_OHMYBASH_INSTALLER="$dir_local_scripts/ohmybash.run"
 SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"

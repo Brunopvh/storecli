@@ -1,16 +1,12 @@
 #!/usr/bin/env bash
 #
-
-#
-# Este arquivo guarda informações como dirtórios e arquivos de alguns programas
-# para tornar a instalação e remoção dos programas mais prática.
-#   Também serve para guardar o destino de alguns programas no 
-# disco rígido, essas informações são guardadas em ARRAYS para facilitar
-# a idendificação desses arquivos e diretórios.
+# Este módulo/lib guarda o caminho de arquivos e diretórios de instalação de alguns pacotes.
+#=============================================================#
 
 # Verificar se as variáveis com os diretórios de configuração e instalação dos
 # aplicativos foram definidas.
-[[ -z $DIR_DESKTOP_USER ]] && DIR_DESKTOP_USER=~/.local/share/applications
+[[ -z $DIR_SHARE_USER ]] && DIR_SHARE_USER=~/".local/share"
+[[ -z $DIR_DESKTOP_USER ]] && DIR_DESKTOP_USER=~/".local/share/applications"
 [[ -z $DIR_BIN_USER ]] && DIR_BIN_USER=~/.local/bin
 [[ -z $DIR_ICON_USER ]] && DIR_ICON_USER=~/.local/share/icons
 [[ -z $DIR_THEMES_USER ]] && DIR_THEMES_USER=~/.themes
@@ -21,10 +17,10 @@
 [[ ! -d $DIR_THEMES_USER ]] && mkdir "$DIR_THEMES_USER"
 [[ ! -d $DIR_DESKTOP_USER ]] && mkdir "$DIR_DESKTOP_USER"
 
+
 #=============================================================#
 # Diretórios do root
 #=============================================================#
-
 [[ -z $DIR_BIN_ROOT ]] && DIR_BIN_ROOT='/usr/local/bin'
 [[ -z $DIR_ICON_ROOT ]] && DIR_ICON_ROOT='/usr/share/icons/hicolor'
 [[ -z $DIR_THEME_ROOT ]] && DIR_THEME_ROOT='/usr/share/themes/'
@@ -90,6 +86,16 @@ destinationFilesIdeaic=(
 	[file_script]="$DIR_BIN_USER/idea"
 	[dir]="$DIR_BIN_USER/idea-IC"
 	)
+
+
+
+declare -A destinationFilesNodejs
+destinationFilesNodejs=(             
+	[script]="$DIR_BIN_USER/nodejs"                  
+	[dir]="$DIR_BIN_USER/nodejs-amd64"
+	[npm_link]="$DIR_BIN_USER/npm" 
+	[npx_link]="$DIR_BIN_USER/npx"           
+)
 
 declare -A destinationFilesPycharm
 destinationFilesPycharm=(
@@ -183,8 +189,13 @@ destinationFilesYoutubeDlGuiUser=(
 #=============================================================#
 # Sistema
 #=============================================================#
-# Cpu-X
+# archlinux-installer
+declare -A destinationFilesArchlinuxInstaller
+destinationFilesArchlinuxInstaller=(
+	[script]="$DIR_BIN_ROOT/archlinux-installer"
+	)
 
+# Cpu-X
 declare -A destinationFilesCpux
 destinationFilesCpux=(
 	[file_desktop]="$DIR_DESKTOP_USER/cpux.desktop"  
@@ -242,113 +253,4 @@ destinationFilesEpsxeWin32=(
 	[file_desktop]="$DIR_DESKTOP_USER/epsxe-win.desktop"
 	[file_script]="$DIR_BIN_USER/epsxe-win"
 	[dir]="$HOME/.wine/drive_c/epsxe-win"
-	)
-
-
-#=============================================================#
-# Listagem de todos os pacotes disponíveis para instalação.
-#=============================================================#
-programs_acessory=(
-	etcher
-	gnome-disk
-	microsoft-teams
-	storecli-gui
-	veracrypt
-	woeusb
-	)
-
-programs_development=(
-	android-studio
-	codeblocks
-	idea
-	pycharm
-	sublime-text
-	vim
-	vscode
-	python37-windows
-	python37-windows-portable
-	)
-
-programs_office=(
-	atril
-	'fontes-ms'
-	libreoffice
-	'libreoffice-appimage'
-	)
-
-programs_browser=(
-	chromium
-	edge
-	firefox
-	google-chrome
-	opera-stable
-	torbrowser
-	)
-
-programs_internet=(
-	clipgrab
-	megasync
-	proxychains
-	qbittorrent
-	skype
-	teamviewer
-	telegram
-	tixati
-	uget
-	'youtube-dl'
-	'youtube-dl-gui'
-	)
-
-
-programs_midia=(
-	celluloid
-	cinema
-	codecs
-	spotify
-	gnome-mpv
-	parole
-	smplayer
-	totem
-	vlc
-	)
-
-programs_system=(
-	bluetooth
-	compactadores
-	cpu-x
-	genymotion
-	google-earth
-	gparted
-	peazip
-	refind
-	stacer
-	timeshift
-	virtualbox
-	virtualbox-additions
-	virtualbox-extensionpack
-	)
-
-programs_preferences=(
-	ohmybash
-	ohmyzsh
-	papirus
-	sierra
-	)
-
-programs_gnomeshell=(
-	dash-to-dock
-	drive-menu
-	gnome-backgrounds
-	gnome-tweaks
-	topicons-plus
-	)
-
-
-programs_wine=(
-	wine
-	winetricks
-	epsxe-win
-	python37-windows
-	python37-windows-portable
-	youtube-dl-gui-windows
 	)

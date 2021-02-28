@@ -17,6 +17,15 @@ _uninstall_etcher()
 	esac
 }
 
+_uninstall_nodejs_lts()
+{
+	if [[ "$os_id" == 'debian' ]] || [[ "$os_id" == 'ubuntu' ]]; then
+		_APT remove nodejs
+	else
+		__rmdir__ "${destinationFilesNodejs[@]}"
+	fi
+}
+
 _uninstall_vscode()
 {
 	if [[ -f /etc/debian_version ]]; then
@@ -49,6 +58,18 @@ _uninstall_edge()
 	fi
 }
 
+_uninstall_torbrowser()
+{
+	local url_script_torbrowser_installer='https://raw.github.com/Brunopvh/torbrowser/master/tor.sh'
+
+	is_executable tor-installer || {
+		__download__ "$url_script_torbrowser_installer" "$SCRIPT_TORBROWSER_INSTALLER" || return 1
+		chmod +x "$SCRIPT_TORBROWSER_INSTALLER"
+	}
+	
+	"$SCRIPT_TORBROWSER_INSTALLER" --remove
+}
+
 _uninstall_cpux()
 {
 	if [[ -f /etc/fedora-release ]]; then
@@ -69,6 +90,15 @@ _uninstall_stacer()
 	fi
 }
 
+_uninstall_virtualbox()
+{
+	if [[ "$os_codename" == 'buster' ]]; then
+		sudo apt remove virtualbox-5.2
+	else
+		_red "Não foi possível remover: $1"
+	fi
+}
+
 _uninstall_packages()
 {
 	[[ -z $1 ]] && usage && return 1
@@ -79,23 +109,25 @@ _uninstall_packages()
 
 			android-studio) __rmdir__ "${destinationFilesAndroidStudio[@]}";;
 			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
+			nodejs) _uninstall_nodejs_lts;;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
 			sublime-text) __rmdir__ "${destinationFilesSublime[@]}";;
 			vscode) _uninstall_vscode;;
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
 			edge) _uninstall_edge;;
-			torbrowser) "$SCRIPT_TORBROWSER_INSTALLER" --remove;;	
-
+			torbrowser) _uninstall_torbrowser;;	
 			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
 			tixati) __rmdir__ "${destinationFilesTixati[@]}";;
 			teamviewer) _uninstall_teamviewer;;
 			youtube-dl) __rmdir__ "$directoryUSERbin/youtube-dl";;
 	
+			archlinux-installer) __rmdir__ "${destinationFilesArchlinuxInstaller[@]}";;
 			cpu-x) _uninstall_cpux;;
 			peazip) __rmdir__ "${destinationFilesPeazip[@]}";;
 			refind) __rmdir__ "${destinationFilesRefind[@]}";;
 			stacer) _uninstall_stacer;;
+			virtualbox) _uninstall_virtualbox;;
 
 			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;
