@@ -20,7 +20,7 @@
 # 
 
 __script__=$(readlink -f "$0")
-__version__='2021-02-22'
+__version__='2021-02-28'
 
 case "$1" in
 	-h|--help)
@@ -30,7 +30,7 @@ case "$1" in
 		;;
 esac
 
-URL_STORECLI_MASTER='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
+URL_STORECLI_MASTER='https://github.com/Brunopvh/storecli/archive/development.tar.gz'
 URL_SETUP_BASH_LIBS='https://raw.github.com/Brunopvh/bash-libs/main/setup.sh'
 TEMP_DIR=$(mktemp --directory)
 UNPACK_DIR="$TEMP_DIR/unpack"
