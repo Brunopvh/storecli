@@ -115,6 +115,8 @@ function show_import_erro()
 		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
 	elif [[ -x $(command -v curl) ]]; then
 		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
+	elif [[ -x $(command -v aria2c) ]]; then
+		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/master/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
 	fi
 	sleep 1
 	return 1
@@ -172,10 +174,18 @@ check_external_modules || {
 		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	elif [[ -x $(command -v curl) ]]; then
 		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+	elif [[ -x $(command -v aria2c) ]]; then
+		_tmpfile=$(mktemp -u)
+		aria2c 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' -d $(diraname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
+		bash "$_tmpfile"
+		rm -rf "$_tmpfile" 2> /dev/null
+		unset _tmpfile
 	else
 		echo "Instale curl ou wget"
 		exit 1
 	fi
+
+	source ~/.bashrc 1> /dev/null 2>&1
 	shm update
 	shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
 	exit 1
@@ -234,7 +244,6 @@ source $crypto
 #=============================================================#
 # Importar Módulos locais
 #=============================================================#
-source "$path_local_libs/list_programs.sh"
 source "$path_local_libs/requeriments.sh"
 source "$path_local_libs/uninstall_apps.sh"
 source "$path_local_libs/programs.sh"
@@ -379,6 +388,275 @@ _clear_temp_dirs()
 	cd "$DirTemp" && __rmdir__ $(ls)
 	cd "$DirUnpack" && __rmdir__ $(ls)
 	cd "$DirGitclone" && __rmdir__ $(ls)
+}
+
+
+#=============================================================#
+# Listagem de todos os pacotes disponíveis para instalação.
+#=============================================================#
+programs_acessory=(
+	etcher
+	gnome-disk
+	microsoft-teams
+	storecli-gui
+	veracrypt
+	woeusb
+	)
+
+programs_development=(
+	android-studio
+	codeblocks
+	idea
+	java
+	nodejs
+	pycharm
+	sublime-text
+	vim
+	vscode
+	python37-windows
+	python37-windows-portable
+	)
+
+programs_office=(
+	atril
+	fontes-ms
+	libreoffice
+	libreoffice-appimage
+	)
+
+programs_browser=(
+	chromium
+	edge
+	firefox
+	google-chrome
+	opera-stable
+	torbrowser
+	)
+
+programs_internet=(
+	clipgrab
+	megasync
+	proxychains
+	qbittorrent
+	skype
+	teamviewer
+	telegram
+	tixati
+	uget
+	youtube-dl
+	youtube-dl-gui
+	)
+
+
+programs_midia=(
+	celluloid
+	cinema
+	codecs
+	spotify
+	gnome-mpv
+	parole
+	smplayer
+	totem
+	vlc
+	)
+
+programs_system=(
+	archlinux-installer
+	bluetooth
+	compactadores
+	cpu-x
+	genymotion
+	google-earth
+	gparted
+	peazip
+	refind
+	stacer
+	shm
+	timeshift
+	virtualbox
+	virtualbox-additions
+	virtualbox-extensionpack
+	)
+
+programs_preferences=(
+	ohmybash
+	ohmyzsh
+	papirus
+	sierra
+	)
+
+programs_gnomeshell=(
+	dash-to-dock
+	drive-menu
+	gnome-backgrounds
+	gnome-tweaks
+	topicons-plus
+	)
+
+
+programs_wine=(
+	wine
+	winetricks
+	epsxe-win
+	python37-windows
+	python37-windows-portable
+	youtube-dl-gui-windows
+	)
+
+
+
+_list_applications()
+{
+	# Função para listar os programas disponíveis para instalação no sistema
+	# também lista programas de uma categoria especifica, bastando informar essa
+	# categoria como argumento.
+	# EXEMPLO:
+	#   storecli -l Acessorios  -> Lista somente a categoria acessorios
+
+	if [[ -z $1 ]]; then
+		printf "%s\n" "  Acessorios: " # Acessorios
+		for APP in "${programs_acessory[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Desenvolvimento: " # Desenvolvimento
+		for APP in "${programs_development[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Escritorio: " # Escritório
+		for APP in "${programs_office[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Navegadores: " # Navegadores
+		for APP in "${programs_browser[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Internet: " # Internt
+		for APP in "${programs_internet[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Midia: " # Midia
+		for APP in "${programs_midia[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Sistema: " # Sistema
+		for APP in "${programs_system[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Preferencias: " # Preferências
+		for APP in "${programs_preferences[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Gnome Shell: " # Gnome Shell
+		for APP in "${programs_gnomeshell[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+
+		printf "\n"
+		printf "%s\n" "  Wine: " # Gnome Shell
+		for APP in "${programs_wine[@]}"; do
+			printf "%s\n" "      $APP"
+		done
+		printf "\n"
+
+		return 0
+	fi
+
+	for arg in "${@}"; do
+		case "$arg" in
+			Acessorios)
+					printf "%s\n" "  Acessorios: "
+					for APP in "${programs_acessory[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Desenvolvimento)
+					printf "%s\n" "  Desenvolvimento: "
+					for APP in "${programs_development[@]}"; do
+						printf "%s\n" "     $APP"
+					done
+					printf "\n"
+					;;
+			Escritorio)
+					printf "%s\n" "  Escritorio: "
+					for APP in "${programs_office[@]}"; do
+						printf "%5s%s\n" " " "$APP"
+					done
+					printf "\n"
+					;;
+			Navegadores)
+					printf "%s\n" "  Navegadores: "
+					for APP in "${programs_browser[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Internet)
+					printf "%s\n" "  Internet: "
+					for APP in "${programs_internet[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Midia)
+					printf "%s\n" "  Midia: "
+					for APP in "${programs_midia[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Sistema)
+					printf "%s\n" "  Sistema: "
+					for APP in "${programs_system[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Preferencias)
+					printf "%s\n" "  Preferencias: "
+					for APP in "${programs_preferences[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			GnomeShell)
+					printf "%s\n" "  Gnome Shell: "
+					for APP in "${programs_gnomeshell[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			Wine)
+					printf "%s\n" "  Wine: "
+					for APP in "${programs_wine[@]}"; do
+						printf "%s\n" "      $APP"
+					done
+					printf "\n"
+					;;
+			*)
+				printf "\n"
+				red "(_list_applications) categoria inválida: $arg"
+				printf "\n"
+					;;
+		esac
+		shift
+	done	
 }
 
 storecli_apps_installer()

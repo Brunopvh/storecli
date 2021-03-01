@@ -2809,20 +2809,20 @@ _peazip()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar 
 	
 	unpack_archive "$path_file" "$DirUnpack" || return 1
+	
 	echo -e "Entrando no diretório ... $DirUnpack"
 	cd "$DirUnpack"
 	mv -v $(ls -d peazip*) "peazip-amd64" 1> /dev/null || return 1
-	__sudo__ mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
-	__sudo__ chown -R root:root "${destinationFilesPeazip[dir]}"
-	__sudo__ chmod a+x "${destinationFilesPeazip[dir]}"/peazip
+	mv "$DirUnpack/peazip-amd64" "${destinationFilesPeazip[dir]}"
+	chmod a+x "${destinationFilesPeazip[dir]}"/peazip
 	echo -e "Entrando no diretório ... ${destinationFilesPeazip[dir]}"
 	cd "${destinationFilesPeazip[dir]}" 
-	__sudo__ cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[png]}"     
-	# __sudo__ cp -u FreeDesktop_integration/peazip.desktop "${destinationFilesPeazip[file_desktop]}"
+	cp -u FreeDesktop_integration/peazip.png "${destinationFilesPeazip[png]}" 1> /dev/null     
+	# cp -u FreeDesktop_integration/peazip.desktop "${destinationFilesPeazip[file_desktop]}"
 
-	yellow "Criando arquivo '.desktop'"
+	print_info "Criando arquivo '.desktop'"
+	echo '[Desktop Entry]' > "${destinationFilesPeazip[file_desktop]}"
 	{
-		echo '[Desktop Entry]'
 		echo 'Version=1.0'
 		echo 'Encoding=UTF-8'
 		echo 'Name=PeaZip'
@@ -2834,22 +2834,22 @@ _peazip()
 		echo 'Terminal=false'
 		echo 'X-KDE-HasTempFileOption=true'
 		echo 'Categories=GTK;KDE;Utility;System;Archiving;'
-	} | sudo tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
+	} | tee -a "${destinationFilesPeazip[file_desktop]}" 1> /dev/null
                                
-	yellow "Criando script para execução via linha de comando"
+	print_info "Criando script para execução via linha de comando"
 	{
 		echo -e "#!/bin/sh\n"
 		echo -e "cd ${destinationFilesPeazip[dir]}"
 		echo -e "./peazip \$@"
-	} | sudo tee "${destinationFilesPeazip[script]}" 1> /dev/null
-	__sudo__ chmod a+x "${destinationFilesPeazip[script]}"
+	} | tee "${destinationFilesPeazip[script]}" 1> /dev/null
+	chmod a+x "${destinationFilesPeazip[script]}"
 
 	print_info 'Criando arquivo .desktop'
 	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesPeazip[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "${destinationFilesPeazip[file_desktop]}" ~/Desktop/ 2> /dev/null
 
-	is_executable 'gtk-update-icon-cache' && sudo gtk-update-icon-cache
+	is_executable 'gtk-update-icon-cache' && gtk-update-icon-cache
 
 	if is_executable 'peazip'; then
 		print_info 'Pacote instalado com sucesso' 'peazip'
@@ -2922,8 +2922,7 @@ _stacer_debian()
 
 	download "$url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
-
-	_APT install -y "$path_file"
+	system_pkgmanager "$path_file"
 }
 
 _stacer_fedora()
@@ -2995,7 +2994,7 @@ _stacer()
 _shm()
 {
 	local URL_SHM_INSTALLER='https://raw.github.com/Brunopvh/bash-libs/main/setup.sh'
-	local SHM_TMP_SCRIPT=$(mktemp); rm -rf "$SHM_TMP_SCRIPT"
+	local SHM_TMP_SCRIPT=$(mktemp -u)
 	download "$URL_SHM_INSTALLER" "$SHM_TMP_SCRIPT" || return 1
 	chmod +x "$SHM_TMP_SCRIPT"
 	"$SHM_TMP_SCRIPT"
