@@ -79,10 +79,13 @@ etcher_debian_file()
 	local url_etcher_debian_file='https://github.com/balena-io/etcher/releases/download/v1.5.100/balena-etcher-electron_1.5.100_amd64.deb'
 	local path_etcher_debian_file="$DirDownloads/$(basename $url_etcher_debian_file)"
 
-	download "$url_etcher" "$path_etcher_debian_file" || return 1
+	__sudo__ apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61 || return 1 
+	download "$url_etcher_debian_file" "$path_etcher_debian_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
+	
 	_APT update || return 1
-	_APT install "$path_etcher_debian_file" || _BROKE
+	system_pkgmanager "$path_etcher_debian_file" || _BROKE
+	add_repo_apt "deb https://deb.etcher.io stable etcher" '/etc/apt/sources.list.d/balena-etcher.list'
 	return 0
 }
 
@@ -91,7 +94,7 @@ etcher_debian_online_repo()
 	# https://github.com/balena-io/etcher#debian-and-ubuntu-based-package-repository-gnulinux-x86x64
 	# https://github.com/balena-io/etcher/releases
 	__sudo__ apt-key adv --keyserver hkps://keyserver.ubuntu.com:443 --recv-keys 379CE192D401AB61 || return 1 
-	echo "deb https://deb.etcher.io stable etcher" | sudo tee '/etc/apt/sources.list.d/balena-etcher.list'
+	add_repo_apt "deb https://deb.etcher.io stable etcher" '/etc/apt/sources.list.d/balena-etcher.list'
 	_APT update || return 1
 	system_pkgmanager balena-etcher-electron || return 1
 	return 0	
@@ -171,7 +174,7 @@ _etcher()
 	is_executable 'balena-etcher-electron' && print_info 'Pacote instalado' 'Etcher' && return 0
 
 	case "$BASE_DISTRO" in
-		debian) etcher_debian_online_repo;; # Debian/Ubuntu/Mint e derivados.
+		debian) etcher_debian_file;; # Debian/Ubuntu/Mint e derivados.
 		fedora) etcher_fedora_online_repo;;
 		arch) _etcher_appimage;;
 		*) _etcher_appimage;;
@@ -772,7 +775,7 @@ _vscode_debian_file()
 	local path_code_debian_file="$DirDownloads/vscode-amd64.deb"
 	download "$url_code_debian" "$path_code_debian_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
-	_APT install "$path_code_debian_file" -y || _BROKE
+	system_pkgmanager "$path_code_debian_file" -y || _BROKE
 }
 
 _vscode_tarfile()
@@ -975,8 +978,8 @@ _codecs_fedora()
 		'xvidcore' 
 	)
 
-	for PKG in "${array_codecs_fedora[@]}"; do system_pkgmanager "$PKG"; done
-	for PKG in "${array_gstreamer_fedora[@]}"; do system_pkgmanager "$PKG"; done
+	system_pkgmanager "${array_codecs_fedora[@]}"
+	system_pkgmanager "${array_gstreamer_fedora[@]}"
 
 }
 
@@ -1211,13 +1214,13 @@ _atril()
 _ubuntu_msttcorefonts()
 {
 	local url_msttcorefonts='http://ftp.us.debian.org/debian/pool/contrib/m/msttcorefonts/ttf-mscorefonts-installer_3.7_all.deb'
-	local path_file="$DirDownloads/$(basename $url_msttcorefonts)"
+	local path_msttcorefons="$DirDownloads/$(basename $url_msttcorefonts)"
 
-	download "$url_msttcorefonts" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0
+	download "$url_msttcorefonts" "$path_msttcorefons" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	 
 	system_pkgmanager cabextract || return 1
-	_APT "$path_file" || return 1
+	system_pkgmanager "$path_msttcorefons" || return 1
 	return 0
 
 }
@@ -1357,10 +1360,8 @@ _edge()
 		__sudo__ mv /etc/yum.repos.d/packages.microsoft.com_yumrepos_edge.repo /etc/yum.repos.d/microsoft-edge-dev.repo
 		system_pkgmanager microsoft-edge-dev
 	elif [[ -f /etc/debian_version ]]; then
-		echo -ne "Adicionando key ... https://packages.microsoft.com/keys/microsoft.asc "
-		curl -sSLf https://packages.microsoft.com/keys/microsoft.asc | sudo apt-key add -
-		echo -ne "Adicionando repositório ... "
-		echo "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" | sudo tee /etc/apt/sources.list.d/microsoft-edge-dev.list
+		apt_key_add 'https://packages.microsoft.com/keys/microsoft.asc'
+		add_repo_apt "deb [arch=amd64] https://packages.microsoft.com/repos/edge stable main" /etc/apt/sources.list.d/microsoft-edge-dev.list
 		_APT update || return 1
 		system_pkgmanager microsoft-edge-dev
 	else
@@ -1653,7 +1654,7 @@ _megasync_ubuntu()
 			download "$url_libraw16" "$path_libraw" || return 1 
 			_APT install "$path_libraw" || _BROKE
 			;;
-		focal|ulyana)
+		focal|ulyssa)
 			mega_repos_ubuntu="deb https://mega.nz/linux/MEGAsync/xUbuntu_20.04/ ./"
 			mega_url_key='https://mega.nz/linux/MEGAsync/xUbuntu_20.04/Release.key'
 			;;
@@ -2365,7 +2366,7 @@ _youtube_dlgui_ubuntu()
 		bionic|tricia) 
 			_youtube_dlgui_pip || return 1
 			;;
-		eoan|focal|ulyana)
+		eoan|focal|ulyssa)
 			system_pkgmanager 'python-wxgtk3.0' gettext || return 1
 			_python_twodict_github || return 1
 			_youtube_dlgui_compile || return 1
@@ -3160,16 +3161,14 @@ _virtualbox_debian()
 _virtualbox_ubuntu()
 {
 	case "$VERSION_CODENAME" in
-		focal|ulyana) 
+		focal|ulyssa) 
 				vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian focal contrib"
 				;;
 		bionic|tricia) 
 				vbox_repo="deb [arch=amd64] https://download.virtualbox.org/virtualbox/debian bionic contrib"
 				;;
 		*) 
-			red "Seu sistema ainda não tem suporte a instalação do virtualbox por meio deste script"
-			return 1
-			;;
+			_virtualbox_linux_run;;
 	esac
 
 	apt_key_add 'https://www.virtualbox.org/download/oracle_vbox_2016.asc' || return 1
