@@ -84,7 +84,7 @@ source ~/.shmrc 1> /dev/null 2>&1
 	exit 1
 }
 
-__version__='2021_02_28'
+__version__='2021_03_01'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 
@@ -229,6 +229,7 @@ source $pkgmanager
 source $files_programs
 source $requests
 source $utils
+source $crypto
 
 #=============================================================#
 # Importar Módulos locais

@@ -402,6 +402,53 @@ _android_studio_zip()
 
 }
 
+_install_requeriments_android_studio()
+{
+	if [[ "$BASE_DISTRO" == 'debian' ]]; then
+		case "$VERSION_CODENAME" in
+			bionic|tricia)
+					local requeriments_android_studio=(
+						qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils lib32z1 
+						lib32ncurses5 lib32stdc++6 lib32gcc1 lib32tinfo5 libc6-i386
+						)
+					;;
+			focal|ulyssa) 
+					local requeriments_android_studio=(
+						qemu-kvm bridge-utils lib32z1 
+						lib32ncurses5-dev lib32stdc++6 lib32gcc1 libc6-i386
+						)
+					;;
+			buster) 
+					
+					local requeriments_android_studio=(
+						qemu-kvm libvirt-clients libvirt-daemon-system lib32z1 
+						lib32stdc++6 lib32gcc1 lib32ncurses6 lib32tinfo6 libc6-i386
+						)
+					;;
+			*)
+				print_erro "(_android_studio_ubuntu) seu sistema não é suportado para executar está ação."
+				return 1
+				;;	
+			esac
+		_APT update
+	elif [[ "$BASE_DISTRO" == 'fedora' ]]; then
+		case "$VERSION_ID" in
+			32)
+				local requeriments_android_studio=(
+					zlib.i686 ncurses-libs.i686 bzip2-libs.i686
+					)
+			;;
+		esac
+	fi
+
+	system_pkgmanager "${requeriments_android_studio[@]}"
+
+	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
+	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
+	__sudo__ adduser "$USER" libvirt
+	__sudo__ adduser "$USER" 'libvirt-qemu'
+}
+
 _android_studio_debian()
 {
 	# Encerrar a função se os sistema não for baseado em debian.
@@ -415,17 +462,6 @@ _android_studio_debian()
 		return 1
 	}
 
-	local debianBusterRequeriments=(
-		qemu-kvm
-		libvirt-clients 
-		libvirt-daemon-system
-		lib32z1 
-		lib32stdc++6 
-		lib32gcc1 
-		lib32ncurses6 
-		lib32tinfo6 
-		libc6-i386
-		)
 
 	_APT update
 	system_pkgmanager 'openjdk-11-jdk'
@@ -440,34 +476,9 @@ _android_studio_debian()
 
 _android_studio_ubuntu()
 {
-	# Encerrar a função se os sistema não for baseado em debian.
-	if [[ "$BASE_DISTRO" != 'debian' ]]; then
-		print_erro "_android_studio_ubuntu"
-		return 1
-	fi
-
-	local ubuntuBionicRequeriments=(
-		qemu-kvm
-		libvirt-bin 
-		ubuntu-vm-builder 
-		bridge-utils
-		lib32z1 
-		lib32ncurses5 
-		lib32stdc++6 
-		lib32gcc1 
-		lib32tinfo5 
-		libc6-i386
-		)
-
-	#_APT update
+	_install_requeriments_android_studio 
 	system_pkgmanager 'openjdk-8-jdk'
 	system_pkgmanager "${ubuntuBionicRequeriments[@]}"
-	
-	# adicionar o seu usuário aos grupos "libvirt" e "libvirt-qemu"
-	msg "Adicionando $USER aos grupos: | libvirt | libvirt-qemu |" 
-	__sudo__ adduser "$USER" libvirt
-	__sudo__ adduser "$USER" 'libvirt-qemu'
-
 	_android_studio_zip || return 1
 }
 
@@ -478,13 +489,7 @@ _android_archlinux()
 
 _android_studio_fedora()
 {
-	local array_libs_fedora=(
-			zlib.i686
-			ncurses-libs.i686
-			bzip2-libs.i686
-			)
-
-	system_pkgmanager "${array_libs_fedora[@]}"
+	_install_requeriments_android_studio	
 	_android_studio_zip || return 1
 }
 
