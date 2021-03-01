@@ -619,25 +619,52 @@ _idea_ic()
 	fi
 }
 
-_install_java_development_kit()
+_install_java_development_kit_tar()
 {
-	local URL_JAVA_SE_TAR='https://download.oracle.com/otn/java/jdk/8u281-b09/89d678f2be164786b292527658ca1605/jdk-8u281-linux-x64.tar.gz'
-	local PATH_JAVA_TAR_FILE="$DirDownloads/$(basename $URL_JAVA_SE_TAR)"
+	# https://jdk.java.net/java-se-ri/15
+	# https://openjdk.java.net/install/
+	#
+	local URL_JDK='https://download.java.net/openjdk/jdk15/ri/openjdk-15+36_linux-x64_bin.tar.gz'
+	local URL_SHA256_JDK='https://download.java.net/openjdk/jdk15/ri/openjdk-15+36_linux-x64_bin.tar.gz.sha256'
+	local PATH_JDK_TAR_FILE="$DirDownloads/$(basename $URL_JDK)"
+	local sha256_jdk=$(http_request "$URL_SHA256_JDK")
 
-	download "$URL_JAVA_SE_TAR" "$PATH_JAVA_TAR_FILE"
+	declare -A destinationFilesJDK
+	destinationFilesJDK=(
+		[dir]="$DIR_OPTIONAL/jdk"
+		)
+
+	mkdir -p "${destinationFilesJDK[@]}"
+
+	download "$URL_JDK" "$PATH_JDK_TAR_FILE" || return 1
 	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download.' && return 0
 
-}
+	__shasum__ "$PATH_JDK_TAR_FILE" "$sha256_jdk" || return 1
+	unpack_archive "$PATH_JDK_TAR_FILE" "$DirUnpack" || return 1
+	cd $DirUnpack
+	mv $(ls -d jdk-*) jdk
+	cd jdk
+	echo -e "Instalando JDK em ... ${destinationFilesJDK[dir]}"
+	cp -R -u * "${destinationFilesJDK[dir]}"/
 
-_install_java_se()
-{
-	# https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html#license-lightbox
-	_install_java_development_kit
+	echo "configurando JAVA_HOME"
+	export JAVA_HOME="${destinationFilesJDK[dir]}"
+	sed -i '/^export JAVA_HOME/d' ~/.bashrc
+	sed -i '/^export PATH=\$JAVA_HOME\/bin.*/d' ~/.bashrc
+	echo -e "export JAVA_HOME=$JAVA_HOME" >> ~/.bashrc
+	
+	echo "$PATH" | grep -q "$JAVA_HOME/bin"
+	if [[ $? != 0 ]]; then
+		grep -q "PATH=\$JAVA_HOME/bin.*" ~/.bashrc || {
+			echo -e "export PATH=\$JAVA_HOME/bin:$PATH" >> ~/.bashrc
+		}
+	fi
+
 }
 
 _java()
 {
-	_install_java_se
+	_install_java_development_kit_tar
 }
 
 _nodejs_lts_tar()
