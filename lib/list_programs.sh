@@ -19,6 +19,7 @@ programs_development=(
 	android-studio
 	codeblocks
 	idea
+	java
 	nodejs
 	pycharm
 	sublime-text

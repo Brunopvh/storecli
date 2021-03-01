@@ -619,6 +619,27 @@ _idea_ic()
 	fi
 }
 
+_install_java_development_kit()
+{
+	local URL_JAVA_SE_TAR='https://download.oracle.com/otn/java/jdk/8u281-b09/89d678f2be164786b292527658ca1605/jdk-8u281-linux-x64.tar.gz'
+	local PATH_JAVA_TAR_FILE="$DirDownloads/$(basename $URL_JAVA_SE_TAR)"
+
+	download "$URL_JAVA_SE_TAR" "$PATH_JAVA_TAR_FILE"
+	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download.' && return 0
+
+}
+
+_install_java_se()
+{
+	# https://www.oracle.com/java/technologies/javase/javase-jdk8-downloads.html#license-lightbox
+	_install_java_development_kit
+}
+
+_java()
+{
+	_install_java_se
+}
+
 _nodejs_lts_tar()
 {
 	# https://nodejs.org/en/
