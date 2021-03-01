@@ -435,7 +435,7 @@ _install_requeriments_android_studio()
 		case "$VERSION_ID" in
 			32)
 				local requeriments_android_studio=(
-					zlib.i686 ncurses-libs.i686 bzip2-libs.i686 qemu.x86_64
+					zlib.i686 ncurses-libs.i686 bzip2-libs.i686
 					)
 			;;
 		esac
