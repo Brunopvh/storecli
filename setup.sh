@@ -2,7 +2,7 @@
 #
 # Este script automatiza a instalação do script storecli em sistemas linux.
 #
-__version__='2021-01-30'
+__version__='2021-03-01'
 #
 # https://github.com/Brunopvh/storecli.git
 # https://github.com/Brunopvh/storecli/archive/master.zip
@@ -21,8 +21,8 @@ case "$1" in
 		;;
 esac
 
-URL_STORECLI_MASTER='https://github.com/Brunopvh/storecli/archive/master.tar.gz'
-TEMP_DIR="$(mktemp --directory)-installer-storecli"
+URL_STORECLI_MASTER='https://github.com/Brunopvh/storecli/archive/old-release.tar.gz'
+TEMP_DIR=$(mktemp --directory)
 UNPACK_DIR="$TEMP_DIR/unpack"
 mkdir -p "$UNPACK_DIR"
 
@@ -96,9 +96,7 @@ _install_storecli()
 
 	mkdir -p $INSTALATION_DIR
 	_copy_files "lib" "$INSTALATION_DIR" 
-	_copy_files "scripts" "$INSTALATION_DIR" 
-	_copy_files "stable" "$INSTALATION_DIR"
-	_copy_files "python" "$INSTALATION_DIR" 
+	_copy_files "scripts" "$INSTALATION_DIR"  
 	_copy_files "setup.sh" "$INSTALATION_DIR" 
 	_copy_files "storecli.sh" "$INSTALATION_DIR"
 
