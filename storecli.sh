@@ -92,6 +92,11 @@ __appname__='storecli'
 export STATUS_OUTPUT='0'
 export WORK_DIR=$(pwd)
 
+export URL_RAW_REPO_MASTER='https://raw.github.com/Brunopvh/storecli/master'
+export URL_RAW_REPO_DEVELOPMENT='https://raw.github.com/Brunopvh/storecli/development'
+export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_DEVELOPMENT/storecli.sh"
+
+
 # Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
 readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
@@ -326,13 +331,14 @@ function _resolution()
 _get_storecli_online_version()
 {
 	# Verificar a ultima versão deste programa disponível no github.
-	local URL_STORECLI_MASTER='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
-	local TEMP_DIR_UPDATE=$(mktemp --directory)
-	local FILE_UPDATE='storecli.update'
-	download "$URL_STORECLI_MASTER" "$TEMP_DIR_UPDATE/$FILE_UPDATE" 1> /dev/null || return 1
-	local OnlineVersion=$(grep -m 1 '^__version__=' "$TEMP_DIR_UPDATE/$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
+	# https://raw.github.com/Brunopvh/storecli/master/storecli.sh
+	local FILE_UPDATE=$(mktemp -u)
+	local OnlineVersion=$__version__
+
+	download "$GLOBAL_SCRIPT_ONLINE_VERSION" "$FILE_UPDATE" 1> /dev/null || return 1
+	OnlineVersion=$(grep -m 1 '^__version__=' "$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
+	rm -rf "$FILE_UPDATE" 1> /dev/null 2>&1
 	echo -e "$OnlineVersion"
-	rm -rf "$TEMP_DIR_UPDATE" 1> /dev/null 2>&1
 }
 
 check_storecli_update()
