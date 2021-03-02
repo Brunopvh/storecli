@@ -3097,44 +3097,33 @@ _virtualbox_additions()
 
 _install_requeriments_virtualbox()
 {
-	local requeriments_virtualbox_fedora=(
-		bzip2
-		perl 
-		libxkbcommon
-		libxcrypt-compat
-		libgomp
-		glibc-headers
-		glibc-devel
-		kernel-headers
-		kernel-devel 
-		dkms
-		qt5-qtx11extras
-		binutils
-		gcc
-		automake
-		make 
-		patch
-	)
-
-	local requeriments_virtualbox_debian=(
-		module-assistant build-essential libsdl-ttf2.0-0 dkms
-		)
-
-	local requeriments_virtualbox_archlinux=(
-		'virtualbox' 'virtualbox-host-modules-arch' 'linux-headers'
-	)
+	
 
 	if [[ "$BASE_DISTRO" == 'fedora' ]]; then
-		system_pkgmanager "${requeriments_virtualbox_fedora[@]}"
+		local requeriments_virtualbox_fedora=(
+				bzip2 perl libxkbcommon libxcrypt-compat libgomp
+				glibc-headers glibc-devel kernel-headers kernel-devel 
+				dkms qt5-qtx11extras binutils gcc automake make patch
+			)
+
 	elif [[ "$BASE_DISTRO" == 'debian' ]]; then # Debian/Ubuntu.
-		system_pkgmanager "${requeriments_virtualbox_debian[@]}" 
+		local requeriments_virtualbox=(
+				module-assistant build-essential libsdl-ttf2.0-0 dkms
+			)
+
 		system_pkgmanager linux-headers-$(uname -r)
+
 	elif [[ "$BASE_DISTRO" == 'archlinux' ]]; then
-		system_pkgmanager "${requeriments_virtualbox_archlinux[@]}"
+		local requeriments_virtualbox=(
+				virtualbox virtualbox-host-modules-arch linux-headers
+			)
+
 	else
 		print_erro "(_install_requeriments_virtualbox)"
 		return 1
 	fi
+
+	system_pkgmanager "${requeriments_virtualbox[@]}" || return 1 
 	return 0
 }
 
@@ -3170,7 +3159,7 @@ _virtualbox_fedora()
 
 _virtualbox_package_deb()
 {
-	# Instalação do virtualbox 5.2 no Debian Buster.
+	# Instalação do virtualbox no Debian Buster.
 	# https://www.virtualbox.org/wiki/Downloads
 	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
 	local VIRTUALBOX_PKG_DEB="$DirDownloads/virtualbox-6.1-buster-amd64.deb"
@@ -3189,6 +3178,7 @@ _virtualbox_package_deb()
 
 _virtualbox_debian()
 {
+	# Instalação via repositório.
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
 	local path_libvpx="$DirDownloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
@@ -3240,15 +3230,9 @@ _virtualbox_archlinux()
 	# https://wiki.archlinux.org/index.php/VirtualBox_(Portugu%C3%AAs)
 	# https://www.virtualbox.org/wiki/Linux_Downloads
 	# https://www.edivaldobrito.com.br/sbinvboxconfig-nao-esta-funcionando/
-	# virtualbox-host-modules-arch
-	# virtualbox-host-dkms
-	# systemd-modules-load.service -> (carregar módulos no boot)
-	# /usr/lib/modules-load.d/virtualbox-host-modules-arch.conf -> Arquivo de configuração
 	
 	_install_requeriments_virtualbox
 
-	# /etc/modules-load.d/virtualbox.conf
-	# sudo depmod -a
 	msg "Executando ... /sbin/rcvboxdrv setup"; sudo /sbin/rcvboxdrv setup
 	msg "Executando ... sudo /sbin/vboxconfig"; sudo /sbin/vboxconfig
 	msg "Executando ... sudo modprobe vboxdrv"; sudo modprobe vboxdrv
@@ -3279,7 +3263,7 @@ _virtualbox_linux_run()
 
 	# Pagina de download do virtualbox
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
-	get_html_file 'https://www.virtualbox.org/wiki/Linux_Downloads'
+	get_html_file 'https://www.virtualbox.org/wiki/Linux_Downloads' "$HtmlTemporaryFile"
 
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
 	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" "$HtmlTemporaryFile")
@@ -3291,14 +3275,14 @@ _virtualbox_linux_run()
 	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
 
 	# Atribuir path do arquivo a ser baixado.
-	path_file="$DirDownloads/$(basename $vbox_url_run)"
+	path_file_vbox_run="$DirDownloads/$(basename $vbox_url_run)"
 	
 	# Definir o url de download do arquivo 'SHA256SUMS' com as hashs e seu destino de download.
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
 	vbox_path_file_hash="$DirDownloads/virtualbox_$vbox_version.check"
 	msg "Baixando virtualbox versão $vbox_version"	
 
-	download "$vbox_url_run" "$path_file" || return 1
+	download "$vbox_url_run" "$path_file_vbox_run" || return 1
 	download "$vbox_url_hash" "$vbox_path_file_hash" || return
 
 	# Somente baixar
@@ -3307,13 +3291,14 @@ _virtualbox_linux_run()
 	# Obter a HASH do pacote de instalação com a extensão .run. As informações
 	# estão no arquivo '.check'. Em seguida verificar a integridade do pacote.
 	shasum_package_vitualbox=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
-	__shasum__ "$path_file" "$shasum_package_vitualbox" || return 1
-	chmod +x "$path_file"
-	__sudo__ "$path_file"
+	__shasum__ "$path_file_vbox_run" "$shasum_package_vitualbox" || return 1
+
+	chmod +x "$path_file_vbox_run"
+	__sudo__ "$path_file_vbox_run"
 	__sudo__ /sbin/rcvboxdrv setup
 	__sudo__ /sbin/vboxconfig
 	_virtualbox_extension_pack
-	rm -rf $HtmlTemporaryFile
+	rm -rf $HtmlTemporaryFile 2> /dev/null
 }
 
 _virtualbox()
