@@ -446,6 +446,7 @@ programs_internet=(
 	uget
 	youtube-dl
 	youtube-dl-gui
+	youtube-dl-qt
 	)
 
 
@@ -727,6 +728,7 @@ storecli_apps_installer()
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
+			youtube-dl-qt) _youtube_dl_qt;;
 		
 			Midia) _Midia_All;;
 			blender) _blender;;

@@ -2528,6 +2528,36 @@ _youtube_dlgui()
 	fi
 }
 
+_youtube_dl_qt()
+{
+	[[ $(id -u) == 0 ]] && return 1
+	local URL_REPO_YTDL_QT='https://github.com/Brunopvh/youtube-dl-qt/archive/master.tar.gz'
+	local PATH_YTDL_QT="$DirDownloads/ytdl-qt.tar.gz"
+
+	download "$URL_REPO_YTDL_QT" "$PATH_YTDL_QT" || return 1
+	unpack_archive "$PATH_YTDL_QT" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d youtube-dl-qt*) youtube-dl-qt
+	cp -R -u youtube-dl-qt "$DIR_OPTIONAL"/youtube-dl-qt
+	chmod a+x youtube-dl-qt "$DIR_OPTIONAL"/youtube-dl-qt/youtube-dl-qt.py
+	ln -sf "$DIR_OPTIONAL"/youtube-dl-qt/youtube-dl-qt.py "$DIR_BIN"/youtube-dl-qt
+
+	pip3 install PyQt5 --user
+	echo '[Desktop Entry]' > "$DIR_APPLICATIONS"/youtube-dl-qt.desktop
+	{
+		echo "Name=Youtube-Dl-Qt"
+		echo "Version=1.0"
+		echo "Exec=youtube-dl-qt"
+		echo "Terminal=false"	
+		echo "Categories=Internet;"
+		echo "Type=Application"
+
+	} | tee -a "$DIR_APPLICATIONS"/youtube-dl-qt.desktop 1> /dev/null
+
+	chmod +x "$DIR_APPLICATIONS"/youtube-dl-qt.desktop
+
+}
+
 _archlinux_installer()
 {
 	local URL_ARCHLINUX_INSTALLER='https://raw.github.com/Brunopvh/storecli/master/scripts/archlinux-installer.sh'
