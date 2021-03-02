@@ -3100,7 +3100,7 @@ _install_requeriments_virtualbox()
 	
 
 	if [[ "$BASE_DISTRO" == 'fedora' ]]; then
-		local requeriments_virtualbox_fedora=(
+		local requeriments_virtualbox=(
 				bzip2 perl libxkbcommon libxcrypt-compat libgomp
 				glibc-headers glibc-devel kernel-headers kernel-devel 
 				dkms qt5-qtx11extras binutils gcc automake make patch

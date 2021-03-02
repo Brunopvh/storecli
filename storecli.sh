@@ -84,12 +84,13 @@ source ~/.shmrc 1> /dev/null 2>&1
 	exit 1
 }
 
-__version__='2021_03_01'
+__version__='2021_03_02'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
+export WORK_DIR=$(pwd)
 
 # Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
@@ -826,6 +827,8 @@ main()
 	if [[ -z $1 ]]; then
 		main_menu
 		return "$?"
+	elif [[ $1 == '--module' ]]; then
+		return 0
 	fi
 
 	while [[ $1 ]]; do
@@ -846,14 +849,16 @@ main()
 
 main "${@}" && STATUS_OUTPUT=0
 
-# Remover diretórios e subdiretórios temporários ao encerrar o programa.
-export AssumeYes='True'
-__rmdir__ "$TemporaryDirectory" 1> /dev/null
-
-if [[ "$STATUS_OUTPUT" == 0 ]]; then
-	exit 0
+if [[ $1 == '--module' ]]; then # Para usar este programa como módulo use a opção --module. source storecli.sh --module.
+	cd $WORK_DIR
 else
-	exit 1
+	# Remover diretórios e subdiretórios temporários ao encerrar o programa.
+	export AssumeYes='True'
+	__rmdir__ "$TemporaryDirectory" 1> /dev/null
+	if [[ "$STATUS_OUTPUT" == 0 ]]; then
+		exit 0
+	else
+		exit 1
 fi
 
 
