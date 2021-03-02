@@ -3261,6 +3261,8 @@ _virtualbox_linux_run()
 	# sudo /sbin/rcvboxdrv setup
 	local HtmlTemporaryFile=$(mktemp -u)
 
+	_install_requeriments_virtualbox || return 1
+
 	# Pagina de download do virtualbox
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
 	get_html_file 'https://www.virtualbox.org/wiki/Linux_Downloads' "$HtmlTemporaryFile"
