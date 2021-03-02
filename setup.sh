@@ -42,8 +42,8 @@ EOF
 URL_ARCHIVE='https://github.com/Brunopvh/storecli/archive'
 URL_TARFILE_MASTER="$URL_ARCHIVE/master.tar.gz"
 URL_TARFILE_DEVELOPMENT="$URL_ARCHIVE/development.tar.gz"
-URL_SETUP_BASH_LIBS='https://raw.github.com/Brunopvh/bash-libs/main/setup.sh'
-URL_SRC="$URL_TARFILE_MASTER"
+URL_SETUP_BASH_LIBS='https://raw.github.com/Brunopvh/bash-libs/development/setup.sh'
+URL_SRC="$URL_TARFILE_DEVELOPMENT"
 
 clienteDownloader=''
 

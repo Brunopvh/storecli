@@ -112,11 +112,11 @@ function show_import_erro()
 {
 	echo "ERRO módulo não encontrado ... $@"
 	if [[ -x $(command -v wget) ]]; then
-		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
+		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/development/setup.sh)\""
 	elif [[ -x $(command -v curl) ]]; then
-		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
+		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/development/setup.sh)\""
 	elif [[ -x $(command -v aria2c) ]]; then
-		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/master/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
+		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/development/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
 	fi
 	sleep 1
 	return 1
@@ -171,12 +171,12 @@ check_external_modules || {
 		chmod +x ./setup.sh
 		./setup.sh
 	elif [[ -x $(command -v wget) ]]; then
-		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/development/setup.sh)"
 	elif [[ -x $(command -v curl) ]]; then
-		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/development/setup.sh)"
 	elif [[ -x $(command -v aria2c) ]]; then
 		_tmpfile=$(mktemp -u)
-		aria2c 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' -d $(diraname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
+		aria2c 'https://raw.github.com/Brunopvh/storecli/development/setup.sh' -d $(diraname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
 		bash "$_tmpfile"
 		rm -rf "$_tmpfile" 2> /dev/null
 		unset _tmpfile
