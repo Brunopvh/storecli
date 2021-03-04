@@ -8,8 +8,10 @@ function check_python_version2()
 	# Verificar se o python versão 2 está instalado.
 	if is_executable python2; then
 		export PYTHON_VERSION2='True'
+		export PYTHON2_EXECUTABLE=$(command -v python2)
 	elif python -c "import platform; print(platform.python_version()[0:3])" | grep -q '^2.7$' 2> /dev/null; then
 		export PYTHON_VERSION2='True'
+		export PYTHON2_EXECUTABLE=$(command -v python2)
 	else
 		export PYTHON_VERSION2='False'
 		return 1
@@ -2202,6 +2204,9 @@ _youtube_dl()
 
 _youtube_dlgui_file_desktop_user()
 {
+	[[ $(id -u) == 0 ]] && return 1
+	check_python_version2 || return 1
+
 	# Criar arquivo .desktop na HOME para o usuario atual.
 	print_info "Criando arquivo .desktop"
 
@@ -2209,7 +2214,7 @@ _youtube_dlgui_file_desktop_user()
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=youtube-dl-gui"
+		echo "Exec=$PYTHON2_EXECUTABLE -m youtube_dl_gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
@@ -2226,6 +2231,9 @@ _youtube_dlgui_file_desktop_user()
 
 _youtube_dlgui_file_desktop_root()
 {
+	[[ $(id -u) == 0 ]] || return 1
+	check_python_version2 || return 1
+
 	# Criar arquivo desktop para todos os usuarios.
 	local file_desktop_youtube_dl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 
@@ -2234,19 +2242,20 @@ _youtube_dlgui_file_desktop_root()
 		echo '[Desktop Entry]'
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=/usr/bin/youtube-dl-gui"
+		echo "Exec=$PYTHON2_EXECUTABLE -m youtube_dl_gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | sudo tee "$file_desktop_youtube_dl_gui" 1> /dev/null
+	} | tee "$file_desktop_youtube_dl_gui" 1> /dev/null
 
 	print_info "Criando atalho na Área de Trabalho"
+	chmod +x "$file_desktop_youtube_dl_gui"
 	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$file_desktop_youtube_dl_gui" ~/Desktop/ 2> /dev/null
-	is_executable gtk-update-icon-cache && __sudo__ gtk-update-icon-cache
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 }
 
 
@@ -2300,6 +2309,8 @@ _install_wxpython2()
 
 	if [[ "$BASE_DISTRO" == 'debian' ]]; then
 		system_pkgmanager 'python-wxgtk3.0'
+	elif [[ "$BASE_DISTRO" == 'archlinux' ]]; then
+		system_pkgmanager python2-wxpython3
 	elif [[ "$BASE_DISTRO" == 'fedora' ]]; then
 		local archive_fedora='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases'
 		local pkg_wxpython='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
@@ -2366,40 +2377,6 @@ _youtube_dlgui_compile()
 	return 0
 }
 
-_youtube_dlgui_user_installer()
-{
-	local url_youtube_dl_gui_master='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
-	local path_file="$DirDownloads/youtube-dl-gui.zip"
-	
-	download "$url_youtube_dl_gui_master" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar
-	unpack_archive "$path_file" || return 1
-
-	mkdir -p "${destinationFilesYoutubeDlGuiUser[pixmaps]}"
-	cd "$DirUnpack"/youtube-dl-gui-master
-	cp -R -u youtube_dl_gui "${destinationFilesYoutubeDlGuiUser[dir]}"
-	cd "${destinationFilesYoutubeDlGuiUser[dir]}"
-	cp -R -u data/icons/hicolor/128x128/apps/youtube-dl-gui.png "${destinationFilesYoutubeDlGuiUser[png]}"
-	cp -R -u data/pixmaps/. "${destinationFilesYoutubeDlGuiUser[pixmaps]}"/. 
-
-	# Criar script para execução via linha de comando
-	echo -e "#!/bin/sh" > "${destinationFilesYoutubeDlGuiUser[script]}"
-	echo -e "\ncd ${destinationFilesYoutubeDlGuiUser[dir]}" >> "${destinationFilesYoutubeDlGuiUser[script]}"
-
-	if is_executable python2; then
-		echo -e "python2 __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
-	elif is_executable python; then
-		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
-	else
-		print_erro "Necessário ter o 'python 2' instalado em seu sistema."
-		return 1
-	fi
-
-	chmod +x "${destinationFilesYoutubeDlGuiUser[script]}" 
-	_youtube_dlgui_file_desktop_user
-	return 0
-}
-
 _youtube_dlgui_pip() 
 {
 	# ppa ubuntu.
@@ -2425,7 +2402,8 @@ _youtube_dlgui_ubuntu()
 			_youtube_dlgui_compile || return 1
 			;;
 		*)
-			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'	
+			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'
+			sleep 1	
 			return 1
 			;;
 	esac
@@ -2452,6 +2430,7 @@ _youtube_dlgui_fedora()
 		system_pkgmanager 'wxGTK3' 'python2' || return 1
 	else
 		print_erro 'Seu sistema não é Fedora 32/33'
+		sleep 1
 		return 1
 	fi
 	
@@ -2470,29 +2449,25 @@ _youtube_dlgui_debian()
 		return 1
 	fi
 
-	__sudo__ pip install wheel
+	pip install wheel
 	_youtube_dlgui_compile || return 1
 
 }
 
 _youtube_dlgui_archlinux()
 {
-	system_pkgmanager python2 python2-pip python2-setuptools python2-wxpython3 || return 1
+	system_pkgmanager python2 python2-pip python2-setuptools || return 1
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
 }
 
-
 _youtube_dlgui_freebsd()
 {
 	# freebsd-12.0-release sudo pkg install py27-wxPython30
-	yellow "Instalando: py27-wxPython30"
 	system_pkgmanager py27-wxPython30 || return 1
 	_python_twodict_github || return 1
-	gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
-	cd "$DirTemp/youtube-dl-gui"
-	sudo python2.7 setup.py install || return 1
+	_youtube_dlgui_compile || return 1
 	return 0
 }
 
@@ -2502,7 +2477,7 @@ _youtube_dlgui()
 	check_python_version2 || {
 		print_erro "python2 não está instalado em seu sistema"
 		question 'Deseja instalar python2 para prosseguir' || return 1
-		system_pkgmanager python2
+		system_pkgmanager python2 || system_pkgmanager python27
 	}
 
 	if [[ -f /etc/debian_version ]]; then
