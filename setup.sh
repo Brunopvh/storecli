@@ -19,7 +19,7 @@
 # OBS: seu computador precisa estar conectado a internet para executar este instalador.
 # 
 
-__version__='2021-03-01'
+__version__='2021-03-02'
 __script__=$(readlink -f "$0")
 dir_of_project=$(dirname "$__script__")
 
@@ -141,7 +141,7 @@ download()
 
 _copy_files()
 {
-	printf "Instalando ... $2 "
+	printf "Instalando ... $1 "
 	if cp -R -u "$1" "$2" 1> /dev/null; then
 		printf "OK\n"
 		return 0
@@ -162,8 +162,8 @@ offline_installer()
 
 	mkdir -p $INSTALATION_DIR
 	_copy_files lib $INSTALATION_DIR
-	_copy_files setup.sh $INSTALATION_DIR
 	_copy_files scripts $INSTALATION_DIR
+	_copy_files setup.sh $INSTALATION_DIR
 	_copy_files storecli.sh $INSTALATION_DIR
 	chmod -R a+x $INSTALATION_DIR
 	ln -sf $INSTALATION_DIR/storecli.sh $DESTINATION_LINK

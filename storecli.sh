@@ -84,12 +84,18 @@ source ~/.shmrc 1> /dev/null 2>&1
 	exit 1
 }
 
-__version__='2021_03_01'
+__version__='2021_03_04'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
+export WORK_DIR=$(pwd)
+
+export URL_RAW_REPO_MASTER='https://raw.github.com/Brunopvh/storecli/master'
+export URL_RAW_REPO_DEVELOPMENT='https://raw.github.com/Brunopvh/storecli/development'
+export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_DEVELOPMENT/storecli.sh"
+
 
 # Configuração de diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
@@ -112,11 +118,11 @@ function show_import_erro()
 {
 	echo "ERRO módulo não encontrado ... $@"
 	if [[ -x $(command -v wget) ]]; then
-		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/development/setup.sh)\""
+		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
 	elif [[ -x $(command -v curl) ]]; then
-		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/development/setup.sh)\""
+		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
 	elif [[ -x $(command -v aria2c) ]]; then
-		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/development/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
+		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/master/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
 	fi
 	sleep 1
 	return 1
@@ -171,12 +177,12 @@ check_external_modules || {
 		chmod +x ./setup.sh
 		./setup.sh
 	elif [[ -x $(command -v wget) ]]; then
-		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/development/setup.sh)"
+		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	elif [[ -x $(command -v curl) ]]; then
-		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/development/setup.sh)"
+		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	elif [[ -x $(command -v aria2c) ]]; then
 		_tmpfile=$(mktemp -u)
-		aria2c 'https://raw.github.com/Brunopvh/storecli/development/setup.sh' -d $(diraname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
+		aria2c 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' -d $(diraname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
 		bash "$_tmpfile"
 		rm -rf "$_tmpfile" 2> /dev/null
 		unset _tmpfile
@@ -325,13 +331,14 @@ function _resolution()
 _get_storecli_online_version()
 {
 	# Verificar a ultima versão deste programa disponível no github.
-	local URL_STORECLI_MASTER='https://raw.github.com/Brunopvh/storecli/master/storecli.sh'
-	local TEMP_DIR_UPDATE=$(mktemp --directory)
-	local FILE_UPDATE='storecli.update'
-	download "$URL_STORECLI_MASTER" "$TEMP_DIR_UPDATE/$FILE_UPDATE" 1> /dev/null || return 1
-	local OnlineVersion=$(grep -m 1 '^__version__=' "$TEMP_DIR_UPDATE/$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
+	# https://raw.github.com/Brunopvh/storecli/master/storecli.sh
+	local FILE_UPDATE=$(mktemp -u)
+	local OnlineVersion=$__version__
+
+	download "$GLOBAL_SCRIPT_ONLINE_VERSION" "$FILE_UPDATE" 1> /dev/null || return 1
+	OnlineVersion=$(grep -m 1 '^__version__=' "$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
+	rm -rf "$FILE_UPDATE" 1> /dev/null 2>&1
 	echo -e "$OnlineVersion"
-	rm -rf "$TEMP_DIR_UPDATE" 1> /dev/null 2>&1
 }
 
 check_storecli_update()
@@ -445,6 +452,7 @@ programs_internet=(
 	uget
 	youtube-dl
 	youtube-dl-gui
+	youtube-dl-qt
 	)
 
 
@@ -693,6 +701,7 @@ storecli_apps_installer()
 			'android-studio') _android_studio;;
 			codeblocks) _codeblocks;;
 			java) _java;;
+			eclipse) _eclipse;;
 			idea) _idea_ic;;
 			nodejs) _nodejs_lts;;
 			pycharm) _pycharm;;
@@ -726,6 +735,7 @@ storecli_apps_installer()
 			uget) _uget;;
 			youtube-dl) _youtube_dl;;
 			youtube-dl-gui) _youtube_dlgui;;
+			youtube-dl-qt) _youtube_dl_qt;;
 		
 			Midia) _Midia_All;;
 			blender) _blender;;
@@ -826,6 +836,8 @@ main()
 	if [[ -z $1 ]]; then
 		main_menu
 		return "$?"
+	elif [[ $1 == '--module' ]]; then
+		return 0
 	fi
 
 	while [[ $1 ]]; do
@@ -846,14 +858,17 @@ main()
 
 main "${@}" && STATUS_OUTPUT=0
 
-# Remover diretórios e subdiretórios temporários ao encerrar o programa.
-export AssumeYes='True'
-__rmdir__ "$TemporaryDirectory" 1> /dev/null
-
-if [[ "$STATUS_OUTPUT" == 0 ]]; then
-	exit 0
+if [[ $1 == '--module' ]]; then # Para usar este programa como módulo use a opção --module. source storecli.sh --module.
+	cd $WORK_DIR
 else
-	exit 1
+	# Remover diretórios e subdiretórios temporários ao encerrar o programa.
+	export AssumeYes='True'
+	__rmdir__ "$TemporaryDirectory" 1> /dev/null
+	if [[ "$STATUS_OUTPUT" == 0 ]]; then
+		exit 0
+	else
+		exit 1
+	fi
 fi
 
 

@@ -8,8 +8,10 @@ function check_python_version2()
 	# Verificar se o python versão 2 está instalado.
 	if is_executable python2; then
 		export PYTHON_VERSION2='True'
+		export PYTHON2_EXECUTABLE=$(command -v python2)
 	elif python -c "import platform; print(platform.python_version()[0:3])" | grep -q '^2.7$' 2> /dev/null; then
 		export PYTHON_VERSION2='True'
+		export PYTHON2_EXECUTABLE=$(command -v python2)
 	else
 		export PYTHON_VERSION2='False'
 		return 1
@@ -561,6 +563,24 @@ _codeblocks()
 		archlinux) _codeblocks_archlinux;;
 		*) print_erro 'Programa indisponível para o seu sistema' 'codeblocks'; return 1;;
 	esac
+}
+
+_eclipse()
+{
+	local URL_ECLIPSE='https://eclipse.c3sl.ufpr.br/oomph/epp/2020-12/R/eclipse-inst-jre-linux64.tar.gz'
+	local URL_SHA512_ECLIPS='https://www.eclipse.org/downloads/download.php?file=/oomph/epp/2020-12/R/eclipse-inst-jre-linux64.tar.gz#btn-ajax-checksum-sha512'
+	local PATH_ECLIPSE_TAR="$DirDownloads/eclipse-inst-jre-linux64.tar.gz"
+	local PATH_SHA512_ECLIPSE="$DirDownloads/eclipse-inst-jre-linux64.tar.gz.sha512"
+
+
+	download "$URL_ECLIPSE" "$PATH_ECLIPSE_TAR" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
+	unpack_archive "$PATH_ECLIPSE_TAR" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d eclipse-*) eclipse
+	cd eclipse
+	chmod +x eclipse-inst
+	./eclipse
 }
 
 _idea_ic()
@@ -2202,6 +2222,9 @@ _youtube_dl()
 
 _youtube_dlgui_file_desktop_user()
 {
+	[[ $(id -u) == 0 ]] && return 1
+	check_python_version2 || return 1
+
 	# Criar arquivo .desktop na HOME para o usuario atual.
 	print_info "Criando arquivo .desktop"
 
@@ -2209,7 +2232,7 @@ _youtube_dlgui_file_desktop_user()
 	{
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=youtube-dl-gui"
+		echo "Exec=$PYTHON2_EXECUTABLE -m youtube_dl_gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
@@ -2226,6 +2249,9 @@ _youtube_dlgui_file_desktop_user()
 
 _youtube_dlgui_file_desktop_root()
 {
+	[[ $(id -u) == 0 ]] || return 1
+	check_python_version2 || return 1
+
 	# Criar arquivo desktop para todos os usuarios.
 	local file_desktop_youtube_dl_gui='/usr/share/applications/youtube-dl-gui.desktop' # .desktop
 
@@ -2234,19 +2260,20 @@ _youtube_dlgui_file_desktop_root()
 		echo '[Desktop Entry]'
 		echo "Encoding=UTF-8"
 		echo "Name=Youtube-Dl-Gui"
-		echo "Exec=/usr/bin/youtube-dl-gui"
+		echo "Exec=$PYTHON2_EXECUTABLE -m youtube_dl_gui"
 		echo "Version=1.0"
 		echo "Terminal=false"
 		echo "Icon=youtube-dl-gui"
 		echo "Type=Application"
 		echo "Categories=Internet;Network;"
-	} | sudo tee "$file_desktop_youtube_dl_gui" 1> /dev/null
+	} | tee "$file_desktop_youtube_dl_gui" 1> /dev/null
 
 	print_info "Criando atalho na Área de Trabalho"
+	chmod +x "$file_desktop_youtube_dl_gui"
 	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de Trabalho'/ 2> /dev/null
 	cp -u "$file_desktop_youtube_dl_gui" ~/'Área de trabalho'/ 2> /dev/null
 	cp -u "$file_desktop_youtube_dl_gui" ~/Desktop/ 2> /dev/null
-	is_executable gtk-update-icon-cache && __sudo__ gtk-update-icon-cache
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 }
 
 
@@ -2300,6 +2327,8 @@ _install_wxpython2()
 
 	if [[ "$BASE_DISTRO" == 'debian' ]]; then
 		system_pkgmanager 'python-wxgtk3.0'
+	elif [[ "$BASE_DISTRO" == 'archlinux' ]]; then
+		system_pkgmanager python2-wxpython3
 	elif [[ "$BASE_DISTRO" == 'fedora' ]]; then
 		local archive_fedora='https://archives.fedoraproject.org/pub/archive/fedora/linux/releases'
 		local pkg_wxpython='python2-wxpython-3.0.2.0-26.fc31.x86_64.rpm'
@@ -2366,40 +2395,6 @@ _youtube_dlgui_compile()
 	return 0
 }
 
-_youtube_dlgui_user_installer()
-{
-	local url_youtube_dl_gui_master='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
-	local path_file="$DirDownloads/youtube-dl-gui.zip"
-	
-	download "$url_youtube_dl_gui_master" "$path_file" || return 1
-	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 # Somente baixar
-	unpack_archive "$path_file" || return 1
-
-	mkdir -p "${destinationFilesYoutubeDlGuiUser[pixmaps]}"
-	cd "$DirUnpack"/youtube-dl-gui-master
-	cp -R -u youtube_dl_gui "${destinationFilesYoutubeDlGuiUser[dir]}"
-	cd "${destinationFilesYoutubeDlGuiUser[dir]}"
-	cp -R -u data/icons/hicolor/128x128/apps/youtube-dl-gui.png "${destinationFilesYoutubeDlGuiUser[png]}"
-	cp -R -u data/pixmaps/. "${destinationFilesYoutubeDlGuiUser[pixmaps]}"/. 
-
-	# Criar script para execução via linha de comando
-	echo -e "#!/bin/sh" > "${destinationFilesYoutubeDlGuiUser[script]}"
-	echo -e "\ncd ${destinationFilesYoutubeDlGuiUser[dir]}" >> "${destinationFilesYoutubeDlGuiUser[script]}"
-
-	if is_executable python2; then
-		echo -e "python2 __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
-	elif is_executable python; then
-		echo -e "python __main__.py" >> "${destinationFilesYoutubeDlGuiUser[script]}"
-	else
-		print_erro "Necessário ter o 'python 2' instalado em seu sistema."
-		return 1
-	fi
-
-	chmod +x "${destinationFilesYoutubeDlGuiUser[script]}" 
-	_youtube_dlgui_file_desktop_user
-	return 0
-}
-
 _youtube_dlgui_pip() 
 {
 	# ppa ubuntu.
@@ -2425,7 +2420,8 @@ _youtube_dlgui_ubuntu()
 			_youtube_dlgui_compile || return 1
 			;;
 		*)
-			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'	
+			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'
+			sleep 1	
 			return 1
 			;;
 	esac
@@ -2452,6 +2448,7 @@ _youtube_dlgui_fedora()
 		system_pkgmanager 'wxGTK3' 'python2' || return 1
 	else
 		print_erro 'Seu sistema não é Fedora 32/33'
+		sleep 1
 		return 1
 	fi
 	
@@ -2470,29 +2467,25 @@ _youtube_dlgui_debian()
 		return 1
 	fi
 
-	__sudo__ pip install wheel
+	pip install wheel
 	_youtube_dlgui_compile || return 1
 
 }
 
 _youtube_dlgui_archlinux()
 {
-	system_pkgmanager python2 python2-pip python2-setuptools python2-wxpython3 || return 1
+	system_pkgmanager python2 python2-pip python2-setuptools || return 1
 	_python_twodict_github || return 1
 	_youtube_dlgui_compile || return 1
 	return 0
 }
 
-
 _youtube_dlgui_freebsd()
 {
 	# freebsd-12.0-release sudo pkg install py27-wxPython30
-	yellow "Instalando: py27-wxPython30"
 	system_pkgmanager py27-wxPython30 || return 1
 	_python_twodict_github || return 1
-	gitclone 'https://github.com/MrS0m30n3/youtube-dl-gui.git' || return 1
-	cd "$DirTemp/youtube-dl-gui"
-	sudo python2.7 setup.py install || return 1
+	_youtube_dlgui_compile || return 1
 	return 0
 }
 
@@ -2502,7 +2495,7 @@ _youtube_dlgui()
 	check_python_version2 || {
 		print_erro "python2 não está instalado em seu sistema"
 		question 'Deseja instalar python2 para prosseguir' || return 1
-		system_pkgmanager python2
+		system_pkgmanager python2 || system_pkgmanager python27
 	}
 
 	if [[ -f /etc/debian_version ]]; then
@@ -2526,6 +2519,36 @@ _youtube_dlgui()
 		print_erro 'falha na instalação' 'youtube-dl-gui'
 		return 1
 	fi
+}
+
+_youtube_dl_qt()
+{
+	[[ $(id -u) == 0 ]] && return 1
+	local URL_REPO_YTDL_QT='https://github.com/Brunopvh/youtube-dl-qt/archive/master.tar.gz'
+	local PATH_YTDL_QT="$DirDownloads/ytdl-qt.tar.gz"
+
+	download "$URL_REPO_YTDL_QT" "$PATH_YTDL_QT" || return 1
+	unpack_archive "$PATH_YTDL_QT" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d youtube-dl-qt*) youtube-dl-qt
+	cp -R -u youtube-dl-qt "$DIR_OPTIONAL"/youtube-dl-qt
+	chmod a+x youtube-dl-qt "$DIR_OPTIONAL"/youtube-dl-qt/youtube-dl-qt.py
+	ln -sf "$DIR_OPTIONAL"/youtube-dl-qt/youtube-dl-qt.py "$DIR_BIN"/youtube-dl-qt
+
+	pip3 install PyQt5 --user
+	echo '[Desktop Entry]' > "$DIR_APPLICATIONS"/youtube-dl-qt.desktop
+	{
+		echo "Name=Youtube-Dl-Qt"
+		echo "Version=1.0"
+		echo "Exec=youtube-dl-qt"
+		echo "Terminal=false"	
+		echo "Categories=Internet;"
+		echo "Type=Application"
+
+	} | tee -a "$DIR_APPLICATIONS"/youtube-dl-qt.desktop 1> /dev/null
+
+	chmod +x "$DIR_APPLICATIONS"/youtube-dl-qt.desktop
+
 }
 
 _archlinux_installer()
@@ -3097,44 +3120,33 @@ _virtualbox_additions()
 
 _install_requeriments_virtualbox()
 {
-	local requeriments_virtualbox_fedora=(
-		bzip2
-		perl 
-		libxkbcommon
-		libxcrypt-compat
-		libgomp
-		glibc-headers
-		glibc-devel
-		kernel-headers
-		kernel-devel 
-		dkms
-		qt5-qtx11extras
-		binutils
-		gcc
-		automake
-		make 
-		patch
-	)
-
-	local requeriments_virtualbox_debian=(
-		module-assistant build-essential libsdl-ttf2.0-0 dkms
-		)
-
-	local requeriments_virtualbox_archlinux=(
-		'virtualbox' 'virtualbox-host-modules-arch' 'linux-headers'
-	)
+	
 
 	if [[ "$BASE_DISTRO" == 'fedora' ]]; then
-		system_pkgmanager "${requeriments_virtualbox_fedora[@]}"
+		local requeriments_virtualbox=(
+				bzip2 perl libxkbcommon libxcrypt-compat libgomp
+				glibc-headers glibc-devel kernel-headers kernel-devel 
+				dkms qt5-qtx11extras binutils gcc automake make patch
+			)
+
 	elif [[ "$BASE_DISTRO" == 'debian' ]]; then # Debian/Ubuntu.
-		system_pkgmanager "${requeriments_virtualbox_debian[@]}" 
+		local requeriments_virtualbox=(
+				module-assistant build-essential libsdl-ttf2.0-0 dkms
+			)
+
 		system_pkgmanager linux-headers-$(uname -r)
+
 	elif [[ "$BASE_DISTRO" == 'archlinux' ]]; then
-		system_pkgmanager "${requeriments_virtualbox_archlinux[@]}"
+		local requeriments_virtualbox=(
+				virtualbox virtualbox-host-modules-arch linux-headers
+			)
+
 	else
 		print_erro "(_install_requeriments_virtualbox)"
 		return 1
 	fi
+
+	system_pkgmanager "${requeriments_virtualbox[@]}" || return 1 
 	return 0
 }
 
@@ -3170,7 +3182,7 @@ _virtualbox_fedora()
 
 _virtualbox_package_deb()
 {
-	# Instalação do virtualbox 5.2 no Debian Buster.
+	# Instalação do virtualbox no Debian Buster.
 	# https://www.virtualbox.org/wiki/Downloads
 	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
 	local VIRTUALBOX_PKG_DEB="$DirDownloads/virtualbox-6.1-buster-amd64.deb"
@@ -3189,6 +3201,7 @@ _virtualbox_package_deb()
 
 _virtualbox_debian()
 {
+	# Instalação via repositório.
 	local url_libvpx='http://ftp.us.debian.org/debian/pool/main/libv/libvpx/libvpx5_1.7.0-3+deb10u1_amd64.deb'
 	local path_libvpx="$DirDownloads/$(basename $url_libvpx)"
 	local sum_libvpx='72d8466a4113dd97d2ca96f778cad6c72936914165edafbed7d08ad3a1679fec'
@@ -3240,15 +3253,9 @@ _virtualbox_archlinux()
 	# https://wiki.archlinux.org/index.php/VirtualBox_(Portugu%C3%AAs)
 	# https://www.virtualbox.org/wiki/Linux_Downloads
 	# https://www.edivaldobrito.com.br/sbinvboxconfig-nao-esta-funcionando/
-	# virtualbox-host-modules-arch
-	# virtualbox-host-dkms
-	# systemd-modules-load.service -> (carregar módulos no boot)
-	# /usr/lib/modules-load.d/virtualbox-host-modules-arch.conf -> Arquivo de configuração
 	
 	_install_requeriments_virtualbox
 
-	# /etc/modules-load.d/virtualbox.conf
-	# sudo depmod -a
 	msg "Executando ... /sbin/rcvboxdrv setup"; sudo /sbin/rcvboxdrv setup
 	msg "Executando ... sudo /sbin/vboxconfig"; sudo /sbin/vboxconfig
 	msg "Executando ... sudo modprobe vboxdrv"; sudo modprobe vboxdrv
@@ -3277,9 +3284,11 @@ _virtualbox_linux_run()
 	# sudo /sbin/rcvboxdrv setup
 	local HtmlTemporaryFile=$(mktemp -u)
 
+	_install_requeriments_virtualbox || return 1
+
 	# Pagina de download do virtualbox
 	vbox_pag='https://www.virtualbox.org/wiki/Linux_Downloads'
-	get_html_file 'https://www.virtualbox.org/wiki/Linux_Downloads'
+	get_html_file 'https://www.virtualbox.org/wiki/Linux_Downloads' "$HtmlTemporaryFile"
 
 	# Encontrar ocorrências .run ou SHA256 no html da pagina de download.
 	vbox_html=$(egrep "(https.*download.*64.run|SHA256)" "$HtmlTemporaryFile")
@@ -3291,14 +3300,14 @@ _virtualbox_linux_run()
 	vbox_version=$(echo "$vbox_url_run" | cut -d '/' -f 5)
 
 	# Atribuir path do arquivo a ser baixado.
-	path_file="$DirDownloads/$(basename $vbox_url_run)"
+	path_file_vbox_run="$DirDownloads/$(basename $vbox_url_run)"
 	
 	# Definir o url de download do arquivo 'SHA256SUMS' com as hashs e seu destino de download.
 	vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
 	vbox_path_file_hash="$DirDownloads/virtualbox_$vbox_version.check"
 	msg "Baixando virtualbox versão $vbox_version"	
 
-	download "$vbox_url_run" "$path_file" || return 1
+	download "$vbox_url_run" "$path_file_vbox_run" || return 1
 	download "$vbox_url_hash" "$vbox_path_file_hash" || return
 
 	# Somente baixar
@@ -3307,13 +3316,14 @@ _virtualbox_linux_run()
 	# Obter a HASH do pacote de instalação com a extensão .run. As informações
 	# estão no arquivo '.check'. Em seguida verificar a integridade do pacote.
 	shasum_package_vitualbox=$(grep '64.run' "$vbox_path_file_hash" | cut -d' ' -f 1)
-	__shasum__ "$path_file" "$shasum_package_vitualbox" || return 1
-	chmod +x "$path_file"
-	__sudo__ "$path_file"
+	__shasum__ "$path_file_vbox_run" "$shasum_package_vitualbox" || return 1
+
+	chmod +x "$path_file_vbox_run"
+	__sudo__ "$path_file_vbox_run"
 	__sudo__ /sbin/rcvboxdrv setup
 	__sudo__ /sbin/vboxconfig
 	_virtualbox_extension_pack
-	rm -rf $HtmlTemporaryFile
+	rm -rf $HtmlTemporaryFile 2> /dev/null
 }
 
 _virtualbox()
