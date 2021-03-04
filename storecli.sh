@@ -701,6 +701,7 @@ storecli_apps_installer()
 			'android-studio') _android_studio;;
 			codeblocks) _codeblocks;;
 			java) _java;;
+			eclipse) _eclipse;;
 			idea) _idea_ic;;
 			nodejs) _nodejs_lts;;
 			pycharm) _pycharm;;

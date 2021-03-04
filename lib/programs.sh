@@ -565,6 +565,24 @@ _codeblocks()
 	esac
 }
 
+_eclipse()
+{
+	local URL_ECLIPSE='https://eclipse.c3sl.ufpr.br/oomph/epp/2020-12/R/eclipse-inst-jre-linux64.tar.gz'
+	local URL_SHA512_ECLIPS='https://www.eclipse.org/downloads/download.php?file=/oomph/epp/2020-12/R/eclipse-inst-jre-linux64.tar.gz#btn-ajax-checksum-sha512'
+	local PATH_ECLIPSE_TAR="$DirDownloads/eclipse-inst-jre-linux64.tar.gz"
+	local PATH_SHA512_ECLIPSE="$DirDownloads/eclipse-inst-jre-linux64.tar.gz.sha512"
+
+
+	download "$URL_ECLIPSE" "$PATH_ECLIPSE_TAR" || return 1
+	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
+	unpack_archive "$PATH_ECLIPSE_TAR" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d eclipse-*) eclipse
+	cd eclipse
+	chmod +x eclipse-inst
+	./eclipse
+}
+
 _idea_ic()
 {
 	is_executable 'idea' && print_info 'Pacote instalado' 'ideaIC' && return 0
