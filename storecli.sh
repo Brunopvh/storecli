@@ -84,7 +84,7 @@ source ~/.shmrc 1> /dev/null 2>&1
 	exit 1
 }
 
-__version__='2021_03_04'
+__version__='2021_03_05'
 __author__='Bruno Chaves'
 __appname__='storecli'	
 
@@ -94,7 +94,7 @@ export WORK_DIR=$(pwd)
 
 export URL_RAW_REPO_MASTER='https://raw.github.com/Brunopvh/storecli/master'
 export URL_RAW_REPO_DEVELOPMENT='https://raw.github.com/Brunopvh/storecli/development'
-export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_DEVELOPMENT/storecli.sh"
+export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_MASTER/storecli.sh"
 
 
 # Configuração de diretórios usados por este programa
