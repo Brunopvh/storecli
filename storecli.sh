@@ -94,7 +94,7 @@ export WORK_DIR=$(pwd)
 
 export URL_RAW_REPO_MASTER='https://raw.github.com/Brunopvh/storecli/master'
 export URL_RAW_REPO_DEVELOPMENT='https://raw.github.com/Brunopvh/storecli/development'
-export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_DEVELOPMENT/storecli.sh"
+export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_MASTER/storecli.sh"
 
 
 # Configuração de diretórios usados por este programa
@@ -220,6 +220,7 @@ mkdir -p "$DirGitclone"
 mkdir -p "$DirUnpack"
 mkdir -p "$DirDownloads"
 mkdir -p "$DIR_CONFIG_USER"
+mkdir -p ~/.cache/"$__appname__"
 
 #=============================================================#
 # Arquivos de configuração e Log.
