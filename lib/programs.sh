@@ -819,12 +819,18 @@ _sublime_text()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 	unpack_archive "$PATH_SUBLIME" || return 1
 
-	__sudo__ cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
-	sudo cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[png]}" 
-	sudo mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"
-	sudo ln -sf "${destinationFilesSublime[dir]}"/sublime_text "${destinationFilesSublime[link]}" 
+	cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
+	cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[png]}" 
+	mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"
+	ln -sf "${destinationFilesSublime[dir]}"/sublime_text "${destinationFilesSublime[link]}" 
 	
-	is_executable 'gtk-update-icon-cache' && sudo 'gtk-update-icon-cache'
+	sed -i "s/Exec=.*/Exec=sublime/g" "${destinationFilesSublime[file_desktop]}"
+	sed -i "s|Icon=.*|Icon=${destinationFilesSublime[png]}|g" "${destinationFilesSublime[file_desktop]}"
+
+	gtk-update-icon-cache 1> /dev/null 2>&1
+	cp -u "${destinationFilesSublime[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesSublime[file_desktop]}" ~/Desktop/ 2> /dev/null 
+	cp -u "${destinationFilesSublime[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
 
 	if is_executable 'sublime'; then
 		print_info 'Pacote instalado com sucesso' 'sublime'
@@ -2648,32 +2654,25 @@ _bspwm()
 _compactadores()
 {
 
-	local compactadores_debian=(
+	if [[ $BASE_DISTRO == 'fedora' ]]; then
+		local compactadores=(
+		'zip' 'ncompress' 'xarchiver' 'arj' 'cabextract' 'unzip' 'p7zip' 'lzma' 'arc' 
+		)
+	elif [[ $BASE_DISTRO == 'debian' ]]; then
+		local compactadores=(
 		'p7zip-full' 'p7zip' 'p7zip-rar' 'cabextract' 'unzip' 'xz-utils' 'lhasa' 
 		'unace' 'arc' 'arj' 'lzma' 'rar' 'unrar-free' 'zip' 'ncompress'
-	)
-
-	local compactadores_fedora=(
-		'zip' 'ncompress' 'xarchiver' 'arj' 'cabextract' 'unzip' 'p7zip' 'lzma' 'arc' 
-	)
-
-	local compactadores_arch=( 
+		)
+	elif [[ $BASE_DISTRO == 'archlinux' ]]; then
+		local compactadores=( 
 		'tar' 'gzip' 'bzip2' 'unzip' 'unrar' 'p7zip'
-	)
-
-
-	if is_executable 'zypper'; then
-		system_pkgmanager "${compactadores_fedora[@]}"
-	elif is_executable 'dnf'; then
-		system_pkgmanager "${compactadores_fedora[@]}"
-	elif is_executable 'apt'; then
-		system_pkgmanager "${compactadores_debian[@]}"
-	elif is_executable 'pacman'; then
-		system_pkgmanager "${compactadores_arch[@]}"
+		)
 	else
 		print_erro 'Programa indisponível para o seu sistema' 'compactadores'
 		return 1
 	fi
+
+	system_pkgmanager "${compactadores[@]}"
 }
 
 _firmware()

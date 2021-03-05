@@ -57,7 +57,7 @@ fi
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
-	exit 1
+	#exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
@@ -207,11 +207,12 @@ export readonly DirTemp="$TemporaryDirectory/temp"
 export readonly DirGitclone="$TemporaryDirectory/gitclone"
 export readonly DirUnpack="$TemporaryDirectory/unpack"
 export readonly DIR_CONFIG_USER=~/.config/"$__appname__"
+export readonly DIR_CACHE_USER=~/.cache/"$__appname__"
 
 if [[ $(id -u) == 0 ]]; then
 	export readonly DirDownloads="/var/cache/$__appname__/downloads"
 else
-	export readonly DirDownloads="$HOME/.cache/$__appname__/downloads"
+	export readonly DirDownloads=~/".cache/$__appname__/downloads"
 fi
 
 mkdir -p "$TemporaryDirectory"
@@ -220,14 +221,15 @@ mkdir -p "$DirGitclone"
 mkdir -p "$DirUnpack"
 mkdir -p "$DirDownloads"
 mkdir -p "$DIR_CONFIG_USER"
+mkdir -p "$DIR_CACHE_USER"
 
 #=============================================================#
 # Arquivos de configuração e Log.
 #=============================================================#
 export ConfigFile="$DIR_CONFIG_USER/requeriments.conf"
-export LogFile="$HOME/.cache/$__appname__/storecli.log"
-export LogErro="$HOME/.cache/$__appname__/storecli.err"
-export OutputDevice="$HOME/.cache/$__appname__/storecli-output.log"
+export LogFile="$DIR_CACHE_USER/storecli.log"
+export LogErro="$DIR_CACHE_USER/storecli.err"
+export OutputDevice="$DIR_CACHE_USER/storecli-output.log"
 
 echo '' > "$OutputDevice"
 touch "$ConfigFile"
