@@ -382,7 +382,7 @@ check_storecli_update()
 	echo -e "Atualizando para versão ... $OnlineVersion"
 	cd "$dir_of_executable"
 	./setup.sh || { sred "FALHA na execução do script setup.sh"; return 1; }
-	shm --upgrade --install os requests utils pkgmanager print_text platform
+	shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
 	
 	echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	print_line
@@ -807,10 +807,10 @@ main()
 			-h|--help) usage; return 0; break;;
 			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
 			-u|--self-update) 
-						"$SCRIPT_STORECLI_INSTALLER"
-						shm --upgrade --install os requests utils pkgmanager print_text platform
-						return 0
-						break
+					"$SCRIPT_STORECLI_INSTALLER"
+					shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
+					return 0
+					break
 						;;
 		esac
 	done
