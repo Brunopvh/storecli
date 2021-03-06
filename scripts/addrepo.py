@@ -7,7 +7,7 @@ import tempfile
 import shutil
 from time import sleep
 
-__version__ = '2020-12-03'
+__version__ = '2021-03-06'
 
 # Cores
 CRed='\033[0;31m'
@@ -28,9 +28,9 @@ os.makedirs(tmpDir)
 
 def usage():
 	print(f"""   
-   Use: {path.basename(sys.argv[0])} --repo arch
-        {path.basename(sys.argv[0])} --repo debian
-        {path.basename(sys.argv[0])} --repo fedora
+   Use: {os.path.basename(sys.argv[0])} --repo arch
+        {os.path.basename(sys.argv[0])} --repo debian
+        {os.path.basename(sys.argv[0])} --repo fedora
 """)
 
 
@@ -143,7 +143,7 @@ class AddRepo(SysInfo):
 		file_backup_pacman = '/etc/pacman.conf.bak'
 
 		# Criar backup do arquivo /etc/pacman.conf se ainda não existir.
-		if path.isfile(file_backup_pacman) == True:
+		if os.path.isfile(file_backup_pacman) == True:
 			print(f'{CYellow}[+] Backup encontrado: {file_backup_pacman}{CReset}')
 		else:
 			print(f'{CYellow}[+] Fazendo backup do arquivo: {file_backup_pacman}{CReset}')
@@ -172,6 +172,9 @@ class AddRepo(SysInfo):
 		# Verificar se o sistema e Debian.
 		if self.show('ID') != 'debian':
 			print(f'{CRed}[!] Seu sistema não é Debian{CReset}')
+			return False
+
+		if self.show('VERSION_CODENAME' == ''):
 			return False
 		
 		os_codename = self.show('VERSION_CODENAME')
