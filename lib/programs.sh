@@ -2532,11 +2532,17 @@ _youtube_dl_qt()
 	[[ $(id -u) == 0 ]] && return 1
 	local URL_REPO_YTDL_QT='https://github.com/Brunopvh/youtube-dl-qt/archive/master.tar.gz'
 	local PATH_YTDL_QT="$DirDownloads/ytdl-qt.tar.gz"
+	local SHA256_ICON='782291f220b4621e6087b42709a4e39a730141f720bc75e33e5f25e374594e07'
+	local TEMP_FILE_PNG="$DirUnpack/youtube-dl-qt/png/youtube-dl-icon.png"
 
 	download "$URL_REPO_YTDL_QT" "$PATH_YTDL_QT" || return 1
 	unpack_archive "$PATH_YTDL_QT" $DirUnpack || return 1
 	cd $DirUnpack
 	mv $(ls -d youtube-dl-qt*) youtube-dl-qt
+	
+	# Verificar hash do arquivo icone .png
+	__shasum__ "$TEMP_FILE_PNG" "$SHA256_ICON" || return 1
+	
 	cp -R -u youtube-dl-qt "$DIR_OPTIONAL"/youtube-dl-qt
 	chmod a+x youtube-dl-qt "$DIR_OPTIONAL"/youtube-dl-qt/youtube-dl-qt.py
 	ln -sf "$DIR_OPTIONAL"/youtube-dl-qt/youtube-dl-qt.py "$DIR_BIN"/youtube-dl-qt
@@ -2544,7 +2550,7 @@ _youtube_dl_qt()
 	pip3 install PyQt5 --user
 	echo '[Desktop Entry]' > "$DIR_APPLICATIONS"/youtube-dl-qt.desktop
 	{
-		echo "Name=Youtube-Dl-Qt"
+		echo "Name=Youtube-DL-QT"
 		echo "Version=1.0"
 		echo "Exec=youtube-dl-qt"
 		echo "Terminal=false"	
@@ -2554,7 +2560,10 @@ _youtube_dl_qt()
 	} | tee -a "$DIR_APPLICATIONS"/youtube-dl-qt.desktop 1> /dev/null
 
 	chmod +x "$DIR_APPLICATIONS"/youtube-dl-qt.desktop
-
+	cp -u "$DIR_APPLICATIONS"/youtube-dl-qt.desktop ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "$DIR_APPLICATIONS"/youtube-dl-qt.desktop ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$DIR_APPLICATIONS"/youtube-dl-qt.desktop ~/Desktop/ 2> /dev/null
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 }
 
 _archlinux_installer()
