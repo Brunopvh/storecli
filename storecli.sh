@@ -149,7 +149,7 @@ function check_external_modules()
 	}
 
 	[[ ! -f $requests ]] && { 
-		show_import_erro "requests"; return 1
+		show_import_erro "requests"; return 1 
 	}
 
 	[[ ! -f $utils ]] && { 
@@ -380,12 +380,9 @@ check_storecli_update()
 	fi
 	
 	echo -e "Atualizando para versão ... $OnlineVersion"
-	
 	cd "$dir_of_executable"
-	if ! ./setup.sh; then
-	    sred "FALHA na execução do script setup.sh"
-	    return 1
-	fi
+	./setup.sh || { sred "FALHA na execução do script setup.sh"; return 1; }
+	shm --upgrade --install os requests utils pkgmanager print_text platform
 	
 	echo -e "date_update $nowDate" > "$FileConfigUpdate"
 	print_line
@@ -808,8 +805,13 @@ main()
 			-I|--ignore-cli) export IgnoreCli='True';;
 			-l) shift; _list_applications "$@"; return 0; break;;
 			-h|--help) usage; return 0; break;;
-			-u|--self-update) "$SCRIPT_STORECLI_INSTALLER"; return 0; break;;
 			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
+			-u|--self-update) 
+						"$SCRIPT_STORECLI_INSTALLER"
+						shm --upgrade --install os requests utils pkgmanager print_text platform
+						return 0
+						break
+						;;
 		esac
 	done
 

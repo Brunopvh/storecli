@@ -83,6 +83,12 @@ _uninstall_youtube_dl_gui_windows()
 	__rmdir__ ~/."local/share/applications/youtube-dl-gui-windows.desktop" 
 }
 
+_uninstall_youtube_dl_qt()
+{
+	echo -e "Desinstalando youtube-dl-qt"
+	__rmdir__ "${destinationFilesYoutubeDlQt[@]}"
+}
+
 _uninstall_cpux()
 {
 	if [[ -f /etc/fedora-release ]]; then
@@ -135,6 +141,7 @@ _uninstall_packages()
 			teamviewer) _uninstall_teamviewer;;
 			youtube-dl) __rmdir__ "$directoryUSERbin/youtube-dl";;
 			youtube-dl-gui-windows) _uninstall_youtube_dl_gui_windows;;
+			youtube-dl-qt) _uninstall_youtube_dl_qt;;
 	
 			archlinux-installer) __rmdir__ "${destinationFilesArchlinuxInstaller[@]}";;
 			cpu-x) _uninstall_cpux;;
