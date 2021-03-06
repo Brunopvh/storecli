@@ -202,8 +202,8 @@ check_external_modules || {
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
-readonly export TemporaryDirectory="/tmp/storecli_$USER"
-#export readonly TemporaryDirectory="$(mktemp -u)-$__appname__" 
+#readonly export TemporaryDirectory="/tmp/storecli_$USER"
+export readonly TemporaryDirectory=$(mktemp -d) 
 export readonly DirTemp="$TemporaryDirectory/temp"
 export readonly DirGitclone="$TemporaryDirectory/gitclone"
 export readonly DirUnpack="$TemporaryDirectory/unpack"

@@ -91,8 +91,9 @@ _install_wxpython_win32()
 _python_twodict_github_windows()
 {
 	# Instalar python twodict (python versão 2).
+	cd $DirGitclone
 	gitclone 'https://github.com/MrS0m30n3/twodict.git' $DirGitclone || return 1
-	cd "$DirGitclone"/twodict
+	cd twodict
 	msg "Executando ... wine python.exe setup.py install --user"
 	wine python.exe setup.py install --user 1> /dev/null 2>&1
 }
@@ -229,9 +230,9 @@ _youtube_dlgui_windows_from_source()
 	cd "$DirUnpack"
 	mv youtube-* youtube-dl-gui
 	cd youtube-dl-gui || return 1
-	cp -u ./data/pixmaps/youtube-dl-gui.png "$DIR_ICONS"/youtube-dl-gui.png 1> /dev/null
+	cp -u ./youtube_dl_gui/data/pixmaps/youtube-dl-gui.png "$DIR_ICONS"/youtube-dl-gui.png 1> /dev/null
 	msg "Executando ... wine python.exe setup.py install --user"
-	wine python.exe setup.py install --user 1> /dev/null 2>&1
+	wine python.exe setup.py install --user
 	_youtube_dlgui_file_desktop_windows
 }
 
