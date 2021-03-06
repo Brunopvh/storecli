@@ -44,6 +44,10 @@
 #
 
 
+__version__='2021_03_06'
+__author__='Bruno Chaves'
+__appname__='storecli'
+
 
 #=============================================================#
 # Verificar requisitos minimos do sistema.
@@ -83,10 +87,7 @@ source ~/.shmrc 1> /dev/null 2>&1
 	printf "\033[0;31mVocê não tem permissão de escrita [-w] em ... $HOME\033[m\n"
 	exit 1
 }
-
-__version__='2021_03_05'
-__author__='Bruno Chaves'
-__appname__='storecli'	
+	
 
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
@@ -201,8 +202,8 @@ check_external_modules || {
 # Criar diretórios para arquivos temporários para descompressão dos
 # arquivos baixados, e clone(s) de repositórios do github. 
 #=============================================================#
-#readonly export TemporaryDirectory="/tmp/storecli_$USER"
-export readonly TemporaryDirectory="$(mktemp -u)-$__appname__" 
+readonly export TemporaryDirectory="/tmp/storecli_$USER"
+#export readonly TemporaryDirectory="$(mktemp -u)-$__appname__" 
 export readonly DirTemp="$TemporaryDirectory/temp"
 export readonly DirGitclone="$TemporaryDirectory/gitclone"
 export readonly DirUnpack="$TemporaryDirectory/unpack"

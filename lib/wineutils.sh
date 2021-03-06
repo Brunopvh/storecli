@@ -34,7 +34,7 @@ _python37_windows32_portable()
 	local path_file_python37_portable="$DirDownloads/$(basename $url_python37_portable)"
 
 	if ! is_executable wine; then
-		sred "Necessário ter o wine instalado para prosseguir"
+		question "Necessário ter o wine instalado para prosseguir - deseja continuar" || return 1
 		_install_wine
 	fi
 
@@ -47,11 +47,11 @@ _python37_windows32_portable()
 	echo -e "(_python37_windows32_portable) - executando: winetricks atmlib dotnet45 cmd"
 	"$SCRIPT_WINETRICKS_LOCAL" atmlib dotnet45 cmd
 
-	unpack_archive "$path_file_python37_portable" || return 1
+	unpack_archive "$path_file_python37_portable" $DirUnpack || return 1
 	mkdir -p "$HOME"/.wine/drive_c/python37
 	cd "$DirUnpack"
 	echo -e "Copiando arquivos para ... $HOME/.wine/drive_c/python37/"
-	cp -n * "$HOME"/.wine/drive_c/python37/
+	cp -n * "$HOME"/.wine/drive_c/python37/ 1> /dev/null
 	echo -e "(_python37_windows32_portable) - executando: wine $HOME/.wine/drive_c/python37/python.exe -V"
 	wine "$HOME"/.wine/drive_c/python37/python.exe -V
 }
@@ -63,6 +63,7 @@ _get_pip_windows()
 	local path_file_getpip="$DirDownloads/get-pip.py"
 	local path_python3_portable="$HOME/.wine/drive_c/python37/python.exe"
 
+	_python37_windows32_portable
 	if [[ ! -f "$path_python3_portable" ]]; then
 		sred "(_get_pip_windows): python3 não encontrado em ... $path_python3_portable"
 		return 1
@@ -83,11 +84,49 @@ _install_wxpython_win32()
 	local path_file_wxpython="$DirDownloads/wxPython3.0-win32-3.0.2.0-py27.exe"
 	download "$url_wxpython_win32" "$path_file_wxpython" || return 1
 	msg "Instalando ... $path_file_wxpython"
-	wine "$path_file_wxpython"
+	wine "$path_file_wxpython" || return 1
 	return 0
 }
 
-_youtube_dlgui_windows()
+_python_twodict_github_windows()
+{
+	# Instalar python twodict (python versão 2).
+	gitclone 'https://github.com/MrS0m30n3/twodict.git' $DirGitclone || return 1
+	cd "$DirGitclone"/twodict
+	msg "Executando ... wine python.exe setup.py install --user"
+	wine python.exe setup.py install --user 1> /dev/null 2>&1
+}
+
+
+_youtube_dlgui_file_desktop_windows()
+{
+	[[ $(id -u) == 0 ]] && return 1
+	
+	# Criar arquivo .desktop na HOME para o usuario atual.
+	print_info "Criando arquivo .desktop"
+	local file_desktop=~/".local/share/applications/youtube-dl-gui-windows.desktop"
+
+	echo '[Desktop Entry]' > "$file_desktop"
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=Youtube-DLG-Wine"
+		echo "Exec=wine python.exe -m youtube_dl_gui"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Icon=youtube-dl-gui"
+		echo "Type=Application"
+		echo "Categories=Internet;Network;"
+	} >> "$file_desktop"
+
+	chmod u+x "$file_desktop"
+	cp -u "$file_desktop" ~/Desktop/ 2> /dev/null
+	cp -u "$file_desktop" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "$file_desktop" ~/'Área de Trabalho'/ 2> /dev/null
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
+}
+
+
+_youtube_dlgui_windows_exe()
 {
 	# O youtube-dl-gui para windows via wine está funcionando perfeitamente no fedora 32, porém
 	# não funciona nas outras distros.
@@ -140,6 +179,70 @@ _youtube_dlgui_windows()
 	wine pip.exe install twodict
 	msg "Instalando: youtubedlg-0.4.exe" 
 	wine youtubedlg-0.4.exe
+}
+
+
+_youtube_dlgui_windows_from_source()
+{
+	# O youtube-dl-gui para windows via wine está funcionando perfeitamente no fedora 32, porém
+	# não funciona nas outras distros.
+	# https://mrs0m30n3.github.io/youtube-dl-gui/
+	# https://github.com/MrS0m30n3/youtube-dl-gui
+	# https://pypi.org/project/twodict/
+	# https://www.python.org/downloads/release/python-278/
+
+	local url_youtube_dlgui_win='https://github.com/MrS0m30n3/youtube-dl-gui/releases/download/0.4/youtube-dl-gui-0.4-win-setup.zip'
+	local url_youtube_dl_gui_master='https://github.com/MrS0m30n3/youtube-dl-gui/archive/master.zip'
+	local url_visual_c='https://download.microsoft.com/download/5/B/C/5BC5DBB3-652D-4DCE-B14A-475AB85EEF6E/vcredist_x86.exe'
+	local url_python27='https://www.python.org/ftp/python/2.7.8/python-2.7.8.msi'
+	local REPO_GETTEXT='https://github.com/mlocati/gettext-iconv-windows/releases/download'
+	local url_gnu_gettext="$REPO_GETTEXT/v0.20.2-v1.16/gettext0.20.2-iconv1.16-static-32.exe"
+
+	local path_file_youtube_dlgui="$DirDownloads/youtube-dl-gui.zip"
+	local path_file_visual_c="$DirDownloads/$(basename $url_visual_c)"
+	local path_file_gnu_gettext="$DirDownloads/$(basename $url_gnu_gettext)"
+	local path_file_python27="$DirDownloads/$(basename $url_python27)"
+	
+	download "$url_youtube_dl_gui_master" "$path_file_youtube_dlgui" || return 1
+	download "$url_visual_c" "$path_file_visual_c" || return 1 
+	download "$url_gnu_gettext" "$path_file_gnu_gettext" || return 1
+	
+	if ! is_executable wine; then
+		red "Necessário ter o wine instalado para prosseguir"
+		question "Gostaria de instalar o wine e winetricks agora" || return 1
+		_install_wine || return 1	
+	fi
+
+	is_executable winetricks || _install_script_winetricks
+	
+	echo -e "Entrando no diretório ... $DirDownloads"
+	cd "$DirDownloads"
+	msg "Instalando ... atmlib"; winetricks atmlib
+	msg "Instalando: dotnet45"; winetricks dotnet45
+	msg "Instalando: visual C"; wine "$path_file_visual_c"
+	msg "Instalando: GNU gettext"; wine "$path_file_gnu_gettext"
+	msg "Instalando: python2.7"; winetricks python27              # Instalar python2.7 para windows
+	_python_twodict_github_windows   # Instalar twodict versão do github.  
+	_install_wxpython_win32          # Instalar wxpython versão python2
+	
+	unpack_archive "$path_file_youtube_dlgui" $DirUnpack || return 1
+	cd "$DirUnpack"
+	mv youtube-* youtube-dl-gui
+	cd youtube-dl-gui || return 1
+	cp -u ./data/pixmaps/youtube-dl-gui.png "$DIR_ICONS"/youtube-dl-gui.png 1> /dev/null
+	msg "Executando ... wine python.exe setup.py install --user"
+	wine python.exe setup.py install --user 1> /dev/null 2>&1
+	_youtube_dlgui_file_desktop_windows
+}
+
+_youtube_dlgui_windows()
+{
+	if [[ "$OS_ID" == 'fedora' ]]; then
+		#_youtube_dlgui_windows_exe
+		_youtube_dlgui_windows_from_source
+	else
+		_youtube_dlgui_windows_from_source
+	fi
 }
 
 _epsxe_windows()

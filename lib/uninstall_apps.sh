@@ -78,6 +78,11 @@ _uninstall_torbrowser()
 	"$SCRIPT_TORBROWSER_INSTALLER" --remove
 }
 
+_uninstall_youtube_dl_gui_windows()
+{
+	__rmdir__ ~/."local/share/applications/youtube-dl-gui-windows.desktop" 
+}
+
 _uninstall_cpux()
 {
 	if [[ -f /etc/fedora-release ]]; then
@@ -129,6 +134,7 @@ _uninstall_packages()
 			tixati) __rmdir__ "${destinationFilesTixati[@]}";;
 			teamviewer) _uninstall_teamviewer;;
 			youtube-dl) __rmdir__ "$directoryUSERbin/youtube-dl";;
+			youtube-dl-gui-windows) _uninstall_youtube_dl_gui_windows;;
 	
 			archlinux-installer) __rmdir__ "${destinationFilesArchlinuxInstaller[@]}";;
 			cpu-x) _uninstall_cpux;;
