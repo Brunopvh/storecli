@@ -2531,7 +2531,7 @@ _youtube_dl_qt()
 {
 	[[ $(id -u) == 0 ]] && return 1
 	local URL_REPO_YTDL_QT='https://github.com/Brunopvh/youtube-dl-qt/archive/master.tar.gz'
-	local PATH_YTDL_QT="$DirDownloads/ytdl-qt.tar.gz"
+	local PATH_YTDL_QT="$DirDownloads/youtube-dl-qt.tar.gz"
 	local SHA256_ICON='782291f220b4621e6087b42709a4e39a730141f720bc75e33e5f25e374594e07'
 	local TEMP_FILE_PNG="$DirUnpack/youtube-dl-qt/png/youtube-dl-icon.png"
 
