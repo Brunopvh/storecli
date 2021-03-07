@@ -299,8 +299,8 @@ cat << EOF
        -y|--yes                      Assume sim para maioria da indagações.
                                      
      Argumentos:
-       remove <remove>             Remove um pacote.
-       install <pacote>            Instala um pacote.
+       remove <remove>             Remove um ou mais pacotes.
+       install <pacote>            Instala um ou mais pacotes.
 
        Instalando vários pacotes:
              $__script__ install etcher sublime-text google-chrome youtube-dl-gui virtualbox
@@ -673,10 +673,12 @@ storecli_apps_installer()
 	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
 	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
 	if [[ -z $1 ]]; then
-		_list_applications
+		#_list_applications
+		usage
 		return 1
 	fi
 
+	[[ $(id -u) == 0 ]] && return 1
 	echo -e ".... $(date +%H:%M:%S) $__app_name__ V$__version__ ...."
 	_clear_temp_dirs
 
