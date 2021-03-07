@@ -315,7 +315,7 @@ _woeusb_ng_github()
 	# https://github.com/WoeUSB/WoeUSB-ng
 	local REPO_WOEUSB_NG='https://github.com/WoeUSB/WoeUSB-ng.git'
 	
-	gitclone "$REPO_WOEUSB_NG" || return 1
+	gitclone "$REPO_WOEUSB_NG" $DirGitclone || return 1
 	printf "Entrando no diretório ... $DirGitclone/WoeUSB-ng\n"
 	cd "$DirGitclone/WoeUSB-ng" || return 1
 	__sudo__ pip3 install wheel
@@ -1541,7 +1541,7 @@ _google_chrome_archlinux()
 	# https://www.vivaolinux.com.br/dica/Instalando-Google-Chrome-no-Arch-com-Git
 	local github_chrome='https://aur.archlinux.org/google-chrome.git'
 
- 	gitclone "$github_chrome" || return 1
+ 	gitclone "$github_chrome" $DirGitclone || return 1
 	cd "$DirGitclone"/google-chrome
 	system_pkgmanager "base-devel" pipewire
 	 
@@ -1770,7 +1770,7 @@ _megasync_fedora()
 _libpdfium_archlinux()
 {
 	local repos_libpdfium='https://aur.archlinux.org/libpdfium-nojs.git'
-	gitclone "$repos_libpdfium" || return 1
+	gitclone "$repos_libpdfium" $DirGitclone || return 1
 	echo -e "Entrando no diretório ... $DirGitclone/libpdfium-nojs"
 	cd "$DirGitclone/libpdfium-nojs"
 	msg "Executando ... makepkg -s"
@@ -2287,7 +2287,7 @@ _python_twodict_github()
 {
 	# Instalar python twodict (python versão 2).
 
-	gitclone 'https://github.com/MrS0m30n3/twodict.git' || return 1
+	gitclone 'https://github.com/MrS0m30n3/twodict.git' $DirGitclone || return 1
 	echo -ne "Executando ... "
 	cd "$DirGitclone/twodict"
 
@@ -3560,7 +3560,7 @@ _dashtodock_github()
 	local url_repo='https://github.com/micheleg/dash-to-dock.git'
 	local path_file="$DirDownloads/dash_to_dock.tar.gz"
 
-	gitclone "$url_repo" || return 1
+	gitclone "$url_repo" $DirGitclone || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
 	system_pkgmanager make
