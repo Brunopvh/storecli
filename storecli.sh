@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_06'
+__version__='2021_03_07'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -693,7 +693,7 @@ storecli_apps_installer()
 			gnome-disk) _gnome_disk;;
 			microsoft-teams) _microsoft_teams;;
 			plank) _plank;;
-			storecli-gui) _install_storecli;;
+			storecli-gui) _install_storecli_gui;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 
