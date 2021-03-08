@@ -19,6 +19,24 @@ function check_python_version2()
 	return 0
 }
 
+function __add_link_from_python(){
+	[[ -x $(command -v python) ]] && return 0
+	
+	if [[ -x $(command -v python3) ]]; then
+		print_info "Criando link simbolico para python3 em ... $DIR_BIN/python"
+		ln -sf $(command -v python3) "$DIR_BIN"/python
+	elif [[ -x $(command -v python2) ]]; then
+		print_info "Criando link simbolico para python2 em ... $DIR_BIN/python"
+		ln -sf $(command -v python3) "$DIR_BIN"/python
+	else
+		print_erro "Necessário ter um link para o executável do python ou python3"
+		sleep 1
+		return 1
+	fi
+	sleep 1
+	return 0
+}
+
 _show_info()
 {
 	# Função para exibir mensagens padrão, como por exemplo erros comuns 
@@ -2503,6 +2521,8 @@ _youtube_dlgui()
 		question 'Deseja instalar python2 para prosseguir' || return 1
 		system_pkgmanager python2 || system_pkgmanager python27
 	}
+	
+	__add_link_from_python || return 1
 
 	if [[ -f /etc/debian_version ]]; then
 		if [[ "$VERSION_CODENAME" == 'buster' ]]; then

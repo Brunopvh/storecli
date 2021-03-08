@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Storecli Gui
+Version=2021_02_07
+Icon=system-software-install
+Exec=xterm -title StorecliGui -geo 180x101 -e 'storecli; read -p PressioneEnter:'
+Terminal=false
+Categories=Acessory;
+Type=Application
