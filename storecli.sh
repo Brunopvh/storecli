@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_07'
+__version__='2021_03_09'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -442,6 +442,8 @@ programs_browser=(
 
 programs_internet=(
 	clipgrab
+	electron-player
+	freetube
 	megasync
 	proxychains
 	qbittorrent
@@ -679,7 +681,7 @@ storecli_apps_installer()
 	fi
 
 	[[ $(id -u) == 0 ]] && return 1
-	echo -e ".... $(date +%H:%M:%S) $__app_name__ V$__version__ ...."
+	echo -e ".... $(date +%H:%M:%S) $__appname__ V$__version__ ...."
 	_clear_temp_dirs
 
 	# Se o sistema for LinuxMint tricia, deverá ser tratado como Ubuntu bionic.
@@ -727,6 +729,8 @@ storecli_apps_installer()
 
 			Internet) _Internet_All;;      # Instalar todos da catgória Internet.
 			clipgrab) _clipgrab_appimage;;
+			electron-player) _electron_player;;
+			freetube) _freetube;;
 			megasync) _megasync;;
 			proxychains) _proxychains;;
 			qbittorrent) _qbittorrent;;

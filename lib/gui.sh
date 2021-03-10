@@ -92,6 +92,9 @@ list_menu_navegadores=(
 # Lista de opções para categoria internet.
 list_menu_internet=(
 	'TRUE Voltar'
+	'FALSE clipgrab'
+	'FALSE electron-player'
+	'FALSE freetube'
 	'FALSE megasync'
 	'FALSE proxychains'
 	'FALSE qbittorrent'
@@ -122,6 +125,7 @@ list_menu_system=(
 	'FALSE bluetooth'
     'FALSE compactadores'
     'FALSE cpu-x'
+    'FALSE genymotion'
 	'FALSE google-earth'
     'FALSE gparted'
     'FALSE peazip'
@@ -281,6 +285,9 @@ menu_internet(){
 
 		case "$option" in
 			Voltar) yellow "Voltando..."; break;;
+			clipgrab) main install -y clipgrab;;
+			electron-player) main install -y electron-player;;
+			freetube) main install -y freetube;;
 			megasync) main install -y megasync;;
 			proxychains) main install -y proxychains;;
 			qbittorrent) main install -y qbittorrent;;
@@ -343,6 +350,7 @@ menu_system(){
 			bluetooth) main install -y bluetooth;;
 			compactadores) main install -y compactadores;;
 			cpu-x) main install -y cpu-x;;
+			genymotion) main install -y genymotion;;
 			firmware-atheros) main install -y firmware-atheros;;
 			firmware-linux-nonfree) main install -y firmware-linux-nonfree;;
 			firmware-ralink) main install -y firmware-ralink;;

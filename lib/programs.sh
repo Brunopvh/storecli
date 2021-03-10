@@ -1415,6 +1415,10 @@ _libreoffice()
 	_libreoffice_ptbr
 }
 
+#====================================================
+# Navegadores
+#====================================================
+
 _chromium_lang()
 {
 	# Instalar pacote de idioma ptbr se o idioma do usuário for
@@ -1676,20 +1680,26 @@ _torbrowser()
 	fi
 }
 
+#====================================================
+# Internet
+#====================================================
+
 _clipgrab_appimage()
 {
 	# Instalar o clipgrab na versão AppImage.
 	if is_executable clipgrab; then
-		print_info 'Pacote instalado' 'clipgrab'
+		#print_info 'Pacote instalado' 'clipgrab'
 		return 0
 	fi
 
-	local url_clipgrab_appimage='https://download.clipgrab.org/ClipGrab-3.8.13-x86_64.AppImage'
-	local path_file="$DirDownloads/$(basename $url_clipgrab_appimage)"
+	local url_page_clipgrab='https://clipgrab.de/pt'
+	local HTML_PAGE=$(get_html_page "$url_page_clipgrab" --find 'clipgrab.*x86_64.AppImage')
+	local URL_DOWNLOAD_CLIPGRAB=$(echo $HTML_PAGE | sed 's/.*href="//g;s/">.*//g')
+	local PATH_CLIPGRAB="$DirDownloads/$(basename $URL_DOWNLOAD_CLIPGRAB)"
 
-	download "$url_clipgrab_appimage" "$path_file" || return 1
+	download "$URL_DOWNLOAD_CLIPGRAB" "$PATH_CLIPGRAB" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
-	cp -u "$path_file" "$DIR_BIN"/clipgrab
+	cp -u "$PATH_CLIPGRAB" "$DIR_BIN"/clipgrab
 	chmod +x "$DIR_BIN"/clipgrab
 	clipgrab&
 
@@ -1702,6 +1712,72 @@ _clipgrab_appimage()
 	fi
 }
 
+_electron_player()
+{
+	[[ $(id -u) == 0 ]] && return 1
+	local URL_ELECTRON_PLAYER='https://github.com/oscartbeaumont/ElectronPlayer/releases/download/v2.0.8-rc4/electronplayer-2.0.8.AppImage'
+	local PATH_ELECTRON_PLAYER="$DirDownloads/$(basename $URL_ELECTRON_PLAYER)"
+
+	download "$URL_ELECTRON_PLAYER" "$PATH_ELECTRON_PLAYER" || return 1
+	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download' && return 0
+	cp -u "$PATH_ELECTRON_PLAYER" "$DIR_BIN"/electron-player
+	chmod +x "$DIR_BIN"/electron-player
+	"$DIR_BIN"/electron-player
+
+}
+
+
+_freetube_zipfile(){
+	# https://github.com/FreeTubeApp/FreeTube/releases/download/v0.12.0-beta/freetube_0.12.0_amd64.AppImage
+	local URL_FREETUBE_RELEASES='https://github.com/FreeTubeApp/FreeTube/releases/tag/v0.12.0-beta'
+	local HTML_FREETUBE=$(get_html_page "$URL_FREETUBE_RELEASES" --find 'x64.zip' | sed 's/.*href="//g;s/".*//g')
+	local URL_FREETUBE="https://github.com/$HTML_FREETUBE"
+	local PATH_FREETUBE="$DirDownloads/$(basename $URL_FREETUBE)"
+
+	download "$URL_FREETUBE" "$PATH_FREETUBE" || return 1
+
+}
+
+_freetube_appimage(){
+	# https://github.com/FreeTubeApp/FreeTube/releases/tag/v0.12.0-beta
+	# https://github.com/FreeTubeApp/FreeTube/releases/download/v0.12.0-beta/freetube_0.12.0_amd64.AppImage
+	local URL_FREETUBE_RELEASES='https://github.com/FreeTubeApp/FreeTube/releases/tag/v0.12.0-beta'
+	local HTML_FREETUBE=$(get_html_page "$URL_FREETUBE_RELEASES" --find 'AppImage' | sed 's/.*href="//g;s/".*//g')
+	local URL_FREETUBE="https://github.com/$HTML_FREETUBE"
+	local PATH_FREETUBE="$DirDownloads/$(basename $URL_FREETUBE)"
+
+	download "$URL_FREETUBE" "$PATH_FREETUBE" || return 1
+	cp -u "$PATH_FREETUBE" "${destinationFilesFreeTube[bin]}"
+	chmod +x "${destinationFilesFreeTube[bin]}"
+	is_executable "${destinationFilesFreeTube[bin]}" || return 1
+}
+
+_freetube()
+{
+	[[ $(id -u) == 0 ]] && return 1
+	_freetube_appimage || return 1
+
+	# Criar arquivo .desktop na HOME para o usuario atual.
+	print_info "Criando arquivo .desktop"
+
+	echo '[Desktop Entry]' > "${destinationFilesFreeTube[file_desktop]}"
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=FreeTube"
+		echo "Exec=freetube"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Type=Application"
+		echo "Categories=Internet;Network;"
+	} >> "${destinationFilesFreeTube[file_desktop]}"
+
+	chmod u+x "${destinationFilesFreeTube[file_desktop]}"
+	cp -u "${destinationFilesFreeTube[file_desktop]}" ~/Desktop/ 2> /dev/null
+	cp -u "${destinationFilesFreeTube[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesFreeTube[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
+
+}
 
 _megasync_opensuse_tumbleweed()
 {

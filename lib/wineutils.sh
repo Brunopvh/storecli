@@ -238,12 +238,8 @@ _youtube_dlgui_windows_from_source()
 
 _youtube_dlgui_windows()
 {
-	if [[ "$OS_ID" == 'fedora' ]]; then
-		#_youtube_dlgui_windows_exe
-		_youtube_dlgui_windows_from_source
-	else
-		_youtube_dlgui_windows_from_source
-	fi
+	_youtube_dlgui_windows_exe
+	#_youtube_dlgui_windows_from_source
 }
 
 _epsxe_windows()
