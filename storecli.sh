@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_09'
+__version__='2021_03_11'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -183,7 +183,7 @@ check_external_modules || {
 		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
 	elif [[ -x $(command -v aria2c) ]]; then
 		_tmpfile=$(mktemp -u)
-		aria2c 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' -d $(diraname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
+		aria2c 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' -d $(dirname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
 		bash "$_tmpfile"
 		rm -rf "$_tmpfile" 2> /dev/null
 		unset _tmpfile

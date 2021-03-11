@@ -266,8 +266,7 @@ _veracrypt()
 	is_executable 'veracrypt' && print_info 'Pacote instalado' 'veracrypt' && return 0
 	
 	local VERACRYPT_DOWN_PAGE='https://www.veracrypt.fr/en/Downloads.html'
-	
-	veracrypt_html_page=$(get_html_page "$VERACRYPT_DOWN_PAGE" --find download.*.tar)
+	veracrypt_html_page=$(get_html_page "$VERACRYPT_DOWN_PAGE" --find 'download.*.tar')
 	url_package_tar=$(echo -e "$veracrypt_html_page" | sed 's/.*="//g;s/".*//g;s/&#43;/+/g')
 	url_signature_file="${url_package_tar}.sig"	
 	VeracryptTarFile="$DirDownloads/$(basename $url_package_tar)"
@@ -2567,7 +2566,7 @@ _youtube_dlgui_debian()
 		return 1
 	fi
 
-	pip install wheel
+	pip install wheel --user || print_erro "pip não instalado." && return 1
 	_youtube_dlgui_compile || return 1
 
 }
