@@ -61,6 +61,7 @@ list_menu_acessory=(
 list_menu_development=(
 	'TRUE Voltar'
 	'FALSE android-studio'
+	'FALSE brmodelo'
 	'FALSE codeblocks'
 	'FALSE idea'
     'FALSE pycharm'
@@ -208,6 +209,7 @@ menu_dev(){
 		case "$option" in
 			Voltar) yellow "Voltando..."; break;;
 			android-studio) main install -y android-studio;;
+			brmodelo) main install -y brmodelo;;
 			codeblocks) main install -y codeblocks;;
 			idea) main install -y idea;;
 			pycharm) main install -y pycharm;;
