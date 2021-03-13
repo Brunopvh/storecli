@@ -554,12 +554,48 @@ _android_studio()
 	fi
 }
 
+_br_modelo()
+{
+	local URL_PNG_BRMODELO='https://github.com/chcandido/brModelo/raw/master/src/imagens/logico.png'
+	local PAGE_BRMODELO='http://www.sis4.com/brModelo/download.html'
+	local PATH_PNG_BRMODELO="$DirDownloads/brmodelo.png"
+	local URL_BRMODELO='http://www.sis4.com/brModelo/brModelo.jar'
+	local PATH_BRMODELO="$DirDownloads/brModelo.jar"
+
+	download "$URL_BRMODELO" "$PATH_BRMODELO" || return 1
+	download "$URL_PNG_BRMODELO" "$PATH_PNG_BRMODELO" || return 1
+	is_executable java || _install_java_development_kit_tar
+
+	cp -u "$PATH_BRMODELO" "${destinationFilesBrModelo[file_jar]}"
+	cp -u "$PATH_PNG_BRMODELO" "${destinationFilesBrModelo[png]}"
+
+	echo -e "#/bin/sh" > "${destinationFilesBrModelo[script]}"
+	echo -e "\njava -jar ${destinationFilesBrModelo[file_jar]}" >> "${destinationFilesBrModelo[script]}"
+
+	print_info "Criando arquivo .desktop"
+	echo '[Desktop Entry]' > "${destinationFilesBrModelo[file_desktop]}"
+	{
+		echo "Version=1.0"
+		echo "Name=brModelo"
+		echo "Exec=java -jar ${destinationFilesBrModelo[file_jar]}"
+		echo "Icon=${destinationFilesBrModelo[png]}"
+		echo "Type=Application"
+		echo "Comment=The software for MER"
+		echo "Path=$DIR_OPTIONAL"
+		echo "Terminal=false"
+		echo "StartupNotify=true"
+		echo "Categories=Development;Education;"
+	} >> "${destinationFilesBrModelo[file_desktop]}"
+
+	chmod +x  "${destinationFilesBrModelo[script]}"
+	chmod +x  "${destinationFilesBrModelo[file_desktop]}"
+
+}
+
 _codeblocks_fedora()
 {
 	# https://sempreupdate.com.br/como-instalar-o-codeblocks-no-fedora/
-	#
-	# local url_codeblocks_fedora='http://sourceforge.net/projects/codeblocks/files/Binaries/17.12/Linux/Fedora%2028%20(aka%20Rawhide)/codeblock-17.12-1.fc28.x86_64.tar.xz'
-
+	
 	system_pkgmanager codeblocks || return 1
 	system_pkgmanager make automake gcc 'gcc-c++' 'kernel-devel' || return 1
 	# sudo dnf groupinstall "Development Tools" "Development Libraries" 
@@ -822,7 +858,7 @@ _pycharm()
 	fi
 }
 
-_sublime_text()
+_sublime_text_tar_file()
 {
 	# Já instalado.
 	is_executable 'sublime' && print_info 'Pacote instalado' 'sublime-text' && return 0
@@ -857,6 +893,35 @@ _sublime_text()
 		print_erro 'falha na instalação' 'sublime'
 		return 1
 	fi
+}
+
+_sublime_text_debian_file()
+{
+	# https://www.sublimetext.com/docs/3/linux_repositories.html#apt
+	
+	# Adicionar chave remota.
+	apt_key_add 'https://download.sublimetext.com/sublimehq-pub.gpg' || return 1
+	system_pkgmanager apt-transport-https
+	add_repo_apt 'deb https://download.sublimetext.com/ apt/stable/' /etc/apt/sources.list.d/sublime-text.list
+	system_pkgmanager sublime-text || return 1
+	return 0
+}
+
+_sublime_text_rpm_fedora()
+{
+	_rpm_key_add 'https://download.sublimetext.com/sublimehq-rpm-pub.gpg' || return 1
+	__sudo__ dnf config-manager --add-repo 'https://download.sublimetext.com/rpm/stable/x86_64/sublime-text.repo' 
+	system_pkgmanager sublime-text || return 1
+	return 0
+}
+
+_sublime_text()
+{
+	case "$BASE_DISTRO" in
+		debian) _sublime_text_debian_file;;
+		fedora) _sublime_text_rpm_fedora;;
+		*) _sublime_text_tar_file;;
+	esac
 }
 
 
@@ -3229,7 +3294,6 @@ _virtualbox_additions()
 _install_requeriments_virtualbox()
 {
 	
-
 	if [[ "$BASE_DISTRO" == 'fedora' ]]; then
 		local requeriments_virtualbox=(
 				bzip2 perl libxkbcommon libxcrypt-compat libgomp
@@ -3291,20 +3355,35 @@ _virtualbox_fedora()
 _virtualbox_package_deb()
 {
 	# Instalação do virtualbox no Debian Buster.
-	# https://www.virtualbox.org/wiki/Downloads
-	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
-	local VIRTUALBOX_PKG_DEB="$DirDownloads/virtualbox-6.1-buster-amd64.deb"
-
 	if [[ "$VERSION_CODENAME" != 'buster' ]]; then 
-		print_erro "(_virtualbox_package_deb)"
+		print_erro "(_virtualbox_package_deb) ... Seu sistema não é Debian Buster"
 		return 1
 	fi
+	
+	local URL_VIRTUALBOX_DOW_PAGE='https://www.virtualbox.org/wiki/Linux_Downloads'
 
 	_install_requeriments_virtualbox
-	html_vbox_deb_buster=$(get_html_page "$URL_VIRTUALBOX_DOW_PAGE" --find 'buster.*.deb')
+
+	# Informações sobre o pacote '.deb'.
+	html_vbox_deb_buster=$(get_html_page "$URL_VIRTUALBOX_DOW_PAGE" --find '6.1.*buster.*.deb')
 	url_vbox_deb_buster=$(echo -e "$html_vbox_deb_buster" | sed 's/.*href="//g;s/">.*//g')
+	local VIRTUALBOX_PKG_DEB="$DirDownloads/$(basename $url_vbox_deb_buster)"
+
+	# Filtrar versão do virtualbox na string URL
+	local vbox_version=$(echo "$url_vbox_deb_buster" | cut -d '/' -f 5)
+
+	# Definir o url de download do arquivo 'SHA256SUMS' com as hashs e seu destino de download.
+	local vbox_url_hash="https://www.virtualbox.org/download/hashes/$vbox_version/SHA256SUMS"
+	local vbox_path_file_hash="$DirDownloads/virtualbox_hashs_$vbox_version.check"
+	
 	download "$url_vbox_deb_buster" "$VIRTUALBOX_PKG_DEB" || return 1
-	system_pkgmanager "$VIRTUALBOX_PKG_DEB" || _BROKE
+	download "$vbox_url_hash" "$vbox_path_file_hash" || return 1
+
+	# Obter hash do arquivo .deb baixado
+	hash_debian_file=$(grep -m 1 "buster.*amd64" "$vbox_path_file_hash" | cut -d ' ' -f 1)
+	__shasum__ "$VIRTUALBOX_PKG_DEB" "$hash_debian_file" || return 1
+
+	system_pkgmanager "$VIRTUALBOX_PKG_DEB" || _BROKE	
 }
 
 _virtualbox_debian()
@@ -3436,7 +3515,7 @@ _virtualbox_linux_run()
 
 _virtualbox()
 {
-	is_executable virtualbox && print_info 'Pacote instalado' 'virtualbox' && return 0
+	#is_executable virtualbox && print_info 'Pacote instalado' 'virtualbox' && return 0
 	case "$OS_ID" in
 		debian) _virtualbox_debian;;
 		linuxmint|ubuntu) _virtualbox_ubuntu;;

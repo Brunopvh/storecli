@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_11'
+__version__='2021_03_13'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -338,7 +338,7 @@ _get_storecli_online_version()
 	local FILE_UPDATE=$(mktemp -u)
 	local OnlineVersion=$__version__
 
-	download "$GLOBAL_SCRIPT_ONLINE_VERSION" "$FILE_UPDATE" 1> /dev/null || return 1
+	download "$GLOBAL_SCRIPT_ONLINE_VERSION" "$FILE_UPDATE" 1> /dev/null 2>&1 || return 1
 	OnlineVersion=$(grep -m 1 '^__version__=' "$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
 	rm -rf "$FILE_UPDATE" 1> /dev/null 2>&1
 	echo -e "$OnlineVersion"
@@ -412,6 +412,7 @@ programs_acessory=(
 
 programs_development=(
 	android-studio
+	brmodelo
 	codeblocks
 	idea
 	java
@@ -703,6 +704,7 @@ storecli_apps_installer()
 
 			Desenvolvimento) _Dev_All;;      # Instalar todos da catgória Desenvolvimento.
 			'android-studio') _android_studio;;
+			brmodelo) _br_modelo;;
 			codeblocks) _codeblocks;;
 			java) _java;;
 			eclipse) _eclipse;;
