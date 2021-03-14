@@ -3274,19 +3274,22 @@ _virtualbox_additions()
 		_APT install -y build-essential module-assistant
 		_APT install -y linux-headers-$(uname -r)
 		__sudo__ m-a prepare
-	elif [[ "$OS_ID" == 'ubuntu' ]]; then
-		_APT install -y build-essential module-assistant
-		_APT install -y linux-headers-$(uname -r)
+	elif [[ "$OS_ID" == 'ubuntu' || "$OS_ID" == 'linuxmint' ]]; then
+		system_pkgmanager build-essential module-assistant
+		system_pkgmanager linux-headers-$(uname -r)
 		__sudo__ m-a prepare
-		_APT install -y virtualbox-guest-x11
+		system_pkgmanager virtualbox-guest-x11
 	elif [[ -f /etc/fedora-release ]]; then
-		_DNF install -y gcc kernel-devel kernel-headers dkms make bzip2 perl libxcrypt-compat
-		_DNF install -y $(rpm -qa kernel | sort -V | tail -n 1)
-		_DNF install -y kernel-devel-$(uname -r)
-		_DNF install -y virtualbox-guest-additions
+		system_pkgmanager gcc kernel-devel kernel-headers dkms make bzip2 perl libxcrypt-compat
+		system_pkgmanager $(rpm -qa kernel | sort -V | tail -n 1)
+		system_pkgmanager kernel-devel-$(uname -r)
+		system_pkgmanager virtualbox-guest-additions
 	elif [[ "$OS_ID" == 'arch' ]]; then
 		system_pkgmanager virtualbox-guest-iso 
 		system_pkgmanager virtualbox-guest-dkms
+	else
+		print_erro "Pacote indisponível para o seu sistema."
+		return 1
 	fi
 	print_line
 }

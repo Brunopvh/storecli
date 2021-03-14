@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_13'
+__version__='2021_03_14'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -77,10 +77,20 @@ if ! uname -m | grep -q "64$"; then
 fi
 
 #=============================================================#
-# Diretórios do usuário
+# Setar o arquivo de configuração bashrc para importar as c
+# configurações do usuario $(whoami)
 #=============================================================#
-source ~/.bashrc 1> /dev/null 2>&1
-source ~/.shmrc 1> /dev/null 2>&1
+if [[ $(id -u) == 0 ]]; then
+	if [[ -f /etc/bashrc ]]; then
+		readonly __bashrc_file__='/etc/bashrc'
+	else
+		readonly __bashrc_file__='/etc/bash.bashrc'
+	fi
+else
+	__bashrc_file__=~/.bashrc
+fi
+
+source "$__bashrc_file__" 1> /dev/null 2>&1
 
 [[ ! -d $HOME ]] && HOME=~/
 [[ ! -w $HOME ]] && {
@@ -95,12 +105,11 @@ export WORK_DIR=$(pwd)
 
 export URL_RAW_REPO_MASTER='https://raw.github.com/Brunopvh/storecli/master'
 export URL_RAW_REPO_DEVELOPMENT='https://raw.github.com/Brunopvh/storecli/development'
-export GLOBAL_SCRIPT_ONLINE_VERSION="$URL_RAW_REPO_MASTER/storecli.sh"
+export URL_SCRIPT_STORECLI="$URL_RAW_REPO_MASTER/storecli.sh"
 
-
-# Configuração de diretórios usados por este programa
+# Configuração e diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
-readonly export dir_of_executable=$(dirname "$__script__") # Diretório raiz deste arquivo.
+readonly export dir_of_executable=$(dirname "$__script__") # Diretório pai deste arquivo.
 readonly export path_local_libs="$dir_of_executable/lib"
 readonly export dir_local_scripts="$dir_of_executable/scripts"
 readonly export dir_local_python="$dir_of_executable/python"
@@ -108,73 +117,78 @@ readonly export dir_local_python="$dir_of_executable/python"
 #=============================================================#
 # Importação de módulos externos.
 #=============================================================#
-# Repositório no github.
-# https://github.com/Brunopvh/bash-libs
+# Repositório github: https://github.com/Brunopvh/bash-libs
 #
-# Instalação do gerenciador de pacotes para módulos externos.
+# Instalação do gerenciador de pacotes para módulos externos(shm-> ~/.local/bin/shm - /usr/local/bin/shm).
 # sudo bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)" 
 # sudo bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/bash-libs/main/setup.sh)"
 
 function show_import_erro()
 {
-	echo "ERRO módulo não encontrado ... $@"
+	echo "$__appname__ ERRO módulo não encontrado ... $@"
 	if [[ -x $(command -v wget) ]]; then
 		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
 	elif [[ -x $(command -v curl) ]]; then
 		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
 	elif [[ -x $(command -v aria2c) ]]; then
 		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/master/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
+	else
+		echo -e "(show_import_erro): Instale curl ou wget para prosseguir."
 	fi
-	sleep 1
+	sleep 0.5
 	return 1
 }
 
-function check_external_modules()
+function check_external_modules() # retorna 0 ou 1.
 {
 	# Verificar se todos os módulos externos necessários estão disponíveis para serem importados.
-	[[ ! -f $config_path ]] && { 
+	[[ ! -f $PATH_BASH_LIBS/config_path.sh ]] && { 
 		show_import_erro "config_path"; return 1
 	}
 
-	[[ ! -f $crypto ]] && {
+	[[ ! -f $PATH_BASH_LIBS/crypto.sh ]] && {
 		show_import_erro "crypto"; return 1
 	}
 
-	[[ ! -f $files_programs ]] && { 
+	[[ ! -f $PATH_BASH_LIBS/files_programs.sh ]] && { 
 		show_import_erro "files_programs"; return 1
 	}
 
-	[[ ! -f $os ]] && { 
+	[[ ! -f $PATH_BASH_LIBS/os.sh ]] && { 
 		show_import_erro "os"; return 1 
 	}
 
-	[[ ! -f $requests ]] && { 
+	[[ ! -f $PATH_BASH_LIBS/requests.sh ]] && { 
 		show_import_erro "requests"; return 1 
 	}
 
-	[[ ! -f $utils ]] && { 
+	[[ ! -f $PATH_BASH_LIBS/utils.sh ]] && { 
 		show_import_erro "utils"; return 1 
 	}
 	
-	[[ ! -f $pkgmanager ]] && { 
+	[[ ! -f $PATH_BASH_LIBS/pkgmanager.sh ]] && { 
 		show_import_erro "pkgmanager"; return 1 
 	}
 	
-	[[ ! -f $print_text ]]&& {
+	[[ ! -f $PATH_BASH_LIBS/print_text.sh ]]&& {
 		show_import_erro "print_text"; return 1
 	}
 	
-	[[ ! -f $platform ]] && {
+	[[ ! -f $PATH_BASH_LIBS/platform.sh ]] && {
 		show_import_erro "platform"; return 1
 	}
 
 	return 0
 }
 
-check_external_modules || {
-	# Verificar se os módulos externos estão instalados no sistema.
+# Verificar se os módulos externos estão instalados no sistema.
+# Caso falte algum módulo este programa tentará resolver as dependências automáticamente
+# para isso é necessário ter wget|curl|aria2 instalado no sistema.
+function install_external_modules() 
+{
 	cd "$dir_of_executable"
-	if [[ ! -f setup.sh ]]; then
+	echo "Aguarde"
+	if [[ -f setup.sh ]]; then
 		chmod +x ./setup.sh
 		./setup.sh
 	elif [[ -x $(command -v wget) ]]; then
@@ -188,13 +202,43 @@ check_external_modules || {
 		rm -rf "$_tmpfile" 2> /dev/null
 		unset _tmpfile
 	else
-		echo "Instale curl ou wget"
+		echo "(install_external_modules): Instale curl ou wget para prosseguir."
+		sleep 1
 		exit 1
 	fi
 
-	source ~/.bashrc 1> /dev/null 2>&1
-	shm update
+	# Depois de executar o intalador, teremos o gerenciador de módulos bash(shm) disponível.
+	# basta proseguir com a instalação dos módulos requeridos.
+	source "$__bashrc_file__" 1> /dev/null 2>&1
+	[[ ! -x $(command -v shm) ]] && {
+		echo -e "(install_external_modules): ERRO script shm não instalado, tente novamente."
+		sleep 1
+		exit 1
+	}
+
+	shm update 
 	shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
+	exit 1 # Não remova.
+}
+
+# Setar o diretório pai com os módulos bash ou baixar/configurar se  necessário.
+# o caminho para PATH_BASH_LIBS pode ser passado como argumento da opção --lib
+
+if [[ "$1" == "--lib" ]]; then
+	[[ ! -d "$2" ]] && {
+		echo "ERRO ... o diretório não existe ... $2"
+		sleep 0.5
+		exit 1
+	}
+	readonly PATH_BASH_LIBS="$2"
+	echo "Usando módulos em ... $PATH_BASH_LIBS"
+	shift; shift; sleep 0.5
+	check_external_modules || exit 1
+fi
+
+source ~/.shmrc 1> /dev/null 2>&1
+check_external_modules || {
+	install_external_modules
 	exit 1
 }
 
@@ -237,18 +281,17 @@ touch "$ConfigFile"
 touch "$LogFile"
 touch "$LogErro"
 
-
 #=============================================================#
-# Importar modulos externos - VER o arquivo ~/.shmrc
+# Importar modulos externos - VER o arquivo ~/.shmrc ou /root/.shmrc
 #=============================================================#
-source $config_path
-source $print_text
-source $os
-source $pkgmanager
-source $files_programs
-source $requests
-source $utils
-source $crypto
+source $PATH_BASH_LIBS/config_path.sh
+source $PATH_BASH_LIBS/print_text.sh
+source $PATH_BASH_LIBS/os.sh
+source $PATH_BASH_LIBS/pkgmanager.sh
+source $PATH_BASH_LIBS/files_programs.sh
+source $PATH_BASH_LIBS/requests.sh
+source $PATH_BASH_LIBS/utils.sh
+source $PATH_BASH_LIBS/crypto.sh
 
 #=============================================================#
 # Importar Módulos locais
@@ -276,37 +319,44 @@ SCRIPT_WINETRICKS_LOCAL="$dir_local_scripts/winetricks.sh"
 usage()
 {
 cat << EOF
-    Use: $__script__ -b|-c|-d|-I|-h|-l|-v
+   Use: $__script__ -b|-c|-d|-I|-h|-l|-v
          $__script__ install <pacote>
          $__script__ remove <pacote>
 
-    Opções:
+   Opções:
 
-       -b|--broke                    Remove pacotes quebrados - (usar em sistemas Debian apenas).
-       -c|--configure                Instala requerimentos desse script.
-       -d|--downloadonly             Apenas baixa os pacotes, quando disponíveis.
-       -h|--help                     Mostra ajuda.
-       -I|--ignore-cli               Ignora a verificação dos pacotes/dependências deste script.
+     -b|--broke                    Remove pacotes quebrados - (usar em sistemas Debian apenas).
+     -c|--configure                Instala requerimentos desse script.
+     -d|--downloadonly             Apenas baixa os pacotes, quando disponíveis.
+     -h|--help                     Mostra ajuda.
+     -I|--ignore-cli               Ignora a verificação dos pacotes/dependências deste script.
                                      $__script__ --ignore-cli install <pacote>
 
-       -l|--list                     Lista aplicativos disponíveis para instalação, ou aplicativos
+     -l|--list                     Lista aplicativos disponíveis para instalação, ou aplicativos
                                      de uma categoria, argumentos:
                                      --list Acessorios|Desenvolvimento|Escritorio|Navegadores|Internet|Sistema
                                      |Preferencias|GnomeShell.
 
-       -u|--self-update              Instala ultima versão desse script disponível no github.
-       -v|--version                  Mostra versão.
-       -y|--yes                      Assume sim para maioria da indagações.
-                                     
-     Argumentos:
-       remove <remove>             Remove um ou mais pacotes.
-       install <pacote>            Instala um ou mais pacotes.
 
-       Instalando vários pacotes:
-             $__script__ install etcher sublime-text google-chrome youtube-dl-gui virtualbox
+     -u|--self-update              Instala ultima versão desse script disponível no github.
+     -v|--version                  Mostra versão.
+     -y|--yes                      Assume sim para maioria da indagações.
 
-       Instalando uma categoria/grupo de pacotes:
-             $__script__ --install Acessorios Desenvolvimento Escritorio Internet
+
+     --lib <path_bash_libs>        Informar o diretório pai com os módulos bash necessários para execução deste programa.
+                                     é OBRIGATÓRIO que ARG1 seja --lib e ARG2 seja o diretório contendo as libs/módulos.      
+                                     se não usar esta opção será usado o diretório default.
+
+
+   Argumentos:
+     remove <remove>             Remove um ou mais pacotes.
+     install <pacote>            Instala um ou mais pacotes.
+
+   Instalando vários pacotes:
+     $__script__ install etcher sublime-text google-chrome youtube-dl-gui virtualbox
+
+   Instalando uma categoria/grupo de pacotes:
+     $__script__ --install Acessorios Desenvolvimento Escritorio Internet
 
 EOF
 }
@@ -338,7 +388,7 @@ _get_storecli_online_version()
 	local FILE_UPDATE=$(mktemp -u)
 	local OnlineVersion=$__version__
 
-	download "$GLOBAL_SCRIPT_ONLINE_VERSION" "$FILE_UPDATE" 1> /dev/null 2>&1 || return 1
+	download "$URL_SCRIPT_STORECLI" "$FILE_UPDATE" 1> /dev/null 2>&1 || return 1
 	OnlineVersion=$(grep -m 1 '^__version__=' "$FILE_UPDATE" | sed "s/.*=//g;s/'//g")
 	rm -rf "$FILE_UPDATE" 1> /dev/null 2>&1
 	echo -e "$OnlineVersion"
@@ -811,7 +861,7 @@ main()
 			-y|--yes) export AssumeYes='True';;
 			-d|--downloadonly) export DownloadOnly='True';;
 			-I|--ignore-cli) export IgnoreCli='True';;
-			-l) shift; _list_applications "$@"; return 0; break;;
+			-l|--list) shift; _list_applications "$@"; return 0; break;;
 			-h|--help) usage; return 0; break;;
 			-v|--version) echo -e "$(basename $__script__) V${__version__}"; return 0; break;;
 			-u|--self-update) 
