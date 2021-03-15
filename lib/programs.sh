@@ -278,10 +278,10 @@ _veracrypt()
 	  
 	gpg_import 'https://www.idrix.fr/VeraCrypt/VeraCrypt_PGP_public_key.asc' || return 1
 	gpg_verify "$VeracryptSigFile" "$VeracryptTarFile" || return 1
-	unpack_archive "$VeracryptTarFile" || return 1
-	cp "$DirUnpack"/$(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
+	unpack_archive "$VeracryptTarFile" $DirUnpack || return 1
+	cd $DirUnpack
+	cp $(ls veracrypt*setup-gui-x64) "$DirTemp"/veracrypt-setupx64
 	chmod +x "$DirTemp"/veracrypt-setupx64
-	
 	xterm -title 'Instalando veracrypt' "$DirTemp"/veracrypt-setupx64
 
 	case "$OS_ID" in

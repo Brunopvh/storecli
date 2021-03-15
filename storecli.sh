@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_14'
+__version__='2021_03_15'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
