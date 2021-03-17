@@ -153,6 +153,7 @@ _uninstall_packages()
 
 			epsxe-win) __rmdir__ "${destinationFilesEpsxeWin32[@]}";;
 			remove) ;;
+			-y|-d) ;;
 			*) red "Não foi possível remover: $1"; return 1; break;;
 		esac
 		shift

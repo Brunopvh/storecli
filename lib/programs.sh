@@ -746,18 +746,24 @@ _netbeans()
 	# 
 
 	local URL_NETBEANS_ZIPFILE='https://downloads.apache.org/netbeans/netbeans/12.0/netbeans-12.0-bin.zip'
+	local URL_ASC_NETBEANS='https://downloads.apache.org/netbeans/netbeans/12.0/netbeans-12.0-bin.zip.asc'
 	local PATH_NETBEANS="$DirDownloads/$(basename $URL_NETBEANS_ZIPFILE)"
+	local PATH_NETBEANS_ASC="$DirDownloads/$(basename $URL_ASC_NETBEANS)"
 
 	[[ -d "${destinationFilesNetbeans[dir]}" ]] && {
 		print_info "Netbeans já instalado use a opção ${CGreen}remove${CReset} para desinstalar."
 		return 0
 	}
 
+
+	gpg_import 'https://downloads.apache.org/netbeans/KEYS' || return 1
+	download "$URL_ASC_NETBEANS" "$PATH_NETBEANS_ASC" || return 1
 	download "$URL_NETBEANS_ZIPFILE" "$PATH_NETBEANS" || return 1
+	gpg_verify "$PATH_NETBEANS_ASC" "$PATH_NETBEANS" || return 1
 	[[ $DownloadOnly == 'True' ]] && print_info "Feito somente download." && return 0
+	
 	unpack_archive $PATH_NETBEANS $DirUnpack || return 1
 	cd $DirUnpack
-	
 	cp -u ./netbeans/nb/netbeans.png "${destinationFilesNetbeans[png]}" || return 1
 	mv netbeans "${destinationFilesNetbeans[dir]}"
 	chmod +x "${destinationFilesNetbeans[dir]}"/bin/netbeans
@@ -771,9 +777,11 @@ _netbeans()
 		echo "Exec=${destinationFilesNetbeans[dir]}/bin/netbeans"
 		echo "Icon=${destinationFilesNetbeans[png]}"
 		echo "Terminal=false"
+		echo "Categories=Development;"
 	} >> "${destinationFilesNetbeans[file_desktop]}"
 
 	chmod +x "${destinationFilesNetbeans[file_desktop]}"
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 	if is_executable netbeans; then
 		print_info "Netbeans instalado com sucesso"
 		return 0
