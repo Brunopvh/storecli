@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_15'
+__version__='2021_03_16'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -466,6 +466,7 @@ programs_development=(
 	codeblocks
 	idea
 	java
+	netbeans
 	nodejs
 	pycharm
 	sublime-text
@@ -759,6 +760,7 @@ storecli_apps_installer()
 			java) _java;;
 			eclipse) _eclipse;;
 			idea) _idea_ic;;
+			netbeans) _netbeans;;
 			nodejs) _nodejs_lts;;
 			pycharm) _pycharm;;
 			sublime-text) _sublime_text;;

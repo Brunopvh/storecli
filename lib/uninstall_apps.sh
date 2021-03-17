@@ -128,6 +128,7 @@ _uninstall_packages()
 
 			android-studio) __rmdir__ "${destinationFilesAndroidStudio[@]}";;
 			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
+			netbeans) __rmdir__ "${destinationFilesNetbeans[@]}";;
 			nodejs) _uninstall_nodejs_lts;;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;
 			sublime-text) __rmdir__ "${destinationFilesSublime[@]}";;

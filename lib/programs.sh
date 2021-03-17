@@ -740,6 +740,50 @@ _java()
 	_install_java_development_kit_tar
 }
 
+_netbeans()
+{
+	# https://netbeans.apache.org/download/nb120/nb120.html
+	# 
+
+	local URL_NETBEANS_ZIPFILE='https://downloads.apache.org/netbeans/netbeans/12.0/netbeans-12.0-bin.zip'
+	local PATH_NETBEANS="$DirDownloads/$(basename $URL_NETBEANS_ZIPFILE)"
+
+	[[ -d "${destinationFilesNetbeans[dir]}" ]] && {
+		print_info "Netbeans já instalado use a opção ${CGreen}remove${CReset} para desinstalar."
+		return 0
+	}
+
+	download "$URL_NETBEANS_ZIPFILE" "$PATH_NETBEANS" || return 1
+	[[ $DownloadOnly == 'True' ]] && print_info "Feito somente download." && return 0
+	unpack_archive $PATH_NETBEANS $DirUnpack || return 1
+	cd $DirUnpack
+	
+	cp -u ./netbeans/nb/netbeans.png "${destinationFilesNetbeans[png]}" || return 1
+	mv netbeans "${destinationFilesNetbeans[dir]}"
+	chmod +x "${destinationFilesNetbeans[dir]}"/bin/netbeans
+	ln -sf "${destinationFilesNetbeans[dir]}"/bin/netbeans "${destinationFilesNetbeans[link]}"
+
+	print_info "Criando arquivo .desktop"
+	echo '[Desktop Entry]' > "${destinationFilesNetbeans[file_desktop]}"
+	{
+		echo "Version=1.0"
+		echo "Name=Apache Netbeans"
+		echo "Exec=${destinationFilesNetbeans[dir]}/bin/netbeans"
+		echo "Icon=${destinationFilesNetbeans[png]}"
+		echo "Terminal=false"
+	} >> "${destinationFilesNetbeans[file_desktop]}"
+
+	chmod +x "${destinationFilesNetbeans[file_desktop]}"
+	if is_executable netbeans; then
+		print_info "Netbeans instalado com sucesso"
+		return 0
+	else
+		print_erro "Falha na instalação de Netbeans"
+		return 1
+	fi
+
+}
+
 _nodejs_lts_tar()
 {
 	# https://nodejs.org/en/

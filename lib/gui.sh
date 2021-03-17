@@ -64,6 +64,7 @@ list_menu_development=(
 	'FALSE brmodelo'
 	'FALSE codeblocks'
 	'FALSE idea'
+	'FALSE netbeans'
     'FALSE pycharm'
     'FALSE sublime-text'
     'FALSE vim'
@@ -212,6 +213,7 @@ menu_dev(){
 			brmodelo) main install -y brmodelo;;
 			codeblocks) main install -y codeblocks;;
 			idea) main install -y idea;;
+			netbeans) main -y install netbeans;;
 			pycharm) main install -y pycharm;;
 			sublime-text) main install -y sublime-text;;
 			vim) main install -y vim;;
