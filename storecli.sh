@@ -25,7 +25,7 @@
 # Debian 10 - GNOME
 # Fedora 31/32 - GNOME
 # Ubuntu 18.04/20.04 - GNOME, 
-# LinuxMint 19.3, 
+# LinuxMint 19.3 
 # ArchLinux - GNOME.
 #
 #=============================================================#
@@ -44,7 +44,7 @@
 #
 
 
-__version__='2021_03_16'
+__version__='2021_03_17'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -61,7 +61,7 @@ fi
 # Usuário não pode ser o root.
 if [[ $(id -u) == '0' ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
-	#exit 1
+	exit 1
 fi
 
 # Necessário ter o "sudo" intalado.
@@ -77,7 +77,7 @@ if ! uname -m | grep -q "64$"; then
 fi
 
 #=============================================================#
-# Setar o arquivo de configuração bashrc para importar as c
+# Setar o arquivo de configuração bashrc para importar as
 # configurações do usuario $(whoami)
 #=============================================================#
 if [[ $(id -u) == 0 ]]; then
@@ -91,6 +91,7 @@ else
 fi
 
 source "$__bashrc_file__" 1> /dev/null 2>&1
+source ~/.shmrc 1> /dev/null 2>&1
 
 [[ ! -d $HOME ]] && HOME=~/
 [[ ! -w $HOME ]] && {
@@ -125,16 +126,8 @@ readonly export dir_local_python="$dir_of_executable/python"
 
 function show_import_erro()
 {
+	# Exibir erro generico se a importação módulos falhar.
 	echo "$__appname__ ERRO módulo não encontrado ... $@"
-	if [[ -x $(command -v wget) ]]; then
-		echo "Execute ... bash -c \"\$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
-	elif [[ -x $(command -v curl) ]]; then
-		echo "Execute ... bash -c \"\$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)\""
-	elif [[ -x $(command -v aria2c) ]]; then
-		echo -e "Execute ... aria2c https://raw.github.com/Brunopvh/storecli/master/setup.sh -o setup.sh; bash setup.sh; rm setup.sh"
-	else
-		echo -e "(show_import_erro): Instale curl ou wget para prosseguir."
-	fi
 	sleep 0.5
 	return 1
 }
@@ -142,6 +135,12 @@ function show_import_erro()
 function check_external_modules() # retorna 0 ou 1.
 {
 	# Verificar se todos os módulos externos necessários estão disponíveis para serem importados.
+
+	[[ ! -d $PATH_BASH_LIBS ]] && {
+		echo "$__appname__ ERRO ... diretório PATH_BASH_LIBS não encontrado."
+		return 1
+	}
+
 	[[ ! -f $PATH_BASH_LIBS/config_path.sh ]] && { 
 		show_import_erro "config_path"; return 1
 	}
@@ -181,11 +180,9 @@ function check_external_modules() # retorna 0 ou 1.
 	return 0
 }
 
-# Verificar se os módulos externos estão instalados no sistema.
-# Caso falte algum módulo este programa tentará resolver as dependências automáticamente
-# para isso é necessário ter wget|curl|aria2 instalado no sistema.
 function install_external_modules() 
 {
+	# Ao executar esta função ela instala as dependências deste programa apartir de um script online.
 	cd "$dir_of_executable"
 	echo "Aguarde"
 	if [[ -f setup.sh ]]; then
@@ -202,45 +199,44 @@ function install_external_modules()
 		rm -rf "$_tmpfile" 2> /dev/null
 		unset _tmpfile
 	else
-		echo "(install_external_modules): Instale curl ou wget para prosseguir."
+		echo "(install_external_modules) ERRO ... Instale curl ou wget para prosseguir."
 		sleep 1
 		exit 1
 	fi
 
 	# Depois de executar o intalador, teremos o gerenciador de módulos bash(shm) disponível.
 	# basta proseguir com a instalação dos módulos requeridos.
-	source "$__bashrc_file__" 1> /dev/null 2>&1
-	[[ ! -x $(command -v shm) ]] && {
-		echo -e "(install_external_modules): ERRO script shm não instalado, tente novamente."
-		sleep 1
-		exit 1
-	}
+	if [[ -x ~/.local/bin/shm ]]; then
+		local path_script_shm=~/'.local/bin/shm'
+	elif [[ -x /usr/local/bin/shm ]]; then
+		local path_script_shm='/usr/local/bin/shm'
+	else
+		echo "(install_external_modules) ERRO ... script shm não instalado."
+		return 1
+	fi
 
-	shm update 
-	shm --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
+	"$path_script_shm" update 
+	"$path_script_shm" --upgrade --install platform print_text pkgmanager utils requests os files_programs crypto config_path
 	exit 1 # Não remova.
 }
 
 # Setar o diretório pai com os módulos bash ou baixar/configurar se  necessário.
 # o caminho para PATH_BASH_LIBS pode ser passado como argumento da opção --lib
-
 if [[ "$1" == "--lib" ]]; then
 	[[ ! -d "$2" ]] && {
 		echo "ERRO ... o diretório não existe ... $2"
 		sleep 0.5
 		exit 1
 	}
-	readonly PATH_BASH_LIBS="$2"
+	export PATH_BASH_LIBS="$2"
 	echo "Usando módulos em ... $PATH_BASH_LIBS"
-	shift; shift; sleep 0.5
+	shift
+	shift
+	sleep 0.5
 	check_external_modules || exit 1
 fi
 
-source ~/.shmrc 1> /dev/null 2>&1
-check_external_modules || {
-	install_external_modules
-	exit 1
-}
+check_external_modules || { install_external_modules; exit 1; }
 
 #=============================================================#
 # Criar diretórios para arquivos temporários para descompressão dos
