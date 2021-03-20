@@ -765,19 +765,23 @@ _netbeans()
 	unpack_archive $PATH_NETBEANS $DirUnpack || return 1
 	cd $DirUnpack
 	cp -u ./netbeans/nb/netbeans.png "${destinationFilesNetbeans[png]}" || return 1
+	echo "Movendo arquivos"
 	mv netbeans "${destinationFilesNetbeans[dir]}"
 	chmod +x "${destinationFilesNetbeans[dir]}"/bin/netbeans
 	ln -sf "${destinationFilesNetbeans[dir]}"/bin/netbeans "${destinationFilesNetbeans[link]}"
 
-	print_info "Criando arquivo .desktop"
+	print_info "Criando arquivo ${destinationFilesNetbeans[file_desktop]}"
 	echo '[Desktop Entry]' > "${destinationFilesNetbeans[file_desktop]}"
 	{
-		echo "Version=1.0"
-		echo "Name=Apache Netbeans"
-		echo "Exec=${destinationFilesNetbeans[dir]}/bin/netbeans"
+		echo "Encoding=UTF-8"
+		echo "Name=Apache NetBeans IDE"
+		echo "Comment=The Smarter Way to Code"
+		echo "Exec=/bin/sh ${destinationFilesNetbeans[dir]}/bin/netbeans"
 		echo "Icon=${destinationFilesNetbeans[png]}"
-		echo "Terminal=false"
-		echo "Categories=Development;"
+		echo "Categories=Application;Development;Java;IDE"
+		echo "Version=1.0"
+		echo "Type=Application"
+		echo "Terminal=0"
 	} >> "${destinationFilesNetbeans[file_desktop]}"
 
 	chmod +x "${destinationFilesNetbeans[file_desktop]}"
