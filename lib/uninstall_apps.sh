@@ -127,7 +127,7 @@ _uninstall_packages()
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
 			android-studio) __rmdir__ "${destinationFilesAndroidStudio[@]}";;
-			idea) __rmdir__ "${destinationFilesIdeaic[@]}";;
+			intellij) __rmdir__ "${destinationFilesIntellij[@]}";;
 			netbeans) __rmdir__ "${destinationFilesNetbeans[@]}";;
 			nodejs) _uninstall_nodejs_lts;;
 			pycharm) __rmdir__ "${destinationFilesPycharm[@]}";;

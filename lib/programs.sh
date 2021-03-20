@@ -636,14 +636,16 @@ _eclipse()
 	./eclipse
 }
 
-_idea_ic()
+_intellij()
 {
 	is_executable 'idea' && print_info 'Pacote instalado' 'ideaIC' && return 0
-	local idea_url='https://download-cf.jetbrains.com/idea/ideaIC-2020.2.1.tar.gz'
-	local idea_sha256='a107f09ae789acc1324fdf8d22322ea4e4654656c742e4dee8a184e265f1b014'
-	local path_file="$DirDownloads/$(basename $idea_url)"
+	# local intellij='https://download-cf.jetbrains.com/idea/ideaIC-2020.2.1.tar.gz'
+	# local idea_sha256='a107f09ae789acc1324fdf8d22322ea4e4654656c742e4dee8a184e265f1b014'
+	local intellij_url='https://download.jetbrains.com/idea/ideaIC-2020.3.3.tar.gz'
+	local idea_sha256='60cabbab7e7f427c2b91e29f5c135ab99a043cc8e3dca835f1aa298031a24ed7'
+	local path_file="$DirDownloads/$(basename $intellij_url)"
 
-	download "$idea_url" "$path_file" || return 1
+	download "$intellij_url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	__shasum__ "$path_file" "$idea_sha256" || return 1
 	unpack_archive "$path_file" || return 1

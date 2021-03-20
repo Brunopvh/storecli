@@ -63,7 +63,7 @@ list_menu_development=(
 	'FALSE android-studio'
 	'FALSE brmodelo'
 	'FALSE codeblocks'
-	'FALSE idea'
+	'FALSE intellij'
 	'FALSE netbeans'
     'FALSE pycharm'
     'FALSE sublime-text'
@@ -212,7 +212,7 @@ menu_dev(){
 			android-studio) main install -y android-studio;;
 			brmodelo) main install -y brmodelo;;
 			codeblocks) main install -y codeblocks;;
-			idea) main install -y idea;;
+			intellij) main install -y intellij;;
 			netbeans) main -y install netbeans;;
 			pycharm) main install -y pycharm;;
 			sublime-text) main install -y sublime-text;;

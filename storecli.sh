@@ -460,7 +460,7 @@ programs_development=(
 	android-studio
 	brmodelo
 	codeblocks
-	idea
+	intellij
 	java
 	netbeans
 	nodejs
@@ -754,7 +754,7 @@ storecli_apps_installer()
 			codeblocks) _codeblocks;;
 			java) _java;;
 			eclipse) _eclipse;;
-			idea) _idea_ic;;
+			intellij) _intellij;;
 			netbeans) _netbeans;;
 			nodejs) _nodejs_lts;;
 			pycharm) _pycharm;;
