@@ -652,38 +652,38 @@ _intellij()
 	
 	cd "$DirUnpack" 
 	mv $(ls -d idea-*) idea-IC
-	echo -ne "Movendo ... ${destinationFilesIdeaic[dir]} "
-	mv idea-IC "${destinationFilesIdeaic[dir]}" || return 1
+	echo -ne "Movendo ... ${destinationFilesIintellij[dir]} "
+	mv idea-IC "${destinationFilesIintellij[dir]}" || return 1
 	printf 'OK\n'
-	echo -e "Entrando no diretório ... ${destinationFilesIdeaic[dir]}/bin"
-	cd "${destinationFilesIdeaic[dir]}/bin"
-	cp -vu idea.png "${destinationFilesIdeaic[png]}" 1> /dev/null
+	echo -e "Entrando no diretório ... ${destinationFilesIintellij[dir]}/bin"
+	cd "${destinationFilesIintellij[dir]}/bin"
+	cp -vu idea.png "${destinationFilesIintellij[png]}" 1> /dev/null
 
 	print_info "Criando arquivo '.desktop'"
-	echo "[Desktop Entry]" > "${destinationFilesIdeaic[file_desktop]}"
+	echo "[Desktop Entry]" > "${destinationFilesIintellij[file_desktop]}"
 	{
 		echo -e "Name=IntelliJ IDEA Ultimate Edition"
 		echo -e "Version=1.0"
 		echo -e "Comment=java"
-		echo -e "Icon=${destinationFilesIdeaic[png]}"
-		echo -e "Exec=${destinationFilesIdeaic[dir]}/bin/idea.sh %f"
+		echo -e "Icon=${destinationFilesIintellij[png]}"
+		echo -e "Exec=${destinationFilesIintellij[dir]}/bin/idea.sh %f"
 		echo -e "Terminal=false"
 		echo -e "Categories=Development;IDE"
 		echo -e "Type=Application"
-	} >> "${destinationFilesIdeaic[file_desktop]}"
+	} >> "${destinationFilesIintellij[file_desktop]}"
 
-	chmod +x "${destinationFilesIdeaic[file_desktop]}"
+	chmod +x "${destinationFilesIintellij[file_desktop]}"
 	is_executable gtk-update-icon-cache && gtk-update-icon-cache
 
 	print_info "Criando atalho para execução"
-	echo -e "#!/bin/sh" > "${destinationFilesIdeaic[script]}"
-	echo -e "cd ${destinationFilesIdeaic[dir]}/bin" >> "${destinationFilesIdeaic[script]}"
-	echo -e "./idea.sh \$@" >> "${destinationFilesIdeaic[script]}"
-	chmod +x "${destinationFilesIdeaic[script]}"
+	echo -e "#!/bin/sh" > "${destinationFilesIintellij[script]}"
+	echo -e "cd ${destinationFilesIintellij[dir]}/bin" >> "${destinationFilesIintellij[script]}"
+	echo -e "./idea.sh \$@" >> "${destinationFilesIintellij[script]}"
+	chmod +x "${destinationFilesIintellij[script]}"
 
-	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
-	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
-	cp -u "${destinationFilesIdeaic[file_desktop]}" ~/Desktop/ 2> /dev/null 
+	cp -u "${destinationFilesIintellij[file_desktop]}" ~/'Área de Trabalho'/ 2> /dev/null
+	cp -u "${destinationFilesIintellij[file_desktop]}" ~/'Área de trabalho'/ 2> /dev/null 
+	cp -u "${destinationFilesIintellij[file_desktop]}" ~/Desktop/ 2> /dev/null 
 
 	if is_executable idea; then
 		print_info 'Pacote instalado com sucesso' 'ideaic'
