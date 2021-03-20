@@ -90,8 +90,8 @@ else
 	__bashrc_file__=~/.bashrc
 fi
 
-source "$__bashrc_file__" 1> /dev/null 2>&1
-source ~/.shmrc 1> /dev/null 2>&1
+# source "$__bashrc_file__" 1> /dev/null 2>&1
+# source ~/.shmrc 1> /dev/null 2>&1
 
 [[ ! -d $HOME ]] && HOME=~/
 [[ ! -w $HOME ]] && {
@@ -128,7 +128,7 @@ function show_import_erro()
 {
 	# Exibir erro generico se a importação módulos falhar.
 	echo "$__appname__ ERRO módulo não encontrado ... $@"
-	sleep 0.5
+	sleep 1
 	return 1
 }
 
@@ -136,7 +136,7 @@ function check_external_modules() # retorna 0 ou 1.
 {
 	# Verificar se todos os módulos externos necessários estão disponíveis para serem importados.
 
-	[[ ! -d $PATH_BASH_LIBS ]] && {
+	[[ ! -d "$PATH_BASH_LIBS" ]] && {
 		echo "$__appname__ ERRO ... diretório PATH_BASH_LIBS não encontrado."
 		return 1
 	}
@@ -223,11 +223,11 @@ function install_external_modules()
 # Setar o diretório pai com os módulos bash ou baixar/configurar se  necessário.
 # o caminho para PATH_BASH_LIBS pode ser passado como argumento da opção --lib
 if [[ "$1" == "--lib" ]]; then
-	[[ ! -d "$2" ]] && {
+	if [[ ! -d "$2" ]]; then
 		echo "ERRO ... o diretório não existe ... $2"
 		sleep 0.5
 		exit 1
-	}
+	fi
 	export PATH_BASH_LIBS="$2"
 	echo "Usando módulos em ... $PATH_BASH_LIBS"
 	shift
@@ -236,6 +236,7 @@ if [[ "$1" == "--lib" ]]; then
 	check_external_modules || exit 1
 fi
 
+[[ -d "$PATH_BASH_LIBS" ]] || source $__bashrc_file__ 2> /dev/null
 check_external_modules || { install_external_modules; exit 1; }
 
 #=============================================================#
@@ -451,7 +452,6 @@ programs_acessory=(
 	etcher
 	gnome-disk
 	microsoft-teams
-	storecli-gui
 	veracrypt
 	woeusb
 	)
@@ -745,7 +745,6 @@ storecli_apps_installer()
 			gnome-disk) _gnome_disk;;
 			microsoft-teams) _microsoft_teams;;
 			plank) _plank;;
-			storecli-gui) _install_storecli_gui;;
 			veracrypt) _veracrypt;;
 			woeusb) _woeusb;;
 
