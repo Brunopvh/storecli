@@ -176,7 +176,7 @@ _etcher_archlinux()
 	
 	download "$url_snapshot" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	
 	cd "$DirUnpack"
 	mv $(ls -d balena-*) "$DirTemp/etcher"
@@ -383,7 +383,7 @@ _android_studio_zip()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	
 	__shasum__ "$path_studio_zip_file" "$hash_android_studio" || return 1
-	unpack_archive "$path_studio_zip_file" || return 1
+	unpack_archive "$path_studio_zip_file" $DirUnpack || return 1
 
 	echo "Instalando android studio em ~/.local/bin"
 	cd "$DirUnpack" 
@@ -648,7 +648,7 @@ _intellij()
 	download "$intellij_url" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 	__shasum__ "$path_file" "$idea_sha256" || return 1
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	
 	cd "$DirUnpack" 
 	mv $(ls -d idea-*) idea-IC
@@ -810,7 +810,7 @@ _nodejs_lts_tar()
 	fi
 
 	download "$URL_NODEJS_TARFILE" "$PATH_NODEJS_TARFILE" || return 1
-	unpack_archive "$PATH_NODEJS_TARFILE" || return 1
+	unpack_archive "$PATH_NODEJS_TARFILE" $DirUnpack || return 1
 	cd $DirUnpack
 	mv $(ls -d node-*) nodejs
 	echo -e "Instalando em ... ${destinationFilesNodejs[dir]}"
@@ -879,7 +879,7 @@ _pycharm()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	__shasum__ "$path_file" "$sha256_pycharm" || return 1
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 
 	cd "$DirUnpack"
 	printf "${CGreen}C${CReset}opiando arquivos ... " 
@@ -928,7 +928,7 @@ _sublime_text_tar_file()
 
 	download "$URL_SUBLIME_TARFILE" "$PATH_SUBLIME" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
-	unpack_archive "$PATH_SUBLIME" || return 1
+	unpack_archive "$PATH_SUBLIME" $DirUnpack || return 1
 
 	cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
 	cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[png]}" 
@@ -1009,7 +1009,7 @@ _vscode_tarfile()
 
 	download "$url_vscode_tar" "$path_tar_file"
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
-	unpack_archive "$path_tar_file" || return 1
+	unpack_archive "$path_tar_file" $DirUnpack || return 1
 
 	cd "$DirUnpack"
 	mv $(ls -d VSCode*) "${destinationFilesVscode[dir]}" 
@@ -1340,7 +1340,7 @@ _spotify_archlinux()
 
 	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack"
 	echo -e "Descomprimindo arquivo data.tar.gz"
 	sudo tar -zxpvf data.tar.gz -C / 1> /dev/null
@@ -2226,7 +2226,7 @@ _teamviewer_tar()
 	download "$url_tar" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack" && cd teamviewer
 	chmod -R +x *
 	__sudo__ ./tv-setup install || return 1
@@ -2273,7 +2273,7 @@ _telegram()
 	esac
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0	
 	
-	unpack_archive "$path_telegram" || return 1
+	unpack_archive "$path_telegram" $DirUnpack || return 1
 	cd "$DirUnpack" 
 	mv -v $(ls -d Telegra*) "${destinationFilesTelegram[dir]}" 1> /dev/null
 	chmod -R 755 "${destinationFilesTelegram[dir]}"
@@ -2316,7 +2316,7 @@ _tixati_tarfile()
 		fedora) system_pkgmanager GConf2;;
 	esac	
 
-	unpack_archive "$TarFile" || return 1
+	unpack_archive "$TarFile" $DirUnpack || return 1
 	cd "$DirUnpack"
 	mv $(ls -d tixati*) tixati-amd64 
 	cd "$DirUnpack/tixati-amd64"
@@ -2583,7 +2583,7 @@ _youtube_dlgui_compile()
 	download "$url_youtube_dl_gui_master" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack"/youtube-dl-gui-master || return 1
 	print_info "Compilando youtube-dl-gui"
 	
@@ -2965,7 +2965,7 @@ _cpux_ubuntu()
 	download "$URL_CPUX_TAR" "$PATH_CPUX_TARFILE" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
-	unpack_archive "$PATH_CPUX_TARFILE" || return 1
+	unpack_archive "$PATH_CPUX_TARFILE" $DirUnpack || return 1
 	if [[ "$VERSION_CODENAME" == 'bionic' ]] || [[ "$VERSION_CODENAME" == 'tricia' ]]; then
 		printf "Entrando no diretório ... $DirUnpack/xUbuntu_18.04/amd64\n"
 		cd "$DirUnpack/xUbuntu_18.04/amd64" || return 1
@@ -2997,7 +2997,7 @@ _cpux_debian()
 	download "$URL_CPUX_TAR" "$PATH_CPUX_TARFILE" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
-	unpack_archive "$PATH_CPUX_TARFILE" || return 1
+	unpack_archive "$PATH_CPUX_TARFILE" $DirUnpack || return 1
 	printf "Entrando no diretório ... $DirUnpack/Debian_10/amd64\n"
 	cd "$DirUnpack/Debian_10/amd64" || return 1
 	cp -vu cpu-x_*amd64.deb "$DirTemp"/cpu-x-amd64.deb
@@ -3160,7 +3160,7 @@ _refind_zip()
 	# Já instalado.
 	is_executable 'refind-install' && print_info 'Pacote instalado' 'refind-install' && return 0
 	
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack"
 	mv $(ls -d refind*) refind
 	sudo mv refind "${destinationFilesRefind[dir]}"
@@ -3616,7 +3616,7 @@ _ohmybash()
 	download "$ohmybash_master" "$ohmybashZipFile" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 
-	unpack_archive "$ohmybashZipFile" || return 1
+	unpack_archive "$ohmybashZipFile" $DirUnpack || return 1
 	msg "Instalando temas para ohmybash em: $HOME/.bash/themes"
 	mkdir -p "$HOME/.bash/themes"
 	cp -R -u "$DirUnpack/oh-my-bash-master/themes/" "$HOME/.bash/" || return 1
@@ -3663,7 +3663,7 @@ _install_zsh_powerline()
 	download "$URL_POWERLINE_REPO" "$PATH_POWERLINE_FILE" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download.' && return 0
 
-	unpack_archive "$PATH_POWERLINE_FILE" || return 1
+	unpack_archive "$PATH_POWERLINE_FILE" $DirUnpack || return 1
 	cd "$DirUnpack"/fonts-master
 	chmod +x install.sh
 	./install.sh
@@ -3714,7 +3714,7 @@ _papirus_github()
 	download "$url_papirus_master" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack"
 	mv  $(ls -d papirus-*) papirus
 	cd papirus
@@ -3779,7 +3779,7 @@ _sierra()
 	download "$url_sierra" "$path_file" || return 1
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack"
 	mv $(ls -d Sierra*) sierra_theme 
 	cd sierra_theme
@@ -3849,7 +3849,7 @@ _topicons_plus_github()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' "$path_file" && return 0 
 
 	system_pkgmanager make
-	unpack_archive "$path_file" || return 1
+	unpack_archive "$path_file" $DirUnpack || return 1
 	cd "$DirUnpack"
 	mv $(ls -d Top*) "$DirUnpack"/topicons_plus
 	cd topicons_plus
