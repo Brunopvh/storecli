@@ -930,6 +930,7 @@ _sublime_text_tar_file()
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0 
 	unpack_archive "$PATH_SUBLIME" $DirUnpack || return 1
 
+	echo -e "Copiando arquivos"
 	cp -u "$DirUnpack"/sublime_text_3/sublime_text.desktop "${destinationFilesSublime[file_desktop]}"  
 	cp -u "$DirUnpack"/sublime_text_3/Icon/256x256/sublime-text.png "${destinationFilesSublime[png]}" 
 	mv "$DirUnpack"/sublime_text_3 "${destinationFilesSublime[dir]}"

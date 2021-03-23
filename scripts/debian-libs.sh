@@ -88,7 +88,7 @@ if [[ $(id -u) == '0' ]]; then
 fi
 
 # Necessário ter o pacote "sudo" intalado.
-if [[ ! -x $(which sudo 2> /dev/null) ]]; then
+if [[ ! -x $(command -v sudo 2> /dev/null) ]]; then
 	printf "\033[0;31m Instale o pacote [sudo] e adicione [$USER] no arquivo [sudoers] para prosseguir\033[m\n"
 	exit 1
 fi
