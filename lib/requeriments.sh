@@ -181,8 +181,8 @@ check_requeriments_cli()
 	# instalados com sucesso. Esta função será executada sempre que o programa iniciar.
 	LIST_REQUERIMENTS_UNIX=(sudo awk zenity find curl python3)
 	for R in "${LIST_REQUERIMENTS_UNIX[@]}"; do
-		if ! is_executable "$R"; then
-			print_erro "dependência não encontrada ... $R"
+		if [[ ! -x $(command -v $R)  ]]; then
+			print_erro "(check_requeriments_cli) dependência não encontrada ... $R"
 			sred "Execute ... $__script__ --configure"
 			return 1
 			break
