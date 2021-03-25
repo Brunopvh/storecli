@@ -737,9 +737,94 @@ _install_java_development_kit_tar()
 
 }
 
+_install_openjdk_user_root()
+{
+	# https://www.blogopcaolinux.com.br/2017/06/Como-instalar-o-Oracle-Java-JDK-no-Debian.html
+	# https://www.oracle.com/webfolder/s/digest/15-0-2-checksum.html
+	local URL_OPENJDK='https://download.java.net/openjdk/jdk15/ri/openjdk-15+36_linux-x64_bin.tar.gz'
+	local URL_SHA256_JDK='https://download.java.net/openjdk/jdk15/ri/openjdk-15+36_linux-x64_bin.tar.gz.sha256'
+	local PATH_FILE_OPENJDK="$DirDownloads/$(basename $URL_OPENJDK)"
+	local PATH_FILE_SHASUM="$DirDownloads/$(basename $URL_SHA256_JDK)"
+	local DESTINATION_JAVA='/usr/lib/jvm/jdk-15'
+	local __file_bashrc='/etc/bash.bashrc'
+	local backup_file_bashrc="${__file_bashrc}.bak"
+
+	if [[ -d $DESTINATION_JAVA ]]; then
+		print_info "Java já está instalado em ... $DESTINATION_JAVA"
+		return 0
+	fi
+
+	[[ -f "$backup_file_bashrc" ]] || cp -v "$__file_bashrc" "$backup_file_bashrc"
+
+	download "$URL_OPENJDK" "$PATH_FILE_OPENJDK" || return 1
+	download "$URL_SHA256_JDK" "$PATH_FILE_SHASUM" || return 1
+	local sha256_jdk=$(cut -d ' ' -f 1 $PATH_FILE_SHASUM)
+	#__shasum__ "$PATH_FILE_OPENJDK" $sha256_jdk || return 1
+	
+	unpack_archive "$PATH_FILE_OPENJDK" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d jdk-*) JDK
+	is_admin || return 1
+	__sudo__ chown -R root:root JDK
+	__sudo__ cp -R -p JDK "$DESTINATION_JAVA" || return 1
+
+	JAVA_HOME='/usr/lib/jvm/jdk-15'
+
+	# Verificar se o arquivo bashrc contém a variável JAVA_HOME
+	grep -q "export JAVA_HOME=" "$__file_bashrc"
+	if [[ $? != 0 ]]; then
+		print_info "Configurando JAVA_HOME"
+		__sudo__ sed -i "/^export JAVA_HOME=/d" "$__file_bashrc"
+		__sudo__ sed -i "/^export PATH=\$JAVA_HOME\/bin.*/d" "$__file_bashrc"
+		echo -e "export JAVA_HOME=$JAVA_HOME" | sudo tee -a "$__file_bashrc"
+	fi
+
+	
+	# Adicionar JAVA_HOME no PATH.
+	echo "$PATH" | grep -q "$JAVA_HOME/bin"
+	if [[ $? != 0 ]]; then
+		grep -q "PATH=.*$JAVA_HOME/bin.*" "$__file_bashrc" || {
+			print_info "Configurando PATH"
+			echo -e "export PATH=\$JAVA_HOME/bin:\$PATH" | sudo tee -a "$__file_bashrc"
+		}
+	fi
+
+
+	# Informar novo caminho dos pacotes java para o sistema.
+	__sudo__ update-alternatives --install "/usr/bin/java" "java" "$DESTINATION_JAVA/bin/java" 1
+	__sudo__ update-alternatives --install "/usr/bin/javac" "javac" "$DESTINATION_JAVA/bin/javac" 1
+	__sudo__ update-alternatives --install "/usr/bin/jar" "jar" "$DESTINATION_JAVA/bin/jar" 1
+	#__sudo__ update-alternatives --install "/usr/bin/javaws" "javaws" "$DESTINATION_JAVA/bin/javaws" 1
+
+	# Definir comandos java padrão.
+	__sudo__ update-alternatives --set java "$DESTINATION_JAVA"/bin/java
+	__sudo__ update-alternatives --set javac "$DESTINATION_JAVA"/bin/javac
+	__sudo__ update-alternatives --set jar "$DESTINATION_JAVA"/bin/jar
+	#__sudo__ update-alternatives --set javaws "$DESTINATION_JAVA"/bin/javaws
+
+	return 0
+	print_info "Criando atalho para java-control"
+	echo '[Desktop Entry]' | sudo tee /usr/share/applications/java-control.desktop
+	{
+		echo "Encoding=UTF-8"
+		echo "Name=Java"
+		echo "Comment=Java Control Panel"
+		echo "Exec=$DESTINATION_JAVA/bin/jcontrol"
+		echo "Icon=$DESTINATION_JAVA/jre/lib/desktop/icons/hicolor/48x48/apps/sun-jcontrol.png"
+		echo "Terminal=false"
+		echo "Type=Application"
+		echo "Categories=Application;Settings;Java;X-Red-Hat-Base;X-Ximian-Settings;"
+	} | sudo tee -a /usr/share/applications/java-control.desktop
+
+	__sudo__ chmod a+x /usr/share/applications/java-control.desktop
+	is_executable gtk-update-icon-cache && sudo gtk-update-icon-cache
+
+}
+
 _java()
 {
-	_install_java_development_kit_tar
+	#_install_java_development_kit_tar
+	_install_openjdk_user_root
 }
 
 _netbeans()
