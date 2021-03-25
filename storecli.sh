@@ -27,6 +27,8 @@
 # Ubuntu 18.04/20.04 - GNOME, 
 # LinuxMint 19.3 
 # ArchLinux - GNOME.
+# 
+#  Use em outras distros por sua propria conta em risco.
 #
 #=============================================================#
 # Instalação 
@@ -40,14 +42,13 @@
 #=============================================================#
 # GitHub
 #=============================================================#
-# https://github.com/Brunopvh/storecli
+# https://github.com/Brunopvh/storecli -> Repositório deste programa.
+# https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-
-__version__='2021_03_23'
+__version__='2021_03_24'
 __author__='Bruno Chaves'
 __appname__='storecli'
-
 
 #=============================================================#
 # Verificar requisitos minimos do sistema.
@@ -59,7 +60,7 @@ if [[ $(uname -s) != 'Linux' ]]; then
 fi
 
 # Usuário não pode ser o root.
-if [[ $(id -u) == '0' ]]; then
+if [[ $(id -u) == 0 ]]; then
 	printf "\033[0;31m Usuário não pode ser o 'root' execute novamente sem o [sudo].\033[m\n"
 	exit 1
 fi
@@ -723,7 +724,6 @@ storecli_apps_installer()
 	# aluguns desses pacotes são instalados diretamente pelo gerenciador de pacotes da sua distro
 	# Enquanto outros são instalados, seguindo um processo de download, descompressão e configuração.
 	if [[ -z $1 ]]; then
-		#_list_applications
 		usage
 		return 1
 	fi

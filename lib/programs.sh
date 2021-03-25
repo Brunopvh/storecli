@@ -3376,7 +3376,7 @@ _install_requeriments_virtualbox()
 			)
 
 	else
-		print_erro "(_install_requeriments_virtualbox)"
+		print_erro "(_install_requeriments_virtualbox) BASE_DISTRO não detectado."
 		return 1
 	fi
 
