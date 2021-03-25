@@ -754,12 +754,13 @@ _install_openjdk_user_root()
 		return 0
 	fi
 
-	[[ -f "$backup_file_bashrc" ]] || cp -v "$__file_bashrc" "$backup_file_bashrc"
+	[[ -f "$backup_file_bashrc" ]] || __sudo__ cp "$__file_bashrc" "$backup_file_bashrc"
+	[[ -d /usr/lib/jvm ]] || __sudo__ mkdir -p /usr/lib/jvm
 
 	download "$URL_OPENJDK" "$PATH_FILE_OPENJDK" || return 1
 	download "$URL_SHA256_JDK" "$PATH_FILE_SHASUM" || return 1
 	local sha256_jdk=$(cut -d ' ' -f 1 $PATH_FILE_SHASUM)
-	#__shasum__ "$PATH_FILE_OPENJDK" $sha256_jdk || return 1
+	__shasum__ "$PATH_FILE_OPENJDK" $sha256_jdk || return 1
 	
 	unpack_archive "$PATH_FILE_OPENJDK" $DirUnpack || return 1
 	cd $DirUnpack
