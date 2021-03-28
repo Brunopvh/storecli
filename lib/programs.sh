@@ -2716,26 +2716,6 @@ _youtube_dlgui_pip()
 	return 0
 } 
 
-_youtube_dlgui_ubuntu()
-{
-	# https://github.com/MrS0m30n3/youtube-dl-gui.git
-	case "$VERSION_CODENAME" in
-		bionic|tricia) 
-			_youtube_dlgui_pip || return 1
-			;;
-		eoan|focal|ulyssa)
-			system_pkgmanager 'python-wxgtk3.0' gettext || return 1
-			_python_twodict_github || return 1
-			_youtube_dlgui_compile || return 1
-			;;
-		*)
-			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'
-			sleep 1	
-			return 1
-			;;
-	esac
-
-}
 
 _youtube_dlgui_fedora()
 {
@@ -2766,6 +2746,27 @@ _youtube_dlgui_fedora()
 	return 0
 }
 
+_youtube_dlgui_ubuntu()
+{
+	# https://github.com/MrS0m30n3/youtube-dl-gui.git
+	case "$VERSION_CODENAME" in
+		bionic|tricia) 
+			_youtube_dlgui_pip || return 1
+			;;
+		eoan|focal|ulyssa)
+			system_pkgmanager 'python-wxgtk3.0' gettext || return 1
+			_python_twodict_github || return 1
+			_youtube_dlgui_compile || return 1
+			;;
+		*)
+			print_erro 'Programa indisponível para o seu sistema' 'youtube-dl-gui'
+			sleep 1	
+			return 1
+			;;
+	esac
+
+}
+
 _youtube_dlgui_debian()
 {
 	# Testado apenas no debian 10.
@@ -2776,7 +2777,7 @@ _youtube_dlgui_debian()
 		return 1
 	fi
 
-	pip install wheel --user || print_erro "pip não instalado." && return 1
+	pip install wheel --user
 	_youtube_dlgui_compile || return 1
 
 }
