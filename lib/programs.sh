@@ -37,19 +37,74 @@ function __add_link_from_python(){
 	return 0
 }
 
-_show_info()
+_add_file_desktop_electrum()
 {
-	# Função para exibir mensagens padrão, como por exemplo erros comuns 
-	# durante a instalação de um programa ou um mensagem genérica de sucesso.
-	[[ "$silent" == 'True' ]] && return 0
-	case "$1" in
-		AddFileDestktop) green "Criando arquivo (.desktop)";;
-		DownloadOnly) green "Feito somente download";;
-		PkgInstalled) green "($2) está instalado";;
-		SuccessInstalation) green "($2) instalado com sucesso";;
-		InstalationFailed) red "Falha ao tentar instalar ($2)";;
-		ProgramNotFound) red "Programa indisponível para o seu sistema: $2";;
-	esac
+	local desktop_file="$DIR_APPLICATIONS/electrum.desktop"
+
+	echo '[Desktop Entry]' > "$desktop_file"
+
+	{
+		echo "Comment=Lightweight Bitcoin Client"
+		echo 'Exec=/bin/sh -c "electrum %u"'
+		echo "GenericName[en_US]=Bitcoin Wallet"
+		echo "GenericName=Bitcoin Wallet"
+		echo "Icon=electrum"
+		echo "Name[en_US]=Electrum Bitcoin Wallet"
+		echo "Name=Electrum Bitcoin Wallet"
+		echo "Categories=Finance;Network;"
+		echo "StartupNotify=true"
+		echo "StartupWMClass=electrum"
+		echo "Terminal=false"
+		echo "Type=Application"
+		echo "MimeType=x-scheme-handler/bitcoin;"
+		echo "Actions=Testnet;"
+		echo ""
+		echo "[Desktop Action Testnet]"
+		echo 'Exec=/bin/sh -c "electrum --testnet %u"'
+		echo "Name=Testnet mode"
+	} >> "$desktop_file"
+
+	chmod +x "$desktop_file"
+
+}
+
+_install_electrum_appimage()
+{
+	# https://github.com/spesmilo/electrum
+	local URL_ELECTRUM='https://download.electrum.org/4.0.9/electrum-4.0.9-x86_64.AppImage'
+	local URL_ELECTRUM_SIG='https://download.electrum.org/4.0.9/electrum-4.0.9-x86_64.AppImage.asc'
+	local URL_ELECTRUM_PNG='https://raw.github.com/spesmilo/electrum/master/electrum/gui/icons/electrum.png'
+	local PATH_ELECTRUM="$DirDownloads/$(basename $URL_ELECTRUM)"
+	local PATH_ELECTRUM_SIG="$DirDownloads/$(basename $URL_ELECTRUM_SIG)"
+	local PATH_ELECTRUM_PNG="$DirDownloads/electrum.png"
+	local HASH_PNG='0b93801e52706091b5be0219a8f7fb6f04a095f7c5dd8bf9a0a93f5f5d6ed98e'
+
+	download "$URL_ELECTRUM" $PATH_ELECTRUM || return 1
+	download "$URL_ELECTRUM_SIG" $PATH_ELECTRUM_SIG || return 1
+	download "$URL_ELECTRUM_PNG" $PATH_ELECTRUM_PNG || return 1
+	gpg_import 'https://raw.githubusercontent.com/spesmilo/electrum/master/pubkeys/ThomasV.asc'
+	gpg_verify $PATH_ELECTRUM_SIG $PATH_ELECTRUM || return 1
+
+	__shasum__ $PATH_ELECTRUM_PNG $HASH_PNG || return 1
+	cp $PATH_ELECTRUM "$DIR_BIN"/electrum
+	cp $PATH_ELECTRUM_PNG "$DIR_ICONS"/electrum.png
+
+	_add_file_desktop_electrum
+	is_executable gtk-update-icon-cache && gtk-update-icon-cache
+
+	if is_executable electrum; then
+		print_info "electrum instalado com sucesso"
+		return 0
+	else
+		print_erro "Falha na instalação de electrum"
+		return 1
+	fi
+
+}
+
+_install_electrum()
+{
+	_install_electrum_appimage
 }
 
 _install_storecli_gui()

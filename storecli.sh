@@ -451,6 +451,7 @@ _clear_temp_dirs()
 #=============================================================#
 programs_acessory=(
 	etcher
+	electrum
 	gnome-disk
 	microsoft-teams
 	veracrypt
@@ -742,6 +743,7 @@ storecli_apps_installer()
 		case "$1" in 
 			Acessorios) _Acessory_All;;
 			etcher) _etcher;;
+			electrum) _install_electrum;;
 			gnome-disk) _gnome_disk;;
 			microsoft-teams) _microsoft_teams;;
 			plank) _plank;;
