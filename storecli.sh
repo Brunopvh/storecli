@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2021_03_28'
+__version__='2021_04_03'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -450,8 +450,9 @@ _clear_temp_dirs()
 # Listagem de todos os pacotes disponíveis para instalação.
 #=============================================================#
 programs_acessory=(
-	etcher
+	coin-qt-gui
 	electrum
+	etcher
 	gnome-disk
 	microsoft-teams
 	veracrypt
@@ -742,8 +743,9 @@ storecli_apps_installer()
 		[[ -z $1 ]] && return 0 
 		case "$1" in 
 			Acessorios) _Acessory_All;;
-			etcher) _etcher;;
+			coin-qt-gui) _coin_qt_gui;;
 			electrum) _install_electrum;;
+			etcher) _etcher;;
 			gnome-disk) _gnome_disk;;
 			microsoft-teams) _microsoft_teams;;
 			plank) _plank;;

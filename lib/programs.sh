@@ -37,6 +37,36 @@ function __add_link_from_python(){
 	return 0
 }
 
+_coin_qt_gui()
+{
+	local URL_REPO_COIN_QT_GUI='https://github.com/Brunopvh/crypto-gui-br/archive/refs/heads/master.zip'
+	local OUTPUT_FILE_COIN="$DirDownloads/coin-qt-gui.tar.gz"
+	local FILE_DESKTOP="$DIR_APPLICATIONS/coin-qt-gui.desktop"
+
+	download "$URL_REPO_COIN_QT_GUI" "$OUTPUT_FILE_COIN" || return 1
+	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download' && return 0
+	unpack_archive "$OUTPUT_FILE_COIN" $DirUnpack || return
+	cd $DirUnpack
+	mv $(ls -d *gui*) coin-qt-gui
+	mv coin-qt-gui "$DIR_OPTIONAL/coin-qt-gui"
+	chmod +x "$DIR_OPTIONAL/coin-qt-gui/run.py"
+	ln -sf "$DIR_OPTIONAL/coin-qt-gui/run.py" "$DIR_BIN/coin-qt-gui"
+
+	print_info "Criando arquivo .desktop"
+	echo '[Desktop Entry]' > "$FILE_DESKTOP"
+	{
+		echo "Name=Coin Qt Gui"
+		echo "Exec=coin-qt-gui"
+		echo "Version=1.0"
+		echo "Terminal=false"
+		echo "Type=Application"
+	} >> "$FILE_DESKTOP"
+
+	chmod +x "$FILE_DESKTOP"
+
+	python3 -m pip install PyQt5 --user
+}
+
 _add_file_desktop_electrum()
 {
 	local desktop_file="$DIR_APPLICATIONS/electrum.desktop"
