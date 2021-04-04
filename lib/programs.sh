@@ -39,7 +39,7 @@ function __add_link_from_python(){
 
 _coin_qt_gui()
 {
-	local URL_REPO_COIN_QT_GUI='https://github.com/Brunopvh/crypto-gui-br/archive/refs/heads/master.zip'
+	local URL_REPO_COIN_QT_GUI='https://github.com/Brunopvh/coin-qt-gui/archive/refs/heads/master.zip'
 	local OUTPUT_FILE_COIN="$DirDownloads/coin-qt-gui.tar.gz"
 	local FILE_DESKTOP="$DIR_APPLICATIONS/coin-qt-gui.desktop"
 
@@ -47,31 +47,17 @@ _coin_qt_gui()
 	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download' && return 0
 	unpack_archive "$OUTPUT_FILE_COIN" $DirUnpack || return
 	cd $DirUnpack
-	mv $(ls -d *gui*) coin-qt-gui
-	mv coin-qt-gui "$DIR_OPTIONAL/coin-qt-gui"
-	chmod +x "$DIR_OPTIONAL/coin-qt-gui/run.py"
-	ln -sf "$DIR_OPTIONAL/coin-qt-gui/run.py" "$DIR_BIN/coin-qt-gui"
-
-	print_info "Criando arquivo .desktop"
-	echo '[Desktop Entry]' > "$FILE_DESKTOP"
-	{
-		echo "Name=Coin Qt Gui"
-		echo "Exec=coin-qt-gui"
-		echo "Version=1.0"
-		echo "Terminal=false"
-		echo "Type=Application"
-	} >> "$FILE_DESKTOP"
-
-	chmod +x "$FILE_DESKTOP"
-
-	python3 -m pip install PyQt5 --user
+	mv $(ls -d coin-qt-gui*) coin-qt-gui
+	cd coin-qt-gui
+	python3 setup.py install --user || return
+	print_info "Copiando arquivo desktop"
+	cp data/coin-qt-gui.desktop "${destinationFilesCoinQtGui[file_desktop]}"
+	chmod +x "${destinationFilesCoinQtGui[file_desktop]}"
 }
 
 _add_file_desktop_electrum()
 {
-	local desktop_file="$DIR_APPLICATIONS/electrum.desktop"
-
-	echo '[Desktop Entry]' > "$desktop_file"
+	echo '[Desktop Entry]' > "${destinationFilesElectrum[file_desktop]}"
 
 	{
 		echo "Comment=Lightweight Bitcoin Client"
@@ -92,9 +78,9 @@ _add_file_desktop_electrum()
 		echo "[Desktop Action Testnet]"
 		echo 'Exec=/bin/sh -c "electrum --testnet %u"'
 		echo "Name=Testnet mode"
-	} >> "$desktop_file"
+	} >> "${destinationFilesElectrum[file_desktop]}"
 
-	chmod +x "$desktop_file"
+	chmod +x "${destinationFilesElectrum[file_desktop]}"
 
 }
 
@@ -116,8 +102,8 @@ _install_electrum_appimage()
 	gpg_verify $PATH_ELECTRUM_SIG $PATH_ELECTRUM || return 1
 
 	__shasum__ $PATH_ELECTRUM_PNG $HASH_PNG || return 1
-	cp $PATH_ELECTRUM "$DIR_BIN"/electrum
-	cp $PATH_ELECTRUM_PNG "$DIR_ICONS"/electrum.png
+	cp $PATH_ELECTRUM "${destinationFilesElectrum[script]}"
+	cp $PATH_ELECTRUM_PNG "${destinationFilesElectrum[png]}"
 
 	_add_file_desktop_electrum
 	is_executable gtk-update-icon-cache && gtk-update-icon-cache

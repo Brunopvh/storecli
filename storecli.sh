@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2021_04_03'
+__version__='2021_04_04'
 __author__='Bruno Chaves'
 __appname__='storecli'
 

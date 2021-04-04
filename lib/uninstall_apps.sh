@@ -123,6 +123,8 @@ _uninstall_packages()
 	[[ -z $1 ]] && usage && return 1
 	while [[ $1 ]]; do
 		case "$1" in
+			coin-qt-gui) __rmdir__ "${destinationFilesCoinQtGui[@]}";;
+			electrum) __rmdir__ "${destinationFilesElectrum[@]}";;
 			etcher) _uninstall_etcher;;
 			veracrypt) __sudo__ 'veracrypt-uninstall.sh';;
 
