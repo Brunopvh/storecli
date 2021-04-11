@@ -2906,6 +2906,27 @@ _youtube_dlgui()
 
 _youtube_dl_qt()
 {
+	local URL_YOUTUBE_DL_QT='https://github.com/Brunopvh/youtube-dl-qt/archive/refs/heads/new-layout.tar.gz'
+	local PATH_YOUTUBE_DL_QT="$DirDownloads/youtube-dl-qt-branch-new-layout.tar.gz"
+
+	download "$URL_YOUTUBE_DL_QT" "$PATH_YOUTUBE_DL_QT" || return 1
+	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download.' && return 0
+	unpack_archive "$PATH_YOUTUBE_DL_QT" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d youtube-dl-qt-*) youtube-dl-qt
+	cd youtube-dl-qt
+	chmod +x setup.sh
+	./setup.sh || return 1
+
+
+	echo "#!/bin/sh" > "$DIR_BIN"/youtube-dl-qt
+	echo "python3 -m youtube_dl_qt" >> "$DIR_BIN"/youtube-dl-qt
+	chmod +x "$DIR_BIN"/youtube-dl-qt
+
+}
+
+_youtube_dl_qt_old()
+{
 	[[ $(id -u) == 0 ]] && return 1
 	local URL_REPO_YTDL_QT='https://github.com/Brunopvh/youtube-dl-qt/archive/master.tar.gz'
 	local PATH_YTDL_QT="$DirDownloads/youtube-dl-qt.tar.gz"

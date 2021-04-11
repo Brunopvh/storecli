@@ -87,6 +87,7 @@ _uninstall_youtube_dl_qt()
 {
 	echo -e "Desinstalando youtube-dl-qt"
 	__rmdir__ "${destinationFilesYoutubeDlQt[@]}"
+	python3 -m pip uninstall youtube_dl_qt --yes
 }
 
 _uninstall_cpux()
