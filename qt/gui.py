@@ -10,7 +10,7 @@ from PyQt5.QtWidgets import (
 	QGroupBox, QLineEdit,
 )
 
-from PyQt5.QtCore import QMetaObject, Qt
+from PyQt5.QtCore import QMetaObject, Qt, pyqtSignal
 from PyQt5.QtGui import QIcon, QPixmap
    
 _script = os.path.abspath(os.path.realpath(__file__))
@@ -26,7 +26,7 @@ __repo__ = 'https://github.com/Brunopvh/storecli'
 
 
 class MainGui(QMainWindow):
-    switch_window = QtCore.pyqtSignal()
+    switch_window = pyqtSignal()
 
     def __init__(self, parent=None):
         super().__init__()

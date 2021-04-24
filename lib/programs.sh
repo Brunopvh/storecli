@@ -1026,13 +1026,13 @@ _pycharm()
 {
 	# Já instalado.
 	is_executable 'pycharm' && print_info 'Pacote instalado' 'pycharm' && return 0
-	local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.2.tar.gz'
-	local sha256_pycharm='60b2eeea5237f536e5d46351fce604452ce6b16d037d2b7696ef37726e1ff78a'
+	#local url_pycharm='https://download-cf.jetbrains.com/python/pycharm-community-2020.2.tar.gz'
+	#local sha256_pycharm='60b2eeea5237f536e5d46351fce604452ce6b16d037d2b7696ef37726e1ff78a'
+	local url_pycharm='https://download.jetbrains.com/python/pycharm-community-2021.1.tar.gz'
+	local sha256_pycharm='7060bfdc54397b6cc783ff0b1724b8027e2bc3ea9f7e68e43ca37ea10fa42fc6'
 	local path_file="$DirDownloads/$(basename $url_pycharm)"
 	
 	download "$url_pycharm" "$path_file" || return 1
-
-	# Somente baixar
 	[[ "$DownloadOnly" == 'True' ]] && print_info 'Feito somente download' && return 0
 
 	__shasum__ "$path_file" "$sha256_pycharm" || return 1
