@@ -103,7 +103,6 @@ elif [[ $USER_SHELL == 'bash' ]]; then
 	fi
 fi
 
-source "$__shell_config_file__" 
 [[ -f ~/.shmrc ]] && source ~/.shmrc
 
 [[ ! -d $HOME ]] && HOME=~/
