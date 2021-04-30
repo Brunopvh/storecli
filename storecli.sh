@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2021_04_22'
+__version__='2021_04_29'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -78,21 +78,33 @@ if ! uname -m | grep -q "64$"; then
 fi
 
 #=============================================================#
-# Setar o arquivo de configuração bashrc para importar as
+# Setar o arquivo de configuração bashrc/zshrc para importar as
 # configurações do usuario $(whoami)
 #=============================================================#
-if [[ $(id -u) == 0 ]]; then
-	if [[ -f /etc/bashrc ]]; then
-		readonly __bashrc_file__='/etc/bashrc'
+USER_SHELL=$(basename $SHELL)
+
+if [[ $USER_SHELL == 'zsh' ]]; then
+	if [[ -f ~/.zshrc ]]; then
+		__shell_config_file__=~/.zshrc
+	elif [[ -f /etc/zsh/zshrc ]]; then
+		__shell_config_file__=/etc/zsh/zshrc
 	else
-		readonly __bashrc_file__='/etc/bash.bashrc'
+		echo "ERRO ... arquivo de configuração zshrc não encontrado"
+		sleep 1
 	fi
-else
-	__bashrc_file__=~/.bashrc
+elif [[ $USER_SHELL == 'bash' ]]; then
+	if [[ -f ~/.bashrc ]]; then
+		__shell_config_file__=~/.bashrc
+	elif [[ -f /etc/bash.bashrc ]]; then
+		__shell_config_file__=/etc/bash.bashrc
+	else
+		echo "ERRO ... arquivo de configuração bashrc não encontrado"
+		sleep 1
+	fi
 fi
 
-# source "$__bashrc_file__" 1> /dev/null 2>&1
-# source ~/.shmrc 1> /dev/null 2>&1
+source "$__shell_config_file__" 
+[[ -f ~/.shmrc ]] && source ~/.shmrc
 
 [[ ! -d $HOME ]] && HOME=~/
 [[ ! -w $HOME ]] && {
@@ -237,7 +249,7 @@ if [[ "$1" == "--lib" ]]; then
 	check_external_modules || exit 1
 fi
 
-[[ -d "$PATH_BASH_LIBS" ]] || source $__bashrc_file__ 2> /dev/null
+[[ -d "$PATH_BASH_LIBS" ]] || source $__shell_config_file__ 2> /dev/null
 check_external_modules || { install_external_modules; exit 1; }
 
 #=============================================================#
