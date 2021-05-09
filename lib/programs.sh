@@ -1708,7 +1708,7 @@ _chromium_lang()
 	local lang=$(set | grep -m 1 '^LANG=' | sed 's/.*=//g')
 	[[ "$lang" == 'pt_BR.UTF-8' ]] || return 0
 
-	_white "Instalando pacote de idioma para chromium"
+	echo -e "Instalando pacote de idioma para chromium"
 	case "$OS_ID" in
 		debian) system_pkgmanager 'chromium-l10n';;
 		ubuntu) system_pkgmanager 'chromium-browser-l10n';;
@@ -1820,10 +1820,10 @@ _google_chrome_opensuse()
 
 _google_chrome_tumbleweed()
 {
-	_white "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
+	echo -e "Adicionando key [https://dl.google.com/linux/linux_signing_key.pub]"
 	sudo rpm --import https://dl.google.com/linux/linux_signing_key.pub || return 1
 
-	_white "Adicionando repositório [http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google]"
+	echo -e "Adicionando repositório [http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google]"
 	sudo zypper ar -f http://dl.google.com/linux/chrome/rpm/stable/x86_64/ Google || return 1
 	system_pkgmanager 'google-chrome-stable'
 }
@@ -1887,10 +1887,10 @@ _opera_stable_fedora()
 	# https://www.blogopcaolinux.com.br/2017/07/Instalando-o-Opera-no-openSUSE-e-no-Fedora.html
 	# https://rpm.opera.com/manual.html
 
-	_white "Importando key"
+	echo -e "Importando key"
 	sudo rpm --import https://rpm.opera.com/rpmrepo.key || return 1
 
-	_white "Adicionando repositório"
+	echo -e "Adicionando repositório"
 	echo '[opera]' | sudo tee /etc/yum.repos.d/opera.repo
 	{
 		echo "name=Opera packages"
@@ -2062,14 +2062,14 @@ _freetube()
 _megasync_opensuse_tumbleweed()
 {
 	# https://www.blogopcaolinux.com.br/2017/02/Instalando-o-MEGA-Sync-no-openSUSE-e-Fedora.html
-	_white "Adicionando key [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key]"
+	echo -e "Adicionando key [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key]"
 	sudo rpm --import https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/repodata/repomd.xml.key || return 1
 	
-	_white "Adicionando repositório [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA]"
+	echo -e "Adicionando repositório [https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA]"
 	sudo zypper ar -f https://mega.nz/linux/MEGAsync/openSUSE_Tumbleweed/ MEGA || return 1
 	sudo zypper ref
 
-	_white "Instalando megasync"
+	echo -e "Instalando megasync"
 	system_pkgmanager megasync || return 1	
 }
 
@@ -2125,7 +2125,7 @@ _megasync_ubuntu()
 
 _megasync_fedora()
 {
-	_white "Importando key ... https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"
+	echo -e "Importando key ... https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key"
 	sudo rpm --import 'https://mega.nz/linux/MEGAsync/Fedora_30/repodata/repomd.xml.key'
 
 	echo '[MEGAsync]' | sudo tee /etc/yum.repos.d/megasync.repo 1> /dev/null
@@ -2999,13 +2999,13 @@ _bluetooth()
 
 	system_pkgmanager bluez 'bluez-firmware' 'bluez-hcidump'
 	print_line
-	_white "1 - ${CGreen}G${CReset}NOME"
-	_white "2 - ${CGreen}K${CReset}DE"
-	_white "3 - ${CGreen}L${CReset}XDE/${CGreen}X${CReset}FCE/${CGreen}L${CReset}XQT/${CGreen}M${CReset}ATE"
+	echo -e "1 - ${CGreen}G${CReset}NOME"
+	echo -e "2 - ${CGreen}K${CReset}DE"
+	echo -e "3 - ${CGreen}L${CReset}XDE/${CGreen}X${CReset}FCE/${CGreen}L${CReset}XQT/${CGreen}M${CReset}ATE"
 	
 	while true; do
 
-		_white "Selecione a sua interface gráfica: ${CGreen}(1 / 2 / 3): ${CReset}" 
+		echo -e "Selecione a sua interface gráfica: ${CGreen}(1 / 2 / 3): ${CReset}" 
 		read -t 10 -n 1 desktop; echo ' '
 
 		case "${desktop,,}" in
@@ -3013,7 +3013,7 @@ _bluetooth()
 			2) system_pkgmanager bluedevil;;
 			3) system_pkgmanager blueman;;
 			*) 
-			_white "Opição inválida, você pode ${CGreen}repetir${CReset} ou ${red}cancelar${CReset} [r/c]: " 
+			echo -e "Opição inválida, você pode ${CGreen}repetir${CReset} ou ${red}cancelar${CReset} [r/c]: " 
 			read -t 10 -n 1 input; echo ' '
 			if [[ "${input,,}" == 'r' ]]; then
 				continue	
