@@ -2990,7 +2990,7 @@ _archlinux_installer()
 	fi
 }
 
-bluetooth()
+_bluetooth()
 {
 	if [[ "$OS_ID" != 'debian' ]]; then
 		red "Este pacote está disponível apenas para sistemas Debian"
