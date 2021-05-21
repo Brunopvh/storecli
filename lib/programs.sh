@@ -87,6 +87,8 @@ _add_file_desktop_electrum()
 _install_electrum_appimage()
 {
 	# https://github.com/spesmilo/electrum
+	# https://electrum.org/#home
+
 	local URL_ELECTRUM='https://download.electrum.org/4.0.9/electrum-4.0.9-x86_64.AppImage'
 	local URL_ELECTRUM_SIG='https://download.electrum.org/4.0.9/electrum-4.0.9-x86_64.AppImage.asc'
 	local URL_ELECTRUM_PNG='https://raw.github.com/spesmilo/electrum/master/electrum/gui/icons/electrum.png'
@@ -104,6 +106,7 @@ _install_electrum_appimage()
 	__shasum__ $PATH_ELECTRUM_PNG $HASH_PNG || return 1
 	cp $PATH_ELECTRUM "${destinationFilesElectrum[script]}"
 	cp $PATH_ELECTRUM_PNG "${destinationFilesElectrum[png]}"
+	chmod +x "${destinationFilesElectrum[script]}"
 
 	_add_file_desktop_electrum
 	is_executable gtk-update-icon-cache && gtk-update-icon-cache
