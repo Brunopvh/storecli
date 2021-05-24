@@ -44,7 +44,6 @@
 #=============================================================#
 # https://github.com/Brunopvh/storecli -> Repositório deste programa.
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
-#
 
 __version__='1.0'
 __author__='Bruno Chaves'
