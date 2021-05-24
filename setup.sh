@@ -19,7 +19,7 @@
 # OBS: seu computador precisa estar conectado a internet para executar este instalador.
 # 
 
-__version__='2021-03-09'
+__version__='1.0'
 __script__=$(readlink -f "$0")
 dir_of_project=$(dirname "$__script__")
 
@@ -38,12 +38,10 @@ cat <<EOF
 EOF
 }
 
-
 URL_ARCHIVE='https://github.com/Brunopvh/storecli/archive'
-URL_TARFILE_MASTER="$URL_ARCHIVE/master.tar.gz"
-URL_TARFILE_DEVELOPMENT="$URL_ARCHIVE/development.tar.gz"
-URL_SETUP_BASH_LIBS='https://raw.github.com/Brunopvh/bash-libs/master/setup.sh'
-URL_SRC="$URL_TARFILE_MASTER"
+URL_TARFILE="$URL_ARCHIVE/v1.0.tar.gz"
+URL_SETUP_BASH_LIBS='https://raw.github.com/Brunopvh/bash-libs/v0.1.1/setup.sh'
+URL_SRC="$URL_TARFILE"
 
 clienteDownloader=''
 

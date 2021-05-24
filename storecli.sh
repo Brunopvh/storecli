@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2021_05_21'
+__version__='1.0'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -115,10 +115,8 @@ fi
 # Controle do status de saida ao longo do script.
 export STATUS_OUTPUT='0'
 export WORK_DIR=$(pwd)
-
-export URL_RAW_REPO_MASTER='https://raw.github.com/Brunopvh/storecli/master'
-export URL_RAW_REPO_DEVELOPMENT='https://raw.github.com/Brunopvh/storecli/development'
-export URL_SCRIPT_STORECLI="$URL_RAW_REPO_MASTER/storecli.sh"
+export URL_RAW_REPO='https://raw.github.com/Brunopvh/storecli/v1.0'
+export URL_SCRIPT_STORECLI="$URL_RAW_REPO/storecli.sh"
 
 # Configuração e diretórios usados por este programa
 readonly export __script__=$(readlink -f "$0") # Este arquivo.
@@ -198,15 +196,15 @@ function install_external_modules()
 	cd "$dir_of_executable"
 	echo "Aguarde"
 	if [[ -f setup.sh ]]; then
-		chmod +x ./setup.sh
+		chmod +x ./setup.sh 2> /dev/null
 		./setup.sh
 	elif [[ -x $(command -v wget) ]]; then
-		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		bash -c "$(wget -q -O- https://raw.github.com/Brunopvh/storecli/v1.0/setup.sh)"
 	elif [[ -x $(command -v curl) ]]; then
-		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/master/setup.sh)"
+		bash -c "$(curl -fsSL https://raw.github.com/Brunopvh/storecli/v1.0/setup.sh)"
 	elif [[ -x $(command -v aria2c) ]]; then
 		_tmpfile=$(mktemp -u)
-		aria2c 'https://raw.github.com/Brunopvh/storecli/master/setup.sh' -d $(dirname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
+		aria2c 'https://raw.github.com/Brunopvh/storecli/v1.0/setup.sh' -d $(dirname "$_tmpfile") -o $(basename "$_tmpfile") 1> /dev/null
 		bash "$_tmpfile"
 		rm -rf "$_tmpfile" 2> /dev/null
 		unset _tmpfile
