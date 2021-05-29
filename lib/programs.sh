@@ -2909,8 +2909,8 @@ _youtube_dlgui()
 
 _youtube_dl_qt()
 {
-	local URL_YOUTUBE_DL_QT=https://github.com/Brunopvh/youtube-dl-qt/archive/refs/heads/master.zip
-	local PATH_YOUTUBE_DL_QT="$DirDownloads/youtube-dl-qt-branch-new-layout.tar.gz"
+	local URL_YOUTUBE_DL_QT=https://github.com/Brunopvh/youtube-dl-qt/archive/refs/heads/master.tar.gz
+	local PATH_YOUTUBE_DL_QT="$DirDownloads/youtube-dl-qt-master.tar.gz"
 
 	download "$URL_YOUTUBE_DL_QT" "$PATH_YOUTUBE_DL_QT" || return 1
 	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download.' && return 0
