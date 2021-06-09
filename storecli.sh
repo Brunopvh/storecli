@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2021_05_28'
+__version__='2021_06_08'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -266,7 +266,8 @@ export readonly DIR_CACHE_USER=~/.cache/"$__appname__"
 if [[ $(id -u) == 0 ]]; then
 	export readonly DirDownloads="/var/cache/$__appname__/downloads"
 else
-	export readonly DirDownloads=~/".cache/$__appname__/downloads"
+	#export readonly DirDownloads=~/".cache/$__appname__/downloads"
+	export readonly DirDownloads=~/".cache/appcli/downloads"
 fi
 
 mkdir -p "$TemporaryDirectory"

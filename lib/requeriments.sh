@@ -175,6 +175,25 @@ _install_requeriments()
 	return 0
 }
 
+install_appcli()
+{
+	# https://github.com/Brunopvh/app-cli/tree/v0.1.3
+	# Versão deste programa escrita em python
+
+	local URL_REPO_APPCLI='https://github.com/Brunopvh/app-cli/archive/refs/heads/v0.1.3.tar.gz'
+	local PATH_PKG_APPCLI="$DirDownloads/appcli-v0.1.3.tar.gz"
+
+	download "$URL_REPO_APPCLI" "$PATH_PKG_APPCLI" || return 1
+	unpack_archive "$PATH_PKG_APPCLI" $DirUnpack || return 1
+	cd $DirUnpack
+	mv $(ls -d app-*) app-cli
+	cd app-cli
+	python3 setup.py install --user
+
+	python3 -m appcli -h 1> /dev/null 2> /dev/null || return 1
+	return 0
+}
+
 check_requeriments_cli()
 {
 	# Verificar requerimentos minimos de sistema para que os programas possam ser 

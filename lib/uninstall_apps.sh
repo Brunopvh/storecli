@@ -140,6 +140,7 @@ _uninstall_packages()
 
 			'libreoffice-appimage') __rmdir__ "${destinationFilesLibreofficeAppimage[@]}";;
 			edge) _uninstall_edge;;
+			electron-player) python3 -m appcli --remove electron-player --yes;;
 			torbrowser) _uninstall_torbrowser;;	
 			telegram) __rmdir__ "${destinationFilesTelegram[@]}";;
 			tixati) __rmdir__ "${destinationFilesTixati[@]}";;

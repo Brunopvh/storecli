@@ -1997,16 +1997,13 @@ _clipgrab_appimage()
 
 _electron_player()
 {
-	[[ $(id -u) == 0 ]] && return 1
-	local URL_ELECTRON_PLAYER='https://github.com/oscartbeaumont/ElectronPlayer/releases/download/v2.0.8-rc4/electronplayer-2.0.8.AppImage'
-	local PATH_ELECTRON_PLAYER="$DirDownloads/$(basename $URL_ELECTRON_PLAYER)"
-
-	download "$URL_ELECTRON_PLAYER" "$PATH_ELECTRON_PLAYER" || return 1
-	[[ $DownloadOnly == 'True' ]] && print_info 'Feito somente download' && return 0
-	cp -u "$PATH_ELECTRON_PLAYER" "$DIR_BIN"/electron-player
-	chmod +x "$DIR_BIN"/electron-player
-	"$DIR_BIN"/electron-player
-
+	python3 -m appcli 2> /dev/null || install_appcli
+	
+	if [[ "$AssumeYes" == 'True' ]]; then
+		python3 -m appcli --install electron-player --yes
+	else
+		python3 -m appcli --install electron-player
+	fi	
 }
 
 
