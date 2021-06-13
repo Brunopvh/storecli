@@ -1959,7 +1959,7 @@ _torbrowser()
 	if [[ "$DownloadOnly" == 'True' ]]; then
 		"$SCRIPT_TORBROWSER_INSTALLER" --downloadonly --install
 	else
-		"$SCRIPT_TORBROWSER_INSTALLER" --install
+		"$SCRIPT_TORBROWSER_INSTALLER" --install --yes
 	fi
 }
 
@@ -1971,7 +1971,7 @@ _clipgrab_appimage()
 {
 	# Instalar o clipgrab na versão AppImage.
 	if is_executable clipgrab; then
-		#print_info 'Pacote instalado' 'clipgrab'
+		print_info 'Pacote instalado' 'clipgrab'
 		return 0
 	fi
 

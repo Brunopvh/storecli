@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2021_06_08'
+__version__='2.0'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -934,7 +934,8 @@ main()
 
 main "${@}" && STATUS_OUTPUT=0
 
-if [[ $1 == '--module' ]]; then # Para usar este programa como módulo use a opção --module. source storecli.sh --module.
+# Para usar este programa como módulo use a opção --module. source storecli.sh --module.
+if [[ $1 == '--module' ]]; then 
 	cd $WORK_DIR
 else
 	# Remover diretórios e subdiretórios temporários ao encerrar o programa.
