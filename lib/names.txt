@@ -1,0 +1,12 @@
+NOME             > CATEGORIA          > DESCRICAO      
+sublime-text     > Development        > IDE  
+code             > Development        > IDE              
+pycharm          > Development        > IDE Python         
+balena-etcher    > Acessory           > USB Flash
+virtualbox       > System             > VirtualBox
+appcli           > System             > Instalador de software via linha de comando
+tor-browser      > Internet           > Navegador Tor Browser
+freetube         > Internet           > Player para o Youtube
+wine             > Wine               > Wine
+stacer           > System             > Monitor de sistema
+mscorefonts      > System             > Fonts Microsoft
