@@ -46,7 +46,7 @@
 # https://github.com/Brunopvh/bash-libs -> Repositório das libs usadas por este programa.
 #
 
-__version__='2.0'
+__version__='2.1'
 __author__='Bruno Chaves'
 __appname__='storecli'
 
@@ -350,7 +350,7 @@ cat << EOF
                                      |Preferencias|GnomeShell.
 
 
-     -u|--self-update              Instala ultima versão desse script disponível no github.
+  
      -v|--version                  Mostra versão.
      -y|--yes                      Assume sim para maioria da indagações.
 
