@@ -79,12 +79,22 @@ function _install_wine_base_debian(){
     #
 
     # Verificar versão
-    if [[ $ID == 'debian' ]] || [[ "$VERSION_ID" == 10 ]]; then
-        _install_wine_debian_10
-    elif [[ $ID == 'debian' ]] || [[ "$VERSION_ID" == 11 ]]; then
-        _install_wine_debian_11
-    elif [[ $ID == 'linuxmint' ]] || [[ "$VERSION_ID" == 5 ]]; then
-        _install_wine_debian_11
+    if [[ $ID == 'debian' ]]; then
+
+        if [[ "$VERSION_ID" == 10 ]]; then
+            _install_wine_debian_10
+        elif [[ "$VERSION_ID" == 11 ]]; then
+            _install_wine_debian_11
+        fi
+
+    elif [[ $ID == 'linuxmint' ]] && [[ "$ID_LIKE" == 'debian' ]]; then # LMDE
+
+        if [[ "$VERSION_ID" == 4 ]]; then
+            _install_wine_debian_10
+        elif [[ "$VERSION_ID" == 5 ]]; then
+            _install_wine_debian_11
+        fi
+
     else
         printErro "Sistema não suportado"
         return 1

@@ -5,10 +5,8 @@
 
 readonly temp_dir=$(mktemp -d)
 readonly temp_file=$(mktemp -u)
-readonly BRANCH='main'
-readonly ONLINE_REPO="https://bitbucket.org/bschaves/storecli/get/${BRANCH}.zip"
-
-
+readonly BRANCH='v3.1'
+readonly ONLINE_REPO="https://github.com/Brunopvh/storecli/archive/refs/heads/${BRANCH}.zip"
 
 
 clientDownloader='None'

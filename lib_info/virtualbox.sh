@@ -28,14 +28,25 @@ PKG_VBOX_EXT_PACK=$(getCachePkgs)/Oracle_VM_VirtualBox_Extension_Pack-6.1.34.vbo
 
 function __setValuesLinuxMint()
 {
-    if [[ $ID_LIKE == 'debian' ]]; then # LinuxMint Debian Edition  
-        if [[ $(getDistroVersion) == 4 ]]; then # LinuxMint 4 - debbie
+    if [[ $ID_LIKE == 'debian' ]]; then # LinuxMint Debian Edition 
+
+        if [[ $VERSION_ID == 4 ]]; then # LinuxMint 4 - debbie
             PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636~Debian~buster_amd64.deb' 
             PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636~Debian~buster_amd64.deb
             HASH_VALUE='55c8bbdab804ef522975b9d1d3db58d9dc3955b0b443cfa4a2e634e596dcf049'
+        elif [[ $VERSION_ID == 5 ]]; then # LinuxMint 5 - elsie
+            PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb' 
+            PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb
+            HASH_VALUE='61b77e533e7ddc49571ec885f392c964b233b3d2b682965f8979df22982afbfa'
+        else
+            return 1
         fi  
+
     elif [[ $ID_LIKE == 'ubuntu' ]]; then # LinuxMint Ubuntu Base
         echo 'Falta código para LinuxMint base Ubuntu'
+        return 1
+    else
+        return 1
     fi  
 
 }
@@ -52,6 +63,7 @@ function __setValuesDebian()
         HASH_VALUE='7738ab90c0aeba95e1e7acfdda027c8a10983ecf0ce2874126133a9434a8a4d9'
     else
         echo '__setUrlDebian ... Sistema não suportado'
+        return 1
     fi 
      
 }
@@ -76,7 +88,7 @@ function _uninstall_virtualbox_debian()
 }
 
 
-function __uninstall_virtualbox()
+function _uninstall_virtualbox()
 {
     green "Desinstalando ... $APP_NAME"
     if [[ -f /etc/debian_version ]]; then 
@@ -187,7 +199,7 @@ install_vbox_generic()
 }
 
 
-function __install_virtualbox()
+function _install_virtualbox()
 {
     # https://www.virtualbox.org/wiki/Linux_Downloads
     #
@@ -208,9 +220,9 @@ function main()
     setValues
 
     if [[ $1 == 'uninstall' ]]; then
-        __uninstall_virtualbox
+        _uninstall_virtualbox
     elif [[ $1 == 'install' ]]; then
-        __install_virtualbox
+        _install_virtualbox
     elif [[ $1 == 'get' ]]; then
         download $PKG_URL $PKG_FILE || return $?
         download $URL_EXTENSION_PACK $PKG_VBOX_EXT_PACK || return $?
