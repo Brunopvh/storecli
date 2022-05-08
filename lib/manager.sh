@@ -29,6 +29,8 @@ function fetchPackages(){
 			stacer) ConfigStacer get;;
             code) ConfigVsCode get;;
             mscorefonts) ConfigMscorefonts get;;
+            sqlite3) ConfigSqlite3 get;;
+            sqlite-browser) ConfigSqliteBrowser get;;
             *) ;;
         esac
         shift
@@ -62,6 +64,8 @@ function UninstallPackages()
 			stacer) ConfigStacer uninstall;;
             code) ConfigVsCode uninstall;;
             mscorefonts) ConfigMscorefonts uninstall;;
+            sqlite3) ConfigSqlite3 uninstall;;
+            sqlite-browser) ConfigSqliteBrowser uninstall;;
             *) ;;
         esac
         shift
@@ -108,6 +112,8 @@ function InstallPackages()
 			stacer) ConfigStacer install;;
             code) ConfigVsCode install;;
             mscorefonts) ConfigMscorefonts install;;
+            sqlite3) ConfigSqlite3 install;;
+            sqlite-browser) ConfigSqliteBrowser install;;
             *) ;;
         esac
         shift
@@ -115,6 +121,20 @@ function InstallPackages()
     
 }
 
+
+
+
+
+function ConfigSqliteBrowser(){
+    source "${STORECLI_LIB_INFO_PATH}"/sqlite-browser.sh || return $?
+    main $@
+}
+
+
+function ConfigSqlite3(){
+    source "${STORECLI_LIB_INFO_PATH}"/sqlite.sh || return $?
+    main $@
+}
 
 
 
