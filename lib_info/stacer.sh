@@ -87,7 +87,7 @@ function __install_stacer_appimage()
 
     green "Copiando arquivos"
     cp -u "$PKG_FILE" "$BIN_FILE"
-    cp -u "${dir_of_project}"/data/icons/stacer.png
+    cp -u "${dir_of_project}"/data/icons/stacer.png "$ICON_FILE"
 
     echo '#!/usr/bin/env bash' > $SCRIPT_FILE
 
