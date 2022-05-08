@@ -146,13 +146,38 @@ function ConfigMsCoreFonts()
 }
 
 
-function _installFirefox()
-{
 
-	# Verificar integridade.
-    checkSha256 $PKG_FILE $HASH_VALUE || return $?
-    wine_installer $PKG_FILE
+function ConfigTorBrowser()
+{
+	# https://www.torproject.org/pt-BR/download/
+	#
+	# https://www.torproject.org/dist/torbrowser/11.0.11/torbrowser-install-win64-11.0.11_pt-BR.exe
+	#
+
+	local PKG_URL='https://www.torproject.org/dist/torbrowser/11.0.11/torbrowser-install-win64-11.0.11_pt-BR.exe'
+	local PKG_FILE=$(getCachePkgs)/'torbrowser-install-win64-11.0.11_pt-BR.exe'
+	local APP_NAME='torbrowser'
+	local APP_VERSION='11.0.11'
+	local ONLINE_SIZE=''
+	local HASH_TYPE='sha256'
+	local HASH_VALUE='59c0c749cb024a216a69c576c3eecf9ea2e17d54154b91157cb1bd416b750487'
+
+	if [[ $1 == 'install' ]]; then
+		# Verificar integridade.
+    	checkSha256 $PKG_FILE $HASH_VALUE || return $?
+    	wine_installer $PKG_FILE
+	elif [[ $1 == 'uninstall' ]]; then
+		echo 'Falta código'
+	elif [[ $1 == 'get' ]]; then
+		download $PKG_URL $PKG_FILE
+	else
+		printErro "Parâmetro incorreto detectado."
+		return 1
+	fi
+
 }
+
+
 
 
 function ConfigFirefox()
@@ -169,7 +194,9 @@ function ConfigFirefox()
 	local HASH_VALUE='f64119374118ed4aae3e3137399d4e5c0c927c1ec8d1e3c876118bbb9f69b269'
 
 	if [[ $1 == 'install' ]]; then
-		_installFirefox
+		# Verificar integridade.
+    	checkSha256 $PKG_FILE $HASH_VALUE || return $?
+    	wine_installer $PKG_FILE
 	elif [[ $1 == 'uninstall' ]]; then
 		echo 'Falta código'
 	elif [[ $1 == 'get' ]]; then

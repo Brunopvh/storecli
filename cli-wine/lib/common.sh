@@ -101,6 +101,7 @@ function fetchPackages(){
             pycharm) ConfigPycharm get;;
             python3) ConfigPython3 get;;
             npp) ConfigNotepad_plus_plus get;;
+            torbrowser) ConfigTorBrowser get;;
             *) ;;
         esac
         shift
@@ -127,7 +128,8 @@ function UninstallPackages()
             firefox) ConfigFirefox uninstall;;
             pycharm) ConfigPycharm uninstall;;
             python3) ConfigPython3 uninstall;;
-            npp) ConfigNotepad_plus_plus uninstall;;   
+            npp) ConfigNotepad_plus_plus uninstall;;  
+            torbrowser) ConfigTorBrowser uninstall;;
             *) ;;
         esac
         shift
@@ -168,6 +170,7 @@ function InstallPackages()
             pycharm) ConfigPycharm install;;
             python3) ConfigPython3 install;;
             npp) ConfigNotepad_plus_plus install;;
+            torbrowser) ConfigTorBrowser install;;
             *) ;;
         esac
         shift

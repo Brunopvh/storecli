@@ -1,9 +1,7 @@
 NOME             > CATEGORIA          > DESCRICAO      
 sublime-text     > Development        > IDE                
 pycharm          > Development        > IDE Python         
-balena-etcher    > Acessory           > USB Flash
-tor-browser      > Internet           > Navegador Tor Browser
-freetube         > Internet           > Player para o Youtube
+torbrowser      > Internet           > Navegador Tor Browser
 firefox          > Internet           > Navegador Web
 ms-core-fonts    > Acessory           > Fonts Microsoft
 python3          > Development        > Interpretador python 3.7.8
