@@ -27,16 +27,20 @@ HASH_VALUE=''
 function _uninstall_sqlite_browser()
 {
 	green "Desinstalando ... $APP_NAME"
-    rm -rf $DESTINATION_DIR
-    rm -rf $ICON_FILE
-    rm -rf $DESKTOP_FILE 
-    rm -rf $SCRIPT_FILE
-    return 0
     
+    if [[ -f /etc/debian_version ]]; then
+        runApt remove sqlitebrowser
+    else
+        rm -rf $DESTINATION_DIR
+        rm -rf $ICON_FILE
+        rm -rf $DESKTOP_FILE 
+        rm -rf $SCRIPT_FILE
+    fi
+    return 0
 }
 
 
-function _install_sqlite_browser()
+function _install_sqlite_browser_appimage()
 {
 	# Instalar o sqlite-browser.
     if [[ -d "$DESTINATION_DIR" ]]; then
@@ -88,6 +92,17 @@ function _install_sqlite_browser()
 }
 
 
+function _install_sqlite_browser(){
+    #
+
+    if [[ -f /etc/debian_version ]]; then
+        runApt install sqlitebrowser
+    else
+        _install_sqlite_browser_appimage
+    fi
+}
+
+
 function main()
 {	
 	setDirsUser
@@ -97,7 +112,8 @@ function main()
     elif [[ $1 == 'uninstall' ]]; then
         _uninstall_sqlite_browser
     elif [[ $1 == 'get' ]]; then
-        download $PKG_URL $PKG_FILE || return $?
+        #download $PKG_URL $PKG_FILE || return $?
+        return 0
     elif [[ $1 == 'installed' ]]; then
         isExecutable sqlite-browser || return 1
     else
