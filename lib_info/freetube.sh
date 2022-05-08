@@ -9,7 +9,7 @@ INSTALLATION_TYPE='user'
 APP_NAME='freetube'
 DESTINATION_DIR="${DIR_OPTIONAL}"/freetube
 BIN_FILE="${DESTINATION_DIR}"/freetube.AppImage
-#ICON_FILE="${DIR_HICOLOR}"/128x128/apps/etcher.png
+ICON_FILE="${DIR_HICOLOR}"/256x256/apps/freetube.png
 DESKTOP_FILE="${DIR_DESKTOP_ENTRY}"/freetube.desktop
 SCRIPT_FILE="${DIR_BIN}"/freetube
 LINK_FILE=None
@@ -21,7 +21,7 @@ PKG_ICON_CACHE="$(getCachePkgs)"/freetube.png
 PKG_URL='https://github.com/FreeTubeApp/FreeTube/releases/download/v0.12.0-beta/freetube_0.12.0_amd64.AppImage'
 ICON_URL=''
 
-ONLINE_SIZE='123M'
+ONLINE_SIZE=''
 HASH_TYPE='sha256'
 HASH_VALUE='aa3902a7c9677b8b0a0f189536a8a39de0644c6fcd8d543fcf5a69ae43652e94'
 
@@ -45,6 +45,7 @@ function _createFreetubeDesktopFile()
         echo "Name=FreeTube"
         echo "Exec=freetube"
         echo "Version=1.0"
+        echo -e "Icon=$ICON_FILE"
         echo "Terminal=false"
         echo "Type=Application"
         echo "Categories=Network;"
@@ -73,12 +74,12 @@ function __install_freetube_appimage()
 
     local _tmp_file=$(mktemp)    
     mkdir -p "$DESTINATION_DIR"
-    #mkdir -p "${DIR_HICOLOR}"/128x128/apps
+    mkdir -p "${DIR_HICOLOR}"/256x256/apps
 
     green "Copiando arquivos"
     cp -u "$PKG_FILE" "$BIN_FILE"
-    chmod +x "$BIN_FILE"
-
+    cp -u "${dir_of_project}"/data/icons/freetube.png "${ICON_FILE}"
+    
     echo '#!/usr/bin/env bash' > $SCRIPT_FILE
 
     {
@@ -88,6 +89,7 @@ function __install_freetube_appimage()
 
 
     chmod +x $SCRIPT_FILE
+    chmod +x "$BIN_FILE"
     _createFreetubeDesktopFile
     rm -rf $_tmp_file
     return 0

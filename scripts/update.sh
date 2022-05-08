@@ -6,7 +6,8 @@
 readonly temp_dir=$(mktemp -d)
 readonly temp_file=$(mktemp -u)
 readonly BRANCH='main'
-readonly ONLINE_REPO="https://bitbucket.org/bschaves/storecli/get/${BRANCH}.zip"
+#readonly ONLINE_REPO="https://bitbucket.org/bschaves/storecli/get/${BRANCH}.zip"
+readonly ONLINE_REPO="https://github.com/Brunopvh/storecli/archive/refs/heads/${BRANCH}.zip"
 
 
 
@@ -183,6 +184,7 @@ function unpack()
 
 
 function _update(){
+	echo -e " Conectando ... $ONLINE_REPO"
 	download $ONLINE_REPO $temp_file 1> /dev/null 2> /dev/null || return $?
 	unpack $temp_file $temp_dir || return $?
 	cd $temp_dir

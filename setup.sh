@@ -8,7 +8,6 @@ dir_of_project=$(dirname $file_setup)
 source "${dir_of_project}"/lib/version.sh
 
 
-
 # shell-libs
 [[ -f "$dir_of_project"/shell-libs/setup.sh ]] && {
 
@@ -40,15 +39,11 @@ DEST_DIR="${PREFIX}"/storecli
 SCRIPT="${DIR_BIN}/storecli"
 
 
-
-
 function create_dirs()
 {
     #
-
     mkdir -p $DEST_DIR
     [[ $(id -u) == 0 ]] && return 0
-
     mkdir -p ~/.local/bin
      
 }
@@ -60,10 +55,14 @@ function setup()
     
     create_dirs
     
-    echo -e "Instalando $__appname__ V${__version__} em ... $DEST_DIR"
+    echo -ne "Instalando $__appname__ V${__version__} em ... $DEST_DIR "
     cd $dir_of_project
     cp -R -u * "${DEST_DIR}"/
+    chmod +x "${DEST_DIR}"/scripts/check.sh
+    chmod +x "${DEST_DIR}"/scripts/update.sh
+
     ln -sf "${DEST_DIR}"/main.sh "$SCRIPT"
+
     echo OK
 }
 

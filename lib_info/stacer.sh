@@ -9,7 +9,7 @@ INSTALLATION_TYPE='user'
 APP_NAME='stacer'
 DESTINATION_DIR="${DIR_OPTIONAL}"/stacer-x64
 BIN_FILE="${DESTINATION_DIR}"/stacer.AppImage
-#ICON_FILE="${DIR_HICOLOR}"/128x128/apps/etcher.png
+ICON_FILE="${DIR_HICOLOR}"/256x256/apps/stacer.png
 DESKTOP_FILE="${DIR_DESKTOP_ENTRY}"/stacer.desktop
 SCRIPT_FILE="${DIR_BIN}"/stacer
 LINK_FILE=None
@@ -52,7 +52,8 @@ function _createStacerDesktopFile()
     {
         echo "Name=Stacer"
         echo -e "Exec=$SCRIPT_FILE"
-        echo "Version=$APP_VERSION"
+        echo -e "Version=$APP_VERSION"
+        echo -e "Icon=$ICON_FILE"
         echo "Terminal=false"
         echo "Type=Application"
         echo "Categories=Network;"
@@ -82,14 +83,12 @@ function __install_stacer_appimage()
 
     local _tmp_file=$(mktemp)    
     mkdir -p "$DESTINATION_DIR"
-    #mkdir -p "${DIR_HICOLOR}"/128x128/apps
+    mkdir -p "${DIR_HICOLOR}"/256x256/apps
 
     green "Copiando arquivos"
     cp -u "$PKG_FILE" "$BIN_FILE"
-    chmod +x "$BIN_FILE"
+    cp -u "${dir_of_project}"/data/icons/stacer.png
 
-
-    green "Criando script ... $SCRIPT_FILE"
     echo '#!/usr/bin/env bash' > $SCRIPT_FILE
 
     {
@@ -99,6 +98,7 @@ function __install_stacer_appimage()
 
 
     chmod +x $SCRIPT_FILE
+    chmod +x "$BIN_FILE"
     _createStacerDesktopFile
     rm -rf $_tmp_file
     return 0

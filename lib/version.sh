@@ -4,7 +4,8 @@
 #
 #
 
-__repo__='https://bitbucket.org/bschaves/storecli/src/main'
-__online_pkg__='https://bitbucket.org/bschaves/storecli/get/main.zip'
-__version__='3.0.9'
+__repo__='https://github.com/Brunopvh/storecli'
+__online_pkg__='https://github.com/Brunopvh/storecli/archive/refs/heads/main.zip'
+__version__='3.0.10'
 __appname__='storecli'
+__author__='Bruno Chaves'

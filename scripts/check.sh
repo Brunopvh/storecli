@@ -4,12 +4,11 @@
 #
 
 req_cli=(
-    wget
+    curl
     awk
     python3
     xterm
     unzip
-    git
 )
 
 
@@ -20,7 +19,11 @@ function command_exists() {
 
 function checkReq(){
     for cmd in "${req_cli[@]}"; do
-        command_exists "$cmd" || { return 1; break; }
+        command_exists "$cmd" || { 
+            echo -e " ! NOT FOUND ... $cmd"
+            return 1
+            break 
+            }
     done
     
 

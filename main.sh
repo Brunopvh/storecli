@@ -38,13 +38,29 @@ source "$STORECLI_LIB_PATH"/version.sh
 source "$STORECLI_LIB_PATH"/manager.sh
 source "$STORECLI_LIB_PATH"/show.sh
 source "$STORECLI_LIB_PATH"/common.sh
+source "$STORECLI_LIB_PATH"/requeriments.sh
 
 
-if [[ ! -x "${SHELL_LIBS}"/scripts/user-path.sh ]]; then
-    chmod +x "${SHELL_LIBS}"/scripts/user-path.sh
-fi
 
-"${SHELL_LIBS}"/scripts/user-path.sh
+function _startApp(){
+
+    if [[ ! -x "${SHELL_LIBS}"/scripts/user-path.sh ]]; then
+        [[ -w "${SHELL_LIBS}"/scripts/user-path.sh ]] && chmod +x "${SHELL_LIBS}"/scripts/user-path.sh
+    fi
+
+
+    # Configurar o PATH do usuário.
+    "${SHELL_LIBS}"/scripts/user-path.sh
+
+
+    # Checar dependências
+    "${dir_of_project}"/scripts/check.sh || {
+            
+            InstallSysRequeriments
+            return 1
+        }
+}
+
 
 function createStorecliDirs()
 {
@@ -95,6 +111,8 @@ function self_update(){
 
 function main()
 {
+
+    _startApp || return 1
 
     createStorecliDirs 
     _parseOpts $@
