@@ -6,4 +6,5 @@ firefox          > Internet           > Navegador Web
 ms-core-fonts    > Acessory           > Fonts Microsoft
 python3          > Development        > Interpretador python 3.7.8
 npp              > Development        > IDE
+revo-uninstaller > Outros             > Revo Uninstaller
 

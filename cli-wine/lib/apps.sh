@@ -253,6 +253,40 @@ function ConfigPycharm()
 
 
 
+function ConfigRevoUninstaller()
+{
+	#
+	# local PKG_URL='https://download-cdn.jetbrains.com/python/pycharm-community-2021.3.1.exe'
+	# local HASH_VALUE='af74570c3989f3075b8851e4c97791b1a5ccb919b33a7b843eca0af076d5ea67'
+	# local PKG_URL='https://download-cdn.jetbrains.com/python/pycharm-community-2020.1.3.exe'
+	
+	local PKG_URL='https://download.revouninstaller.com/download/revosetup.exe'
+	local PKG_FILE=$(getCachePkgs)/revosetup.exe
+	local APP_NAME='revo-uninstaller'
+	local DESTINATION_DIR=""
+	local APP_VERSION=''
+	local ONLINE_SIZE=''
+	local HASH_TYPE='sha256'
+	local HASH_VALUE='dd50018d220465fc934930245fd322a5d619b515326585b8b39a647400f479c4'
+
+
+	if [[ $1 == 'install' ]]; then
+		wine_installer $PKG_FILE
+	elif [[ $1 == 'uninstall' ]]; then
+		echo 'Falta código'
+	elif [[ $1 == 'get' ]]; then
+		download $PKG_URL $PKG_FILE
+	else
+		printErro "Parâmetro incorreto detectado."
+		return 1
+	fi
+
+}
+
+
+
+
+
 function _installPython3()
 {
 

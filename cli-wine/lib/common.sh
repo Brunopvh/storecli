@@ -102,6 +102,7 @@ function fetchPackages(){
             python3) ConfigPython3 get;;
             npp) ConfigNotepad_plus_plus get;;
             torbrowser) ConfigTorBrowser get;;
+            revo-uninstaller) ConfigRevoUninstaller get;;
             *) ;;
         esac
         shift
@@ -130,6 +131,7 @@ function UninstallPackages()
             python3) ConfigPython3 uninstall;;
             npp) ConfigNotepad_plus_plus uninstall;;  
             torbrowser) ConfigTorBrowser uninstall;;
+            revo-uninstaller) ConfigRevoUninstaller uninstall;;
             *) ;;
         esac
         shift
@@ -171,6 +173,7 @@ function InstallPackages()
             python3) ConfigPython3 install;;
             npp) ConfigNotepad_plus_plus install;;
             torbrowser) ConfigTorBrowser install;;
+            revo-uninstaller) ConfigRevoUninstaller install;;
             *) ;;
         esac
         shift
