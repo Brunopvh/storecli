@@ -8,6 +8,7 @@ setDirsUser
 INSTALLATION_TYPE='user'
 APP_NAME='balena-etcher'
 DESTINATION_DIR="${DIR_OPTIONAL}"/balenaEtcher
+
 ICON_FILE="${DIR_HICOLOR}"/128x128/apps/etcher.png
 DESKTOP_FILE="${DIR_DESKTOP_ENTRY}"/balena-etcher.desktop
 SCRIPT_FILE="${DIR_BIN}"/balena-etcher

@@ -10,5 +10,6 @@ freetube         > Internet           > Player para o Youtube
 wine             > Wine               > Wine
 stacer           > System             > Monitor de sistema
 mscorefonts      > System             > Fonts Microsoft
-sqlite3           > System             > SQLite
-sqlite-browser           > System             > SQLite
+sqlite3          > System             > SQLite
+sqlite-browser   > System             > SQLite
+poweriso   > Multimidia             > Poweriso

@@ -31,6 +31,7 @@ function fetchPackages(){
             mscorefonts) ConfigMscorefonts get;;
             sqlite3) ConfigSqlite3 get;;
             sqlite-browser) ConfigSqliteBrowser get;;
+            poweriso) ConfigPoweriso get;;
             *) ;;
         esac
         shift
@@ -66,6 +67,7 @@ function UninstallPackages()
             mscorefonts) ConfigMscorefonts uninstall;;
             sqlite3) ConfigSqlite3 uninstall;;
             sqlite-browser) ConfigSqliteBrowser uninstall;;
+            poweriso) ConfigPoweriso uninstall;;
             *) ;;
         esac
         shift
@@ -114,6 +116,7 @@ function InstallPackages()
             mscorefonts) ConfigMscorefonts install;;
             sqlite3) ConfigSqlite3 install;;
             sqlite-browser) ConfigSqliteBrowser install;;
+            poweriso) ConfigPoweriso install;;
             *) ;;
         esac
         shift
@@ -122,6 +125,13 @@ function InstallPackages()
 }
 
 
+
+
+
+function ConfigPoweriso(){
+    source "${STORECLI_LIB_INFO_PATH}"/power-iso.sh || return $?
+    main $@
+}
 
 
 
