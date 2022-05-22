@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 #
 #
-
+# https://github.com/FreeTubeApp/FreeTube
+#
+# https://github.com/FreeTubeApp/FreeTube/releases/download/v0.12.0-beta/freetube_0.12.0_amd64.AppImage
+#
+# https://github.com/FreeTubeApp/FreeTube/releases/download/v0.16.0-beta/freetube_0.16.0_amd64.deb
+# 
+#
 #setDirsRoot
+
 setDirsUser
 
 INSTALLATION_TYPE='user'
@@ -14,16 +21,16 @@ DESKTOP_FILE="${DIR_DESKTOP_ENTRY}"/freetube.desktop
 SCRIPT_FILE="${DIR_BIN}"/freetube
 LINK_FILE=None
 
-APP_VERSION='0.12'
-PKG_FILE="$(getCachePkgs)"/freetube-0.12.AppImage
+APP_VERSION='0.16'
+PKG_FILE="$(getCachePkgs)"/freetube_0.16.0_amd64.AppImage
 PKG_ICON_CACHE="$(getCachePkgs)"/freetube.png
 
-PKG_URL='https://github.com/FreeTubeApp/FreeTube/releases/download/v0.12.0-beta/freetube_0.12.0_amd64.AppImage'
+PKG_URL='https://github.com/FreeTubeApp/FreeTube/releases/download/v0.16.0-beta/freetube_0.16.0_amd64.AppImage'
 ICON_URL=''
 
-ONLINE_SIZE=''
+ONLINE_SIZE='168M'
 HASH_TYPE='sha256'
-HASH_VALUE='aa3902a7c9677b8b0a0f189536a8a39de0644c6fcd8d543fcf5a69ae43652e94'
+HASH_VALUE='1b8959d656cd37c5fda1c5a172eb8d6464d99bd014cee58a566db7620b09c228'
 
 
 function __uninstall_freetube()
@@ -44,7 +51,7 @@ function _createFreetubeDesktopFile()
     {
         echo "Name=FreeTube"
         echo "Exec=freetube"
-        echo "Version=1.0"
+        echo "Version=$APP_VERSION"
         echo -e "Icon=$ICON_FILE"
         echo "Terminal=false"
         echo "Type=Application"
