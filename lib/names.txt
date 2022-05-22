@@ -12,4 +12,6 @@ stacer           > System             > Monitor de sistema
 mscorefonts      > System             > Fonts Microsoft
 sqlite3          > System             > SQLite
 sqlite-browser   > System             > SQLite
-poweriso   > Multimidia             > Poweriso
+poweriso         > Multimidia         > Poweriso
+android-studio   > Development        > IDE
+ 

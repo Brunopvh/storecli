@@ -32,6 +32,7 @@ function fetchPackages(){
             sqlite3) ConfigSqlite3 get;;
             sqlite-browser) ConfigSqliteBrowser get;;
             poweriso) ConfigPoweriso get;;
+            android-studio) ConfigAndroidStudio get;;
             *) ;;
         esac
         shift
@@ -68,6 +69,7 @@ function UninstallPackages()
             sqlite3) ConfigSqlite3 uninstall;;
             sqlite-browser) ConfigSqliteBrowser uninstall;;
             poweriso) ConfigPoweriso uninstall;;
+            android-studio) ConfigAndroidStudio uninstall;;
             *) ;;
         esac
         shift
@@ -117,6 +119,7 @@ function InstallPackages()
             sqlite3) ConfigSqlite3 install;;
             sqlite-browser) ConfigSqliteBrowser install;;
             poweriso) ConfigPoweriso install;;
+            android-studio) ConfigAndroidStudio install;;
             *) ;;
         esac
         shift
@@ -125,6 +128,11 @@ function InstallPackages()
 }
 
 
+
+function ConfigAndroidStudio(){
+    source "${STORECLI_LIB_INFO_PATH}"/android-studio.sh || return $?
+    main $@
+}
 
 
 
