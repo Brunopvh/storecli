@@ -14,4 +14,4 @@ sqlite3          > System             > SQLite
 sqlite-browser   > System             > SQLite
 poweriso         > Multimidia         > Poweriso
 android-studio   > Development        > IDE
- 
+netbeans         > Development        > IDE

@@ -33,6 +33,7 @@ function fetchPackages(){
             sqlite-browser) ConfigSqliteBrowser get;;
             poweriso) ConfigPoweriso get;;
             android-studio) ConfigAndroidStudio get;;
+            netbeans) ConfigNetBeans get;;
             *) ;;
         esac
         shift
@@ -70,6 +71,7 @@ function UninstallPackages()
             sqlite-browser) ConfigSqliteBrowser uninstall;;
             poweriso) ConfigPoweriso uninstall;;
             android-studio) ConfigAndroidStudio uninstall;;
+            netbeans) ConfigNetBeans uninstall;;
             *) ;;
         esac
         shift
@@ -120,6 +122,7 @@ function InstallPackages()
             sqlite-browser) ConfigSqliteBrowser install;;
             poweriso) ConfigPoweriso install;;
             android-studio) ConfigAndroidStudio install;;
+            netbeans) ConfigNetBeans install;;
             *) ;;
         esac
         shift
@@ -127,6 +130,12 @@ function InstallPackages()
     
 }
 
+
+
+function ConfigNetBeans(){
+    source "${STORECLI_LIB_INFO_PATH}"/netbeans.sh || return $?
+    main $@
+}
 
 
 function ConfigAndroidStudio(){

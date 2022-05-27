@@ -17,7 +17,6 @@ AssumeYes=False
 DownloadOnly=False
 
 # Importar shell-libs
-
 [[ -z $SHELL_LIBS ]] && {
     if [[ -d "${dir_of_project}"/shell-libs ]]; then
         export SHELL_LIBS="${dir_of_project}"/shell-libs
