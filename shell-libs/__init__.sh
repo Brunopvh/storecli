@@ -15,12 +15,11 @@
 }
 
 
-SHELL_DEVICE_FILE="/tmp/$(whoami)/device.txt"
-SHELL_STATUS_FILE="/tmp/$(whoami)/status.txt"
+SHELL_DEVICE_FILE="/tmp/$(whoami)-device.txt"
+SHELL_STATUS_FILE="/tmp/$(whoami)-status.txt"
 export STATUS_OUTPUT=0
 
-
-mkdir -p /tmp/$(whoami)
+#mkdir -p /tmp/$(whoami)
 touch $SHELL_DEVICE_FILE
 touch $SHELL_STATUS_FILE
 

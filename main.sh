@@ -66,6 +66,17 @@ function createStorecliDirs()
     mkdir -p $(getCacheDir)    
     mkdir -p $(getCachePkgs)
     mkdir -p $(getConfigDir)
+
+    if [[ $(id -u) == 0 ]]; then return 0; fi
+
+    mkdir -p $DIR_BIN
+    mkdir -p $DIR_LIB
+    mkdir -p $DIR_SHARE
+    mkdir -p $DIR_THEMES
+    mkdir -p $DIR_OPTIONAL
+    mkdir -p $DIR_DESKTOP_ENTRY
+    mkdir -p $DIR_ICONS
+    mkdir -p $DIR_HICOLOR
 }
 
 function usage(){
