@@ -26,32 +26,46 @@ PKG_VBOX_EXT_PACK=$(getCachePkgs)/Oracle_VM_VirtualBox_Extension_Pack-6.1.34.vbo
 # INFO 
 #===================================================================#
 
-function __setValuesLinuxMint()
+function _setValuesLinuxMint()
 {
+    # https://www.virtualbox.org/download/hashes/6.1.34/SHA256SUMS
+    #
+    #
+    #
+
     if [[ $ID_LIKE == 'debian' ]]; then # LinuxMint Debian Edition  
-        if [[ $(getDistroVersion) == 4 ]]; then # LinuxMint 4 - debbie
+        if [[ "$VERSION_ID" == 4 ]]; then # LinuxMint 4 - debbie
             PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636~Debian~buster_amd64.deb' 
             PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636~Debian~buster_amd64.deb
             HASH_VALUE='55c8bbdab804ef522975b9d1d3db58d9dc3955b0b443cfa4a2e634e596dcf049'
+        elif [[ "$VERSION_ID" == 5 ]]; then # LinuxMint 4 - debbie
+            PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb' 
+            PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb
+            HASH_VALUE='61b77e533e7ddc49571ec885f392c964b233b3d2b682965f8979df22982afbfa'
         fi  
     elif [[ $ID_LIKE == 'ubuntu' ]]; then # LinuxMint Ubuntu Base
         echo 'Falta código para LinuxMint base Ubuntu'
+        sleep 1
     fi  
 
 }
 
-function __setValuesDebian()
+function _setValuesDebian()
 {
-    if [[ $(getDistroVersion) == 10 ]]; then ## Debian 10 Buster
+    if [[ "$VERSION_ID" == 11 ]]; then ## Debian 10 Buster
+        PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb' 
+        PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636.1~Debian~bullseye_amd64.deb
+        HASH_VALUE='61b77e533e7ddc49571ec885f392c964b233b3d2b682965f8979df22982afbfa'
+    elif [[ "$VERSION_ID" == 10 ]]; then ## Debian 10 Buster
         PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636~Debian~buster_amd64.deb' 
         PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636~Debian~buster_amd64.deb
         HASH_VALUE='55c8bbdab804ef522975b9d1d3db58d9dc3955b0b443cfa4a2e634e596dcf049'
-    elif [[ $(getDistroVersion) == 9 ]]; then ## Debian 9
+    elif [[ "$VERSION_ID" == 9 ]]; then ## Debian 9
         PKG_URL='https://download.virtualbox.org/virtualbox/6.1.34/virtualbox-6.1_6.1.34-150636.1~Debian~stretch_amd64.deb' 
         PKG_FILE=$(getCachePkgs)/virtualbox-6.1_6.1.34-150636.1~Debian~stretch_amd64.deb
         HASH_VALUE='7738ab90c0aeba95e1e7acfdda027c8a10983ecf0ce2874126133a9434a8a4d9'
     else
-        echo '__setUrlDebian ... Sistema não suportado'
+        echo '_setValuesDebian ... Sistema não suportado'
     fi 
      
 }
@@ -60,9 +74,9 @@ function __setValuesDebian()
 function setValues()
 {
     case "$ID" in
-        debian) __setValuesDebian;;
-        linuxmint) __setValuesLinuxMint;;
-        *) ;;
+        debian) _setValuesDebian;;
+        linuxmint) _setValuesLinuxMint;;
+        *) install_vbox_generic;;
     esac
 }
 
@@ -156,6 +170,7 @@ function _install_virtualbox_debfile()
 
     # runApt faz parte do pacote shell-libs no arquivo apt-bash.sh
     runApt update
+    runApt install build-essential module-assistant linux-headers-$(uname -r)
     runApt install $PKG_FILE
 }
 
@@ -192,7 +207,7 @@ function __install_virtualbox()
     # https://www.virtualbox.org/wiki/Linux_Downloads
     #
     
-    if [[ -f /etc/os-release ]]; then
+    if [[ -f /etc/debian_version ]]; then
         _install_virtualbox_debfile
         
     else
